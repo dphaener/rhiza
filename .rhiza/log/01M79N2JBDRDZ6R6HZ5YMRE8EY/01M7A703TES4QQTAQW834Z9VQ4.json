@@ -1,0 +1,109 @@
+{
+  "actor": "01M7A6QQJEWFC4R93TYEZRB0FT",
+  "after": [
+    "01M7A6PD2X3W7JGPWR579AV5Y2"
+  ],
+  "at": "2026-11-13T10:24:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch root with fake rex/claude and the branch build (go build -trimpath to a scratch path): a build workflow whose builder prompt is /design:design-critique failed at once with 'start command /design:design-critique unknown to claude: skill not installed; run rhiza guide install --agent claude' and an inbox item naming rhiza run resume --retry while the plugin was absent; after writing plugins/cache/mkt/design/1.0.0/skills/design-critique/SKILL.md under HOME/.claude, rhiza run resume --foreground --retry launched the builder as attempt 1 (fake builder logged 'alpha 1') and the inbox emptied, so the cycle-1 plugin finding is fixed. go test -trimpath ./internal/adapter/... and TestScripts/run-start-skill-missing passed."
+        },
+        "handle": "session-start-skill-preflight-qa-2",
+        "id": "01M7A702T51K1KTNM45KYKYWGP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A702T51K1KTNM45HE97ZA2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A702T51K1KTNM45HE97ZA2",
+        "id": "01M7A702XKYCD337WJ6QQ2XQ5T",
+        "link": "01M7A702XKYCD337WJ6Q8SR4TB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZA13RZT7QH1TCZ113ER",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch root, branch build: an accepted change set, the user guide missing rhiza-builder and made read-only; two rhiza daemon --once --autonomous polls logged 'could not refresh the user guide ...: permission denied', started no run and left exactly one guide-stale inbox item naming the scope, the error and rhiza guide install --agent claude. After chmod u+w the next poll refreshed the guide, started the ship-change run and the guide-stale item was gone. A workflow starting with a non-Rhiza plugin command (/design:design-critique) is not gated, as only skills the guide ships are checked. go test -trimpath ./internal/api/ -run 'DaemonGuide|HealthGuide|StartNotSubmitted' passed."
+        },
+        "handle": "daemon-holds-steps-on-stale-guide-qa-2",
+        "id": "01M7A70308SWCKCZBHG72MQ9BT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A70308SWCKCZBHG4KHT8Z7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A70308SWCKCZBHG4KHT8Z7",
+        "id": "01M7A7035YCNNC3HBSWB37KW80",
+        "link": "01M7A7035YCNNC3HBSW8RVTC7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch HOME with the branch build: rhiza health listed guide right after usage, warn 'an installed guide is out of date' with next rhiza guide install --agent claude after skills/rhiza-verifier was removed, and ok '1 installed guide(s) current' after guide install. The command's exit 1 came from the scratch repo's own failing check part, not the guide part."
+        },
+        "handle": "health-guide-part-qa-2",
+        "id": "01M7A7038F9KKQ32VC38JADX8E",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A7038F9KKQ32VC36965E7T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A7038F9KKQ32VC36965E7T",
+        "id": "01M7A703FTP1QDWWFWNYKBWE11",
+        "link": "01M7A703FTP1QDWWFWNVDYVH10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZPB651MRDDMV3S2GYJZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch root, branch build: with a writable user guide missing rhiza-builder, rhiza daemon --once logged 'refreshed the user guide ... to <running version>' before starting the ship-change run, and skills/rhiza-builder was back in place; with the folder read-only it logged a failed refresh and changed nothing."
+        },
+        "handle": "daemon-refreshes-guide-at-start-qa-2",
+        "id": "01M7A703KDHN6A02F4D6K1TP4N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A703KDHN6A02F4D4FM21EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A703KDHN6A02F4D4FM21EK",
+        "id": "01M7A703QGAPNND5XSBKSV4BWE",
+        "link": "01M7A703QGAPNND5XSBHA0VA9J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ469MM69ZTQ6F8D0EK0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A703TES4QQTAQW834Z9VQ4",
+  "type": "ops",
+  "v": 1
+}
