@@ -1,11 +1,9 @@
 package api
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/leftovers"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -29,15 +27,7 @@ func removeRunScratch(ctx *Ctx, sessions *session.Store, rid string) {
 		if !ok {
 			continue
 		}
-		for _, g := range a.ScratchGlobs(rec.ID, getenv) {
-			matches, err := filepath.Glob(g)
-			if err != nil {
-				continue
-			}
-			for _, p := range matches {
-				_ = os.RemoveAll(p)
-			}
-		}
+		leftovers.RemoveSession(a.ScratchParents(getenv), rec.ID)
 	}
 }
 

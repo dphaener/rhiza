@@ -58,7 +58,7 @@ func (askAdapter) HookMessage(string, []byte) (adapter.Message, bool, error) {
 	return adapter.Message{}, false, nil
 }
 func (askAdapter) TranscriptGlobs(string, func(string) string) []string { return nil }
-func (askAdapter) ScratchGlobs(string, func(string) string) []string    { return nil }
+func (askAdapter) ScratchParents(func(string) string) []string          { return nil }
 func (askAdapter) Answers([]byte) ([]adapter.Answer, error)             { return nil, nil }
 func (askAdapter) TokenUse([]byte) (adapter.TokenUse, error)            { return adapter.TokenUse{}, nil }
 

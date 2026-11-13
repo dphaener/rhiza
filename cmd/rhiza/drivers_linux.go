@@ -4,6 +4,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -62,5 +63,47 @@ func reapList(list string, self daemonID) {
 	}
 	if len(drop) > 0 {
 		dropLocked(list, drop...)
+	}
+}
+
+// childPids lists the pids whose parent is ppid, read from /proc.
+func childPids(ppid int) []int {
+	dirs, _ := filepath.Glob("/proc/[0-9]*")
+	var pids []int
+	for _, d := range dirs {
+		pid, err := strconv.Atoi(filepath.Base(d))
+		if err == nil && isChildOf(pid, ppid) {
+			pids = append(pids, pid)
+		}
+	}
+	return pids
+}
+
+// adoptList puts every child self already has on the list as self's own, so
+// reapList waits on it. It runs once at start, before any program starts, so
+// every child it finds was left by an earlier image of this daemon. A pid
+// already listed for self is not listed twice.
+func adoptList(list string, self daemonID) {
+	if self.Start == "" {
+		return
+	}
+	driverMu.Lock()
+	defer driverMu.Unlock()
+	es := readDrivers(list)
+	listed := map[int]bool{}
+	for _, e := range es {
+		if e.By == self {
+			listed[e.Pid] = true
+		}
+	}
+	n := len(es)
+	for _, pid := range childPids(self.Pid) {
+		if !listed[pid] {
+			es = append(es, driverEntry{Pid: pid, By: self})
+		}
+	}
+	if len(es) > n {
+		os.MkdirAll(filepath.Dir(list), 0o755)
+		writeDrivers(list, es)
 	}
 }

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A26RS4CP9885NZX2MGE7BQ",
+  "after": [
+    "01M7A1XDARZDH22EXKR23RHWMK"
+  ],
+  "at": "2026-11-13T09:03:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0f54a0aea re-ran the Checks block: go test -trimpath ./internal/api -run TestDaemonSweepLeftovers (exit 0; TestDaemonSweepLeftoversOffPoll and TestDaemonSweepLeftoversPrunesOnlyOrphans pass), go test -trimpath ./internal/daemon -run Sweep (exit 0, incl. TestSweepScheduleStartOnce), rhiza ship generate (exit 0, nothing changed), rhiza render (exit 0, tree clean). Also -race -count=3 on both packages passed, gofmt and go vet clean. Diff read: daemonSweepLeftovers (called from the home project's atHome poll step in daemon.go) claims the sweep with SweepSchedule.Start and runs it on a goroutine over a copy of ctx and commons; Start refuses while one runs; the stderr line text is unchanged. The new test blocks the sweep on a channel, asserts the step returns, that a due poll two hours on starts no second sweep, and that the freed line is written once after release. No stubs or TODOs; changes stay in the leaf's listed files plus the builder's actor record and rendered files."
+        },
+        "handle": "leftovers-sweep-off-poll-verified",
+        "id": "01M7A2BKZG3QEWM7QMP2SDXA88",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A2BKZG3QEWM7QMNZ31FX7T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A2BKZG3QEWM7QMNZ31FX7T",
+        "id": "01M7A2BM3RWV8SF116Z1EK0D2S",
+        "link": "01M7A2BM3RWV8SF116YZJRRYP6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A2BM91JC9BN5KKPP4DQXE0",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,155 @@
+{
+  "actor": "01M7A908DX567GZVQ8MMGQHT0S",
+  "after": [
+    "01M7A8YBK817TJMQWWCJHB143D"
+  ],
+  "at": "2026-11-13T11:06:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: built rhiza to a scratch path; hermetic root with 3000 recorded claude-code sessions over a TMPDIR scratch tree of 1500 non-session folders in claude-1000/cwd-{a,b,c}, 40 three-day-old session folders, 10 fresh ones and one old symlink named as a session. rhiza daemon --once under strace: each scratch parent listed once (no per-session glob), 40 old folders removed, 'leftovers sweep freed 39.1 KiB: 0 index databases, 40 session scratch folders' logged, fresh folders and the symlink target untouched. go test ./internal/leftovers/... ./internal/adapter/... and the api leftovers/session tests pass"
+        },
+        "handle": "scratch-sweep-one-listing-qa-2",
+        "id": "01M7A9DFEQQ9MQE7H8VZKQKKCP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFEQQ9MQE7H8VVYFKKP6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFEQQ9MQE7H8VVYFKKP6",
+        "id": "01M7A9DFFVPG3H35TNNG6D03RT",
+        "link": "01M7A9DFFVPG3H35TNNCESVGRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: rhiza daemon --once in the scratch root started the sweep from the poll and still wrote the freed line before exiting (the daemon waits for a running sweep); go test ./internal/api -run TestDaemonSweepLeftovers and ./internal/daemon/... pass"
+        },
+        "handle": "leftovers-sweep-off-poll-qa-2",
+        "id": "01M7A9DFH0ZAP4064ZFDYSRWYT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFH0ZAP4064ZFDKNTMF6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFH0ZAP4064ZFDKNTMF6",
+        "id": "01M7A9DFJ0QMFAGGXH5RG4WK67",
+        "link": "01M7A9DFJ0QMFAGGXH5QGPGHGN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: a git wrapper on PATH that hangs 'for-each-ref' (sleep 300); rhiza daemon --once ran 1m32s: each of the 3 hung git calls was killed at 30 s (no sleep left behind), the poll went on and the daemon exited 0. go test ./internal/api -run TestPollGit passes"
+        },
+        "handle": "poll-git-bounded-qa-2",
+        "id": "01M7A9DFJWZ9VDDQA0VXTRJRT8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFJWZ9VDDQA0VVSB1XCQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFJWZ9VDDQA0VVSB1XCQ",
+        "id": "01M7A9DFKRAT1Y6KSWP84SV6FZ",
+        "link": "01M7A9DFKRAT1Y6KSWP7A3EE3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: same hung-git run logged 'watchdog: poll took 1m31.563s, over its limit of 15s (3 times the 5s poll interval); slowest: p1 starts 30s, p1 demand 30s, p1 notify 30s'; with rhiza.daemon.watchdog.enabled=false no after-poll line. go test ./internal/api -run TestWatchdogPollBehind passes"
+        },
+        "handle": "poll-behind-names-steps-qa-2",
+        "id": "01M7A9DFMS439BZN8JT54HQX1Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFMS439BZN8JT1WC18R0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFMS439BZN8JT1WC18R0",
+        "id": "01M7A9DFPGK8WKBWPZFCS23R9S",
+        "link": "01M7A9DFPGK8WKBWPZFAAZ7V7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J38C50QZG2X4JNEC3S8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 2: hung-git run wrote exactly one 'watchdog: poll still running after 15s, in p1 demand' while the poll ran; none with the watchdog off and the hang in demand. But with rhiza.daemon.watchdog.enabled=false and a git config read hung in the first poll's p1 settings step, the daemon still wrote 'watchdog: poll still running after 15s, in p1 settings' (first poll watched under shipped defaults although the startup already read the settings)"
+        },
+        "handle": "poll-overrun-logged-live-qa-2",
+        "id": "01M7A9DFREC9T77YZQGGE4JH00",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFREC9T77YZQGF5A7VA0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFREC9T77YZQGF5A7VA0",
+        "id": "01M7A9DFSFARCG3FYSQJC1T0SW",
+        "link": "01M7A9DFSFARCG3FYSQEFEPAGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: strace -f sh -c 'true & exec rhiza daemon --once ...': the daemon image inherited the shell's exited child and waited on it by pid (wait4(<child>, WNOHANG) = <child>), the drivers list left empty, and the poll's own git programs still returned their output. go test ./cmd/rhiza -run TestReap passes"
+        },
+        "handle": "daemon-adopts-inherited-children-qa-2",
+        "id": "01M7A9DFTVVW22HM2J71CEY9N4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A9DFTVVW22HM2J6ZHZ1TCS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9DFTVVW22HM2J6ZHZ1TCS",
+        "id": "01M7A9DFW7VHFXRVWX790KWQDW",
+        "link": "01M7A9DFW7VHFXRVWX75BSPCBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01JB2302EDM0R0N111NEV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A9DFXA25WCMSFHT8642MAE",
+  "type": "ops",
+  "v": 1
+}
