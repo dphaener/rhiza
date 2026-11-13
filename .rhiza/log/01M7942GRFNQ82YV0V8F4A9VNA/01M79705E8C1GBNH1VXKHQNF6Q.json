@@ -1,0 +1,40 @@
+{
+  "actor": "01M796NET8EN89Y7W7AER5KXZG",
+  "after": [
+    "01M796HG2J29MC8C4RP6HVXGH8"
+  ],
+  "at": "2026-11-13T01:05:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza at b9d9f97e3 (go build ./cmd/rhiza) and, three times, drove a real two-leaf build run with it in a hermetic scratch Rhiza root (own HOME, git config, rhiza.toml; fake rex and claude copied from headless-run-agent-tabs.txtar, the fake claude verifier writing Evidence via rhiza add evidence + rhiza link verifies): rhiza run start --permission-mode manual --foreground --workflow ship-change. All three runs succeeded with both leaves 'passed: attempt 1: verifier passed', the two verifiers writing concurrently and no 'verifier ended with neither Evidence nor findings'. (The daemon --once path was held by the host's real load guard, so the run was started in the foreground.) Also go test -trimpath ./internal/api -run TestEvidenceReadsPastSessionWrites ok and go test -trimpath ./cmd/rhiza -run 'TestScripts/headless-run-agent-tabs$' -count=3 ok."
+        },
+        "handle": "verifier-verdict-reads-fresh-model-qa-1",
+        "id": "01M79705CEX83KBAW6N44H60GN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79705CEX83KBAW6N3288717",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79705CEX83KBAW6N3288717",
+        "id": "01M79705DJZZ25QFC3FP5GWSCC",
+        "link": "01M79705DJZZ25QFC3FM6W4AZ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M794A1BTCCFC0G1V1MPQ5V89",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7942GRFNQ82YV0V8F4A9VNA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79705E8C1GBNH1VXKHQNF6Q",
+  "type": "ops",
+  "v": 1
+}

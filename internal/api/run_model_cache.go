@@ -146,6 +146,7 @@ func (r *stepRunner) catchUpModel(root string) (*runModel, error) {
 	} else {
 		return rm, nil
 	}
+	r.catchUpNext = false
 	rm.checked = time.Now()
 	c := rm.x.LastCatchUp()
 	rm.caught.Fresh = rm.caught.Fresh && c.Fresh
@@ -227,7 +228,20 @@ func (r *stepRunner) refreshDue(rm *runModel) bool {
 		d = pollDebounce
 	}
 	now := time.Now()
+	if r.catchUpNext {
+		return true
+	}
 	return d < 0 || rm.checked.IsZero() || now.Sub(rm.checked) >= d || now.Before(r.writeUntil)
+}
+
+// settle makes the next read of the model catch the index up whatever the
+// debounce says. A session that has just ended wrote through the CLI, not
+// through the runner, so no wrote() lifted the debounce for it: its verdict
+// is read past its writes, never from an answer kept before them.
+func (r *stepRunner) settle() {
+	r.modelMu.Lock()
+	r.catchUpNext = true
+	r.modelMu.Unlock()
 }
 
 // wrote notes that the runner is about to write the model.

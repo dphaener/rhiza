@@ -1,0 +1,40 @@
+{
+  "actor": "01M795QZNG8S8VC456T963JQR1",
+  "after": [
+    "01M794ED2Z7M60H8ME4NKT3ZDX"
+  ],
+  "at": "2026-11-13T00:57:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 8e90ac317, in throwaway worktrees (not committed): with pollDebounce raised to 10s as the injected delay and r.settle() removed from stepRunner.Evidence, go test -trimpath ./cmd/rhiza -run 'TestScripts/headless-run-agent-tabs$' failed twice with 'verifier ended with neither Evidence nor findings' (the flake); with the same delay and the fix it passed 3 consecutive runs. Without the fix, go test ./internal/api -run TestEvidenceReadsPastSessionWrites failed (Evidence after the session's writes = false; want true). Without the delay, at the leaf commit: headless-run-agent-tabs -count=5 ok, go test -trimpath ./internal/api/... ok, go test -trimpath ./internal/run/... ok. The script has no skip or quarantine. Diff read: settle() under modelMu sets catchUpNext, refreshDue honours it, catchUpModel clears it after a catch-up."
+        },
+        "handle": "verifier-verdict-reads-fresh-model-verified",
+        "id": "01M796HG09F7H0CN6BM95X3R49",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M796HG09F7H0CN6BM7XZZSQY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M796HG09F7H0CN6BM7XZZSQY",
+        "id": "01M796HG16PST42PGMA2G2TQSZ",
+        "link": "01M796HG16PST42PGMA15YYAVQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M794A1BTCCFC0G1V1MPQ5V89",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7942GRFNQ82YV0V8F4A9VNA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M796HG2J29MC8C4RP6HVXGH8",
+  "type": "ops",
+  "v": 1
+}
