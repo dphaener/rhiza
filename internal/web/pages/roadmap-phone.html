@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap on a phone · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;font:600 12px/1 var(--font-mono)}
+.cs{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);min-height:44px;justify-content:center}
+.cs-top{display:flex;align-items:center;gap:8px}
+.cs-title{font:500 15px/22px var(--font-body);flex:1;min-width:0}
+.cs-sub{font:400 13px/18px var(--font-body);color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dp{font:400 13px/18px var(--font-mono);color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase;margin:12px 0 0}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="width: 390px; min-height: 1560px; box-sizing: border-box; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+<header style="display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: var(--panel); border-bottom: 1px solid var(--line);">
+  <b style="font: 380 22px/1 var(--font-display); letter-spacing: -0.02em;">Rhiza</b>
+  <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; margin-left: auto; border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 15px/1 var(--font-body);">rhiza <span class="cnt" style="background: var(--rose); color: var(--on-solid);">3</span></button>
+</header>
+<nav aria-label="Pages" style="display: flex; gap: 24px; height: 44px; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--line); font: 500 15px/1 var(--font-body);"><a href="home-phone.html" style="text-decoration: none;">Home</a><a href="run-phone.html" style="text-decoration: none;">Runs</a><a href="#" aria-current="page" style="color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 4px;">Roadmap</a></nav>
+
+<main style="display: flex; flex-direction: column; gap: 32px; padding: 32px 16px 48px;">
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <p class="rz-kicker" style="margin: 0;">rhiza · roadmap</p>
+    <h1 style="margin: 0; font: 380 32px/36px var(--font-display); letter-spacing: -0.02em;">3 milestones open</h1>
+    <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Newest plans last. Each milestone lists what "done" means, then its change sets.</p>
+  </div>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; border-color: var(--gold);">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0; color: var(--gold);">Milestone 35 · building</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Efficient build cycle</h2>
+    </div>
+    <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px;" aria-label="8 landed, 6 accepted, 1 withdrawn"><span style="flex: 8; background: var(--teal);"></span><span style="flex: 6; background: var(--teal); opacity: 0.42;"></span><span style="flex: 1; background: var(--ink-3); opacity: 0.55;"></span></div>
+    <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">8 landed · 6 accepted · 1 withdrawn</p>
+    <p class="dp">Building now</p>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Review role topics</span><span class="rz-pill rz-pill--running"><span class="rz-live-dot" aria-hidden="true"></span>build</span></span><span class="cs-sub">Review roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each.</span></a>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Plan role topics</span><span class="rz-pill rz-pill--waiting">stuck</span></span><span class="cs-sub">Plan roles get afk's shipit/forge prompts in Rhiza's words, one guide topic each.</span></a>
+    <p class="dp">Accepted, waiting</p>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Queue wait journal</span><span class="rz-pill rz-pill--accepted">accepted</span></span><span class="cs-sub">The daemon journals why an accepted change set waits before its run starts.</span></a>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Model lints in review</span><span class="rz-pill rz-pill--accepted">accepted</span></span><span class="cs-sub">Review's code step runs deterministic model lints before the model check.</span></a>
+    <a href="#" style="font: 500 15px/22px var(--font-body); padding-top: 4px;">2 more accepted, 8 landed →</a>
+  </section>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0;">Milestone 36 · planned</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Conductor workflow</h2>
+    </div>
+    <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px;" aria-label="4 proposed, 3 drafts"><span style="flex: 4; background: var(--ink-2); opacity: 0.5;"></span><span style="flex: 3; background: transparent; border: 1px dashed var(--line);"></span></div>
+    <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">4 proposed · 3 drafts · starts after 3 milestone-35 builds</p>
+    <details style="font: 400 14px/20px var(--font-body); color: var(--ink-2);">
+      <summary style="min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--teal); font-weight: 500;">Done when (6)</summary>
+      <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;"><li>One conductor session conducts a change set end to end</li><li>Start to merge in 40 minutes or less, planning included</li><li>At most 1 run in 10 needs a person</li></ul>
+    </details>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Agent contract</span><span class="rz-pill rz-pill--proposed">proposed</span></span><span class="cs-sub">Every agent session gets one gate-checked contract and its context in files.</span></a>
+    <a class="cs" href="change-set-phone.html"><span class="cs-top"><span class="cs-title">Spawn, gate, hand-back</span><span class="rz-pill rz-pill--proposed">proposed</span></span><span class="cs-sub">The daemon offers spawn, gate and hand-back primitives.</span></a>
+    <a href="#" style="font: 500 15px/22px var(--font-body); padding-top: 4px;">5 more →</a>
+  </section>
+
+  <section class="rz-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p class="rz-kicker" style="margin: 0;">Milestone 37 · designing</p>
+      <h2 style="margin: 0; font: 380 20px/26px var(--font-display);">Web UI redesign</h2>
+    </div>
+    <p style="margin: 0; font: 400 13px/18px var(--font-mono); color: var(--ink-3);">7 drafts · designs in review with you</p>
+  </section>
+
+  <a href="#" style="font: 500 15px/22px var(--font-body);">34 earlier milestones done →</a>
+</main>
+</div>
+</body>
+</html>

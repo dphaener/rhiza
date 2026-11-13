@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frame and spacing · Rhiza</title>
+<!-- Design reference, milestone 37 (approved by the owner 2026-11-13). Source canvas: https://claude.ai/artifact/B2TEoC8RNuS5wWWdkoxo7a -->
+<link rel="icon" href="../static/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../static/css/rhiza-tokens.css">
+<link rel="stylesheet" href="../static/css/rhiza.css">
+<style>
+body{margin:0;background:var(--ground)}
+a{color:var(--teal)}a:hover{color:var(--ink)}
+.gap{display:flex;align-items:center;gap:8px;font:400 12px/16px var(--font-mono);color:var(--gold)}
+.gap i{display:block;width:1px;background:var(--gold);opacity:.7}
+.rule-row td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:999px;font:500 15px/1 var(--font-body);text-decoration:none;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.btn--you{border-color:var(--rose);background:var(--rose-soft);color:var(--rose)}
+.btn--quiet{color:var(--teal)}
+</style>
+</head>
+<body class="rz">
+<div class="rz" data-theme="dark" style="width: 1100px; height: 1180px; box-sizing: border-box; padding: 48px; display: flex; flex-direction: column; gap: 48px; background: var(--ground); color: var(--ink); font-family: var(--font-body);">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <p class="rz-kicker" style="margin: 0;">Frame and spacing</p>
+    <h1 style="margin: 0; font: 380 36px/40px var(--font-display); letter-spacing: -0.02em;">One rhythm for every screen</h1>
+    <p style="margin: 0; max-width: 680px; font: 400 17px/1.6 var(--font-body); color: var(--ink-2);">Today each page spaces its heads its own way. These rules fix the gaps once, as tokens, so a kicker, a title and the panel under it always sit the same distance apart.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px;">
+
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <p class="rz-kicker" style="margin: 0;">Vertical rhythm, shown</p>
+      <div style="display: flex; gap: 16px;">
+        <div style="display: flex; flex-direction: column; flex: 1; padding: 24px; border: 1px dashed var(--line); border-radius: 12px;">
+          <p class="rz-kicker" style="margin: 0;">Needs you</p>
+          <div class="gap" style="height: 12px;"><i style="height: 12px;"></i>space-3 · 12</div>
+          <h2 style="margin: 0; font: 380 28px/34px var(--font-display); letter-spacing: -0.015em;">3 things need you</h2>
+          <div class="gap" style="height: 12px;"><i style="height: 12px;"></i>space-3 · 12</div>
+          <p style="margin: 0; font: 400 15px/22px var(--font-body); color: var(--ink-2);">Oldest first.</p>
+          <div class="gap" style="height: 32px;"><i style="height: 32px;"></i>space-6 · 32</div>
+          <div class="rz-panel" style="padding: 24px; display: flex; flex-direction: column;">
+            <p class="rz-kicker" style="margin: 0;">Running now</p>
+            <div class="gap" style="height: 4px;"><i style="height: 4px;"></i>4</div>
+            <h3 style="margin: 0; font: 380 20px/26px var(--font-display);">3 runs, 2 of 2 slots</h3>
+            <div class="gap" style="height: 16px;"><i style="height: 16px;"></i>space-4 · 16</div>
+            <div style="height: 44px; border-top: 1px solid var(--line); display: flex; align-items: center; font: 400 14px/20px var(--font-body); color: var(--ink-2);">a row · 10 above and below</div>
+          </div>
+          <div class="gap" style="height: 24px;"><i style="height: 24px;"></i>space-5 · 24</div>
+          <div class="rz-panel" style="height: 48px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+      <p class="rz-kicker" style="margin: 0;">The rules</p>
+      <table style="width: 100%; border-collapse: collapse; font: 400 14px/20px var(--font-body); color: var(--ink-2);">
+        <tbody>
+          <tr class="rule-row"><td style="color: var(--ink);">Header</td><td>56px on a phone, 52px on desktop; 16px side padding; sticky</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Header to page head</td><td>space-6 (32) on a phone, space-7 (48) on desktop</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Kicker to page title</td><td>space-3 (12)</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Page title to its line</td><td>space-3 (12)</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Page head to content</td><td>space-6 (32)</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Panel kicker to panel title</td><td>4, never more</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Panel title to content</td><td>space-4 (16)</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Between panels</td><td>space-5 (24); between page sections space-6 (32)</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Panel padding</td><td>space-4 (16) on a phone, space-5 (24) on desktop</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">List rows</td><td>10 above and below, 1px line between; 44px minimum when the row is tappable</td></tr>
+          <tr class="rule-row"><td style="color: var(--ink);">Spacing method</td><td>Gaps on the parent (flex or grid gap), never margins on children; headings carry margin 0</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px;">
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <p class="rz-kicker" style="margin: 0;">Actions · new to the system</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="#" class="btn btn--you">Answer</a>
+        <a href="#" class="btn btn--you">Approve</a>
+        <a href="#" class="btn">Pause daemon</a>
+        <a href="#" class="btn btn--quiet">Open run</a>
+      </div>
+      <p style="margin: 0; font: 400 14px/20px var(--font-body); color: var(--ink-2);">Rose for what only you can do (answer, approve); outline for pause and resume; teal text for going somewhere. 44px tall everywhere, pill radius. Every action asks for the web token once per device and says what it did afterwards: "Answered. The run continues."</p>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <p class="rz-kicker" style="margin: 0;">Titles</p>
+      <p style="margin: 0; font: 400 14px/20px var(--font-body); color: var(--ink-2);">Lists show a change set's short title, never its intent sentence. The intent goes under it, two lines at most:</p>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel);">
+        <span style="font: 500 15px/22px var(--font-body);">Tiered verifier</span>
+        <span style="font: 400 13px/18px var(--font-body); color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Build verifiers run on a cheaper model for low-risk leaves and on the strongest model for risky ones (test infrastructure, hooks, CI, workflows), with the tier recorded on the leaf.</span>
+      </div>
+    </section>
+  </div>
+
+</div>
+</body>
+</html>
