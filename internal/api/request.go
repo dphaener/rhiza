@@ -361,7 +361,13 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 			if q.Run != "" {
 				continue
 			}
-			if sk, bad := requestUnresolved(ctx.Root, q); bad {
+			sk, bad := requestUnresolved(ctx.Root, q)
+			if !bad {
+				// A plan run whose workflow names a skill the held guide
+				// lacks is not started while the hold stands.
+				sk, bad = guideRequestSkipOf(ctx, q)
+			}
+			if bad {
 				unresolved[q.ID] = true
 				if skips != nil {
 					addDaemonSkip(skips, sk)

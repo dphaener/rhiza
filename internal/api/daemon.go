@@ -167,6 +167,9 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	projs := map[string]*daemonProj{}
+	// gate holds the starts that need a skill of a guide the refresh below
+	// could not bring current; every project's ctx carries it.
+	var gate *guideGate
 	// project is the daemon's working state for a registered project,
 	// made when it first sees it initialised and kept from poll to poll.
 	project := func(name, dir string) (*daemonProj, error) {
@@ -181,12 +184,25 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		p.ctx.guideGate = gate
 		projs[name] = p
 		return p, nil
 	}
 	_, err = project(homeName, homeCtx.Root)
 	if err != nil {
 		return nil, err
+	}
+	// Before any poll starts a session: the guides installed for an older
+	// binary are rewritten, so a start command's skill is there.
+	guideScopes := refreshGuides(ctx, root, reg, func(line string) {
+		if ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
+		}
+	})
+	// A scope it could not refresh holds the starts that need its skills.
+	gate = newGuideGate(ctx, guideScopes)
+	for _, p := range projs {
+		p.ctx.guideGate = gate
 	}
 	defer func() {
 		for _, p := range projs {
@@ -527,6 +543,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
 	items = append(items, machineHoldItems(state.MachineHold, ctx.Now())...)
+	items = append(items, guideHoldItems(state.GuideHolds)...)
 	if common, err := gitCommonDir(ctx); err == nil {
 		items = append(items, mainStaleItems(common)...)
 		items = append(items, workflowItems(common, state.Skips)...)
@@ -634,7 +651,7 @@ func inboxNotice(what string, it InboxItem) string {
 		return "machine load is high: the daemon holds new starts and resumes"
 	case InboxMemoryLow:
 		return "available memory is low: the daemon holds new starts and resumes"
-	case InboxWorkflow:
+	case InboxWorkflow, InboxGuideStale:
 		return it.Detail
 	case InboxMainStale:
 		return what + ": main was not updated after the merge: " + it.Detail
@@ -836,7 +853,12 @@ func daemonResumable(ctx *Ctx, rs *run.Store, runs []run.Journal, fold *daemonFo
 			}
 		}
 	}
-	return resumable
+	// A run whose workflow names a skill the held guide lacks is not
+	// resumed while the hold stands.
+	return slices.DeleteFunc(resumable, func(id string) bool {
+		i := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == id })
+		return i >= 0 && guideHoldsRun(ctx, runs[i])
+	})
 }
 
 // daemonSlotKept details a no-slot skip whose slot is kept for a queued
@@ -1082,6 +1104,13 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		var unresolved []daemon.Skip
 		cands, unresolved = daemonUnresolvedReady(ctx, fold, cands)
 		planSkips = append(planSkips, unresolved...)
+		cands = slices.DeleteFunc(cands, func(cs string) bool {
+			sk, held := guideSkipOf(ctx, fold, cs)
+			if held {
+				planSkips = append(planSkips, sk)
+			}
+			return held
+		})
 		picked = daemon.Pick(cands, runs, held, host, nil, shipMax, ship)
 		shipSkips := daemon.Skips(cands, runs, held, host, nil, shipMax, ship)
 		if shipMax < max {
@@ -1261,7 +1290,7 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 			if !daemonContinueCanStart(rs, runs, c) {
 				continue
 			}
-			if running >= max {
+			if running >= max || guideHoldsRun(ctx, runs[slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == c.Run })]) {
 				keep = append(keep, c)
 				continue
 			}
@@ -1572,7 +1601,7 @@ type DaemonEvent struct {
 // poll.
 type DaemonSkip struct {
 	Change  string   `json:"change" desc:"The change set's ID; empty for a queued request that was not started"`
-	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve"`
+	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide"`
 	Title   string   `json:"title" desc:"The change set's display title, or the request's text"`
 	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved"`
 	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
@@ -1596,6 +1625,7 @@ var skipText = map[string]string{
 	daemon.SkipPaused:       "paused",
 	daemon.SkipShipOwner:    "ship is set to owner: only the owner starts its run",
 	daemon.SkipWorkflow:     "its workflow does not resolve: no run started",
+	daemon.SkipGuideStale:   "a skill its workflow starts is missing from the installed guide: no run started",
 }
 
 // DaemonProjectSkip is a registered project the root daemon did not work at

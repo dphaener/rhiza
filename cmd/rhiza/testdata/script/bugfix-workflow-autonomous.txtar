@@ -19,6 +19,7 @@ chmod 755 bin/gh
 env PATH=$WORK/bin:$PATH
 env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 env CLAUDE_CONFIG_DIR=$WORK/claude
+exec sh -c 'mkdir -p "$WORK/claude" && cp -r "$HOME/.claude/commands" "$WORK/claude/commands"'
 env RHIZA_TEST_FREE_BYTES=1099511627776
 mkdir $HOME/.claude/projects/p
 exec git init -q --bare origin.git

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T08:15:35Z",
+  "body": {
+    "intent": "Record agent actor claude-code-c2d68070 for session c2d68070-0afd-4a93-b69d-01a1d3f9c962",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M79ZKTVWPRYBR1V2KD58G8FD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79ZKTVWPRYBR1V2KDKJM15G",
+  "type": "open",
+  "v": 1
+}

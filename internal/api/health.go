@@ -48,6 +48,7 @@ const (
 	HealthDisk      = "disk"
 	HealthLoad      = "load"
 	HealthUsage     = "usage"
+	HealthGuide     = "guide"
 	HealthMain      = "main"
 	HealthCI        = "ci"
 	HealthSchedules = "schedules"
@@ -66,7 +67,7 @@ type HealthRequest struct {
 // HealthPart is one part of the system and its state.
 type HealthPart struct {
 	Project  string   `json:"project,omitempty" desc:"The registered project the part belongs to, on a report that covers every project; absent on the machine's parts and on a single project's report"`
-	Part     string   `json:"part" enum:"daemon,autonomy,machine,disk,load,usage,main,ci,schedules,inbox,requests,roadmap,check" desc:"The part"`
+	Part     string   `json:"part" enum:"daemon,autonomy,machine,disk,load,usage,guide,main,ci,schedules,inbox,requests,roadmap,check" desc:"The part"`
 	State    string   `json:"state" enum:"ok,warn,bad" desc:"ok, warn (worth a look) or bad (rhiza health exits 1)"`
 	Summary  string   `json:"summary" desc:"One line on the part's state"`
 	Live     *int     `json:"live,omitempty" desc:"On the daemon part: the runs running now, summed across the daemon's projects; an interrupted run takes no slot"`
@@ -79,7 +80,7 @@ type HealthPart struct {
 // HealthResponse is the report.
 type HealthResponse struct {
 	State string       `json:"state" enum:"ok,warn,bad" desc:"The worst state of any part"`
-	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
+	Parts []HealthPart `json:"parts" desc:"Every part, in a fixed order: daemon, autonomy, machine, disk, load, usage, guide, then main, ci, schedules (only for a project with schedules), inbox, requests, roadmap and check, once for the project or, over every project, once for each in name order tagged with its project"`
 }
 
 // ExitCode is 1 when a part is bad, else 0.
@@ -180,6 +181,7 @@ func runHealth(ctx *Ctx, req any) (any, error) {
 		healthDisk(mctx, settings, serr),
 		healthLoad(mctx, settings, serr),
 		healthUsage(mctx, settings, serr),
+		healthGuide(mctx, scopes),
 	}
 	daemonUp := false
 	if out, err := runDaemonStatus(ctx, DaemonStatusRequest{All: merged}); err == nil {
@@ -750,4 +752,54 @@ func healthWorkflowAutonomy(ctx *Ctx) []string {
 		out = append(out, fmt.Sprintf("workflow %s (%s): %s", n, file, strings.Join(stages, ", ")))
 	}
 	return out
+}
+
+// healthGuide is warn while an installed guide (the user's, or a covered
+// project's) is not current for the running rhiza: an older version, or
+// plugin files that differ or are missing, such as a skill a workflow's
+// start command names. It is ok otherwise, also with no guide installed,
+// and never bad.
+func healthGuide(ctx *Ctx, scopes []inboxScope) HealthPart {
+	type place struct{ label, base, next string }
+	var places []place
+	if ctx.Home != "" {
+		places = append(places, place{"user", ctx.Home, guideInstallNext})
+	}
+	seen := map[string]bool{}
+	for _, sc := range scopes {
+		if sc.ctx == nil || sc.ctx.Root == "" || seen[sc.ctx.Root] {
+			continue
+		}
+		seen[sc.ctx.Root] = true
+		label := "project"
+		if sc.name != "" {
+			label += " " + sc.name
+		}
+		places = append(places, place{label, sc.ctx.Root, guideInstallNext + " --project"})
+	}
+	var detail, nexts []string
+	installed := 0
+	for _, p := range places {
+		dir := filepath.Join(p.base, ".claude", "skills", "rhiza")
+		v, ok := installedVersion(dir)
+		if !ok {
+			continue
+		}
+		installed++
+		if v == ctx.Version && pluginCurrent(dir, ctx.Version) {
+			continue
+		}
+		why := "version " + v + " is not " + ctx.Version
+		if v == ctx.Version {
+			why = "files differ from version " + v + " or a skill is missing"
+		}
+		detail = append(detail, p.label+" guide in "+dir+": "+why+"; run "+p.next)
+		nexts = append(nexts, p.next)
+	}
+	if len(detail) == 0 {
+		return HealthPart{Part: HealthGuide, State: HealthOK, Summary: fmt.Sprintf("%d installed guide(s) current", installed)}
+	}
+	return HealthPart{Part: HealthGuide, State: HealthWarn,
+		Summary: "an installed guide is out of date for rhiza " + ctx.Version,
+		Detail:  detail, Next: nexts[0]}
 }

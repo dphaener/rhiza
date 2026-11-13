@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A155HBTXVKDGMVV4EHA0ZW",
+  "after": [
+    "01M7A0C5B6QYCX2WN6YDF2ZNX6"
+  ],
+  "at": "2026-11-13T09:14:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4d9ba18ce re-ran the commit's Checks: go test -trimpath ./internal/api/... -run DaemonGuideHold (TestDaemonGuideHold PASS, exit 0); go test -trimpath ./internal/api/... (exit 0, 864s with -timeout 40m: the default 10m timed out in unrelated TestUsageHoldStopsEveryLaunch under host load 13 on 4 cores); go test -trimpath ./internal/daemon/... (exit 0); rhiza ship generate and rhiza render (exit 0, tree unchanged); plus TestScripts describe-golden/inbox (exit 0). Read the diff: guideGate keeps the failed or tracked-skipped scopes from refreshGuides, guideSkipOf skips a change set whose workflow start command names a guide skill missing from every installed guide (SkipGuideStale, in daemonPoll1 and daemonDemand), state.GuideHolds feeds one guide-stale inbox item per scope naming the scope, the error (the committed-in-repo text for a tracked project guide) and rhiza guide install --agent claude (--project for a project scope), and holds drop once pluginCurrent. The test makes the user skills folder unwritable, shows no start, the skip, and exactly one item over 3 polls, then after guide install the next poll starts the target with no item. No stubs or TODOs; changes stay in the leaf's scope."
+        },
+        "handle": "daemon-holds-steps-on-stale-guide-verified",
+        "id": "01M7A2ZMP543BZCSCBDB55NSZ3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A2ZMNXPDSPX3118753VC21",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A2ZMNXPDSPX3118753VC21",
+        "id": "01M7A2ZMR5BX56APV24B80495B",
+        "link": "01M7A2ZMR5BX56APV249RM14TZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A2ZMVKNADDRYJZDGM15XFV",
+  "type": "ops",
+  "v": 1
+}

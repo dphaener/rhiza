@@ -6,6 +6,7 @@
 env REX_SESSION=
 env REX_SERVER=
 env CLAUDE_CONFIG_DIR=$WORK/claude
+exec sh -c 'mkdir -p "$WORK/claude" && cp -r "$HOME/.claude/commands" "$WORK/claude/commands"'
 mkdir claude repo
 cd repo
 exec git init -q -b main

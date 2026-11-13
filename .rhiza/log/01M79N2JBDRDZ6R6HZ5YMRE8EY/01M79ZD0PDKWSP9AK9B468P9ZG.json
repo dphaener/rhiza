@@ -1,0 +1,40 @@
+{
+  "actor": "01M79Z7Z8JH7ZE6N4YP4CB0J4Y",
+  "after": [
+    "01M79Z3M6N65WNMGWEJE060NZA"
+  ],
+  "at": "2026-11-13T08:11:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1cec42d08 re-ran every Checks: command, all exit 0: go test -trimpath ./internal/api/... -run HealthGuide (TestHealthGuide, TestHealthGuideAfterUsage PASS), go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden, go test -trimpath ./internal/api/... -run Health, go test -trimpath ./cmd/rhiza -run 'TestScripts/(health|daemon-version-in-health|watchdog-health)', rhiza ship generate (0 changed), rhiza render (no tracked diff); go vet and gofmt clean. Diff read: healthGuide in internal/api/health.go is placed right after healthUsage, checks the user scope and each covered project root via installedVersion/pluginCurrent, warns with detail per stale install and next 'rhiza guide install --agent claude' (plus --project for a project scope), is ok with none installed, never bad. Tests cover none (ok), current (ok), older version (warn+next), missing skills/rhiza-builder (warn), stale project scope (warn with --project), order after usage and exit 0. describe-golden and docs/reference/cli.md updated for the guide enum value. No stubs or TODOs; nothing outside the leaf changed besides the builder's actor record."
+        },
+        "handle": "health-guide-part-verified",
+        "id": "01M79ZD0B8T43M379J3SBW8RBV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79ZD0B8T43M379J3P0DT6F2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79ZD0B8T43M379J3P0DT6F2",
+        "id": "01M79ZD0HVTCXGBVH93N8BXADK",
+        "link": "01M79ZD0HVTCXGBVH93MZQ617F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZPB651MRDDMV3S2GYJZ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79ZD0PDKWSP9AK9B468P9ZG",
+  "type": "ops",
+  "v": 1
+}

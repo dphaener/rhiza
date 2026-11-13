@@ -42,6 +42,7 @@ const (
 	SkipShipOwner    = "ship-owner"
 	SkipPaused       = "paused"
 	SkipWorkflow     = "workflow-unresolved"
+	SkipGuideStale   = "guide-stale"
 )
 
 // Ship says which succeeded runs mean a change set has shipped: those of
@@ -72,8 +73,8 @@ func (s Ship) shipped(st run.State) bool {
 // Skip is an accepted change set the daemon does not start, and why.
 type Skip struct {
 	Change string `json:"change,omitempty"`
-	// Request is the queued request a workflow-unresolved skip is about;
-	// then Change is empty and Title is the request's text.
+	// Request is the queued request a workflow-unresolved or guide-stale
+	// skip is about; then Change is empty and Title is the request's text.
 	Request string `json:"request,omitempty"`
 	// Title is the change set's display title, filled in by the poll.
 	Title string `json:"title,omitempty"`
