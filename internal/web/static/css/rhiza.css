@@ -339,9 +339,10 @@ a.rz-session-who:hover b { color: var(--teal); }
 
 /* ── 390px ──────────────────────────────────────────── */
 @media (max-width: 720px) {
-  .rz-header { padding: 0 var(--space-4); gap: var(--space-3); height: auto; min-height: var(--header-h); flex-wrap: wrap; row-gap: 0; }
+  .rz-header { padding: 0 var(--space-4); gap: var(--space-3); height: auto; min-height: 56px; flex-wrap: wrap; row-gap: 0; }
   .rz-header-end { gap: 8px; }
-  .rz-nav { order: 3; width: 100%; height: 40px; gap: var(--space-5); border-top: var(--rule) solid var(--line); margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); width: calc(100% + 2 * var(--space-4)); }
+  .rz-nav { order: 3; width: 100%; height: 44px; gap: var(--space-5); border-top: var(--rule) solid var(--line); margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); width: calc(100% + 2 * var(--space-4)); }
+  .rz-wordmark { height: 56px; align-items: center; }
   .rz-wordmark span { display: none; }
   .rz-hide-sm { display: none !important; }
   .rz-pagehead h1 { font-size: var(--fs-32); line-height: var(--lh-36); }
@@ -377,7 +378,7 @@ a.rz-session-who:hover b { color: var(--teal); }
 
 
 /* project picker: a bottom sheet on a phone, a menu under the header on desktop */
-.rz-picker-btn { height: 32px; padding: 0 var(--space-3); border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 var(--fs-14)/var(--lh-1) var(--font-body); cursor: pointer; }
+.rz-picker-btn { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 var(--space-3); border: 1px solid var(--line); border-radius: 999px; background: var(--ground); color: var(--ink); font: 500 var(--fs-14)/var(--lh-1) var(--font-body); cursor: pointer; }
 .rz-picker-host { position: fixed; inset: 0; z-index: 50; }
 .rz-picker-scrim { position: absolute; inset: 0; background: var(--ground); opacity: .6; }
 .rz-picker { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; max-height: 80vh; overflow: auto; border-radius: 20px 20px 0 0; background: var(--panel); border-top: 1px solid var(--line); }

@@ -15,7 +15,8 @@ import (
 func WebProjectHandler(base *Ctx) http.Handler {
 	snap := *base
 	health := NewWebHealth(&snap)
-	return web.HandlerWithMilestones(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
+	needs := func() int { return len(WebNeedsYou(&snap, time.Now())) }
+	return web.HandlerWithNeedsYou(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), needs, ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
 }
 
 // WebRootHandler is the one web UI of the root daemon: the all-projects
