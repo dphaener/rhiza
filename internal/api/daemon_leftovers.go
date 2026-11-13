@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
@@ -16,13 +17,23 @@ import (
 // is gone, and old scratch folders of sessions that belong to no live run,
 // in each project whose git common dir is in commons (every project the
 // daemon serves). It writes one stderr line with what was freed, only when
-// something was.
+// something was. The sweep runs on a goroutine of its own, so a slow disk
+// never holds up the poll; none starts while one runs.
 func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule, commons []string) {
-	now := ctx.Now()
-	if !sched.Due(now, 0, 0, false) {
+	if !sched.Start(ctx.Now(), 0, 0, false) {
 		return
 	}
-	sched.Done(now)
+	c := *ctx
+	commons = slices.Clone(commons)
+	go func() {
+		defer sched.Finish()
+		sweepLeftoversNow(&c, commons)
+	}()
+}
+
+// sweepLeftoversWork does the sweep's disk work and returns what it freed;
+// a test replaces it to hold the sweep.
+var sweepLeftoversWork = func(ctx *Ctx, commons []string) (index.Pruned, leftovers.Freed) {
 	var idx index.Pruned
 	if dir, err := index.IndexDir(); err == nil {
 		idx = index.PruneOrphans(dir)
@@ -38,6 +49,12 @@ func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule, commons []strin
 		scr.Folders += f.Folders
 		scr.Bytes += f.Bytes
 	}
+	return idx, scr
+}
+
+// sweepLeftoversNow runs one sweep and writes its stderr line.
+func sweepLeftoversNow(ctx *Ctx, commons []string) {
+	idx, scr := sweepLeftoversWork(ctx, commons)
 	if (idx.Files > 0 || scr.Folders > 0) && ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon: leftovers sweep freed %s: %d index databases, %d session scratch folders\n",
 			daemon.FormatSize(uint64(idx.Bytes+scr.Bytes)), idx.Files, scr.Folders)

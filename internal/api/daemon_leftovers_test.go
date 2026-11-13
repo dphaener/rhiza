@@ -5,11 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/index"
+	"github.com/dphaener/rhiza/internal/leftovers"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -131,6 +133,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 
 	var sched daemon.SweepSchedule
 	daemonSweepLeftovers(ctx, &sched, commons)
+	sched.Wait()
 
 	for _, sid := range gone {
 		if _, err := os.Stat(scratch[sid]); !os.IsNotExist(err) {
@@ -159,6 +162,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	mk("s-later-old", "run-ended", old)
 	now = now.Add(59 * time.Minute)
 	daemonSweepLeftovers(ctx, &sched, commons)
+	sched.Wait()
 	if _, err := os.Stat(scratch["s-later-old"]); err != nil {
 		t.Fatalf("a sweep within the hour removed %s: %v", "s-later-old", err)
 	}
@@ -169,6 +173,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	// An hour after the first, it runs again.
 	now = now.Add(time.Minute)
 	daemonSweepLeftovers(ctx, &sched, commons)
+	sched.Wait()
 	if _, err := os.Stat(scratch["s-later-old"]); !os.IsNotExist(err) {
 		t.Fatalf("the hourly sweep left %s: %v", "s-later-old", err)
 	}
@@ -178,4 +183,59 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	if _, err := os.Stat(scratch["s-live-old"]); err != nil {
 		t.Fatalf("a live run's scratch went on the second sweep: %v", err)
 	}
+}
+
+// TestDaemonSweepLeftoversOffPoll holds the sweep on a channel: the poll's
+// step returns at once, a second due poll starts no second sweep, and the
+// freed line is written once the sweep is released.
+func TestDaemonSweepLeftoversOffPoll(t *testing.T) {
+	now := time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC)
+	var mu sync.Mutex
+	var stderr bytes.Buffer
+	ctx := &Ctx{Now: func() time.Time { return now }, Stderr: lockedWriter{&mu, &stderr}}
+	release := make(chan struct{})
+	started := make(chan struct{}, 4)
+	old := sweepLeftoversWork
+	defer func() { sweepLeftoversWork = old }()
+	sweepLeftoversWork = func(*Ctx, []string) (index.Pruned, leftovers.Freed) {
+		started <- struct{}{}
+		<-release
+		return index.Pruned{}, leftovers.Freed{Folders: 2, Bytes: 10}
+	}
+	var sched daemon.SweepSchedule
+	returned := make(chan struct{})
+	go func() { daemonSweepLeftovers(ctx, &sched, nil); close(returned) }()
+	<-returned // returns while the sweep is still blocked
+	<-started
+	now = now.Add(2 * time.Hour)
+	daemonSweepLeftovers(ctx, &sched, nil)
+	select {
+	case <-started:
+		t.Fatal("a second sweep started while one runs")
+	default:
+	}
+	mu.Lock()
+	if stderr.Len() != 0 {
+		t.Fatalf("logged before release: %q", stderr.String())
+	}
+	mu.Unlock()
+	close(release)
+	sched.Wait()
+	mu.Lock()
+	defer mu.Unlock()
+	want := "rhiza: daemon: leftovers sweep freed " + daemon.FormatSize(10) + ": 0 index databases, 2 session scratch folders\n"
+	if stderr.String() != want {
+		t.Fatalf("stderr = %q, want %q", stderr.String(), want)
+	}
+}
+
+type lockedWriter struct {
+	mu *sync.Mutex
+	b  *bytes.Buffer
+}
+
+func (w lockedWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.b.Write(p)
 }
