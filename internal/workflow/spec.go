@@ -86,7 +86,7 @@ type PromptPlaceholder struct {
 // PromptPlaceholders lists the placeholders for each kind of prompt.
 func PromptPlaceholders() []PromptPlaceholder {
 	return []PromptPlaceholder{
-		{"agent step prompt", placeholders},
+		{"agent step prompt", agentPlaceholders},
 		{"leaves builder and verifier, checks verifier", leafPlaceholders},
 		{"checks check and critic", checkPlaceholders},
 		{"checks fixer", fixerPlaceholders},

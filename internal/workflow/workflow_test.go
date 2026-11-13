@@ -925,8 +925,8 @@ func TestLeavesStepRefused(t *testing.T) {
 			`step "build": a leaves step cannot have until`},
 		{"until_when on a leaves step", leavesBase + "until_when = \"done\"\n" + builder + verifier,
 			`step "build": a leaves step cannot have until_when`},
-		{"leaf placeholder on an agent step", "[step.a]\nkind = \"agent\"\nprompt = \"do {leaf}\"\n",
-			`step "a": prompt uses unknown placeholder {leaf}`},
+		{"check placeholder on an agent step", "[step.a]\nkind = \"agent\"\nprompt = \"do {check}\"\n",
+			`step "a": prompt uses unknown placeholder {check}`},
 		{"bad outcome", leavesBase + "on.timeout = \"done\"\n" + builder + verifier,
 			`step "build": on.timeout: a leaves step has no outcome "timeout"; want on.pass or on.fail`},
 	} {
@@ -2545,6 +2545,11 @@ handback = "again: {handback} for {run}"
 kind = "agent"
 prompt = "old {change}"
 
+[step.leafy]
+kind = "agent"
+invoke = "do [{leaf}] [{attempt}]"
+handback = "again [{leaf}] [{attempt}]"
+
 [step.build]
 kind = "leaves"
 [step.build.builder]
@@ -2585,6 +2590,13 @@ handback = "reverify {leaf}"
 	}
 	if got := d.Steps["alias"].RenderPrompt(pv); got != "old C" {
 		t.Errorf("prompt alias = %q", got)
+	}
+	leafy := d.Steps["leafy"]
+	if got := leafy.RenderPrompt(pv); got != "do [] []" {
+		t.Errorf("agent step {leaf} {attempt} invoke = %q, want them empty", got)
+	}
+	if got := leafy.RenderHandback(pv); got != "again [] []" {
+		t.Errorf("agent step {leaf} {attempt} handback = %q, want them empty", got)
 	}
 
 	b := d.Steps["build"]

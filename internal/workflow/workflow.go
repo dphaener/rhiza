@@ -120,8 +120,12 @@ var (
 	placeholderPattern = regexp.MustCompile(`\{([A-Za-z0-9_]+)\}`)
 )
 
-// Placeholders an agent step's prompt may use.
+// Placeholders every prompt may use.
 var placeholders = []string{"change", "slug", "title", "run", "step", "brief", "slice", "handback", "worktree"}
+
+// Placeholders an agent step's prompt may use; {leaf} and {attempt} render
+// empty, since an agent step builds no leaf.
+var agentPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
 
 // Placeholders a leaves step's builder or verifier prompt may use, and a
 // checks step's verifier.
@@ -1123,12 +1127,12 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	switch fs.Kind {
 	case KindAgent:
 		if strings.TrimSpace(fs.Prompt) == "" {
-			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(placeholders, "}, {"))
+			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(agentPlaceholders, "}, {"))
 		}
 		for _, t := range []struct{ key, text string }{{"prompt", fs.Prompt}, {"handback", fs.Handback}} {
 			for _, m := range placeholderPattern.FindAllStringSubmatch(t.text, -1) {
-				if !slices.Contains(placeholders, m[1]) {
-					return fail("%s uses unknown placeholder {%s}; want one of {%s}", t.key, m[1], strings.Join(placeholders, "}, {"))
+				if !slices.Contains(agentPlaceholders, m[1]) {
+					return fail("%s uses unknown placeholder {%s}; want one of {%s}", t.key, m[1], strings.Join(agentPlaceholders, "}, {"))
 				}
 			}
 		}

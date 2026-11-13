@@ -157,7 +157,7 @@ A role (a builder, verifier, critic or fixer table, or one check) takes:
 
 A prompt may use only these names in braces, such as `{change}`:
 
-- agent step prompt: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}
+- agent step prompt: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
 - leaves builder and verifier, checks verifier: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
 - checks check and critic: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {check}, {cycle}
 - checks fixer: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {cycle}
