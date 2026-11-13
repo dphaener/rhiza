@@ -77,3 +77,5 @@ Keep every trailer, `Co-Authored-By:` included, in the one final paragraph, no b
 
 The ship run reaches you after its local gate or pre-push check failed before a push. You
 run at most twice, so a third failed head fails the run.
+
+<!-- shared: contract-ref -->

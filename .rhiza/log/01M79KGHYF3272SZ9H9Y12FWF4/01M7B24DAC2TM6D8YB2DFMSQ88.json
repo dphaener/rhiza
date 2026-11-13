@@ -1,0 +1,132 @@
+{
+  "actor": "01M7B1S377FW80HKWPC514G7Y0",
+  "after": [
+    "01M7B1NPNKFKBVTVSAZ703TC05"
+  ],
+  "at": "2026-11-13T18:18:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build (go build -trimpath) in a hermetic Rhiza root with fake rex/claude: agent step invoke using every placeholder rendered as the first prompt ({leaf}/{attempt} empty, {brief}/{slice}/{handback} the session's build-1/agent/ paths); leaves builder at attempts 2 and 3 got rendered invoke then the attempt line; checks step check and critic invoke with {leaf}/{attempt} (the cycle-2 fix) pass workflow check and render empty; leaf fixer got rendered invoke with {leaf} and {attempt} then its confirmed-findings lines, change set fixer the same with {leaf} empty and Review: trailer line. workflow check refuses {check} in a fixer and a builder, {cycle} in an agent step, {bogus} in a critic handback, prompt+invoke on a verifier, handback on a command step, each naming it (exit 1). Scoped tests TestInvokeTemplate, TestInvokePrompt, TestScripts/workflow-invoke ok."
+        },
+        "handle": "agent-invoke-template-qa-2",
+        "id": "01M7B24CRG3QK8YHRNS95EYR4Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B24CRFZAWTR93YSMHB6KQ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B24CRFZAWTR93YSMHB6KQ5",
+        "id": "01M7B24CSQGSY8CPF946419WEA",
+        "link": "01M7B24CSQGSY8CPF943WJGT5N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: advisor sessions started by real failing leaves and checks runs (scratch build) got RHIZA_BRIEF/RHIZA_SLICE under .git/rhiza/runs/<run>/advisor/<session id>/ with brief.md, prompt the usual advisor text; arbiter covered by go test -trimpath ./internal/api -run 'TestArbiterBrief|TestAdvisorBrief' ok."
+        },
+        "handle": "arbiter-advisor-brief-qa-2",
+        "id": "01M7B24CV5ZBP1NZYXSYNR968R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B24CV5ZBP1NZYXSXFS2ANP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B24CV5ZBP1NZYXSXFS2ANP",
+        "id": "01M7B24CY15SBPCNDCXNZV1VZX",
+        "link": "01M7B24CY15SBPCNDCXM27E0WW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AJZ8CQ9MFGF06EWDVC1JAJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: scratch-built rhiza guide contract prints obligations with gates, every invoke placeholder incl. {leaf}/{attempt} on check/critic and {attempt} on fixer, the RHIZA_ variables incl. BRIEF/SLICE/HANDBACK and the three files (exit 0); every role topic (advisor, arbiter, builder, check-*, critic, fixer, ci/gate/conflict-fix, planner, plan-critic/reviewer/reviser, verifier) names rhiza guide contract; unknown topic exits 4 with a next line. go test ./internal/guide -run TestContract ok."
+        },
+        "handle": "guide-contract-qa-2",
+        "id": "01M7B24D09MHMJH58A2V20A26X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B24D09MHMJH58A2SEEJ9WC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B24D09MHMJH58A2SEEJ9WC",
+        "id": "01M7B24D2DPQAE3DMA0QN5EH5D",
+        "link": "01M7B24D2DPQAE3DMA0QB6AWED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: session dirs seen on real runs: build-1/agent, l-1/builder-<leaf>-<attempt>, review-1/<check>-check-1, <check>-critic-1, fixer-<leaf>-<cycle>-<attempt>, fixer-<cycle>-<attempt>, all distinct across cycles and attempts, under .git/rhiza/runs outside the worktree, kept after the run. brief.md has sections in order, both leaves with acceptance, the change set's own decision and constraint (the cycle-2 fix), rhiza.ship.localGate and the contract summary ending 'Full contract: rhiza guide contract'; seven briefs of one model byte-identical. go test ./internal/run -run 'TestBriefFiles|TestSessionDir|TestHandbackFile' ok."
+        },
+        "handle": "run-brief-files-qa-2",
+        "id": "01M7B24D481N743H61MJRRNXYM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B24D481N743H61MG6Q95JJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B24D481N743H61MG6Q95JJ",
+        "id": "01M7B24D5Z9T2Q2DVTMKNZHQ9B",
+        "link": "01M7B24D5Z9T2Q2DVTMK61QFD9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: agent, builder, check, critic and both fixer sessions each got RHIZA_BRIEF and RHIZA_SLICE (no RHIZA_HANDBACK, no handback.md); slice.json byte-equal to rhiza slice --json run inside the session; an unwritable runs/<id> (a file at the path) fails the run naming the session directory path and starts no agent. go test ./internal/api -run TestSessionBrief and TestScripts/brief-files ok."
+        },
+        "handle": "session-brief-wiring-qa-2",
+        "id": "01M7B24D7FX8HXS9FXEH8QRXM2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B24D7FX8HXS9FXEG2TB745",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B24D7FX8HXS9FXEG2TB745",
+        "id": "01M7B24D8Y0CWMEVE05P3A6HY9",
+        "link": "01M7B24D8Y0CWMEVE05NSWS58E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B24DAC2TM6D8YB2DFMSQ88",
+  "type": "ops",
+  "v": 1
+}

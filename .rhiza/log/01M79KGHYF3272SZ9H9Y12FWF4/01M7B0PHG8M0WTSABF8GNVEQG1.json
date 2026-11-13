@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AZTG8ACFNDZKYVTGE1Y1ZQ",
+  "after": [
+    "01M7AWMPP0HCQS35J1QNA5DP9F"
+  ],
+  "at": "2026-11-13T17:53:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified run-brief-files at ea46de5ca (review cycle 2 fix of f2). Acceptance go test -trimpath ./internal/run -run 'TestBriefFiles|TestSessionDir|TestHandbackFile': exit 0 (TestBriefFiles, TestSessionDir, TestSessionDirWrite, TestHandbackFile pass). Checks block re-run: TestSessionBriefDecisions against the pre-fix run_brief.go in a scratch worktree exit 1; go test -trimpath ./internal/api -run 'TestSessionBrief|TestArbiterBrief|TestAdvisorBrief' exit 0 (incl. new TestSessionBriefDecisions); go test -trimpath -timeout 8m -skip TestReadBudget ./internal/api/ exit 0; go vet ./internal/api exit 0; rhiza ship generate exit 0; rhiza render exit 0 with no tracked changes. Full ./internal/api with TestReadBudget not re-run (commit reports it exit 1 as a load-dependent timing test; untouched). Diff: brief.md now builds from an unbudgeted slice and lists the change set's live focus Decisions then the other applicable decisions, slice.json unchanged; test proves slice.json cuts decisions while brief.md lists all 41. No TODOs or stubs; change limited to internal/api/run_brief.go and its test plus rendered/log records."
+        },
+        "handle": "run-brief-files-verified-2",
+        "id": "01M7B0PH9GMQWQSYV0HETZNFGX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B0PH9GMQWQSYV0HEB20CN4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B0PH9GMQWQSYV0HEB20CN4",
+        "id": "01M7B0PHC74PN5PQXD2PHSVZNV",
+        "link": "01M7B0PHC74PN5PQXD2KSA6DME",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B0PHG8M0WTSABF8GNVEQG1",
+  "type": "ops",
+  "v": 1
+}

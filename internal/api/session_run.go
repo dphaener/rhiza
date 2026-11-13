@@ -569,6 +569,8 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	} else {
 		unset = append(unset, envCommit)
 	}
+	bset, bunset := briefEnv(rec.Brief)
+	set, unset = append(set, bset...), append(unset, bunset...)
 	if rec.Root != "" {
 		set = append(set, envRoot+"="+rec.Root)
 	} else {

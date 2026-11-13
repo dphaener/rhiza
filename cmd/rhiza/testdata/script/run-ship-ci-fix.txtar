@@ -102,7 +102,7 @@ exec sh $WORK/setup.sh
 exec sh -c 'touch $WORK/infra'
 cd repo
 exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait --json; echo exit=$?'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --no-wait'
 exec rhiza run status
 stdout '^- ci-triage \(visit 1\): fail, then wait-ci-rerun'

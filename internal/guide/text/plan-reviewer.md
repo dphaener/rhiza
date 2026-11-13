@@ -62,3 +62,5 @@ EOF
 
 Run `rhiza session done` only once `rhiza run findings` has succeeded. A critic reads your
 round.
+
+<!-- shared: contract-ref -->

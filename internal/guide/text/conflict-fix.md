@@ -99,3 +99,5 @@ incompatible changes. Wait for the answer, then resolve following it.
 <!-- shared: session-done -->
 
 The ship run reaches you after origin/main moved under the branch, or a land was refused.
+
+<!-- shared: contract-ref -->

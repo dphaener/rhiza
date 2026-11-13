@@ -18,7 +18,7 @@ exec rhiza change new 'Ship S' --kind record --title 'Ship S' --json
 exec rhiza add intent want-s
 exec rhiza run start --foreground --workflow shape --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'sed -i s/\"workflow\":\"shape\"/\"workflow\":\"plan\"/ .git/rhiza/runs/*.jsonl'
 exec rhiza land
 

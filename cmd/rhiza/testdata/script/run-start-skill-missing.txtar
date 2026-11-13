@@ -32,7 +32,7 @@ exec git commit -qm leaves
 
 ! exec rhiza run start --foreground --workflow build --permission-mode manual
 stderr 'start command /rhiza-builder unknown to claude: skill not installed; run rhiza guide install --agent claude'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 ! exists $WORK/rex.log
 ! exists $WORK/builders.log
 

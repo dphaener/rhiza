@@ -64,3 +64,5 @@ Never edit code.
 <!-- shared: session-done -->
 
 Findings come back to the builder as a retry.
+
+<!-- shared: contract-ref -->
