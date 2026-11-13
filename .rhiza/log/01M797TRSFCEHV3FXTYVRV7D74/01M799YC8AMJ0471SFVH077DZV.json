@@ -1,0 +1,40 @@
+{
+  "actor": "01M799SXFDJDPDWKAWJZ3ZJV9G",
+  "after": [
+    "01M799H7EBWRJRDFFAMKBEHY5J"
+  ],
+  "at": "2026-11-13T01:56:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 6937db290: go test -trimpath ./cmd/rhiza -run 'TestScripts/run-start-queue$' -count=1 passed. The script sets rhiza.daemon.permissionMode=acceptEdits, queues rhiza run start --workflow plan --autonomous with no --permission-mode, asserts starts.json records no permission_mode, then rhiza daemon --once starts it and the script waits for a run journal recording \"permission_mode\":\"acceptEdits\" (a mode no earlier run used), closing review finding f1; with the setting unset or nonsense the queued start is refused (stderr names the setting / mode) and the unset case asserts nothing queued; --foreground gets no stand-in. Read the diff: queuedCheckMode (internal/api/run.go) feeds rhiza.daemon.permissionMode to both checkAgentSteps calls before queueRunStart, so a refusal writes nothing, and the queued start still records r.PermissionMode (empty); daemonQueuedStarts falls back to the daemon's mode; other checkAgentSteps callers re-check started runs whose journal holds the daemon's mode. go test -trimpath ./internal/api/... -run 'TestQueuedCheckMode|TestRunStartAgentRefusals|TestDaemon' -count=1 passed, incl. TestQueuedCheckModeStandsInDaemonMode (queued gets the daemon's mode, named mode wins, foreground none)."
+        },
+        "handle": "queued-start-daemon-mode-verified-2",
+        "id": "01M799YC6PTZEDYQED7QATWV9X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M799YC6NFH40V0Z39ATY56CT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M799YC6NFH40V0Z39ATY56CT",
+        "id": "01M799YC7JVDCZWCQJWW3TPZC2",
+        "link": "01M799YC7JVDCZWCQJWT5JWZEM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7982F0JXM91XG2GD8WQZ75C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M799YC8AMJ0471SFVH077DZV",
+  "type": "ops",
+  "v": 1
+}

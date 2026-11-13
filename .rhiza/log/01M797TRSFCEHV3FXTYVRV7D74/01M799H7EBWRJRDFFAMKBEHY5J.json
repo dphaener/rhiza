@@ -1,0 +1,63 @@
+{
+  "actor": "01M799D4AGCZVB1WSHNXZYJ442",
+  "after": [
+    "01M7998QVKB7WSBBNKG4QC27JJ"
+  ],
+  "at": "2026-11-13T01:49:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 30e69b6fe with a binary built from the branch (go build -trimpath ./cmd/rhiza), in a scratch Rhiza root and repo with fake rex and claude on PATH and a clean env. git config rhiza.daemon.permissionMode manual, then rhiza run start --workflow plan --autonomous with no --permission-mode: 'Queued a plan run ... for the daemon', and .git/rhiza/starts.json holds the start with no permission_mode key. rhiza daemon --max-runs 3 --once (no --permission-mode): 'Started a run of <cs>', the queue drained, and the run's journal records permission_mode \"manual\" and autonomous true; run ls shows it live at step interview. With the setting = nonsense the start is refused at queue time (claude-code: unknown permission mode \"nonsense\", exit 2) and nothing is queued. With the setting = bypassPermissions the start is refused by the dedicated-machine trust check (exit 1, nothing queued) exactly like an explicit --permission-mode bypassPermissions; after writing trust = \"dedicated\" to machine.toml the same start queues with no mode recorded, which is the incident's case."
+        },
+        "handle": "queued-start-daemon-mode-qa-1",
+        "id": "01M799H774CTS52H3DQRXH068Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M799H774CTS52H3DQRXBCJS7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M799H774CTS52H3DQRXBCJS7",
+        "id": "01M799H798MMY7Z1V958RJ0F8V",
+        "link": "01M799H798MMY7Z1V9567EEM7T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7982F0JXM91XG2GD8WQZ75C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 30e69b6fe with a binary built from the branch, in a scratch Rhiza root and repo. With rhiza.daemon.permissionMode unset, rhiza run start --workflow plan (no --permission-mode) exits 2 with: step \"interview\" is an agent step with no permission mode: give --permission-mode, set rhiza.daemon.permissionMode (for a run the daemon starts), or set permission_mode on the step; .git/rhiza does not exist afterwards, so nothing was queued. With the setting = manual, rhiza run start --workflow plan --foreground exits 2 with the same message."
+        },
+        "handle": "no-mode-refusal-names-setting-qa-1",
+        "id": "01M799H7AKATM172NN1H1T4Y80",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M799H7AKATM172NN1D4HB2NJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M799H7AKATM172NN1D4HB2NJ",
+        "id": "01M799H7CEWAD7QXZY1Z6BK4BV",
+        "link": "01M799H7CEWAD7QXZY1VVXEJWP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7982F49NA91KNX67QHP9914",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M797TRSFCEHV3FXTYVRV7D74",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M799H7EBWRJRDFFAMKBEHY5J",
+  "type": "ops",
+  "v": 1
+}
