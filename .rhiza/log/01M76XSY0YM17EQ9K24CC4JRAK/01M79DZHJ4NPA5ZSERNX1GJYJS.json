@@ -1,0 +1,44 @@
+{
+  "actor": "01M79DXGFH4JH4APHSRMYYXC2G",
+  "after": [
+    "01M79DPA50CM1H7932YFEJ5YEM"
+  ],
+  "at": "2026-11-13T03:07:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Today daemon.state.json is rewritten whole every poll, and its Skips hold only the last poll's reasons (internal/daemon/state.go), so a wait's history needs its own file. The repo already keeps an append-only JSONL journal in the daemon folder: usage.limits.jsonl, written with one O_APPEND write per line (internal/daemon/usage.go). The run journals are JSONL under <common>/rhiza/runs/ too. Putting queue.wait.jsonl next to them follows that precedent and keeps it per project and out of .rhiza/, so it adds no model file format. The skip reasons are already fixed constants in internal/daemon/pick.go, and the poll already works them out in daemonPoll1, so journaling them means writing down what the poll knows. The machine (load) hold needs no new reason: under a machine hold daemonPoll1 already records a Skip for each candidate with the hold's reason, load-high or memory-low (internal/api/daemon.go, internal/daemon/load.go), which covers the intent's 'load hold'. The 2026-11-12 perf report (~/orchestrator/perf-2026-11-12) was an ad hoc analysis of journal files on disk, not a rhiza command. Reading this file the same way meets 'the perf analysis can read it' with the smallest change, and a typed reader in internal/daemon gives the acceptance check something to test. Writing only on change keeps the file small, so trimming is not needed. Not trimming also keeps the ALL-history comparison the report depends on (60m ALL against 27m RECENT).",
+          "statement": "The daemon appends why an accepted change set waits to an append-only JSON-lines file, queue.wait.jsonl, in the daemon's folder under the project's git common dir (<common>/rhiza/, beside daemon.state.json and usage.limits.jsonl). It writes a line only when a change set's wait changes, not every poll: when a poll first skips it, when its reason changes, and when its run starts. Each line has at, change, title, reason and detail, where reason is the poll's pre-start Skip reason (no-slot, not-ready, no-milestone, no-leaves, disk-low, usage-reserve, paused, ship-owner, workflow-unresolved, and load-high or memory-low for the machine hold), or started when the daemon starts the run. The post-start Skip reasons (live, held, unjournaled, failed, shipped) belong to a change set whose run has already started and are never journaled, so a change set's lines end at started until it waits to start again. The fields are a fixed type in internal/daemon with a reader (one function that returns every line, oldest first, and skips lines that do not parse), as LimitHit and ReadLimitHitsIn are. The perf analysis reads this file directly, as it reads the run journals under <common>/rhiza/runs/. Summed per change set, from its first line to started, it gives the accepted to ship-start time split by reason. This change set adds no CLI command or --json shape for it. The journal is not trimmed: because it only records changes, it holds a few short lines per change set, and the perf report compares RECENT with ALL history, which trimming would lose.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "queue-wait-journal-file",
+        "id": "01M79DCE6ZA8ZR6ANCNPWWCXWE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79DCE6ZA8ZR6ANCNP74XKJ8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run QueueWait: polls that skip a change set for no-slot twice, then for usage-reserve, then for load-high under a machine hold, then start it, then skip it as held and then live journal exactly four lines (no-slot, usage-reserve, load-high, started) with its change, title and detail; a change set started on its first poll journals only a started line; a fresh daemon over the same journal writes no line for an unchanged reason",
+          "statement": "Each daemon poll appends a queue-wait line for an accepted change set only when its pre-start wait changes: when a poll first skips it for a pre-start reason, with the poll's Skip reason and detail (no-slot, not-ready, no-milestone, no-leaves, disk-low, load-high, memory-low, usage-reserve, paused, ship-owner and workflow-unresolved), when that reason changes, and a started line when the daemon starts its run. The post-start Skip reasons (live, held, unjournaled, failed and shipped, which the daemon gives a change set whose run has already started: internal/daemon/pick.go, internal/api/daemon.go) are never journaled, so after started nothing more is written for that change set until a poll skips it for a pre-start reason again (a retried or reopened change set waiting anew). The last reason per change set is taken from the journal, so a restarted daemon writes no duplicate line"
+        },
+        "handle": "queue-wait-journal-lines",
+        "id": "01M79DE92G4FFVHC5MFT3J66G7",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79DZHJ4NPA5ZSERNX1GJYJS",
+  "type": "ops",
+  "v": 1
+}

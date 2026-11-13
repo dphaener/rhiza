@@ -1,0 +1,83 @@
+{
+  "actor": "01M79D6R9KAGKGR41V5H1KRDYJ",
+  "after": [
+    "01M79DDV27F1TPHEX78TCX28EX"
+  ],
+  "at": "2026-11-13T02:57:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79DCE6ZA8ZR6ANCNP74XKJ8",
+        "id": "01M79DE90Q2MVVVZCETPFFMTTN",
+        "link": "01M79DE90Q2MVVVZCETKQ6Z8R1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DDV1SRFJE2R3VCGSCP391",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/daemon/... -run QueueWait: appended lines read back oldest first with every field; a malformed line between two good ones is skipped; a missing file reads as no lines; lines appended from several goroutines at once each read back whole",
+          "statement": "internal/daemon defines the queue-wait journal's line (at, change, title, reason, detail), appends one to queue.wait.jsonl in the daemon's folder under the git common dir with a single write per line, and reads the file back as every line oldest first, skipping lines that do not parse"
+        },
+        "handle": "queue-wait-journal-reader",
+        "id": "01M79DE919PHFX4JVJ8YGRBKT8",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M79DE919PHFX4JVJ8V97PGE5",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M79DE919PHFX4JVJ8V97PGE5",
+        "id": "01M79DE91SWRVA1J5RT8ZFMB8A",
+        "link": "01M79DE91SWRVA1J5RT5KDBK0S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DCE6ZA8ZR6ANCNP74XKJ8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run QueueWait: polls that skip a change set for no-slot twice, then for usage-reserve, then for load-high under a machine hold, then start it journal exactly four lines (no-slot, usage-reserve, load-high, started) with its change, title and detail; a change set started on its first poll journals only a started line; a fresh daemon over the same journal writes no line for an unchanged reason",
+          "statement": "Each daemon poll appends a queue-wait line for an accepted change set only when its wait changes: when a poll first skips it, with the poll's Skip reason and detail (no-slot, not-ready, held, unjournaled, disk-low, load-high, memory-low, usage-reserve, paused, ship-owner, workflow-unresolved and the rest), when its reason changes, and a started line when the daemon starts its run; the last reason per change set is taken from the journal, so a restarted daemon writes no duplicate line"
+        },
+        "handle": "queue-wait-journal-lines",
+        "id": "01M79DE92G4FFVHC5MFT3J66G7",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "id": "01M79DE931CAP3QWPZ5DSFWMQG",
+        "link": "01M79DE931CAP3QWPZ5BBJZ35Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DCE6ZA8ZR6ANCNP74XKJ8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "id": "01M79DE93JZDT6EE5AS9EDMXYY",
+        "link": "01M79DE93JZDT6EE5AS649Q6BZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE919PHFX4JVJ8V97PGE5",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79DE948MRDYNH8HF6KVPQMC",
+  "type": "ops",
+  "v": 1
+}
