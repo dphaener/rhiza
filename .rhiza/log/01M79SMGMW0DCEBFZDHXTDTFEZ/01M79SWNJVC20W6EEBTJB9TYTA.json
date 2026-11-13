@@ -1,0 +1,50 @@
+{
+  "actor": "01M79SNVN0KMM975SGJ6F7KYT5",
+  "after": [
+    "01M79SWMPM03T9T7VMYQEGVP2J"
+  ],
+  "at": "2026-11-13T06:35:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79SVQVPME0SNAWE3XWG7HKN",
+        "id": "01M79SWNFC1WQK9Y6N4GN1P8KH",
+        "link": "01M79SWNFBGD16A7JQB9Q7AG7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79SWA4CZG832Y0QVRJD3AEA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api (beside web_root_test.go) registers two initialised projects under one root, each with a milestone change set and a backlog change set (one depending on another), serves WebRootHandler, GETs /p/<a>/roadmap and /p/<b>/roadmap, extracts every row href, asserts each is under that project's /p/<project>/changes/ prefix and names none of the other project's change sets, GETs each and gets 200, then GETs every depends-on link on those change pages and gets 200. go test -trimpath ./internal/api/... ./internal/web/... passes",
+          "statement": "Under a Rhiza root, every row on each project's web roadmap (/p/<project>/roadmap: milestone, umbrella and backlog groups) and every depends-on link on its change set pages opens that project's change set page (/p/<project>/changes/<id>), never a 404"
+        },
+        "handle": "web-roadmap-rows-resolve",
+        "id": "01M79SWNGATEE7JHYB7TB0KMR3",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79SWNGATEE7JHYB7Q9X2CBK",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M79SWNGATEE7JHYB7Q9X2CBK",
+        "id": "01M79SWNH5GG5AED1PPN008NQ6",
+        "link": "01M79SWNH5GG5AED1PPJGAQ36N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79SVQVPME0SNAWE3XWG7HKN",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SWNJVC20W6EEBTJB9TYTA",
+  "type": "ops",
+  "v": 1
+}

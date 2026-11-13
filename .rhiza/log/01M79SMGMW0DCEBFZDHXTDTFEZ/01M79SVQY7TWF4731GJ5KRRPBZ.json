@@ -1,0 +1,41 @@
+{
+  "actor": "01M79STDP0TGX1171W16EF0TPT",
+  "after": [
+    "01M79SSZ2SX5HT6T0NE2NEMS07"
+  ],
+  "at": "2026-11-13T06:35:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question's diagnosis matches the code: loadRoadmap (internal/web/roadmap.go:105) reads /api/roadmap?all=true and links rows as /changes/<id> (roadmap.go:140), so cross-project rows get rewritten to /p/<this>/changes/<id> and 404. Accepted 01M79S4M already owns that root cause (scope each project's roadmap API to that project, with a no-cross-project-rows test). Duplicating the scoping here would make two change sets edit the same function. But this bug's intent asks for more than 01M79S4M promises: every row's link resolves (200) in a two-project root, which also covers change sets the change page cannot read and other un-prefixed links (change.go:178 depends-on, inbox.go:44). So the bug stays open as a dependent change set whose acceptance is the click-every-row 200 test, fixing whatever residual 404 it exposes.",
+          "statement": "Plan 01M79SMG as a follow-on to accepted 01M79S4M (web-roadmap-project-scoped), not a second fix of the same cause: it depends on 01M79S4M and does not re-scope /api/roadmap itself. Its leaf's acceptance is the regression the intent asks for: a test serves a root with two registered projects, renders each project's roadmap, follows every row link (and the change page's depends-on links) under /p/<project>/changes/<id>, and gets 200 for each, with no row from the other project. Any 404 that test still finds once 01M79S4M has landed (a change set the change page cannot read, a link not rewritten under the project prefix) is fixed in this change set's leaf.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "roadmap-row-404-plan",
+        "id": "01M79SVQVPME0SNAWE40WQ7RJB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79SVQVPME0SNAWE3XWG7HKN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79SVQVPME0SNAWE3XWG7HKN",
+        "id": "01M79SVQX052JTX7D3CV6JA2T8",
+        "link": "01M79SVQX052JTX7D3CTBQ6CHN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79SSW417MJXAT0Y0NXGGR1J",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SVQY7TWF4731GJ5KRRPBZ",
+  "type": "ops",
+  "v": 1
+}
