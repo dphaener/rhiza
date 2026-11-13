@@ -16,6 +16,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/guide"
 	"github.com/dphaener/rhiza/internal/rootguard"
 	runpkg "github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -146,16 +147,22 @@ func setup(env *testscript.Env) error {
 }
 
 // stubGuideCommands writes, under home's .claude/commands, a command file
-// for each skill a builtin workflow starts a session with, so every script
-// launches its fake agent as if the guide were installed: a session whose
-// start command is not installed never launches. A script about a missing
-// skill removes them.
+// for each guide text (rhiza, then rhiza-<name> for the rest), so every
+// script launches its fake agent as if the guide were installed: a session
+// whose start command is not installed never launches. Taking the names
+// from guide.List keeps every workflow's start skill (the review checks,
+// critic and fixers included) covered as topics are added. A script about
+// a missing skill removes them.
 func stubGuideCommands(home string) error {
 	dir := filepath.Join(home, ".claude", "commands")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	for _, name := range []string{"rhiza-builder", "rhiza-verifier", "rhiza-review", "rhiza-planner", "rhiza-plan-reviewer", "rhiza-plan-critic", "rhiza-plan-reviser", "rhiza-plan", "rhiza-build", "rhiza-build-retry", "rhiza-scrub"} {
+	for _, t := range guide.List() {
+		name := "rhiza"
+		if t.Name != "rhiza" {
+			name += "-" + t.Name
+		}
 		if err := os.WriteFile(filepath.Join(dir, name+".md"), []byte("stub\n"), 0o644); err != nil {
 			return err
 		}
