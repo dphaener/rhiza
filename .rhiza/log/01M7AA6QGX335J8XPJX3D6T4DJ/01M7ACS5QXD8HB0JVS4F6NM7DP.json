@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ACNTNRZ82A5TY20BBZBTWY",
+  "after": [
+    "01M7ACHYE0ZZNJV36XSBSVPGFK"
+  ],
+  "at": "2026-11-13T12:05:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at the branch head: built with go build -trimpath to a scratch path and ran it in a scratch repo with a worktree and a separate detached checkout, a hand-written session record with dir set to the checkout. rhiza session message --dry-run --json named <checkout>/.rhiza/local/messages/<session>/0001.md; two real sends wrote 0001.md and 0002.md there and nothing under the worktree or main checkout, the queued pointer named .rhiza/local/messages/<session>/0002.md and that relative path resolved from the checkout, which stayed git-clean. A record without dir still wrote under its worktree. Sending from a subdirectory and through rhiza api call session.message gave the same checkout path. Failures stayed clean: exited session exit 3, blank text exit 2, unknown session exit 4. Deliver path covered by go test -trimpath ./internal/api -run 'TestSessionMessage|TestDeliver|TestTypePointer' -count=1 (ok) and TestScripts/(session-message|describe-golden) (ok)."
+        },
+        "handle": "message-file-in-session-checkout-qa-1",
+        "id": "01M7ACS5P1GN4BRWTMJ3YWQV04",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ACS5P1GN4BRWTMJ0G6TR2G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ACS5P1GN4BRWTMJ0G6TR2G",
+        "id": "01M7ACS5Q01JVKQ4HZAXD76A9M",
+        "link": "01M7ACS5Q01JVKQ4HZASTKNBC1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AAAVJE3QMNAYAZKHG3ASHW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7AA6QGX335J8XPJX3D6T4DJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ACS5QXD8HB0JVS4F6NM7DP",
+  "type": "ops",
+  "v": 1
+}
