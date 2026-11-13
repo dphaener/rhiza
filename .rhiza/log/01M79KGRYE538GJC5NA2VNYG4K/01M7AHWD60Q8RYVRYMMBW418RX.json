@@ -1,0 +1,261 @@
+{
+  "actor": "01M7AHA22X1ZDKC96QRCR3YTJP",
+  "after": [
+    "01M7AHV54911HT923M6ZW5CF0W"
+  ],
+  "at": "2026-11-13T13:34:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunSpawn covers a spawned child's journal entry under the calling step, its brief.md holding the contract section then the caller's brief, the outcome returned (pass, and a failed child with exit 1 and its reason), a refusal outside a run naming RHIZA_RUN, a refusal of a missing --brief file naming the path, and a wait journaled as held while a usage hold is on that ends when the hold lifts, with maxRuns at 1 not holding it; go test -trimpath ./cmd/rhiza -run TestScripts/run-spawn passes with a fake agent; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after -update. Touches internal/api/run_spawn.go (new), internal/api/run_leaves.go, internal/api/usage_hold.go, internal/run/journal.go, cmd/rhiza/testdata/script/run-spawn.txtar and describe-golden.txtar; it must not start the child from the daemon process or count it against rhiza.daemon.maxRuns.",
+          "statement": "An agent session in a run starts a child session with rhiza run spawn --role <role> [--leaf <leaf>] --brief <file> [--model <model>]: it starts the child in the run's worktree through the run's agent adapter with the run's permission mode, writes the child's brief.md through the contract change set's brief writer (so it carries the contract section, followed by the caller's brief), waits journaled as held while a usage hold or the machine load hold is on (never on maxRuns), journals the child as a child of the calling step, and prints the child's outcome as JSON when it ends."
+        },
+        "handle": "run-spawn",
+        "id": "01M79KPCATRS9TD6XGS73BQ82D",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunStatusSpawned shows rhiza run status and --json listing two children of one step with role, leaf, model, state, outcome and session ID, a running child marked running, and a failed child with its reason, and rhiza session show accepting a child's session ID; go test -trimpath ./internal/web -run TestRunDetailSpawned shows the web run page listing the same children under their step, the leaf named by its statement, with no session, run or node ID on the page. Touches internal/api/run.go (RunInfo), internal/run/status.go, internal/web/rundetail.go and its template under internal/web/templates; the describe-golden testscript is regenerated with -update.",
+          "statement": "rhiza run status, its --json and the web run page list every spawned session under the step that spawned it, with its role, leaf, model, state and outcome, and open or resume it like any other session."
+        },
+        "handle": "spawn-visible",
+        "id": "01M79KPCC9NH1M9F5EFPG2YV1R",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestGateStep covers parsing commands, rhiza workflow check refusing a gate with no commands and a gate with agent keys (prompt, agent, models); go test -trimpath ./internal/run -run TestGateStep shows a passing gate, a failing gate keeping the failing command's full output in the run directory while its later commands still run, and the journal and step detail naming the failing command. Touches internal/workflow/workflow.go, internal/workflow/check.go, internal/run/engine.go, internal/run/journal.go and internal/api/run.go (the Runner's command path, keeping output as ship_gate.go does).",
+          "statement": "A workflow step of kind gate runs its commands list, commands the daemon owns and never an agent, in order in the run's worktree; it passes only when every command exits 0, and on failure keeps each failing command's full output in a file in the run directory and names it in the step's detail for the step it routes to."
+        },
+        "handle": "gate-step",
+        "id": "01M79KPCDGXDFMJJ3WF1NSJF4M",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHandbackDeliver shows handback.md written in the run directory with the cause, a live session messaged with the handback text, an ended session resumed with the same session ID, and a session that cannot be resumed failing the step with a message naming the session; go test -trimpath ./cmd/rhiza -run TestScripts/run-handback shows, with a fake agent, a command step failing twice, its agent step's session handed back each time, and the run then passing. Touches internal/api/run.go (a Runner hand-back method), internal/run/engine.go, internal/api/session_message.go and cmd/rhiza/testdata/script/run-handback.txtar; it writes no handback.md or handback text of its own.",
+          "statement": "When a run hands back to an agent step, it writes handback.md with the cause through the contract change set's writer and sends that step's session the handback text the contract change set's agent-invoke-template defines: a live session is messaged as rhiza session message does, an ended session is resumed in the same conversation through its adapter, and the run then waits on that session as on the step's first pass."
+        },
+        "handle": "run-handback",
+        "id": "01M79KPCETKJR0AX7B5A07NMS8",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M79KPCETKJR0AX7B576P4C76",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestSpawnResume kills the driver while a child runs and while a hand-back is pending, restarts it, and shows a live child reattached, a child that ended while the driver was down recorded once (not twice when its spawn process also records it), the pending hand-back delivered once, and the run continuing from the same step; a child whose session record is gone is recorded failed with that reason. Touches internal/run/engine.go, internal/run/journal.go and internal/api/run.go (the resume path).",
+          "statement": "Killing the daemon while a run waits on a spawned session or a hand-back loses nothing: on restart it reattaches to live children, records children that ended while it was down, and resumes the waiting step."
+        },
+        "handle": "spawn-durable",
+        "id": "01M79KPCGPWP3YX3Q5GS5D86V1",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHR2JAKP00Q8TYA0222B74",
+        "id": "01M7AHW6C9QXPG1KBBJ0ZYB9W7",
+        "link": "01M7AHW6C8A9B8J7NKC5B3B7BN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHV4XYBX80SJC5VM6N9KZH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza run spawn starts the child from its own process through the run's session-start path (as a leaves step's StartLeaf does) and journals the child into the run's journal without the run's lock, as rhiza run review-check does; the run's driver, on resume, records any child that ended while no spawn process watched it, once.",
+          "wording": "derived from the code by the planner of an autonomous plan run"
+        },
+        "handle": "spawn-starts-from-caller",
+        "id": "01M7AHW6MHDSWVKY7PW8M3B5XW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AHW6MHDSWVKY7PW6NR3PYT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW6MHDSWVKY7PW6NR3PYT",
+        "id": "01M7AHW6YAC5CD4XTEPQGMFZT0",
+        "link": "01M7AHW6YAC5CD4XTEPKRZMMR3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHV4XYBX80SJC5VM6N9KZH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "The hand-back primitive is two leaves: routing (the handback:<agent step> target, the per-run count, handback_cap and parking) and delivery (handback.md, the handback text, messaging a live session or resuming an ended one); rhiza workflow check's warning about an uncapped hand-back loop stays with the draft change set that promises it.",
+          "wording": "derived from the model by the planner of an autonomous plan run"
+        },
+        "handle": "handback-split-route-deliver",
+        "id": "01M7AHW75ZQHSCV0CGQ6YHRGBE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AHW75ZQHSCV0CGQ3G4CGD9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW75ZQHSCV0CGQ3G4CGD9",
+        "id": "01M7AHW7H9CD6D4KZAP9D87BY1",
+        "link": "01M7AHW7H9CD6D4KZAP83CK7K1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHV4XYBX80SJC5VM6N9KZH",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "id": "01M7AHW81013AH6RB5SZ36FFS1",
+        "link": "01M7AHW81013AH6RB5SWH826QM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHR2JAKP00Q8TYA0222B74",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "id": "01M7AHW87470GG4GHKWWYTR079",
+        "link": "01M7AHW87470GG4GHKWT3QX98Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW6MHDSWVKY7PW6NR3PYT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "id": "01M7AHW8TBVKT8E8JCBNRNZXWG",
+        "link": "01M7AHW8TBVKT8E8JCBM8XRPKA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestHandbackTarget covers parsing handback:<step>, handback_cap defaulting to 3, and rhiza workflow check refusing a hand-back to an unknown step, to a step that is not an agent step and a handback_cap below 1, each naming the step; go test -trimpath ./internal/run -run TestHandbackRoute shows a command step failing twice then passing re-entering the agent step each time, and a fourth failure parking the run stopped with the cause; go test -trimpath ./internal/api -run TestInboxHandbackParked shows the inbox item naming the step and the cause. Touches internal/workflow/workflow.go, internal/workflow/check.go, internal/run/engine.go, internal/run/journal.go and internal/api/inbox.go; it delivers nothing to the session (run-handback does).",
+          "statement": "A step's on.<outcome> may name handback:<agent step> of the same workflow: the run re-enters that agent step with the routing step's cause, counts hand-backs per run, and once a run has handed back handback_cap times (a workflow setting, default 3) the next red parks the run stopped with an inbox item naming the step and the cause."
+        },
+        "handle": "handback-route",
+        "id": "01M7AHW9B0Y6HMMVGBQ5DVTQNC",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "id": "01M7AHWA00NH6TP9SR86ZYFYB4",
+        "link": "01M7AHWA00NH6TP9SR855TX4CP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "id": "01M7AHWAJCQD46GEA9SBG0CTPJ",
+        "link": "01M7AHWAJCQD46GEA9SAWYN05B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW75ZQHSCV0CGQ3G4CGD9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCETKJR0AX7B576P4C76",
+        "id": "01M7AHWB5GP67K77GGKX60FV5J",
+        "link": "01M7AHWB5GP67K77GGKTGKFRP7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHR2JAKP00Q8TYA0222B74",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCETKJR0AX7B576P4C76",
+        "id": "01M7AHWBT465C3WYYEQP3HHDN1",
+        "link": "01M7AHWBT465C3WYYEQJ76ZY5V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW75ZQHSCV0CGQ3G4CGD9",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCETKJR0AX7B576P4C76",
+        "id": "01M7AHWC6CAG6DY0Q1741JM5AS",
+        "link": "01M7AHWC6CAG6DY0Q173PSW3MA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "id": "01M7AHWCHCK56F5W46T0RB4AN9",
+        "link": "01M7AHWCHCK56F5W46SYGTQA8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "id": "01M7AHWCREWZ5CABTMNKFNBPAT",
+        "link": "01M7AHWCREWZ5CABTMNGBJPSQ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCETKJR0AX7B576P4C76",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "id": "01M7AHWCZYXGYWNKWFGAJEN0MY",
+        "link": "01M7AHWCZYXGYWNKWFG8ZKQ6H1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW6MHDSWVKY7PW6NR3PYT",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHWD60Q8RYVRYMMBW418RX",
+  "type": "ops",
+  "v": 1
+}
