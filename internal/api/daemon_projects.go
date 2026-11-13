@@ -46,22 +46,36 @@ func projectCtx(ctx *Ctx, dir string) *Ctx {
 	if p, err := index.DefaultPath(dir); err == nil {
 		c.IndexPath = p
 	}
-	if ctx.Git != nil && ctx.Exec != nil {
-		c.Git = func(args ...string) (string, error) {
-			out, err := ctx.Exec("git", append([]string{"-C", dir}, args...), dir, nil)
-			return string(out), err
-		}
-		git := c.Git
-		c.GitConfig = func(key string) (string, error) {
-			out, err := git("config", "--get", key)
-			v := strings.TrimSpace(out)
-			if err != nil || v == "" {
-				return "", Errorf("git config %s is not set", key)
-			}
-			return v, nil
-		}
-	}
+	boundGit(&c, dir)
 	return &c
+}
+
+// pollGitTimeout bounds each git program the daemon's poll runs through a
+// project's context.
+var pollGitTimeout = 30 * time.Second
+
+// boundGit makes c's Git and GitConfig run git in dir through an Exec that
+// kills each program after pollGitTimeout, as the model branch work's does,
+// so a hung git costs a poll at most that long per call. Without Git, Exec
+// and Start it leaves c alone.
+func boundGit(c *Ctx, dir string) {
+	if c.Git == nil || c.Exec == nil {
+		return
+	}
+	exec := boundedExecCtx(c, pollGitTimeout).Exec
+	c.Git = func(args ...string) (string, error) {
+		out, err := exec("git", append([]string{"-C", dir}, args...), dir, nil)
+		return string(out), err
+	}
+	git := c.Git
+	c.GitConfig = func(key string) (string, error) {
+		out, err := git("config", "--get", key)
+		v := strings.TrimSpace(out)
+		if err != nil || v == "" {
+			return "", Errorf("git config %s is not set", key)
+		}
+		return v, nil
+	}
 }
 
 // daemonHome picks the project that holds the daemon's own state: the
@@ -83,7 +97,10 @@ func daemonHome(ctx *Ctx, root string, reg rootcfg.Config) (string, *Ctx, bool) 
 	}
 	dir := reg.Dir(root, name)
 	if abs, err := filepath.Abs(ctx.Root); err == nil && abs == filepath.Clean(dir) {
-		return name, ctx, true
+		// The caller's own context, with the poll's bounded git.
+		c := *ctx
+		boundGit(&c, dir)
+		return name, &c, true
 	}
 	return name, projectCtx(ctx, dir), true
 }
