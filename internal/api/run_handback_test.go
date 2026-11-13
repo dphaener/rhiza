@@ -142,6 +142,26 @@ func TestHandbackDeliver(t *testing.T) {
 		}
 	})
 
+	t.Run("an agent step with no handback template fails naming the step", func(t *testing.T) {
+		f, r, dir := handbackFixture(t, askAgent)
+		f.setHook(t, session.StateIdle, "")
+		f.rex.calls = nil
+		step := workflow.Step{Name: "build", Kind: workflow.KindAgent}
+		err := r.Handback(step, f.sid, run.CauseOf(cmd, "fail", "exit 1\nboom"))
+		if err == nil || !strings.Contains(err.Error(), "step build") || !strings.Contains(err.Error(), "no handback template") {
+			t.Fatalf("error %v", err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "handback.md")); !os.IsNotExist(err) {
+			t.Errorf("handback.md written: %v", err)
+		}
+		if _, err := os.Stat(f.messageFile("0001.md")); !os.IsNotExist(err) {
+			t.Errorf("message written: %v", err)
+		}
+		if len(f.rex.calls) != 0 {
+			t.Errorf("rex calls %q", f.rex.calls)
+		}
+	})
+
 	t.Run("a session that cannot be resumed fails naming it", func(t *testing.T) {
 		f, r, _ := handbackFixture(t, resumeAgent)
 		code := 0

@@ -2485,16 +2485,14 @@ func (r *stepRunner) Deliver(sid, question, decision, statement string) error {
 	return nil
 }
 
-// defaultHandbackText is the text a hand-back sends when the step sets no
-// handback template.
-const defaultHandbackText = "Step %s went %s. Read %s for what failed, fix it and carry on."
-
 // Handback hands the run back to the agent step's session sid: it writes
 // handback.md for cause into the session's directory, then sends the
 // handback text the step's handback template renders, as session.message
 // does to a live session. An ended session is resumed in the same
 // conversation through its adapter, in a new tab, with that text as its
-// prompt; one that cannot be resumed is an error naming the session.
+// prompt; one that cannot be resumed is an error naming the session. A
+// step whose handback template renders empty is an error naming the step:
+// the hand-back writes no text of its own.
 func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.HandbackCause) error {
 	rec, err := readSession(r.sessions, sid)
 	if err != nil {
@@ -2503,9 +2501,6 @@ func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.Handback
 	if rec.Brief == "" {
 		return fmt.Errorf("session %s has no session directory to hold handback.md", sid)
 	}
-	if err := run.WriteHandback(rec.Brief, cause); err != nil {
-		return err
-	}
 	v := workflow.PromptVars{Change: r.change, Run: r.run, Step: step.Name, Worktree: r.worktree}
 	if t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true); err == nil {
 		v = r.promptVars(t, step.Name, run.AgentSessionName())
@@ -2513,7 +2508,10 @@ func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.Handback
 	v.Brief, v.Slice, v.Handback = filepath.Join(rec.Brief, briefFile), filepath.Join(rec.Brief, sliceFile), filepath.Join(rec.Brief, handbackFile)
 	text := strings.TrimSpace(step.RenderHandback(v))
 	if text == "" {
-		text = fmt.Sprintf(defaultHandbackText, cause.Step, cause.Outcome, v.Handback)
+		return fmt.Errorf("step %s sets no handback template, so %s has nothing to hand back to session %s", step.Name, cause.Step, sid)
+	}
+	if err := run.WriteHandback(rec.Brief, cause); err != nil {
+		return err
 	}
 	if !rec.Status.Exited() {
 		return r.messageSession(rec, text)
