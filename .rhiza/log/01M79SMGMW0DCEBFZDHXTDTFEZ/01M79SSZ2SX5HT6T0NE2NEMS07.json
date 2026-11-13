@@ -1,0 +1,30 @@
+{
+  "actor": "01M79SNVN0KMM975SGJ6F7KYT5",
+  "after": [
+    "01M79SMGMW0DCEBFZDHYEBZW15"
+  ],
+  "at": "2026-11-13T06:34:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "7eecefee-f9fc-4ec9-8bdc-01a1d39abb61",
+          "statement": "Roadmap rows 404 because /api/roadmap?all=true reaches across the root's projects, so a project's roadmap shows another project's change sets and their rewritten /p/<this>/changes/<id> links aren't found. Accepted change set 01M79S4M (web-roadmap-project-scoped) already scopes each project's API to that project. How should this bug change set 01M79SMG be planned?"
+        },
+        "handle": "question-7eecefee-1",
+        "id": "01M79SSW417MJXAT0Y0QJQMES8",
+        "key": null,
+        "kind": "question",
+        "node": "01M79SSW417MJXAT0Y0NXGGR1J",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79SSZ2SX5HT6T0NE2NEMS07",
+  "type": "ops",
+  "v": 1
+}
