@@ -136,3 +136,45 @@ func TestSpacingRules(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestPageHeadSpacing(t *testing.T) {
+	b, err := fs.ReadFile(assets, "static/css/rhiza.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rules := parseCSS(string(b))
+	const desktop = "(min-width: 721px)"
+
+	// top returns the first (top) value of a padding shorthand.
+	top := func(v string) string {
+		if f := strings.Fields(v); len(f) > 0 {
+			return f[0]
+		}
+		return ""
+	}
+	if got := top(declared(rules, "", ".rz-main", "padding")); got != "var(--space-6)" {
+		t.Errorf("space above the page head on a phone = %q, want var(--space-6)", got)
+	}
+	if got := top(declared(rules, desktop, ".rz-main", "padding")); got != "var(--space-7)" {
+		t.Errorf("space above the page head on desktop = %q, want var(--space-7)", got)
+	}
+	if got := declared(rules, "", ".rz-pagehead > div", "gap"); got != "var(--space-3)" {
+		t.Errorf("page title to its line = %q, want var(--space-3)", got)
+	}
+	if got := declared(rules, "", ".rz-main", "gap"); got != "var(--space-6)" {
+		t.Errorf("page head to content = %q, want var(--space-6)", got)
+	}
+
+	pad := strings.Fields(declared(rules, "", ".rz-row", "padding"))
+	if len(pad) == 0 || pad[0] != "10px" || (len(pad) >= 3 && pad[2] != "10px") {
+		t.Errorf("list row padding = %q, want 10px above and below", pad)
+	}
+	if got := declared(rules, "", ".rz-row", "border-bottom"); got != "var(--rule) solid var(--line)" {
+		t.Errorf("list row border-bottom = %q, want var(--rule) solid var(--line)", got)
+	}
+	for _, sel := range []string{".rz-row:has(a)", "a.rz-row"} {
+		if got := declared(rules, "", sel, "min-height"); got != "44px" {
+			t.Errorf("tappable row %s min-height = %q, want 44px", sel, got)
+		}
+	}
+}

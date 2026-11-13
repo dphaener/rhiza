@@ -143,6 +143,7 @@
 .rz-rows-head > * { font: 500 var(--fs-11)/var(--lh-16) var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .rz-row { position: relative; border-bottom: var(--rule) solid var(--line); font-size: var(--fs-14); line-height: var(--lh-20); }
 .rz-row:last-child { border-bottom: 0; }
+.rz-row:has(a), a.rz-row { min-height: 44px; } /* a tappable row */
 .rz-row:hover { background: var(--panel-hover); }
 .rz-row .rz-id::after { content: ""; position: absolute; inset: 0; } /* whole row follows the ID link */
 .rz-row-title { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
