@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:19:58Z",
+  "body": {
+    "intent": "Web UI redesign. Owner, 2026-11-13: the web UI is mostly useless: the roadmap mixes projects and its rows 404 and run off, run detail lists only Session 1, Session 2, the rendered model is used nowhere, the pages don't match their designs, spacing is off, and the header's project list needs a real picker. Redesign it screen by screen, phone-first, around 'does anything need me?', with a few safe actions.",
+    "kind": "record",
+    "sources": [],
+    "title": "Web UI redesign"
+  },
+  "change_set": "01M79NJ83BMM2XSVX2CMAWQXGG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NJ83BMM2XSVX2CNVYRJXP",
+  "type": "open",
+  "v": 2
+}

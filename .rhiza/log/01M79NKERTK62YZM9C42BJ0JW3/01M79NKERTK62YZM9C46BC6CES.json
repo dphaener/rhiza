@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:20:39Z",
+  "body": {
+    "intent": "The web UI's frame: one header and navigation for every screen with a real project picker (search, each project's state and needs-me count) in place of the header's project list, and shared components on one spacing and type scale",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NKERTK62YZM9C46BC6CES",
+  "type": "open",
+  "v": 1
+}

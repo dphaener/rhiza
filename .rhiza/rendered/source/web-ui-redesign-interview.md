@@ -1,0 +1,104 @@
+# web-ui-redesign-interview
+
+source · `01M79NQ828PT6T2R2PXF5JD8AC`
+
+## quotes
+
+```json
+[
+  {
+    "by": "owner",
+    "text": "Ok we need to plan another milestone. The web UI is mostly useless to me right now. There are so many problems.",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "The roadmap tab doesn't filter between projects properly, it shows things from both projects.",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "The runs tab doesn't really tell me anything useful. I can click into one of them and it just lists \"Session 1, Session 2, etc\"",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "The roadmap tab overall doesn't give me a lot. Some of the items in the backlog just 404 when I click on them. The \"titles\" seem to be a description and just run off. It's not informative at all.",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "I don't see any of the rendered markdown being used anywhere, I'm not sure if that would be useful at all.",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "The entire thing doesn't seem to match the designs very well",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "Overall it's just hard to digest the information that is being presented and doesn't help me much at all. We need to think it through a little more, screen by screen and get some new designs I think.",
+    "where": "2026-11-13, to the orchestrator"
+  },
+  {
+    "by": "owner",
+    "text": "Also just having the projects listed in the header is terrible. We need a better project picker.",
+    "where": "2026-11-13, during the interview"
+  },
+  {
+    "by": "owner",
+    "text": "And there are a lot of minor issues with things like spacing between headers and things.",
+    "where": "2026-11-13, during the interview"
+  },
+  {
+    "by": "agent (accepted by the owner)",
+    "text": "File them now; With me, on a design canvas; Does anything need me?; Home, Runs list and run detail, Roadmap and change set page, Model pages from rendered markdown",
+    "where": "interview, scope and process"
+  },
+  {
+    "by": "agent (accepted by the owner)",
+    "text": "A few safe actions; Designed pages from model data; Designs now, runs screens after m36",
+    "where": "interview, behaviour"
+  },
+  {
+    "by": "owner",
+    "text": "Every screen phone-first",
+    "where": "interview, picked option"
+  },
+  {
+    "by": "agent (accepted by the owner)",
+    "text": "Write it, then design Home",
+    "where": "interview, milestone shape"
+  }
+]
+```
+
+## raw_sha256
+
+3ab5eb6feb974c965bf6c6c6b300a69e2e600777c131c0ce102f4c30ae76eac3
+
+## summary
+
+On 2026-11-13 the owner said the web UI is mostly useless to them: the roadmap tab mixes both projects, its backlog rows sometimes 404 and show whole intent sentences as titles, the runs tab says little and a run's page lists only Session 1, Session 2, the rendered model markdown is used nowhere, the pages don't match their designs, spacing between headers is off, and the projects listed in the header need a real picker. They asked to think it through screen by screen and get new designs. The orchestrator found the web UI has five screens (overview, runs, run detail, roadmap, change set) built from static reference pages in internal/web/pages, and traced the roadmap problems to rows built from the change set's intent and links into /changes/<id>. Decided: the three clear roadmap bugs are filed at once as bug requests (01M79N9WHQ, 01M79N9X1Y, 01M79N9X9W); the designs are made screen by screen with the orchestrator on a design canvas; the first job of the UI is 'does anything need me?'; the milestone covers Home, runs list and run detail, roadmap and change set page, and model pages built from model data, plus the frame with a real project picker and one spacing and type scale; the UI gains a few safe actions (answer an inbox item, approve a sign-off, pause or resume) behind the web token; every screen is designed phone-first; screens are built once their design is approved, and the runs screens after milestone-36's spawn primitives. Left open: each screen's content, settled on the design canvas.
+
+## title
+
+Web UI redesign interview
+
+## Links
+
+### In
+
+- derived-from [web-redesign-direction](../decision/web-redesign-direction.md)
+- derived-from [web-project-picker](../decision/web-project-picker.md)
+- derived-from [web-spacing-scale](../decision/web-spacing-scale.md)
+- derived-from [web-safe-actions](../decision/web-safe-actions.md)
+- derived-from [web-phone-first](../decision/web-phone-first.md)
+- derived-from [web-model-pages-designed](../decision/web-model-pages-designed.md)
+- derived-from [web-build-order](../decision/web-build-order.md)
+- derived-from [web-first-job-needs-me](../decision/web-first-job-needs-me.md)
+
+## History
+
+- `01M79NJ83BMM2XSVX2CMAWQXGG` Web UI redesign. Owner, 2026-11-13: the web UI is mostly useless: the roadmap mixes projects and its rows 404 and run off, run detail lists only Session 1, Session 2, the rendered model is used nowhere, the pages don't match their designs, spacing is off, and the header's project list needs a real picker. Redesign it screen by screen, phone-first, around 'does anything need me?', with a few safe actions.

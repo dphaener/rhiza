@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:21:32Z",
+  "body": {
+    "intent": "Web model pages: every capability, decision and source link opens a designed page built from the model, with its statement, its why (decisions, sources, change sets) and its history",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NN43PGK6HDXTRY33VNC1E",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NN43PGK6HDXTRY5DVYG8R",
+  "type": "open",
+  "v": 1
+}

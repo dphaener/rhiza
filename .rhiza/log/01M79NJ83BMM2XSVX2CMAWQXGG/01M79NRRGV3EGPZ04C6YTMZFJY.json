@@ -1,0 +1,513 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M79NQ83EJFGF54EN2SZFBPBR"
+  ],
+  "at": "2026-11-13T05:23:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "37",
+          "statement": "The web UI helps the owner at a glance, on a phone first: it answers 'does anything need me?', shows what each run is doing in words, lays out the roadmap with short titles and progress for one project at a time, opens a readable page for every model node, lets the owner answer, approve and pause from it, and every screen matches its approved design on one spacing and type scale."
+        },
+        "handle": "milestone-37",
+        "id": "01M79NR5YNCT30QXX5X1YEJETE",
+        "key": "zzzzzzzw",
+        "kind": "intent",
+        "node": "01M79NR5YNCT30QXX5WZSKWAK0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "Opening the web UI answers 'does anything need me?' at a glance: every stuck or failed run, inbox item, waiting PR and hold, each with its reason in words and what to do."
+        },
+        "handle": "m37-needs-me",
+        "id": "01M79NR60H2WWMGS010H4Q6MKA",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M79NR60H2WWMGS010EC76BS0",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "A run's page tells what happened and what is happening, as a timeline of phases with every session's role, leaf, model, outcome and findings; no page lists sessions only by number."
+        },
+        "handle": "m37-runs-readable",
+        "id": "01M79NR61XAJXXXG5QK3A3J0WM",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M79NR61XAJXXXG5QK2MAQ87H",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "The roadmap shows one project's milestones, their done points and change sets with short titles, state and progress, and every link on it opens a page that exists."
+        },
+        "handle": "m37-roadmap",
+        "id": "01M79NR64KCQDWD3N7HG0EYD9D",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M79NR64KCQDWD3N7HDVVBQ5R",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "Every capability, decision and source the web UI links to opens a designed page with its statement, its why (decisions, sources, change sets) and its history."
+        },
+        "handle": "m37-model-pages",
+        "id": "01M79NR665164SKPZCCWS0741Y",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M79NR665164SKPZCCVW6CA7M",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "From the web UI the owner answers an inbox item, approves a sign-off and pauses or resumes the daemon or a project, and nothing else; every action needs the web token."
+        },
+        "handle": "m37-safe-actions",
+        "id": "01M79NR69YF7XRNK3HWVJV3XET",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M79NR69YF7XRNK3HWV48MRTA",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "Every screen shares one frame with a real project picker in place of the header's project list, and one spacing and type scale, so headers, panels and lists line up the same way everywhere."
+        },
+        "handle": "m37-frame",
+        "id": "01M79NR6CECD2ZJVY6E0TDE1YX",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M79NR6CECD2ZJVY6DZ65674Q",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "statement": "Every screen is designed phone-first and, once built, matches its approved design at phone and desktop widths in both themes."
+        },
+        "handle": "m37-matches-design",
+        "id": "01M79NR6DHVH32DYBSJG6SH7AR",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M79NR6DHVH32DYBSJFFN6MAT",
+        "op": "node.create",
+        "parent": "01M79NR5YNCT30QXX5WZSKWAK0"
+      },
+      {
+        "fields": {
+          "quote": "Overall it's just hard to digest the information that is being presented and doesn't help me much at all. We need to think it through a little more, screen by screen and get some new designs I think.",
+          "statement": "The web UI is redesigned screen by screen, phone-first, around the question 'does anything need me?', with the orchestrator drafting each screen on a design canvas for the owner to approve before it is built; the clear roadmap bugs ship at once as bug requests."
+        },
+        "handle": "web-redesign-direction",
+        "id": "01M79NR6FNDYY7AFVCNB2RXKM4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "Also just having the projects listed in the header is terrible. We need a better project picker.",
+          "statement": "The header's list of projects is replaced by a real project picker shared by every screen."
+        },
+        "handle": "web-project-picker",
+        "id": "01M79NR6H7J2EJMZSYNEZ036VJ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "quote": "And there are a lot of minor issues with things like spacing between headers and things.",
+          "statement": "Every screen's components share one spacing and type scale, fixed in the approved designs."
+        },
+        "handle": "web-spacing-scale",
+        "id": "01M79NR6NG83GYEE2C23J1G01A",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "Should the redesigned web UI stay read-only, or let you act on what needs you?",
+          "statement": "The web UI gains only safe actions (answer an inbox item, approve a sign-off, pause or resume) behind the web token; retry, abandon and merge stay with the CLI and the orchestrator.",
+          "wording": "A few safe actions (Recommended), picked by the owner"
+        },
+        "handle": "web-safe-actions",
+        "id": "01M79NR6RCJKBRMGSRMDJV6BZ0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "Should the designs treat the phone as a first-class screen? (Rhiza's Rex apps don't work on the iPhone today.)",
+          "statement": "Every web screen is designed at phone width first.",
+          "wording": "Every screen phone-first, picked by the owner"
+        },
+        "handle": "web-phone-first",
+        "id": "01M79NR6TQ76PRGV8J2NE8D76D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6TQ76PRGV8J2KVGH7GK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "How should the model pages use the rendered markdown in .rhiza/rendered?",
+          "statement": "Model pages are designed like the other screens and built from model data, not the rendered markdown shown as-is.",
+          "wording": "Designed pages from model data (Recommended), picked by the owner"
+        },
+        "handle": "web-model-pages-designed",
+        "id": "01M79NR6XJF08QR1Q1W5QK2KM3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6XJF08QR1Q1W1XXCWB6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "When should the screens be built, given milestone-36 changes what runs look like (conductor, spawned sessions)?",
+          "statement": "All screens are designed now; each is built once its design is approved, and the runs screens after milestone-36's spawn primitives land.",
+          "wording": "Designs now, runs screens after m36 (Recommended), picked by the owner"
+        },
+        "handle": "web-build-order",
+        "id": "01M79NR6ZWFNFKP5D9A9R2KBVG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR6ZWFNFKP5D9A66JE54P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "What is the first question the web UI should answer when you open it?",
+          "statement": "The web UI's first job is answering 'does anything need me?'.",
+          "wording": "Does anything need me? (Recommended), picked by the owner"
+        },
+        "handle": "web-first-job-needs-me",
+        "id": "01M79NR7247MFEZRXRCXJ564H0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79NR7247MFEZRXRCW6B9PCA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "id": "01M79NR741D73DXH417M7YP5V5",
+        "link": "01M79NR741D73DXH417JZVVBZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "id": "01M79NR76J9NP2F2MZF9MDNX14",
+        "link": "01M79NR76J9NP2F2MZF71N4D9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "id": "01M79NR783GRYDEF8S9RF0VHS8",
+        "link": "01M79NR783GRYDEF8S9QY40WKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "id": "01M79NR79QMKK052PVC25TA51V",
+        "link": "01M79NR79QMKK052PVC1ZPHYMA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6TQ76PRGV8J2KVGH7GK",
+        "id": "01M79NR7BDTFKJ8H9QADQ818E2",
+        "link": "01M79NR7BDTFKJ8H9QABPPRM0V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6XJF08QR1Q1W1XXCWB6",
+        "id": "01M79NR7DRCEEZG6BCVB14RM9Y",
+        "link": "01M79NR7DRCEEZG6BCV9XQ85P1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6ZWFNFKP5D9A66JE54P",
+        "id": "01M79NR7FPFTBP7W7GM3DC5MY9",
+        "link": "01M79NR7FPFTBP7W7GM0R0AGM1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR7247MFEZRXRCW6B9PCA",
+        "id": "01M79NR7H2SZKBM0A7VK1WFC0W",
+        "link": "01M79NR7H2SZKBM0A7VJWWDNGT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NQ828PT6T2R2PXF5JD8AC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR5YNCT30QXX5WZSKWAK0",
+        "id": "01M79NR7J3R5M672ZMT1Q87963",
+        "link": "01M79NR7J3R5M672ZMT1JWZ9J8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6FNDYY7AFVCN7H8KZV6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR60H2WWMGS010EC76BS0",
+        "id": "01M79NR7KE8W0R3NZSZHTW7M41",
+        "link": "01M79NR7KE8W0R3NZSZF6Q4WJ8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR7247MFEZRXRCW6B9PCA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6CECD2ZJVY6DZ65674Q",
+        "id": "01M79NR7NQ9FM86BST3PF6ZFN6",
+        "link": "01M79NR7NQ9FM86BST3JSQ86D0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6CECD2ZJVY6DZ65674Q",
+        "id": "01M79NR7QHHD72FK6SRYW0900T",
+        "link": "01M79NR7QHHD72FK6SRXD7GW99",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR69YF7XRNK3HWV48MRTA",
+        "id": "01M79NR7T6RNZ6DX14Z4TE2ZGA",
+        "link": "01M79NR7T6RNZ6DX14Z43H11T9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6RCJKBRMGSRMA5A3G1A",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR6DHVH32DYBSJFFN6MAT",
+        "id": "01M79NR7Y1A734242572TWEENZ",
+        "link": "01M79NR7Y1A734242572T2WX0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6TQ76PRGV8J2KVGH7GK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NR665164SKPZCCVW6CA7M",
+        "id": "01M79NR7ZZAC1HK50XCP5YQDTR",
+        "link": "01M79NR7ZZAC1HK50XCMJDXNPD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6XJF08QR1Q1W1XXCWB6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79NJRABW1517KB31EQVXF8A",
+        "id": "01M79NR83JZH3A4YXSF31DTFTB",
+        "link": "01M79NR83JZH3A4YXSF0CFCQFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6DHVH32DYBSJFFN6MAT",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NKERTK62YZM9C42BJ0JW3",
+        "id": "01M79NR86KGQ9P5AJ6RSGP0FD6",
+        "link": "01M79NR86KGQ9P5AJ6RRECA1GH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6CECD2ZJVY6DZ65674Q",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NM3RJZFSZE1XHGHCRZSRM",
+        "id": "01M79NR88VQE3MCYJ9M11PFE9C",
+        "link": "01M79NR88VQE3MCYJ9M08BPPT6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR60H2WWMGS010EC76BS0",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NMNGDCNJPAWRP791PRF7G",
+        "id": "01M79NR8AD23YKCN9M5SNXJQPR",
+        "link": "01M79NR8AD23YKCN9M5RFHP01S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR64KCQDWD3N7HDVVBQ5R",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NN43PGK6HDXTRY33VNC1E",
+        "id": "01M79NR8CBF922CY6R49QDFX7K",
+        "link": "01M79NR8CBF922CY6R47RDF2KB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR665164SKPZCCVW6CA7M",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NNP2BRD9R8XG15XCYACZ4",
+        "id": "01M79NR8FMC8AG75GSQ9G1EG9B",
+        "link": "01M79NR8FMC8AG75GSQ5VFD4SE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR69YF7XRNK3HWV48MRTA",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NP76YQVYZHZ9KG7YKG23V",
+        "id": "01M79NR8N7483TPR9N8J88FYQV",
+        "link": "01M79NR8N7483TPR9N8GJ40QXF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR61XAJXXXG5QK2MAQ87H",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M79NKERTK62YZM9C42BJ0JW3",
+        "id": "01M79NRBXDQVEQ7HTZTV6QYB72",
+        "link": "01M79NRBXDQVEQ7HTZTRQDC33E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NJRABW1517KB31EQVXF8A",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NM3RJZFSZE1XHGHCRZSRM",
+        "id": "01M79NREN2ZBYEH0KDKD2MY15F",
+        "link": "01M79NREN2ZBYEH0KDK950WTHW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NKERTK62YZM9C42BJ0JW3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NMNGDCNJPAWRP791PRF7G",
+        "id": "01M79NRH8EC9MCQA03FG9NGTTM",
+        "link": "01M79NRH8EC9MCQA03FG4SWHWN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NKERTK62YZM9C42BJ0JW3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NN43PGK6HDXTRY33VNC1E",
+        "id": "01M79NRJQF2CVDPNG5DWYSCYKS",
+        "link": "01M79NRJQF2CVDPNG5DV55R40A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NKERTK62YZM9C42BJ0JW3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NNP2BRD9R8XG15XCYACZ4",
+        "id": "01M79NRMR8AYR4C0NSH669W36Q",
+        "link": "01M79NRMR8AYR4C0NSH5K14EXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NKERTK62YZM9C42BJ0JW3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NP76YQVYZHZ9KG7YKG23V",
+        "id": "01M79NRP0ECRFHCW5W07E4HXRS",
+        "link": "01M79NRP0ECRFHCW5W03EFC3EY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NKERTK62YZM9C42BJ0JW3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79NP76YQVYZHZ9KG7YKG23V",
+        "id": "01M79NRREJG7ZQ758MYJ395VMZ",
+        "link": "01M79NRREJG7ZQ758MYFR33A2R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KGRYE538GJC5NA2VNYG4K",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79NJ83BMM2XSVX2CMAWQXGG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NRRGV3EGPZ04C6YTMZFJY",
+  "type": "ops",
+  "v": 1
+}

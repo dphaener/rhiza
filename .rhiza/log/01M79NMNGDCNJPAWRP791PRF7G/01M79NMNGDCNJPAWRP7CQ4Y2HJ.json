@@ -1,0 +1,15 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-13T05:21:18Z",
+  "body": {
+    "intent": "Web roadmap and change set page: milestones, their done points and change sets with short titles, state and progress, scoped to the project; a change set page with its leaves, acceptance, Evidence, decisions, PR and runs",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M79NMNGDCNJPAWRP7CQ4Y2HJ",
+  "type": "open",
+  "v": 1
+}
