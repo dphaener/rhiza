@@ -119,6 +119,16 @@ func watchdogPolicyOf(rows []Setting) WatchdogPolicy {
 	}
 }
 
+// defaultWatchdogPolicy is the policy of the shipped defaults: the one a
+// daemon works under before it has read any project's settings.
+func defaultWatchdogPolicy() WatchdogPolicy {
+	rows := make([]Setting, 0, len(watchdogNames))
+	for _, w := range watchdogNames {
+		rows = append(rows, Setting{Key: watchdogMachinePrefix + w.name, Value: w.def, Default: w.def, Source: SettingDefault})
+	}
+	return watchdogPolicyOf(rows)
+}
+
 // WatchdogPolicyOf reads the policy ctx's project works under; a bad value
 // is a usage error naming its key.
 func WatchdogPolicyOf(ctx *Ctx) (WatchdogPolicy, error) {

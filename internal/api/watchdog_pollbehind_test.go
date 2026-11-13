@@ -104,7 +104,7 @@ func TestWatchdogPollOverrun(t *testing.T) {
 
 	pol := WatchdogPolicy{Enabled: true, PollBehind: 2}
 	ps := newPollSteps(time.Now)
-	stop := watchPollOverrun(ps, pol, interval, logf)
+	stop, _ := watchPollOverrun(ps, pol, interval, logf)
 	release := make(chan struct{})
 	finished := make(chan struct{})
 	go func() {
@@ -128,7 +128,7 @@ func TestWatchdogPollOverrun(t *testing.T) {
 	}
 
 	reset()
-	stop = watchPollOverrun(newPollSteps(time.Now), WatchdogPolicy{Enabled: true, PollBehind: 100}, interval, logf)
+	stop, _ = watchPollOverrun(newPollSteps(time.Now), WatchdogPolicy{Enabled: true, PollBehind: 100}, interval, logf)
 	time.Sleep(30 * time.Millisecond)
 	stop()
 	time.Sleep(10 * time.Millisecond)
@@ -137,11 +137,52 @@ func TestWatchdogPollOverrun(t *testing.T) {
 	}
 
 	for _, off := range []WatchdogPolicy{{Enabled: false, PollBehind: 2}, {Enabled: true, PollBehind: 0}} {
-		stop = watchPollOverrun(newPollSteps(time.Now), off, interval, logf)
+		stop, _ = watchPollOverrun(newPollSteps(time.Now), off, interval, logf)
 		time.Sleep(40 * time.Millisecond)
 		stop()
 		if l := got(); len(l) != 0 {
 			t.Fatalf("policy %+v logged %q", off, l)
 		}
+	}
+}
+
+// TestWatchdogPollOverrunFirstPoll covers the first poll of a daemon image:
+// it starts under the shipped defaults, which watch it, and a policy read
+// mid-poll re-arms the watch, timed from the poll's start.
+func TestWatchdogPollOverrunFirstPoll(t *testing.T) {
+	if def := defaultWatchdogPolicy(); !def.Enabled || def.PollBehind != DefaultPollBehind {
+		t.Fatalf("default policy %+v, want enabled with poll-behind %d", def, DefaultPollBehind)
+	}
+	const interval = 10 * time.Millisecond
+	var mu sync.Mutex
+	var lines []string
+	logf := func(l string) { mu.Lock(); lines = append(lines, l); mu.Unlock() }
+	got := func() []string { mu.Lock(); defer mu.Unlock(); return slices.Clone(lines) }
+
+	// Armed off, then re-armed on: the line comes at the new limit.
+	stop, rearm := watchPollOverrun(newPollSteps(time.Now), WatchdogPolicy{}, interval, logf)
+	rearm(WatchdogPolicy{Enabled: true, PollBehind: 2})
+	deadline := time.Now().Add(10 * time.Second)
+	for len(got()) == 0 && time.Now().Before(deadline) {
+		time.Sleep(5 * time.Millisecond)
+	}
+	time.Sleep(30 * time.Millisecond)
+	stop()
+	if l := got(); len(l) != 1 || !strings.Contains(l[0], "after 20ms") {
+		t.Fatalf("lines %q, want one after 20ms", l)
+	}
+
+	// Armed on, then re-armed off: nothing is logged.
+	mu.Lock()
+	lines = nil
+	mu.Unlock()
+	stop, rearm = watchPollOverrun(newPollSteps(time.Now), WatchdogPolicy{Enabled: true, PollBehind: 2}, interval, logf)
+	rearm(WatchdogPolicy{Enabled: false, PollBehind: 2})
+	time.Sleep(40 * time.Millisecond)
+	stop()
+	rearm(WatchdogPolicy{Enabled: true, PollBehind: 1})
+	time.Sleep(20 * time.Millisecond)
+	if l := got(); len(l) != 0 {
+		t.Fatalf("a watch re-armed off, or stopped, logged %q", l)
 	}
 }

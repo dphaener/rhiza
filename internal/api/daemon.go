@@ -219,10 +219,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	// restarting at the home project.
 	lastTurn := ""
 	// atHome is told the home project's settings at each poll: the root-wide
-	// parts of the daemon follow them.
-	var homePol WatchdogPolicy
+	// parts of the daemon follow them. Until the first poll reads them, the
+	// watchdog works under the shipped defaults, so that poll is watched too;
+	// rearmPoll hands the poll's in-flight watch the policy just read.
+	homePol := defaultWatchdogPolicy()
+	rearmPoll := func(WatchdogPolicy) {}
 	atHome := func(conf daemonConf) {
 		homePol = watchdogPolicyOf(conf.rows)
+		rearmPoll(homePol)
 		if webUI != nil {
 			if werr := webUI.Apply(conf.webHost, conf.webPort); werr != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
@@ -248,11 +252,13 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	poll := func() error {
 		pollStart := ctx.Now()
 		steps := newPollSteps(ctx.Now)
-		defer watchPollOverrun(steps, homePol, daemonPoll, func(line string) {
+		stopWatch, rearm := watchPollOverrun(steps, homePol, daemonPoll, func(line string) {
 			if ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
 			}
-		})()
+		})
+		defer stopWatch()
+		rearmPoll = rearm
 		var reg rootcfg.Config
 		var err error
 		steps.run("", "registry load", func() { reg, err = rootcfg.Load(root) })

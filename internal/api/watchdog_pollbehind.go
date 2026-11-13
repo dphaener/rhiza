@@ -81,37 +81,64 @@ func (ps *pollSteps) current() (pollStep, bool) {
 // watchPollOverrun starts the live check of a poll: when the poll is still
 // running after pol.PollBehind times interval, it calls log once with a line
 // naming the step and project it is in. The returned stop ends the poll's
-// watch; after it returns nothing is logged. A disabled watchdog or
-// poll-behind check watches nothing.
-func watchPollOverrun(ps *pollSteps, pol WatchdogPolicy, interval time.Duration, log func(line string)) (stop func()) {
-	if !pol.Enabled || pol.PollBehind < 1 || log == nil {
-		return func() {}
+// watch; after it returns nothing is logged. The returned rearm swaps in the
+// policy the poll learns once its settings are read: the limit stays timed
+// from the watch's start, and a line already logged is not logged again. A
+// disabled watchdog or poll-behind check watches nothing.
+func watchPollOverrun(ps *pollSteps, pol WatchdogPolicy, interval time.Duration, log func(line string)) (stop func(), rearm func(WatchdogPolicy)) {
+	if log == nil {
+		return func() {}, func(WatchdogPolicy) {}
 	}
-	limit := interval * time.Duration(pol.PollBehind)
+	start := time.Now()
 	var mu sync.Mutex
-	done := false
-	t := time.AfterFunc(limit, func() {
-		mu.Lock()
-		defer mu.Unlock()
-		if done {
+	var t *time.Timer
+	done, logged := false, false
+	arm := func(pol WatchdogPolicy) {
+		if t != nil {
+			t.Stop()
+			t = nil
+		}
+		if done || logged || !pol.Enabled || pol.PollBehind < 1 {
 			return
 		}
-		line := fmt.Sprintf("watchdog: poll still running after %s", limit)
-		if st, ok := ps.current(); ok {
-			where := st.Name
-			if st.Project != "" {
-				where = st.Project + " " + st.Name
+		limit := interval * time.Duration(pol.PollBehind)
+		var self *time.Timer
+		self = time.AfterFunc(limit-time.Since(start), func() {
+			mu.Lock()
+			defer mu.Unlock()
+			if done || logged || t != self {
+				return
 			}
-			line += ", in " + where
-		}
-		log(line)
-	})
-	return func() {
-		t.Stop()
-		mu.Lock()
-		done = true
-		mu.Unlock()
+			logged = true
+			line := fmt.Sprintf("watchdog: poll still running after %s", limit)
+			if st, ok := ps.current(); ok {
+				where := st.Name
+				if st.Project != "" {
+					where = st.Project + " " + st.Name
+				}
+				line += ", in " + where
+			}
+			log(line)
+		})
+		t = self
 	}
+	mu.Lock()
+	arm(pol)
+	mu.Unlock()
+	stop = func() {
+		mu.Lock()
+		defer mu.Unlock()
+		done = true
+		if t != nil {
+			t.Stop()
+		}
+	}
+	rearm = func(pol WatchdogPolicy) {
+		mu.Lock()
+		defer mu.Unlock()
+		arm(pol)
+	}
+	return stop, rearm
 }
 
 // pollSlowestShown is how many steps the poll-behind line names.
