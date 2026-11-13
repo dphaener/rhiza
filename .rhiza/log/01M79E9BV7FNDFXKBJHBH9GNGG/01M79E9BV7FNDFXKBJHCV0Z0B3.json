@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T03:12:45Z",
+  "body": {
+    "intent": "Record agent actor claude-code-cb707da4 for session cb707da4-ecff-40d0-bdd4-01a1d2e490dd",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M79E9BV7FNDFXKBJHBH9GNGG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79E9BV7FNDFXKBJHCV0Z0B3",
+  "type": "open",
+  "v": 1
+}
