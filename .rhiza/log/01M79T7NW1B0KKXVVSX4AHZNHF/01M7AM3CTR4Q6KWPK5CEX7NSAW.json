@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7AK47WNDHFWH79NDPVQQ5N3"
+  ],
+  "at": "2026-11-13T14:13:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "ae98d902ac93de6add0feb73e1e27666f7bc3700",
+          "pr": "https://github.com/dphaener/rhiza/pull/546",
+          "result": "9 checks passed: changes SUCCESS, go-install SUCCESS, model SUCCESS, lint SKIPPED, scripts SKIPPED, api SKIPPED, rest SKIPPED, budgets SKIPPED, check SUCCESS",
+          "statement": "Pull request #546 (https://github.com/dphaener/rhiza/pull/546) passed CI at ae98d90",
+          "status": "verified"
+        },
+        "handle": "pr-546-fix-the-web-roadmap-shows-each",
+        "id": "01M7AM3CPZAZS9M1YVNPQP7AGR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AM3CPZAZS9M1YVNP8ASY1K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AM3CPZAZS9M1YVNP8ASY1K",
+        "id": "01M7AM3CQW0HHFJF7MKTVYSHJT",
+        "link": "01M7AM3CQW0HHFJF7MKSMQ9CMK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79TEDZ8NQS65M1CQQ1DSE52",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79T7NW1B0KKXVVSX4AHZNHF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AM3CTR4Q6KWPK5CEX7NSAW",
+  "type": "ops",
+  "v": 1
+}
