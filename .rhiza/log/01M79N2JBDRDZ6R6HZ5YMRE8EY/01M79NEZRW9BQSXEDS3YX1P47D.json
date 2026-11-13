@@ -1,0 +1,142 @@
+{
+  "actor": "01M79N487J34RTPJT4ZRYR9C0Q",
+  "after": [
+    "01M79NEXPS854JZ23V2PNP8N2S"
+  ],
+  "at": "2026-11-13T05:18:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "id": "01M79NEZ2X96BE0BVE1APC9NWN",
+        "link": "01M79NEZ2X96BE0BVE1716WBRS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NE48ZK6V86SVG7AK5HR74",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api/... -run DaemonGuideRefresh) start the daemon with a fake re-exec over a home and a project holding an older guide (missing skills/rhiza-builder), and show: both installs are rewritten to the running version before the first poll starts any session; a home with no guide gets none; a foreign rhiza folder is left untouched; a current guide is not rewritten.",
+          "statement": "Each time the daemon starts, after a re-exec into a new binary as well as after a restart, and before it starts any agent step, it reinstalls every guide that status finds installed (user scope, then each project's scope) and not current for the running binary (version or plugin files differ), the same as rhiza guide install --agent <agent> for that scope; it never installs where no guide was installed and never overwrites a folder guide install did not write, and it logs each scope it refreshed."
+        },
+        "handle": "daemon-refreshes-guide-at-start",
+        "id": "01M79NEZ469MM69ZTQ6HF55028",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M79NEZ469MM69ZTQ6F8D0EK0",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M79NEZ469MM69ZTQ6F8D0EK0",
+        "id": "01M79NEZ5J1T1DJT79RJE4V0ZR",
+        "link": "01M79NEZ5J1T1DJT79RF3G2GY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api/... -run DaemonGuideHold) make the refresh fail (an unwritable skills folder) and show: an accepted change set's build step is not started, exactly one inbox item names the scope and rhiza guide install --agent claude across several polls, and after the guide is installed the next poll starts the step and the item is gone.",
+          "statement": "When the daemon's guide refresh fails for a scope, the daemon starts no agent step whose start command names a skill missing from that installed guide, opens one inbox item naming the failed scope, the error and the command rhiza guide install --agent <agent> (with --project for a project scope), and starts those steps on a later poll once the guide is current, clearing the item."
+        },
+        "handle": "daemon-holds-steps-on-stale-guide",
+        "id": "01M79NEZ70EHGQE9VERFH5QCMZ",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "id": "01M79NEZ8NK7A1JEEXJQ0FJCHM",
+        "link": "01M79NEZ8NK7A1JEEXJKX97JTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Adapter tests (go test -trimpath ./internal/adapter/...) cover the skill lookup for an installed, a missing and a non-slash prompt; a testscript cmd/rhiza/testdata/script/run-start-skill-missing.txtar (go test -trimpath ./cmd/rhiza -run TestScripts/run-start-skill-missing) runs a build with HOME holding a guide without rhiza-builder and shows no rex launch, the step failed with that reason, the attempt count unchanged, the run held with an inbox item naming rhiza guide install --agent claude, and after installing the guide and resuming, the builder launches as attempt 1.",
+          "statement": "Before an agent step launches a session whose prompt starts with a slash command, the agent's adapter checks that the command's skill is installed for that agent (in the user's or the worktree's skills folder); when it is not, nothing is launched and the step fails at once with the reason 'start command /<name> unknown to <agent>: skill not installed; run rhiza guide install --agent <agent>', as an environment failure that uses up no builder, verifier or other role attempt and holds the run with an inbox item naming that command until the guide is installed and the run is resumed."
+        },
+        "handle": "session-start-skill-preflight",
+        "id": "01M79NEZA13RZT7QH1TEG0TE6N",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79NEZA13RZT7QH1TCZ113ER",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M79NEZA13RZT7QH1TCZ113ER",
+        "id": "01M79NEZC5JN780A0303FM0SKV",
+        "link": "01M79NEZC5JN780A0301YMXFAA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests (go test -trimpath ./internal/session/... ./internal/api/... -run StartNotSubmitted) feed hook reports to a run's session: SessionStart then idle past the grace with no UserPromptSubmit fails the session with that reason and holds the run without counting an attempt; SessionStart, UserPromptSubmit then idle does not; idle within the grace does not.",
+          "statement": "A run's session whose agent reports SessionStart and then goes idle with no UserPromptSubmit within a short grace fails at once with the reason 'start command was never submitted', handled as the same environment failure as a missing start skill (no role attempt used, run held with an inbox item), instead of sitting idle until the stall limit."
+        },
+        "handle": "session-start-prompt-not-submitted",
+        "id": "01M79NEZJ5H07ZV0CGAWDK3JVG",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79NEZJ5H07ZV0CGASQ0W2MJ",
+        "op": "node.create",
+        "parent": "01M5SWT6QN894SDW5V7GJNYK3H"
+      },
+      {
+        "decision": null,
+        "from": "01M79NEZJ5H07ZV0CGASQ0W2MJ",
+        "id": "01M79NEZMEH8YK7ST615GWYZ3T",
+        "link": "01M79NEZMEH8YK7ST613ZZXD5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Go tests in internal/api (go test -trimpath ./internal/api/... -run HealthGuide) cover a current guide (ok), an older version (warn with the next command), a guide missing skills/rhiza-builder (warn), a project-scope stale guide (warn with --project) and no guide (ok), and show the part sits after usage and leaves the exit code 0; describe-golden is regenerated for the new part enum (go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden).",
+          "statement": "rhiza health reports a machine-level part, guide, listed after usage: warn while any installed guide (user scope, or a covered project's scope) is out of date for the running rhiza or lacks a skill a workflow's start command names, naming each such install with next rhiza guide install --agent <agent> (plus --project for a project scope); ok otherwise, including when no guide is installed; never bad."
+        },
+        "handle": "health-guide-part",
+        "id": "01M79NEZPB651MRDDMV5K7HH88",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79NEZPB651MRDDMV3S2GYJZ",
+        "op": "node.create",
+        "parent": "01M6CS2B9S9YVY1WBBVAHWZFR9"
+      },
+      {
+        "decision": null,
+        "from": "01M79NEZPB651MRDDMV3S2GYJZ",
+        "id": "01M79NEZQNHE6M218JCJVBTRXE",
+        "link": "01M79NEZQNHE6M218JCJK03DB2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NCFAEPVAHFCPX692PAJ3H",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NEZRW9BQSXEDS3YX1P47D",
+  "type": "ops",
+  "v": 1
+}

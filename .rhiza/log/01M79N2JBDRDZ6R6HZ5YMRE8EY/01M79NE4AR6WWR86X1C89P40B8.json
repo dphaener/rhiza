@@ -1,0 +1,33 @@
+{
+  "actor": "01M79N487J34RTPJT4ZRYR9C0Q",
+  "after": [
+    "01M79NCFDBRKERBVC9NWWEKRCF"
+  ],
+  "at": "2026-11-13T05:17:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "ce044171fef262fda36e57c40e9548a9c62a4caf91e8fd109ef69603e4843d6f",
+          "session": "ce3d52b3-b257-41d5-a151-01a1d351d997",
+          "summary": "Autonomous plan run for the bug where runs started builder and verifier sessions with /rhiza-builder and /rhiza-verifier after the daemon auto-updated, while the installed guide was the older one: 16 sessions opened with 'Unknown command', each cost an attempt, and four sat idle. The planner read the daemon re-exec (internal/daemon/reexec.go, daemonLoop and daemonStartState in internal/api/daemon.go), the guide-currency test in status (installedVersion, pluginCurrent in internal/api/status.go), guide.install, the health parts, the session launch and the usage-limit transcript watch (internal/api/session_run.go). One transcript showed the agent writing a system message 'Unknown command: /rhiza-builder. Did you mean /rhiza-build?' and no prompt submitted. There was no owner. The planner raised three choices (when the daemon refreshes guides, what happens to a run whose start command is unknown, and how health reports a stale guide), and the arbiter answered with Decision decision-guide-refresh-start-fail-health: refresh installed guides at every daemon start, before any agent step; if a refresh fails, hold the agent steps whose start skill is missing, with one inbox item, until the guide is current; check before launch that the start command's skill is installed, and fail at once with an environment failure that uses no role attempt and holds the run in the inbox; as a backstop, fail a session that goes idle after SessionStart without UserPromptSubmit within a short grace; add a machine-level health part, guide, after usage, that is warn while a guide is stale or missing a skill a workflow starts, and never bad. Leaves were written from that Decision under the daemon, rex-sessions and health-command capabilities.",
+          "title": "Fix Runs started agent: autonomous plan interview"
+        },
+        "handle": "plan-fix-runs-started-agent",
+        "id": "01M79NE48ZK6V86SVG7B4JCHBY",
+        "key": null,
+        "kind": "source",
+        "node": "01M79NE48ZK6V86SVG7AK5HR74",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79NE4AR6WWR86X1C89P40B8",
+  "type": "ops",
+  "v": 1
+}

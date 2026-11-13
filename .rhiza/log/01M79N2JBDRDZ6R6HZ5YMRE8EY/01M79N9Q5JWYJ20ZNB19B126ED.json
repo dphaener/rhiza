@@ -1,0 +1,30 @@
+{
+  "actor": "01M79N487J34RTPJT4ZRYR9C0Q",
+  "after": [
+    "01M79N2JBEYS081ZRW5TS3XVHT"
+  ],
+  "at": "2026-11-13T05:15:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "ce3d52b3-b257-41d5-a151-01a1d351d997",
+          "statement": "When should the daemon refresh out-of-date guide installs (fix 1)? / A session whose agent rejects its start command as unknown (fix 2): what happens to its run? / How should rhiza health report an out-of-date installed guide (fix 3)?"
+        },
+        "handle": "question-ce3d52b3-1",
+        "id": "01M79N9HGE31ACQQJA5P2A5TC8",
+        "key": null,
+        "kind": "question",
+        "node": "01M79N9HGE31ACQQJA5NPJD0H1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79N9Q5JWYJ20ZNB19B126ED",
+  "type": "ops",
+  "v": 1
+}
