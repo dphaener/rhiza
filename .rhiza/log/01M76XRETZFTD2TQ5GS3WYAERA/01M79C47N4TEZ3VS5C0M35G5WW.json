@@ -1,0 +1,41 @@
+{
+  "actor": "01M79C2K25KZWBD86J1X2ARJ8M",
+  "after": [
+    "01M79C1AX8156RJ8TVYCPE64DN"
+  ],
+  "at": "2026-11-13T02:34:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, guides-one-final-paragraph (its test TestReviewFixerTrailersInOneFinalParagraph reads review.md, where the rule sits in the Fixer section today), review-guide and Decision review-role-topics-shape (review becomes an index; role topics carry the work), and the fixer-topic and conflict-fix-topic acceptances, which already name the one final trailer paragraph and the Review:/Model-Conflict: trailers. The node is stale, not the plan: keeping the rule in the index would contradict the chosen index shape. The sibling rulings on the same round (scoped-tests-in-role-topics, command-budget-in-role-topics, done-own-command-in-role-topics, unstable-ci-in-role-topics, stdin-findings-in-role-topics) all update the node to name the role topics, so this follows them. Only fixers commit on the review side, and ci-fix, gate-fix and conflict-fix commit too, so all four carry the rule and no committing role the node covered loses it; checks and critics write no commits and are left out. No CLI command, flag, --json shape, rhiza.* setting or .rhiza/ format changes, so no breaking note.",
+          "statement": "guides-one-final-paragraph is updated in this change set to follow the split, not by keeping a fixer instruction in the review index: build.md keeps the builder example unchanged, and on the review side the one-final-paragraph trailer rule (every trailer, Co-Authored-By: included, in one final paragraph, no blank line) lives in each topic whose role commits: fixer, ci-fix, gate-fix and conflict-fix, not in review.md. Its statement becomes: the build guide's builder example and the fixer, ci-fix, gate-fix and conflict-fix topics show every trailer, Co-Authored-By included, in one final paragraph. Its acceptance becomes: go test -trimpath ./internal/guide/... asserts build.md as today and each of the four fix topics holds Co-Authored-By:, one final paragraph and no blank line (TestReviewFixerTrailersInOneFinalParagraph moves from review.md to those topics), and fails when any of them puts Co-Authored-By in a paragraph apart from Change:, Actor:, Leaf:, Review: or Model-Conflict:.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "one-final-paragraph-in-fix-topics",
+        "id": "01M79C47H71KK6S7138B6213Y8",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79C47H71KK6S71389S322M1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79C47H71KK6S71389S322M1",
+        "id": "01M79C47JTWJ3XNFESCBBCXE2T",
+        "link": "01M79C47JTWJ3XNFESC9Y3V9HT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMAD9XQR2K6PPK9XAF7Y0",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79C47N4TEZ3VS5C0M35G5WW",
+  "type": "ops",
+  "v": 1
+}
