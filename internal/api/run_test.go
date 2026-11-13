@@ -128,7 +128,7 @@ func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
 		exit            int
 		message         string
 	}{
-		{"NoMode", agentWorkflow, `{"workflow":"w"}`, 2, "no permission mode"},
+		{"NoMode", agentWorkflow, `{"workflow":"w"}`, 2, "no permission mode: give --permission-mode, set rhiza.daemon.permissionMode"},
 		{"Bypass", agentWorkflow, `{"workflow":"w","permission_mode":"bypassPermissions"}`, 1, `trust = "dedicated"`},
 		{"StepBypass", agentWorkflow + "permission_mode = \"bypassPermissions\"\n", `{"workflow":"w","permission_mode":"manual"}`, 1, `trust = "dedicated"`},
 		{"UnknownAgent", agentWorkflow, `{"workflow":"w","permission_mode":"manual","agent":"nobody"}`, 2, "unknown agent"},

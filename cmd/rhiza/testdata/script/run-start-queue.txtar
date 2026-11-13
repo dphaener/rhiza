@@ -60,6 +60,17 @@ stdout '^0$'
 # checked with it and queued recording none; --foreground has no stand-in; a
 # mode the agent rejects refuses the queue.
 exec rhiza change new DaemonMode --title DaemonMode
+# With the setting unset a queued start naming no mode is refused, naming the
+# setting, and nothing is queued.
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json || true'
+stdout '^0$'
+! exec rhiza run start --workflow plan
+stderr 'rhiza.daemon.permissionMode'
+exec sh -c 'grep -c "\"change\"" .git/rhiza/starts.json || true'
+stdout '^0$'
+exec git config rhiza.daemon.permissionMode manual
+! exec rhiza run start --workflow plan --foreground
+stderr 'rhiza.daemon.permissionMode'
 exec git config rhiza.daemon.permissionMode nonsense
 ! exec rhiza run start --workflow plan
 stderr 'nonsense'

@@ -1717,7 +1717,7 @@ func checkAgentSteps(ctx *Ctx, def *workflow.Definition, mode, agent string, aut
 func checkAgentStep(ctx *Ctx, s workflow.Step, what, mode, agent, next string) error {
 	req := agentStepRequest(s, mode, agent)
 	if req.PermissionMode == "" {
-		return Usagef("step %q is %s with no permission mode: give --permission-mode or set permission_mode on the step", s.Name, what).
+		return Usagef("step %q is %s with no permission mode: give --permission-mode, set rhiza.daemon.permissionMode (for a run the daemon starts), or set permission_mode on the step", s.Name, what).
 			WithNext(next)
 	}
 	if _, err := startAdapter(ctx, req); err != nil {
