@@ -5,6 +5,7 @@ package api
 // project's part of a poll (its journal, holds and state file).
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -56,8 +57,8 @@ var pollGitTimeout = 30 * time.Second
 
 // boundGit makes c's Git and GitConfig run git in dir through an Exec that
 // kills each program after pollGitTimeout, as the model branch work's does,
-// so a hung git costs a poll at most that long per call. Without Git, Exec
-// and Start it leaves c alone.
+// so a hung git costs a poll at most that long per call. Without Git or
+// Exec it leaves c alone; without Start its git runs unbounded through Exec.
 func boundGit(c *Ctx, dir string) {
 	if c.Git == nil || c.Exec == nil {
 		return
@@ -70,6 +71,9 @@ func boundGit(c *Ctx, dir string) {
 	git := c.Git
 	c.GitConfig = func(key string) (string, error) {
 		out, err := git("config", "--get", key)
+		if te := (timeoutError{}); errors.As(err, &te) {
+			return "", err
+		}
 		v := strings.TrimSpace(out)
 		if err != nil || v == "" {
 			return "", Errorf("git config %s is not set", key)
@@ -97,7 +101,11 @@ func daemonHome(ctx *Ctx, root string, reg rootcfg.Config) (string, *Ctx, bool) 
 	}
 	dir := reg.Dir(root, name)
 	if abs, err := filepath.Abs(ctx.Root); err == nil && abs == filepath.Clean(dir) {
-		// The caller's own context, with the poll's bounded git.
+		// The caller's own context, with the poll's bounded git when it
+		// can start programs; without Start its own Git stays.
+		if ctx.Start == nil {
+			return name, ctx, true
+		}
 		c := *ctx
 		boundGit(&c, dir)
 		return name, &c, true
@@ -526,6 +534,17 @@ func boundedExecCtx(ctx *Ctx, timeout time.Duration) *Ctx {
 	return &c
 }
 
+// timeoutError is execWithin's error for a program it killed at its time
+// limit; it names the command and the limit.
+type timeoutError struct {
+	cmd   string
+	limit time.Duration
+}
+
+func (e timeoutError) Error() string {
+	return fmt.Sprintf("%s: timed out after %s", e.cmd, e.limit)
+}
+
 // execWithin runs p through ctx.Start and returns its standard output,
 // killing it after timeout.
 func execWithin(ctx *Ctx, p Program, timeout time.Duration) ([]byte, error) {
@@ -543,7 +562,7 @@ func execWithin(ctx *Ctx, p Program, timeout time.Duration) ([]byte, error) {
 	code, err := proc.Wait()
 	if !timer.Stop() {
 		<-timedOut
-		return nil, fmt.Errorf("%s: timed out after %s", cmd, timeout)
+		return nil, timeoutError{cmd: cmd, limit: timeout}
 	}
 	if err != nil {
 		return nil, err

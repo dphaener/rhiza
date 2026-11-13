@@ -42,7 +42,14 @@ func TestDaemonHomePrefersWorkingProject(t *testing.T) {
 	}
 }
 
-func pollGitCtx(t *testing.T, dir string, h *hangProcess, got *[]Program) *Ctx {
+// pollGitStarts records each program a poll git call starts, each its own
+// git that never exits until killed.
+type pollGitStarts struct {
+	progs []Program
+	procs []*hangProcess
+}
+
+func pollGitCtx(t *testing.T, dir string, st *pollGitStarts) *Ctx {
 	t.Helper()
 	ctx := testCtx(dir)
 	ctx.Git = func(...string) (string, error) { t.Fatal("unbounded Git used"); return "", nil }
@@ -51,25 +58,39 @@ func pollGitCtx(t *testing.T, dir string, h *hangProcess, got *[]Program) *Ctx {
 		t.Fatal("untimed Exec used")
 		return nil, nil
 	}
-	ctx.Start = func(p Program) (Process, error) { *got = append(*got, p); return h, nil }
+	ctx.Start = func(p Program) (Process, error) {
+		h := &hangProcess{killed: make(chan struct{})}
+		h.r, h.w = io.Pipe()
+		st.progs = append(st.progs, p)
+		st.procs = append(st.procs, h)
+		return h, nil
+	}
 	return ctx
 }
 
-func checkPollGitBounded(t *testing.T, c *Ctx, got *[]Program, h *hangProcess) {
+// checkPollGitBounded asserts c's Git and GitConfig each fail after the
+// limit with an error naming the command and the limit, each killing its
+// own git, started without a terminal prompt.
+func checkPollGitBounded(t *testing.T, c *Ctx, dir string, st *pollGitStarts) {
 	t.Helper()
-	if _, err := c.Git("status"); err == nil || !strings.Contains(err.Error(), "git -C "+c.Root+" status: timed out after 10ms") {
+	if _, err := c.Git("status"); err == nil || !strings.Contains(err.Error(), "git -C "+dir+" status: timed out after 10ms") {
 		t.Fatalf("Git err %v", err)
 	}
-	if _, err := c.GitConfig("user.name"); err == nil {
-		t.Fatal("GitConfig did not fail")
+	if _, err := c.GitConfig("user.name"); err == nil || !strings.Contains(err.Error(), "git -C "+dir+" config --get user.name: timed out after 10ms") {
+		t.Fatalf("GitConfig err %v", err)
 	}
-	select {
-	case <-h.killed:
-	default:
-		t.Fatal("git was not killed")
+	if len(st.progs) != 2 {
+		t.Fatalf("programs %+v", st.progs)
 	}
-	if len(*got) != 2 || strings.Join((*got)[0].Env, " ") != "GIT_TERMINAL_PROMPT=0" {
-		t.Fatalf("programs %+v", *got)
+	for i, h := range st.procs {
+		select {
+		case <-h.killed:
+		default:
+			t.Fatalf("git %d (%v) was not killed", i, st.progs[i].Args)
+		}
+		if env := strings.Join(st.progs[i].Env, " "); env != "GIT_TERMINAL_PROMPT=0" {
+			t.Fatalf("git %d env %q", i, env)
+		}
 	}
 }
 
@@ -77,15 +98,9 @@ func TestPollGitBounded(t *testing.T) {
 	old := pollGitTimeout
 	pollGitTimeout = 10 * time.Millisecond
 	t.Cleanup(func() { pollGitTimeout = old })
-	newHang := func() *hangProcess {
-		h := &hangProcess{killed: make(chan struct{})}
-		h.r, h.w = io.Pipe()
-		return h
-	}
 	dir := t.TempDir()
-	var got []Program
-	h := newHang()
-	checkPollGitBounded(t, projectCtx(pollGitCtx(t, dir, h, &got), dir), &got, h)
+	var st pollGitStarts
+	checkPollGitBounded(t, projectCtx(pollGitCtx(t, dir, &st), dir), dir, &st)
 
 	// A git that exits in time returns its output unchanged.
 	ctx := testCtx(dir)
@@ -114,14 +129,12 @@ func TestPollGitBoundedHome(t *testing.T) {
 		t.Fatal(err)
 	}
 	reg := rootcfg.Config{Projects: map[string]rootcfg.Project{"a": {Path: "a"}}}
-	h := &hangProcess{killed: make(chan struct{})}
-	h.r, h.w = io.Pipe()
-	var got []Program
-	ctx := pollGitCtx(t, home, h, &got)
+	var st pollGitStarts
+	ctx := pollGitCtx(t, home, &st)
 	ctx.Wd = home
 	_, hc, ok := daemonHome(ctx, root, reg)
 	if !ok {
 		t.Fatal("no home")
 	}
-	checkPollGitBounded(t, hc, &got, h)
+	checkPollGitBounded(t, hc, home, &st)
 }
