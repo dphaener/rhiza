@@ -19,6 +19,9 @@ afk's shipit/forge prompts become Rhiza's shipped default prompts for every run 
 ### In
 
 - decided-by [m35-afk-prompts](../intent/milestone-35/m35-afk-prompts.md)
+- decided-by [builder-topic](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/builder-topic.md)
+- decided-by [verifier-topic](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/verifier-topic.md)
+- decided-by [build-prompts-one-line](../capability/rhiza/workflows/built-in-workflows/build-workflow/build-guide/build-prompts-one-line.md)
 
 ## History
 

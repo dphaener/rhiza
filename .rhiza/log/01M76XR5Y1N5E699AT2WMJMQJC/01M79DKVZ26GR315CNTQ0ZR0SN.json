@@ -1,0 +1,203 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M79CGQX0H0TKDE808NW3BMNW"
+  ],
+  "at": "2026-11-13T03:01:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "c3c5791a5e9313a24daf7b182aa69c8a1e3585a2",
+          "pr": "https://github.com/dphaener/rhiza/pull/521",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #521 (https://github.com/dphaener/rhiza/pull/521) passed CI at c3c5791",
+          "status": "verified"
+        },
+        "handle": "pr-521-build-role-topics",
+        "id": "01M79DKTVBKBNE7TY2V34WC2QG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKTXK690KK7NQ5PSH52X4",
+        "link": "01M79DKTXK690KK7NQ5PM6N5C7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FTA4EJ8NB0P869FGVT0",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKTZ2BX11Q7B8WY2WXZ01",
+        "link": "01M79DKTZ2BX11Q7B8WXQ5VXTY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKV0BJ75EB43YJZ5KSFGF",
+        "link": "01M79DKV0BJ75EB43YJXJG5P7P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G189EFBV82T8PZ626EZ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKV1MM68TQTVS0QMJ078R",
+        "link": "01M79DKV1MM68TQTVS0NFM65NN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G5P60MM2EHVR5M79X51",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKV3T0C0HVC5YWBVNMZRE",
+        "link": "01M79DKV3T0C0HVC5YWB28DDTZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974G8PCWZ6YB020VYE5FRB",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKV662YE5SM1PJ8Z0HTPA",
+        "link": "01M79DKV662YE5SM1PJ69DYD26",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7974GD79WS6HEB3RMEMQ7W9",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKV8DV5F7R05N3K1P48VA",
+        "link": "01M79DKV8DV5F7R05N3GQN91XY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5YX3HRZCS9HFYWGDSC5TGS8",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVA1MK3M1MBVNB49NJGW",
+        "link": "01M79DKVA1MK3M1MBVN7Y3NVQ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY462ZXBJ1BQB0RJ5FA66",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVBDKQE8CQP6P3KGKPXK",
+        "link": "01M79DKVBDKQE8CQP6P09GXDJ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6YCRMA48VMM2KTZ2Q92EY10",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVCQT2QWKVG2WZDA8VWG",
+        "link": "01M79DKVCQT2QWKVG2WVJGH151",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6ZCM35BZXJ8X5SQ96639XZ4",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVE6TBWSB6A9HXDY8F27",
+        "link": "01M79DKVE6TBWSB6A9HSGSB29X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0EPMPD72KB5AZWBB9MRGM",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVFHT879V67F45R6HN4C",
+        "link": "01M79DKVFHT879V67F41WGP1DE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY4EE4QA5EKNQXHR7R9XH",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVHHQVWYTHRE02ZR51PY",
+        "link": "01M79DKVHHQVWYTHRE02XM5D1Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6505JJY04DWHQZ3EQRFCHAM",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVJXFECJ5JWFDSXC3PVR",
+        "link": "01M79DKVJXFECJ5JWFDRJVAFCG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY3S1VF65NT8YXQKZ4VZC",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVMYGRDYYC0208CSCKQ8",
+        "link": "01M79DKVMYGRDYYC020583KX9M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6M0F9J7KPR4WJWBDMZ4X2WP",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVPXY7W47K2BWKEYYFVS",
+        "link": "01M79DKVPXY7W47K2BWHNKW8YW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XY43WSHZDCT6WSCK7ATYJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M79DKTVBKBNE7TY2V094ZX9J",
+        "id": "01M79DKVS311C88A320KDS5D35",
+        "link": "01M79DKVS311C88A320KC200ST",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6MMAF8Z4XWD1JD9WG5PRYBR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XR5Y1N5E699AT2WMJMQJC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79DKVZ26GR315CNTQ0ZR0SN",
+  "type": "ops",
+  "v": 1
+}
