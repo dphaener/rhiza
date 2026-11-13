@@ -598,6 +598,23 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 		}
 		return false, errResult(fmt.Errorf("leaf %s: %s session %s: %v", a.leaf.Handle, a.role, a.session, err)), true, nil
 	}
+	if status.Done && status.Environment {
+		// The machine's fault, not the role's: void the session so no
+		// attempt is used, and hold the run for the owner.
+		if err := r.unblock(step.Name, a.session); err != nil {
+			return false, result{}, false, err
+		}
+		if err := r.append(Entry{
+			Type: TypeLeafVoid, Step: step.Name, Leaf: a.leaf.ID, Handle: a.leaf.Handle,
+			Role: a.role, Attempt: a.attempt, Session: a.session, Detail: status.Detail,
+		}); err != nil {
+			return false, result{}, false, err
+		}
+		if err := r.closePane(lr, step, a.session); err != nil {
+			return false, result{}, false, err
+		}
+		return false, errResult(fmt.Errorf("leaf %s: %s session %s: %s", a.leaf.Handle, a.role, a.session, status.Detail)), true, nil
+	}
 	if status.Done || status.SaidDone {
 		if err := r.unblock(step.Name, a.session); err != nil {
 			return false, result{}, false, err

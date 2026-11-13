@@ -63,6 +63,12 @@ type Status struct {
 	// cleared once the answer is delivered. Like Done, Resolve does not
 	// weigh it.
 	Asked *Report `json:"asked,omitempty"`
+	// Started is when the agent's hook said the session started, Prompted
+	// when it first reported anything but idle (its start command or a
+	// message was submitted). Like Done they are not sources Resolve
+	// weighs; NeverSubmitted reads them.
+	Started  *Report `json:"started,omitempty"`
+	Prompted *Report `json:"prompted,omitempty"`
 }
 
 // SaidDone reports whether the agent has said its work is done.
@@ -162,4 +168,30 @@ func Stallable(r Record) bool {
 		return false
 	}
 	return true
+}
+
+// StartGrace is how long a session may sit idle after its start with no
+// prompt submitted before its start command counts as never submitted:
+// the agent rejected it (an unknown slash command) or never read it.
+const StartGrace = 3 * time.Minute
+
+// NeverSubmittedDetail is the reason of a session whose start command was
+// never submitted, the detail of its error exit.
+const NeverSubmittedDetail = "start command was never submitted"
+
+// NeverSubmitted reports whether the live session of a run reported its
+// start, has not reported anything but idle since, and has sat so for more
+// than StartGrace at now. A session that ever submitted a prompt, said it
+// is done, exited, or is paused at its usage limit never counts; nor does
+// one whose start no hook reported (an older record).
+func NeverSubmitted(r Record, now time.Time) bool {
+	s := r.Status
+	if r.Run == "" || s.Started == nil || s.Prompted != nil || s.Exited() || s.SaidDone() || s.Asked != nil {
+		return false
+	}
+	rep, src := Resolve(r)
+	if src != SourceHook || rep.State != StateIdle || strings.HasPrefix(rep.Detail, LimitPausedDetail) {
+		return false
+	}
+	return now.Sub(s.Started.At) > StartGrace
 }

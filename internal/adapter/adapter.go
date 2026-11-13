@@ -143,6 +143,10 @@ type HookReport struct {
 	Kind string
 	// Detail is free text from the agent, if any.
 	Detail string
+	// Start is true for the report of the session starting, before any
+	// prompt: the agent is idle at its prompt with the start command, if
+	// it was read, not yet submitted.
+	Start bool
 }
 
 // Message is one message a session sent another through the agent.

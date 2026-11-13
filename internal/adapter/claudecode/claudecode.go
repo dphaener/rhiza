@@ -177,7 +177,9 @@ func (Adapter) HookStatus(event string, raw []byte) (adapter.HookReport, bool, e
 	}
 	r := adapter.HookReport{SessionID: p.SessionID}
 	switch event {
-	case "SessionStart", "Stop":
+	case "SessionStart":
+		r.State, r.Start = "idle", true
+	case "Stop":
 		r.State = "idle"
 	case "PreToolUse":
 		if p.ToolName == askTool {

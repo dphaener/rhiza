@@ -55,6 +55,10 @@ const (
 	// TypeLeafRound gives a failed leaf a fresh round of attempts, once a
 	// Decision answers the question its failure raised.
 	TypeLeafRound = "leaf-round"
+	// TypeLeafVoid voids a leaf session that failed for the machine's sake
+	// (its start command was never submitted): no attempt was used, so the
+	// session is dropped and the role starts again on the same attempt.
+	TypeLeafVoid = "leaf-void"
 	// TypePaneClosed records that a leaf or check session's pane was
 	// closed.
 	TypePaneClosed = "pane-closed"
@@ -1536,6 +1540,9 @@ func (j Journal) State() State {
 				Seq: seq,
 			})
 			st.addSession(e.Step, e.Session)
+		case TypeLeafVoid:
+			l := st.leaf(e)
+			l.Sessions = slices.DeleteFunc(l.Sessions, func(s LeafSession) bool { return s.Session == e.Session })
 		case TypeLeafAttempt:
 			l := st.leaf(e)
 			l.Attempts = append(l.Attempts, LeafAttempt{Role: e.Role, Attempt: e.Attempt, Outcome: e.Outcome, Commit: e.Commit, Detail: e.Detail, At: e.At})

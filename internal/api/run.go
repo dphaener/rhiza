@@ -2479,6 +2479,19 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 		}
 		rec = r.retryBlock(rec)
 	}
+	if !rec.Status.Exited() && session.NeverSubmitted(rec, r.ctx.Now()) {
+		// The agent never read its start command (an unknown slash
+		// command, say): end the session at once with that reason.
+		var err error
+		if rec, err = r.sessions.Update(sid, func(rec *session.Record) {
+			if !rec.Status.Exited() {
+				rec.Status.Exit = &session.Report{State: session.StateError, Detail: session.NeverSubmittedDetail, At: r.ctx.Now().UTC()}
+			}
+		}); err != nil {
+			return run.AgentStatus{}, err
+		}
+		r.setBlockPending(rec.ID, false)
+	}
 	if !rec.Status.Exited() {
 		rep, _ := session.Resolve(rec)
 		return run.AgentStatus{
@@ -2487,6 +2500,8 @@ func (r *stepRunner) AgentStatus(sid string) (run.AgentStatus, error) {
 	}
 	x := rec.Status.Exit
 	switch {
+	case x.State == session.StateError && x.Detail == session.NeverSubmittedDetail:
+		return run.AgentStatus{Done: true, Outcome: workflow.OutcomeFail, Detail: x.Detail, Environment: true}, nil
 	case x.Code != nil && *x.Code == 0:
 		return run.AgentStatus{Done: true, Outcome: workflow.OutcomePass, Detail: "exit 0"}, nil
 	case x.Code != nil:
