@@ -1,0 +1,182 @@
+{
+  "actor": "01M7AHA28C7B0MW29JFYK34TX1",
+  "after": [
+    "01M7AHT6DEQ6KS2ZVZ4MD9D8RH"
+  ],
+  "at": "2026-11-13T13:34:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestConduct shows the conduct topic has the role sections in order, names each phase with its command (rhiza apply for missing leaves, rhiza run spawn with the builder, verifier, check-plan, check-code, check-qa, critic and fixer roles, rhiza run findings, rhiza run review-check, rhiza land, rhiza render, rhiza session done), carries the shared never-list, command-budget and session-done blocks and the never-do list (merge, push, edit .rhiza/log, pass its own gate), names rhiza guide contract, and stays under the guide size cap; go test -trimpath ./internal/api -run TestGuideInstall shows rhiza guide install --agent claude writing skills/rhiza-conduct/SKILL.md with the conduct topic. Touches internal/guide/text/conduct.md, internal/guide/guide.go, internal/guide/conduct_test.go, internal/api/guide_install.go, internal/api/guide_install_test.go.",
+          "statement": "Rhiza ships a conduct guide topic and rhiza-conduct skill for the conductor of a change set: read the slice and the code; plan the leaves with rhiza apply when there are none, under the autonomous rules (questions go to the arbiter); spawn a builder and then a verifier per leaf with a tight brief; spawn the plan, code and qa checks (loading check-plan, check-code and check-qa); spawn a critic only for a check whose latest round has a blocker or major finding, and a fixer for confirmed findings; check rhiza run review-check passes; land and render on the branch; then rhiza session done. It never merges, pushes, edits .rhiza/log or passes its own gate."
+        },
+        "handle": "conduct-skill",
+        "id": "01M79KPD8SQX6BBRG3NACDG8Z2",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestPickNoLeaves|TestDaemonPicks' shows a leafless, milestone-serving change set dispatched to a workflow starting with an agent step that declares checks picked, the same change set dispatched to a workflow starting with a leaves step skipped as no-leaves, a leafless backlog change set still skipped, and an umbrella change set still not ready. Touches internal/api/daemon.go, internal/api/daemon_picks_test.go.",
+          "statement": "The daemon picks an accepted, ready change set that serves a milestone and has no leaves when its dispatch resolves to the conductor default (a workflow whose first step is an agent step that declares checks), instead of skipping it; backlog change sets with no leaves and change sets dispatched to a classic workflow keep the no-leaves skip, and umbrella change sets stay not ready."
+        },
+        "handle": "conduct-plans-leaves",
+        "id": "01M79KPD9T4QSDZCWH4QPW1G7C",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestAgentStepChecks shows an agent step's declared checks parsed and rhiza workflow check refusing a check with no name or a duplicate name; go test -trimpath ./internal/api -run TestRunFindingsCheckNames shows, in a run in an agent step declaring plan, code and qa, findings and verdict with --check plan recorded as plan's rounds, and --check scope refused with a message naming plan, code and qa. Touches internal/workflow/workflow.go, internal/workflow/workflow_test.go, internal/api/run_review.go, internal/api/run_review_test.go.",
+          "statement": "An agent step may declare its review checks in the workflow definition the way a checks step does ([[step.<name>.check]] with a name); rhiza run findings --check and rhiza run verdict --check accept a run in such a step and validate the name against that step's declared checks, refusing any other (scope included) with a message naming them; nothing hard-codes plan, code and qa."
+        },
+        "handle": "review-three-checks",
+        "id": "01M79KPDAWDKT4JQK1KEPVXBBY",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestReviewCheckConductor shows, in a run in an agent step declaring plan, code and qa: a round of minor findings passing with no critic verdict, a blocker with no verdict and a confirmed major failing with exit non-zero and naming them, a blocker downgraded to minor and a dropped major passing, and only each check's latest round counted. Touches internal/api/run_review.go, internal/api/run_review_test.go.",
+          "statement": "rhiza run review-check works in a run in an agent step that declares checks: it reads the run's journal and, for each declared check, counts its latest round's blocker and major findings that no critic verdict downgraded or dropped as open, failing (exit non-zero, listing them) while any is open; a round with only minor or nit findings passes with no critic. The count comes from the journal, never from the conductor's word."
+        },
+        "handle": "critic-on-major",
+        "id": "01M79KPDBW0RMPYBW73T3AFCQP",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "id": "01M7AHW1GV3HS4VGA52V61556T",
+        "link": "01M7AHW1GV3HS4VGA52RCT0ANZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHT653JXZV2Y1YH0CBNQWC",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "id": "01M7AHW2A53BCV5BFPB54B2KM0",
+        "link": "01M7AHW2A53BCV5BFPB2XW1XFV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "id": "01M7AHW2J806JSETGXN7ZXNT1K",
+        "link": "01M7AHW2J806JSETGXN4DWECVH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestCheckPlan|TestCheckCode|TestReviewIsAnIndex|TestBuildReviewCommandBudget' shows check-plan holding the compliance and model rules, check-code holding the quality rules, both with the role sections and shared blocks and under the size cap, and the review topic naming check-plan, check-code and check-qa for a conductor run and the old four for the classic workflows; go test -trimpath ./internal/api -run TestGuideInstallRoleSkills shows skills/rhiza-check-plan/SKILL.md and skills/rhiza-check-code/SKILL.md installed beside the old role skills. Touches internal/guide/text/check-plan.md, internal/guide/text/check-code.md, internal/guide/text/review.md, internal/guide/guide.go, internal/guide/check_plan_test.go, internal/guide/check_code_test.go, internal/guide/review_test.go, internal/guide/budget_test.go, internal/api/guide_install.go, internal/api/guide_install_test.go.",
+          "statement": "Rhiza ships two review role topics and skills: check-plan (the compliance and model checks' rules merged: each leaf's acceptance met as written, under-built, scope creep, unaccounted files, and code that contradicts the slice) and check-code (the quality check's rules under the new name); check-compliance, check-model and check-quality stay unchanged for the classic ship-change, review and docs-review, and the review index topic names which runs load which topics."
+        },
+        "handle": "check-plan-code-topics",
+        "id": "01M7AHW2WHSC1M6D5AFT7Y6YFR",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "id": "01M7AHW3AJ6Z1XCZA241NM07FS",
+        "link": "01M7AHW3AJ6Z1XCZA23ZCWR568",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "id": "01M7AHW3Q8Y4756TAFCRF39JRE",
+        "link": "01M7AHW3Q8Y4756TAFCQ2YVGWS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVR7T0Z38NYD6T1TTWGR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "id": "01M7AHW4GMW1Z26BR62ZYZXD6Z",
+        "link": "01M7AHW4GMW1Z26BR62YRET3WV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "id": "01M7AHW5FYQHRBSHY74WJDJEWV",
+        "link": "01M7AHW5FYQHRBSHY74RV4T3XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "id": "01M7AHW5YKVTXQZR1FC73S055V",
+        "link": "01M7AHW5YKVTXQZR1FC61V4T89",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "id": "01M7AHW6PJ784EQ14CC0SN5DF5",
+        "link": "01M7AHW6PJ784EQ14CBX1CM6E9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHQJAMY18Z3M41T5BJN6D8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "id": "01M7AHW74ND52FH3JQ8ZEVGBJZ",
+        "link": "01M7AHW74ND52FH3JQ8W2BCAQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHW7FFPQASNTMYYBEBCEWP",
+  "type": "ops",
+  "v": 1
+}
