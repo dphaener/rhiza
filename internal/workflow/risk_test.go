@@ -81,3 +81,37 @@ func TestRisky(t *testing.T) {
 		t.Error("a role without globs is never risky")
 	}
 }
+
+func TestBuiltinVerifierTierDefaults(t *testing.T) {
+	wantPaths := []string{
+		"*_test.go", "**/*_test.go", "**/testdata/**", "**/main_test.go",
+		".githooks/**", "**/hooks/**",
+		".github/**",
+		".rhiza/workflows/**", "internal/workflow/builtin/**",
+		"**/migrations/**", "**/migrate/**",
+		"**/*retry*",
+	}
+	for _, name := range []string{"build", "review"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no %s built-in", name)
+		}
+		def, err := Parse(name, data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		v := def.Steps[name].Verifier
+		if v == nil {
+			t.Fatalf("%s: no verifier", name)
+		}
+		if !reflect.DeepEqual(v.Models, []string{"opus"}) {
+			t.Errorf("%s verifier models = %v", name, v.Models)
+		}
+		if !reflect.DeepEqual(v.LowRiskModels, []string{"sonnet"}) {
+			t.Errorf("%s verifier low_risk_models = %v", name, v.LowRiskModels)
+		}
+		if !reflect.DeepEqual(v.RiskyPaths, wantPaths) {
+			t.Errorf("%s verifier risky_paths = %v", name, v.RiskyPaths)
+		}
+	}
+}
