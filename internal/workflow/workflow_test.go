@@ -1167,7 +1167,7 @@ func TestSignoffStepRefused(t *testing.T) {
 }
 
 // The built-in review workflow: code-check (no on.fail), then a checks
-// step with compliance, quality, qa, scope and model checks, its critic,
+// step with compliance, quality, qa and model checks, its critic,
 // fixer and verifier, all on opus, each prompt following a guide and
 // ending in rhiza session done, then the sign-off, which goes back to the
 // checks on changes and ends done without landing.
@@ -1215,21 +1215,27 @@ func TestReviewBuiltin(t *testing.T) {
 				t.Errorf("check %s prompt uses {%s}; want only {check}, {change}, {cycle}", c.Name, p)
 			}
 		}
-		for _, w := range []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run findings --check", "rhiza session done"} {
-			if !strings.Contains(c.Prompt, w) {
-				t.Errorf("check %s prompt lacks %q: %q", c.Name, w, c.Prompt)
+		want := "/rhiza-check-" + c.Name + " Run the " + c.Name + " check of change set {change} (cycle {cycle}): follow rhiza guide check-" + c.Name + "."
+		if c.Prompt != want {
+			t.Errorf("check %s prompt = %q; want %q", c.Name, c.Prompt, want)
+		}
+		for _, w := range []string{"session done", "Checks:", "full suite", "{check}"} {
+			if strings.Contains(c.Prompt, w) {
+				t.Errorf("check %s prompt holds %q: %q", c.Name, w, c.Prompt)
 			}
 		}
 	}
-	if want := []string{"compliance", "quality", "qa", "scope", "model"}; !slices.Equal(names, want) {
+	if want := []string{"compliance", "quality", "qa", "model"}; !slices.Equal(names, want) {
 		t.Errorf("checks = %v; want %v", names, want)
 	}
+	const criticLine = "/rhiza-critic Criticise the latest round of the {check} check of change set {change} (cycle {cycle}): follow rhiza guide critic."
+	const fixerLine = "/rhiza-fixer Fix the findings below for change set {change} in review cycle {cycle}: follow rhiza guide fixer."
 	roles := map[string]struct {
 		r    *Role
 		want []string
 	}{
-		"critic":   {review.Critic, []string{"/rhiza-review", "{check}", "{change}", "rhiza guide review", "rhiza run verdict --check", "never add a finding", "rhiza session done"}},
-		"fixer":    {review.Fixer, []string{"/rhiza-review", "{change}", "{cycle}", "rhiza guide review", "rhiza session done"}},
+		"critic":   {review.Critic, []string{criticLine}},
+		"fixer":    {review.Fixer, []string{fixerLine}},
 		"verifier": {review.Verifier, []string{"/rhiza-verifier", "{leaf}", "{change}", "$RHIZA_COMMIT", "rhiza guide verifier"}},
 	}
 	for name, tt := range roles {
@@ -1570,13 +1576,16 @@ func TestBuiltinRolePromptsScopeTests(t *testing.T) {
 			}
 		}
 	}
-	if len(prompts) < 10 {
-		t.Fatalf("found %d role prompts; want builder, verifiers, 5 checks, critic, fixer", len(prompts))
+	if len(prompts) < 9 {
+		t.Fatalf("found %d role prompts; want builder, verifiers, 4 checks, critic, fixer", len(prompts))
 	}
+prompts:
 	for where, p := range prompts {
-		// The build roles are one line each; their guide topics carry the rule.
-		if strings.HasPrefix(p, "/rhiza-builder ") || strings.HasPrefix(p, "/rhiza-verifier ") {
-			continue
+		// The build and review roles are one line each; their guide topics carry the rule.
+		for _, one := range []string{"/rhiza-builder ", "/rhiza-verifier ", "/rhiza-check-", "/rhiza-critic ", "/rhiza-fixer "} {
+			if strings.HasPrefix(p, one) {
+				continue prompts
+			}
 		}
 		if !strings.Contains(p, rule) {
 			t.Errorf("%s prompt lacks the rule: %q", where, p)
@@ -2333,9 +2342,8 @@ func TestFixerPromptsNameChecksBlock(t *testing.T) {
 		}
 		return def
 	}
-	review, ship := parse("review"), parse("ship-change")
+	ship := parse("ship-change")
 	prompts := map[string]string{
-		"review fixer": review.Steps["review"].Fixer.Prompt,
 		"ci-fix":       ship.Steps["ci-fix"].Prompt,
 		"gate-fix":     ship.Steps["gate-fix"].Prompt,
 		"conflict-fix": ship.Steps["conflict-fix"].Prompt,
@@ -2448,6 +2456,51 @@ func TestBuildVerifierPromptsShared(t *testing.T) {
 					t.Errorf("docs-build builder prompt = %q; want the builtin line plus the humanize addendum", st.Builder.Prompt)
 				}
 			}
+		}
+	}
+}
+
+// Rhiza's docs-review drops the scope check, shares the builtin check and
+// critic prompts byte for byte, and its fixer prompt is the builtin line
+// followed by the doc clause.
+func TestDocsReviewMatchesBuiltinReview(t *testing.T) {
+	bdata, ok := Builtin("review")
+	if !ok {
+		t.Fatal("no review built-in")
+	}
+	bdef, err := Parse("review", bdata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", "docs-review.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ddef, err := Parse("docs-review", data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, d := bdef.Steps["review"], ddef.Steps["review"]
+	if len(d.Checks) != len(b.Checks) {
+		t.Fatalf("docs-review has %d checks; want the builtin's %d", len(d.Checks), len(b.Checks))
+	}
+	for i, c := range d.Checks {
+		if c.Name == "scope" {
+			t.Errorf("docs-review has a scope check")
+		}
+		if c.Name != b.Checks[i].Name || c.Prompt != b.Checks[i].Prompt {
+			t.Errorf("docs-review check %s prompt = %q; want the builtin's %q", c.Name, c.Prompt, b.Checks[i].Prompt)
+		}
+	}
+	if d.Critic.Prompt != b.Critic.Prompt {
+		t.Errorf("docs-review critic prompt = %q; want %q", d.Critic.Prompt, b.Critic.Prompt)
+	}
+	if !strings.HasPrefix(d.Fixer.Prompt, b.Fixer.Prompt) {
+		t.Errorf("docs-review fixer prompt = %q; want it to start with %q", d.Fixer.Prompt, b.Fixer.Prompt)
+	}
+	for _, w := range []string{"humanize", "doc-prose-humanized", "doc-examples-plain-commands"} {
+		if !strings.Contains(d.Fixer.Prompt, w) {
+			t.Errorf("docs-review fixer prompt lacks %q", w)
 		}
 	}
 }
