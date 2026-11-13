@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AHG4NZJBNV1DGRQ15PBWJ6",
+  "after": [
+    "01M79TJFC2M074KE6ERASQJPDZ"
+  ],
+  "at": "2026-11-13T13:34:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At b8ca2bcb7 re-ran the Checks block: go test -trimpath ./internal/web/... ok; go test -trimpath ./internal/api/ -run 'Roadmap|Plan|Ready|Describe' ok; go test -trimpath ./cmd/rhiza -run 'TestScripts/(roadmap|plan|describe)' ok (describe-golden matches the regenerated title field); rhiza ship generate exit 0 (0 changed); rhiza render exit 0. TestRoadmapChangeSetsCarryTheirDisplayTitle passes, asserting roadmap --json titles are the set title ('Stream exports') or the intent's first clause ('Cache the roadmap'). TestRoadmapRowShowsTitleThenIntent passes, asserting /roadmap renders the short title as link text with the long intent in <small>, and rhiza.css clamps .rz-row-title small with -webkit-line-clamp: 2. Diff read: RoadmapChangeSet gains Title, web rows use Title/Sub=intent and keep depends-on as a separate Note line; no stubs or TODOs, nothing outside the leaf."
+        },
+        "handle": "web-roadmap-row-titles-verified",
+        "id": "01M7AHVKZN5TN9KMYZ0BN7C2A1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AHVKZN5TN9KMYZ0B7SHCFH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHVKZN5TN9KMYZ0B7SHCFH",
+        "id": "01M7AHVM53A7FPPKM3V74X36FJ",
+        "link": "01M7AHVM53A7FPPKM3V6K268EV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79TEDZ8NQS65M1CQQ1DSE52",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79T7NW1B0KKXVVSX4AHZNHF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHVMBK53MTZYZAKGKCRJRW",
+  "type": "ops",
+  "v": 1
+}

@@ -912,19 +912,17 @@ func TestUserStatusLine(t *testing.T) {
 	}
 }
 
-func TestScratchGlobs(t *testing.T) {
+func TestScratchParents(t *testing.T) {
 	env := func(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
-	got := (Adapter{}).ScratchGlobs("sid-1", env(map[string]string{"TMPDIR": "/var/t"}))
-	if len(got) != 1 || got[0] != "/var/t/claude-*/*/sid-1" {
+	got := (Adapter{}).ScratchParents(env(map[string]string{"TMPDIR": "/var/t"}))
+	if len(got) != 1 || got[0] != "/var/t/claude-*/*" {
 		t.Fatalf("got %q", got)
 	}
-	if got := (Adapter{}).ScratchGlobs("sid-1", env(nil)); len(got) != 1 || got[0] != "/tmp/claude-*/*/sid-1" {
+	if got := (Adapter{}).ScratchParents(env(nil)); len(got) != 1 || got[0] != "/tmp/claude-*/*" {
 		t.Fatalf("default tmp: %q", got)
 	}
-	for _, sid := range []string{"", "../x", "a/b", "*"} {
-		if got := (Adapter{}).ScratchGlobs(sid, env(nil)); len(got) != 0 {
-			t.Fatalf("%q gave %q", sid, got)
-		}
+	if got := (Adapter{}).ScratchParents(nil); len(got) != 0 {
+		t.Fatalf("nil getenv: %q", got)
 	}
 }
 
@@ -1040,5 +1038,37 @@ func TestSkillGlobs(t *testing.T) {
 	}
 	if g := (Adapter{}).SkillGlobs("../x", getenv, wt); g != nil {
 		t.Errorf("unsafe name got globs %v", g)
+	}
+}
+
+func TestAPIError(t *testing.T) {
+	const cf = "Please run /login · API Error: 403 Attention Required! | Cloudflare"
+	apiLine := `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"` + cf + `"}]}}` + "\n"
+	limitLine := `{"type":"assistant","isApiErrorMessage":true,"message":{"model":"<synthetic>","content":[{"type":"text","text":"Claude AI usage limit reached|1700000000"}]}}` + "\n"
+	work := `{"type":"user","message":{"content":"work"}}` + "\n"
+	model := `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"done"}]}}` + "\n"
+	got, ok := Adapter{}.APIError([]byte(work + apiLine))
+	if !ok || got != cf {
+		t.Errorf("APIError = %q, %v; want %q", got, ok, cf)
+	}
+	if got, ok := (Adapter{}).APIError([]byte(work + limitLine)); ok {
+		t.Errorf("usage limit: APIError = %q, true; want none", got)
+	}
+	if _, ok := (Adapter{}).UsageLimit([]byte(work + limitLine)); !ok {
+		t.Error("UsageLimit must still report the limit")
+	}
+	if got, ok := (Adapter{}).APIError([]byte(work + apiLine + model)); ok {
+		t.Errorf("went on: APIError = %q, true; want none", got)
+	}
+	for name, line := range map[string]string{
+		"model prose":    `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"text","text":"API Error: 403 handled"}]}}`,
+		"tool_use input": `{"type":"assistant","message":{"model":"claude-opus-4","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"echo API Error"}}]}}`,
+	} {
+		if got, ok := (Adapter{}).APIError([]byte(line + "\n")); ok {
+			t.Errorf("%s: APIError = %q, true; want none", name, got)
+		}
+	}
+	if _, ok := (Adapter{}).APIError(nil); ok {
+		t.Error("an empty transcript has no API error")
 	}
 }

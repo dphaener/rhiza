@@ -1,0 +1,41 @@
+{
+  "actor": "01M7AHKPJ4TE1W1D1TZ9DG7CST",
+  "after": [
+    "01M7AHJF15W45Y9PPKBE994HXX"
+  ],
+  "at": "2026-11-13T13:31:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, this change set's slice (run-brief-files, agent-invoke-template, guide-contract) and the code. run-brief-files already describes handback.md's content (the cause from rhiza ship check --json), so the format belongs here and the sibling only triggers; one writer avoids two formats. brief.md's sections follow the run-brief-files statement and its acceptance (TestBriefFiles names change set, intent, leaves with acceptance, decisions, constraints, prePushCheck, contract section), kept deterministic per the same-model-same-output constraint. internal/run/store.go keeps journals at <commondir>/rhiza/runs/<id>.jsonl and its listing skips directories, so <id>/ beside it is safe; TmpDir is removed at run end, so it cannot hold files a hand-back or later attempt reads, and per-session subfolders avoid clashes between parallel builder sessions of one leaves step. internal/workflow/workflow.go has prompt on agent steps, Role (builder, verifier, critic, fixer) and fileCheck, so invoke as prompt's alias must apply in each of those places.",
+          "statement": "handback.md: this change set owns the file's path, format and writer (run-brief-files ships a function that writes handback.md from a rhiza ship check --json cause, tested directly); the sibling's run-handback leaf owns triggering a hand-back and calls that writer, writing no handback.md format of its own. brief.md: deterministic Markdown, same bytes for the same model and run, with sections in this order: the change set (title, ID, intent); the leaves (handle, statement, acceptance each); decisions (statement each); constraints (statement each); check commands (rhiza.ship.prePushCheck and rhiza.ship.localGate when set, else none); the contract (a short summary of the obligations ending 'Full contract: rhiza guide contract'). Location: a durable per-run directory beside the journal, <commondir>/rhiza/runs/<run id>/, with one subdirectory per session named from its step plus, where present, its role or check, leaf and attempt (e.g. build/builder-<leaf>-1); it holds that session's brief.md, slice.json and handback.md, is kept when the run ends (unlike the run's temp folder) and is not inside any worktree. invoke and handback keys: accepted everywhere prompt is accepted today: an agent step, a leaves step's builder and verifier, a checks step's each check, critic and fixer; prompt stays an alias of invoke there, and setting both prompt and invoke on one table is refused by rhiza workflow check.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "brief-files-and-invoke-placement",
+        "id": "01M7AHP65F98YYYZH4ASJGNNDV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AHP65F98YYYZH4APSDHPZR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHP65F98YYYZH4APSDHPZR",
+        "id": "01M7AHP6AJVX7DCZTA5RZJ3977",
+        "link": "01M7AHP6AJVX7DCZTA5NSF3W5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHJAA6T4TC41CBJ52D8V2N",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHP6K6FPH1RR061PY74TTM",
+  "type": "ops",
+  "v": 1
+}

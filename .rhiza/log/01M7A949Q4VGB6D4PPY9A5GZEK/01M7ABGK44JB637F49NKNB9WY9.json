@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ABDCNM5DSTF719AHF620Q5",
+  "after": [
+    "01M7AB4TBRA7M30F6VQ7Y14PVJ"
+  ],
+  "at": "2026-11-13T11:43:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4e3806b9a, re-ran every Checks: command and each acceptance command, all exit 0: go test -trimpath ./internal/session/... (TestStalled: autonomous idle api-error at 21m not stalled, plain idle at 21m stalled); go test -trimpath ./internal/tui/inboxapp/... (TestAPIErrorItemShowsDetailAndOpensTab: row, ActionShow, Enter calls inbox.open and shows kind and error text); go test -trimpath ./internal/api/ -run 'WebInbox|InboxNotice' and the wider Checks pattern (TestWebInboxViewsAPIError, api-error notice line without IDs); go test -trimpath ./cmd/rhiza -run TestScripts/inbox-api-error (api-error item with session, run, error text, rhiza session message next, no stalled at T+21m, text inbox shows it, cleared after working report) and TestScripts/describe-golden plus inbox-stalled, inbox-permission, tui-inbox-app; rhiza ship generate and rhiza render exit 0 leaving the tree clean. Read the diff: each acceptance point met and tested; changes outside the Touches list are only inboxItems signature updates in three api tests and the actor records; no TODOs or stubs; tests use fake rex/claude only."
+        },
+        "handle": "inbox-lists-api-error-sessions-verified",
+        "id": "01M7ABGK1WVNXGQ1T88BTBXA70",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ABGK1WVNXGQ1T889EEXVYH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ABGK1WVNXGQ1T889EEXVYH",
+        "id": "01M7ABGK394XP7SP84SVVVCC11",
+        "link": "01M7ABGK394XP7SP84SVTX3V1D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ABGK44JB637F49NKNB9WY9",
+  "type": "ops",
+  "v": 1
+}

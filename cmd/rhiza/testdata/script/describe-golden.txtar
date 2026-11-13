@@ -3247,7 +3247,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message",
+                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on",
                   "type": "string"
                 },
                 "handle": {
@@ -3259,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {
@@ -3337,7 +3337,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped",
                   "type": "string"
                 },
                 "step": {
@@ -8790,6 +8790,10 @@ cmp stdout describe.golden.json
                       "state": {
                         "description": "proposed or accepted",
                         "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's display title: its set title, else the intent's first clause",
+                        "type": "string"
                       }
                     },
                     "required": [
@@ -8799,7 +8803,8 @@ cmp stdout describe.golden.json
                       "kind",
                       "ready",
                       "serves",
-                      "state"
+                      "state",
+                      "title"
                     ],
                     "type": "object"
                   },
@@ -22401,7 +22406,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "file": {
-            "description": "The message file, an absolute path inside the session's worktree",
+            "description": "The message file, an absolute path inside the session's checkout (its worktree, or its own checkout folder when it runs in one)",
             "type": "string"
           },
           "from": {
@@ -22430,7 +22435,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Send a running agent session a message: a file in its worktree and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
+      "summary": "Send a running agent session a message: a file in its checkout and a one-line pointer, typed at its prompt or, while it works, handed over at its next tool call",
       "write": true
     },
     {

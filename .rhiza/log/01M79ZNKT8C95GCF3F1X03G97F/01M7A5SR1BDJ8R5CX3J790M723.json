@@ -1,0 +1,155 @@
+{
+  "actor": "01M7A54AMQM7YBNSKR87TQ7GBZ",
+  "after": [
+    "01M7A502XG2VAEGHD2DT75Z990"
+  ],
+  "at": "2026-11-13T10:03:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza to a scratch path; in a hermetic root a python parent forked a child that exits 3 and one that sleeps 6s, then exec'd 'rhiza daemon'. At 2s the exited child was already reaped (no zombie) and the drivers list held only the sleeping pid as the daemon's own; at 14s the daemon had no children and the list was gone. go test -trimpath ./cmd/rhiza -run TestReap passed."
+        },
+        "handle": "daemon-adopts-inherited-children-qa-1",
+        "id": "01M7A5SQPD9RFA25FEV6WBT09H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQPD9RFA25FEV6NH3N5K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQPD9RFA25FEV6NH3N5K",
+        "id": "01M7A5SQQ51J5ZRED48XWS2J8V",
+        "link": "01M7A5SQQ51J5ZRED48SWWWAPR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01JB2302EDM0R0N111NEV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built binary: 'rhiza daemon --once' with an orphan Claude Code scratch folder of 40000 files under TMPDIR exited after 0.98s with the sweep cut off: 3873 files removed, the folder left half-deleted, no 'leftovers sweep freed' line. runDaemon never waits on the sweep goroutine before it returns. Small sweeps complete and log as before. go test -trimpath ./internal/api -run TestDaemonSweepLeftovers and ./internal/daemon passed."
+        },
+        "handle": "leftovers-sweep-off-poll-qa-1",
+        "id": "01M7A5SQQT4561S4BZTGG8N74V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQQT4561S4BZTFPFSMXF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQQT4561S4BZTFPFSMXF",
+        "id": "01M7A5SQRJAV7GD3R3TZ88VF2H",
+        "link": "01M7A5SQRJAV7GD3R3TX8GKMYJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary, long-running daemon with a fake git that hangs on one 'config --get rhiza.daemon.paused' in a poll: logged 'watchdog: poll took 30.437s, over its limit of 15s (3 times the 5s poll interval); slowest: repo settings 30s, repo starts 98ms, repo demand 46ms', also on the first poll of an image. go test -trimpath ./internal/api -run TestWatchdogPollBehind passed."
+        },
+        "handle": "poll-behind-names-steps-qa-1",
+        "id": "01M7A5SQS8CVH7PRZ5VR80FRAS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQS8CVH7PRZ5VP8BC78S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQS8CVH7PRZ5VP8BC78S",
+        "id": "01M7A5SQT12QM5KJKF8QRJJV5T",
+        "link": "01M7A5SQT12QM5KJKF8Q4WP191",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J38C50QZG2X4JNEC3S8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary: a fake git that sleeps 100s on 'git -C <repo> config --get' run by the daemon (startup and in-poll) was killed after 30s; the poll went on (repo starts ran) and the daemon stopped cleanly; no hung git left. go test -trimpath ./internal/api -run TestPollGit passed."
+        },
+        "handle": "poll-git-bounded-qa-1",
+        "id": "01M7A5SQTST5HHBVD3NKDBA5GG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQTST5HHBVD3NHQPQ7TS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQTST5HHBVD3NHQPQ7TS",
+        "id": "01M7A5SQVGEYY3G7QH8D9PQ4P0",
+        "link": "01M7A5SQVGEYY3G7QH8CAW6WE9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "Built binary with a git hung in the second poll's settings step: one 'watchdog: poll still running after 15s, in repo settings' line before the poll-took line; none with rhiza.daemon.watchdog.enabled=false. But the same hang in the first poll of a daemon image (default watchdog on, pollBehind 3) logged only the poll-took line after 30s and no in-flight line: the watcher is armed with homePol before that poll has read the settings."
+        },
+        "handle": "poll-overrun-logged-live-qa-1",
+        "id": "01M7A5SQWATHPGXWH0S3RV0P34",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQWATHPGXWH0S0RCHZT6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQWATHPGXWH0S0RCHZT6",
+        "id": "01M7A5SQX6HVW0Q42R7ZGXDD55",
+        "link": "01M7A5SQX6HVW0Q42R7W34NBP9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built binary 'rhiza daemon --once' with TMPDIR set and two recorded claude-code sessions of no run: removed <tmp>/claude-1000/cwdA/orph-old and cwdB/orph-old (logged 'freed 10 B: 0 index databases, 2 session scratch folders'), kept the fresh orph-fresh folder, an unrelated old folder, an old regular file named orph-fresh, and an old orph-old two levels deeper. go test -trimpath ./internal/leftovers/... ./internal/adapter/... and the TestRemoveRunScratch|TestSessionInterview|TestSessionHook runs passed."
+        },
+        "handle": "scratch-sweep-one-listing-qa-1",
+        "id": "01M7A5SQYKAMEXH0XHDR9R5HRT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A5SQYKAMEXH0XHDQ34D06S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A5SQYKAMEXH0XHDQ34D06S",
+        "id": "01M7A5SQZZYJFV9MJFCYSCWHEW",
+        "link": "01M7A5SQZZYJFV9MJFCVTMWT4G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A5SR1BDJ8R5CX3J790M723",
+  "type": "ops",
+  "v": 1
+}

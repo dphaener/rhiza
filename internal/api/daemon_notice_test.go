@@ -52,6 +52,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 		{"blocker", ids(InboxBlocker, InboxItem{Question: "Which store?", BlocksTitle: "Export orders"}), "T: a question blocks it: Which store?"},
 		{"overlap", ids(InboxOverlap, InboxItem{OtherTitle: "Other title"}), "T: an overlap with Other title waits on you"},
 		{"overlap untitled", ids(InboxOverlap, InboxItem{}), "T: an overlap with another change set waits on you"},
+		{"api-error", ids(InboxAPIError, InboxItem{Session: "S1", Detail: "session S1 stopped on an API error: API Error: 403"}), "T: a session stopped on an API error"},
 		{"stalled", ids(InboxStalled, InboxItem{}), "T: a session stalled"},
 		{"disk-low", ids(InboxDiskLow, InboxItem{}), "disk space is low: the daemon holds new starts and resumes"},
 		{"load-high", ids(InboxLoadHigh, InboxItem{}), "machine load is high: the daemon holds new starts and resumes"},

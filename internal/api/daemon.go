@@ -165,6 +165,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	if ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: daemon running, process %s\n", self)
 	}
+	// Children an earlier image left (a re-exec keeps the pid) have no
+	// waiter now: list them before this image starts any program.
+	if ctx.Adopt != nil {
+		ctx.Adopt(common)
+	}
 	resp := DaemonResponse{Process: self.String(), Started: []string{}, Resumed: []string{}, Planned: []string{}}
 	projs := map[string]*daemonProj{}
 	// gate holds the starts that need a skill of a guide the refresh below
@@ -224,16 +229,25 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		webUI = &web.Manager{Factory: webFactory, Handler: WebRootHandler(ctx, root, homeName, home)}
 		defer webUI.Close()
 	}
+	// The leftovers sweep runs off the poll, on a goroutine of its own: the
+	// daemon waits for a running one before it returns (--once, a stop), so
+	// no folder is left half-deleted and its freed line is written.
 	var leftSweep daemon.SweepSchedule
+	defer leftSweep.Wait()
 	// lastTurn is the project that took the last run slot: the next poll's
 	// round-robin starts after it, so turns rotate across polls instead of
 	// restarting at the home project.
 	lastTurn := ""
 	// atHome is told the home project's settings at each poll: the root-wide
-	// parts of the daemon follow them.
-	var homePol WatchdogPolicy
+	// parts of the daemon follow them. Until the first poll reads them, the
+	// watchdog works under the home settings read at startup, so that poll is
+	// watched (or not) as the owner set it; rearmPoll hands the poll's
+	// in-flight watch the policy just read.
+	homePol := watchdogPolicyOf(conf.rows)
+	rearmPoll := func(WatchdogPolicy) {}
 	atHome := func(conf daemonConf) {
 		homePol = watchdogPolicyOf(conf.rows)
+		rearmPoll(homePol)
 		if webUI != nil {
 			if werr := webUI.Apply(conf.webHost, conf.webPort); werr != nil && ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %v\n", werr)
@@ -258,7 +272,17 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	poll := func() error {
 		pollStart := ctx.Now()
-		reg, err := rootcfg.Load(root)
+		steps := newPollSteps(ctx.Now)
+		stopWatch, rearm := watchPollOverrun(steps, homePol, daemonPoll, func(line string) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
+			}
+		})
+		defer stopWatch()
+		rearmPoll = rearm
+		var reg rootcfg.Config
+		var err error
+		steps.run("", "registry load", func() { reg, err = rootcfg.Load(root) })
 		if err != nil {
 			return err
 		}
@@ -279,7 +303,8 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 				skipped = append(skipped, daemon.ProjectSkip{Project: name, Reason: daemon.ProjectNotInitialised})
 				continue
 			}
-			_, err := project(name, dir)
+			var err error
+			steps.run(name, "open", func() { _, err = project(name, dir) })
 			if err != nil {
 				var held *daemon.Held
 				if errors.As(err, &held) {
@@ -307,6 +332,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			if name == homeName {
 				onConf = atHome
 			}
+			projs[name].steps = steps
 			turns[i] = projs[name].prepare(r, onConf)
 			if turns[i].err != nil {
 				continue
@@ -336,7 +362,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 		}
 		if hp, ok := projs[homeName]; ok {
-			watchdogPollBehind(&hp.state, homePol, daemonPoll, ctx.Now().Sub(pollStart), ctx.Now(), func(line string) {
+			watchdogPollBehind(&hp.state, homePol, daemonPoll, ctx.Now().Sub(pollStart), ctx.Now(), steps.all(), func(line string) {
 				if ctx.Stderr != nil {
 					fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
 				}
@@ -354,6 +380,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		return resp, poll()
 	}
 	reexec := daemonReexec()
+	if reexec != nil && reexec.Exec != nil {
+		// An exec replaces this image: a running leftovers sweep ends first.
+		exec := reexec.Exec
+		reexec.Exec = func(path string, argv, env []string) error {
+			leftSweep.Wait()
+			return exec(path, argv, env)
+		}
+	}
 	update := &daemon.SelfUpdate{Now: ctx.Now, Every: daemon.SelfUpdateEvery}
 	var chanUpdate *daemon.ChannelUpdate
 	autoUpdate := func() {
@@ -532,11 +566,12 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	// A session blocked on a permission prompt notifies like any other
 	// item; it needs the session records, so the repository's common dir.
 	var blocked func(st run.State) []RunPermission
+	var apiErrored func(st run.State) []RunAPIError
 	var tabOf func(sid string) session.Tab
 	if common, err := gitCommonDir(ctx); err == nil {
-		blocked, tabOf = inboxBlockedOf(ctx, common), inboxTabOf(ctx, common)
+		blocked, apiErrored, tabOf = inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common)
 	}
-	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, tabOf)
+	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, apiErrored, tabOf)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
@@ -633,6 +668,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": a plan waits for your acceptance"
 	case InboxStalled:
 		return what + ": a session stalled"
+	case InboxAPIError:
+		return what + ": a session stopped on an API error"
 	case InboxPermission:
 		msg := what + ": a session waits on a permission prompt"
 		if d := strings.TrimSpace(it.Detail); d != "" {

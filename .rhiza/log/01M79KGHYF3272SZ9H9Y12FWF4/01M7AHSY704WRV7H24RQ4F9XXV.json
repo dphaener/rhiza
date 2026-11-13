@@ -1,0 +1,139 @@
+{
+  "actor": "01M7AHA0MW1ZW012AH23W81C0Q",
+  "after": [
+    "01M7AHRE3C5YM200PCNN4EEKCG"
+  ],
+  "at": "2026-11-13T13:33:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run 'TestBriefFiles|TestSessionDir|TestHandbackFile' shows brief.md's sections in order with the change set, its intent, every leaf with its acceptance, the decisions, the constraints, both check commands (and 'none' when neither is set) and the contract summary's last line; the same input rendering the same bytes twice; session directory names for an agent step, a builder of a leaf at attempt 2 and a checks step's check; handback.md naming each failing test with its output for a CI cause and each conflicted file for a conflict cause; failure cases: a directory that cannot be created returns an error naming its path, and a cause with neither failures nor conflicts is refused. Touches: internal/run/brief.go (new), internal/run/brief_test.go (new). Must not touch internal/api or the workflow parser.",
+          "statement": "internal/run renders a session's context files into its directory <commondir>/rhiza/runs/<run id>/<step>[/<role or check>-<leaf>-<attempt>]/, which is kept when the run ends and lies inside no worktree: brief.md, deterministic Markdown with these sections in order: the change set (title, ID, intent), the leaves (handle, statement, acceptance each), the decisions (statement each), the constraints (statement each), the check commands (rhiza.ship.prePushCheck and rhiza.ship.localGate when set, else none) and a short contract summary ending 'Full contract: rhiza guide contract'; slice.json, the bytes it is given; and handback.md, written from a rhiza ship check --json cause (failing tests with their output, or conflicted files), by a writer that run-handback calls and that nothing else in this change set triggers."
+        },
+        "handle": "run-brief-files",
+        "id": "01M79KPBD9GFZM83ZPY08PQ97R",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestInvokeTemplate covers invoke and handback parsing on an agent step, a builder and a check, prompt as an alias of invoke, and rendering every placeholder; failure cases: rhiza workflow check refuses an unknown placeholder naming it, and a table setting both prompt and invoke; go test -trimpath ./cmd/rhiza -run TestScripts/workflow-invoke shows a fake agent receiving '/myskill:conduct --prompt <path to its brief.md>' as its first prompt. Touches: internal/workflow/workflow.go, internal/workflow/check.go, internal/workflow/spec.go, internal/workflow/include.go, internal/workflow/workflow_test.go, internal/api/run.go, internal/api/run_leaves.go, internal/api/run_checks.go (the render calls), cmd/rhiza/testdata/script/workflow-invoke.txtar (new). Must not send hand-backs; run-handback does.",
+          "statement": "Wherever a workflow file accepts prompt today (an agent step, a leaves step's builder and verifier, a checks step's check, critic and fixer) it also accepts invoke, the exact text the session starts with, and handback, the text a hand-back sends it, with prompt an alias of invoke; both take the placeholders {brief}, {slice} and {handback} (the session's file paths), {change}, {run}, {leaf}, {attempt} and {worktree} beside today's; the daemon renders invoke and the agent's adapter delivers it as the first prompt, and handback is rendered for run-handback to send."
+        },
+        "handle": "agent-invoke-template",
+        "id": "01M79KPBF6JT17PFXC2PEQ501Q",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "op": "node.create",
+        "parent": "01M5SWT9A05VXSMXQME4CPJN2D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestContract shows the topic lists each obligation with its gate, every invoke placeholder, RHIZA_BRIEF, RHIZA_SLICE and RHIZA_HANDBACK with the other RHIZA_ variables, and the three files, stays under the topic cap, and every role topic in the registry names rhiza guide contract; failure case: the same check run over a role topic with the line removed reports that topic by name. Touches: internal/guide/text/contract.md (new), internal/guide/guide.go (topic list), internal/guide/contract_test.go (new), internal/guide/text/*.md role topics or a new internal/guide/text/shared block they include. Must not change any role topic's obligations.",
+          "statement": "rhiza guide contract prints the agent contract on one page: what any agent in a run must do (write the model only through rhiza, the Change:, Actor: and Leaf: trailers, Evidence on every leaf, findings through rhiza run findings, questions through rhiza, rhiza session done), which gate checks each, the invoke placeholders, the RHIZA_ variables and the three context files (brief.md, slice.json, handback.md); every role topic in the guide registry names rhiza guide contract."
+        },
+        "handle": "guide-contract",
+        "id": "01M79KPBG8Q7PJ9C1S2ZBZB01B",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestSessionBrief shows an agent step's and a builder's session getting their own directory with brief.md and slice.json, slice.json equal to rhiza slice --json for the change set, the three variables set only when their file exists, and a session started outside a run getting none; go test -trimpath ./cmd/rhiza -run TestScripts/brief-files passes with a fake agent printing its RHIZA_BRIEF file, and its failure case: an unwritable runs directory fails the session start with a message naming the path and starts no agent. Touches: internal/api/run_brief.go (new), internal/api/run_brief_test.go (new), internal/api/run.go (StartAgent), internal/api/run_leaves.go, internal/api/run_checks.go, internal/api/session_run.go (launchEnv), cmd/rhiza/testdata/script/brief-files.txtar (new). Must not change prompt rendering or the workflow file format.",
+          "statement": "Before every agent session it starts for a run (an agent step, a leaves step's builder and verifier, a checks step's check, critic and fixer), the daemon fills the session's directory with brief.md built from the model and slice.json equal to rhiza slice --json for the change set at that moment, and sets RHIZA_BRIEF and RHIZA_SLICE (and RHIZA_HANDBACK when handback.md exists there) in the session's environment; a session outside a run gets none of them."
+        },
+        "handle": "session-brief-wiring",
+        "id": "01M7AHST8TM851DP82HPVKCW5N",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7AHST8TM851DP82HM2RZ85M",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHST8TM851DP82HM2RZ85M",
+        "id": "01M7AHSVP788CG15VD5ZQY0J8P",
+        "link": "01M7AHSVP788CG15VD5YVG930H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "id": "01M7AHSW4EVNKBZQGY505JR0NG",
+        "link": "01M7AHSW4EVNKBZQGY4YKJHM2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "id": "01M7AHSWH5M0PQ2SENF4272BCD",
+        "link": "01M7AHSWH5M0PQ2SENF2TCEM5A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHP65F98YYYZH4APSDHPZR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHST8TM851DP82HM2RZ85M",
+        "id": "01M7AHSWT5X4WQH6BPD5D50QMC",
+        "link": "01M7AHSWT5X4WQH6BPD2H5P7AS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHP65F98YYYZH4APSDHPZR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHST8TM851DP82HM2RZ85M",
+        "id": "01M7AHSX68VAAF7SGC73W9WW3T",
+        "link": "01M7AHSX68VAAF7SGC731JYVAP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVPGCBYHVX9H9WB8P5SM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "id": "01M7AHSXG39GGE72TH8SXMBVVM",
+        "link": "01M7AHSXG39GGE72TH8QAVVQ3T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHP65F98YYYZH4APSDHPZR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHP65F98YYYZH4APSDHPZR",
+        "id": "01M7AHSXT5T74A64F2PDJZM592",
+        "link": "01M7AHSXT5T74A64F2PAP42F9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHRDMP54HEN975Q46FSARW",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHSY704WRV7H24RQ4F9XXV",
+  "type": "ops",
+  "v": 1
+}

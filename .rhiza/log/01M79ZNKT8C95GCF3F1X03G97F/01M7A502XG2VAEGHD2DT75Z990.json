@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A4T5M0GBS8QEGCC1E3P5EH",
+  "after": [
+    "01M7A4HBPZB0Q9C6XMRENTARZX"
+  ],
+  "at": "2026-11-13T09:49:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d392015b8 on Linux: go test -trimpath ./cmd/rhiza -run TestReap -v passed TestReap, TestReapStale and TestReapAdopt (exit 0); go test -trimpath ./internal/api -run Daemon exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (only this verifier's actor record written). TestReapAdopt starts an unwaited child, runs adoptChildren, finds it listed as selfID, lets it exit, reapDrivers removes the pid with no zombie and empties the list, while a child started after adoption is not listed and its Wait returns exit status 4. Off Linux adoptList/adoptChildren are no-ops (drivers_other.go, detach_other.go; TestReapAdoptOther in reap_other_test.go); GOOS=darwin test build and GOOS=windows vet of ./cmd/rhiza pass. Diff read: runDaemon calls ctx.Adopt(common) once, after taking the lock and before any program starts; Ctx.Adopt wired in ctx.go; no stubs or TODOs; only the listed files plus the off-Linux test file and the builder's actor record changed."
+        },
+        "handle": "daemon-adopts-inherited-children-verified",
+        "id": "01M7A502V4H7B8HM4QDY9QXPMY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A502V4H7B8HM4QDV07WQ8Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A502V4H7B8HM4QDV07WQ8Q",
+        "id": "01M7A502W12KVF0BX4N8G5ZGVR",
+        "link": "01M7A502W12KVF0BX4N5E1BVW8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01JB2302EDM0R0N111NEV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A502XG2VAEGHD2DT75Z990",
+  "type": "ops",
+  "v": 1
+}

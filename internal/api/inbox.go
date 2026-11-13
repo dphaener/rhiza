@@ -81,6 +81,7 @@ const (
 	InboxOverlap      = "overlap"
 	InboxStalled      = "stalled"
 	InboxPermission   = "permission"
+	InboxAPIError     = "api-error"
 	InboxDiskLow      = "disk-low"
 	InboxUsageReserve = "usage-reserve"
 	InboxLoadHigh     = "load-high"
@@ -102,7 +103,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -112,7 +113,7 @@ type InboxItem struct {
 	Tab            string              `json:"tab,omitempty" desc:"A question, an interview or a permission item: the title of the session's tab"`
 	TabBlock       string              `json:"tab_block,omitempty" desc:"A question, an interview or a permission item: the Rex block of the session's tab"`
 	TabSession     string              `json:"tab_session,omitempty" desc:"A question, an interview or a permission item: the Rex session of the session's tab"`
-	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session"`
+	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped"`
 	Recommendation string              `json:"recommendation,omitempty" desc:"A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string              `json:"reasons,omitempty" desc:"A question or a blocker: why the advisor recommends it"`
 	Restatement    string              `json:"restatement,omitempty" desc:"A blocker: what is asked in plain words, as the advisor restated it; absent until it has"`
@@ -124,7 +125,7 @@ type InboxItem struct {
 	OtherTitle     string              `json:"other_title,omitempty" desc:"An overlap: the second change set's title; absent when the log has no such change set"`
 	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
 	TargetTitle    string              `json:"target_title,omitempty" desc:"An overlap: the target node's statement; absent when it has none"`
-	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message"`
+	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
 	Project        string              `json:"project,omitempty" desc:"The registered project the item belongs to, on an inbox that covers every project; absent for the daemon's machine-wide items (low disk, usage hold) and on a single project's inbox"`
 }
@@ -308,9 +309,12 @@ func (r InboxResponse) Human(w io.Writer) {
 // blocked lists none. Such an item is the owner's in an autonomous run too:
 // no arbiter can answer a prompt.
 //
+// apiErrored gives each session of a run whose last turn ended on an API
+// error; a nil apiErrored lists none. Only a live run has one.
+//
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
-func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, blocked func(st run.State) []RunPermission, tabOf func(sid string) session.Tab) []InboxItem {
+func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, blocked func(st run.State) []RunPermission, apiErrored func(st run.State) []RunAPIError, tabOf func(sid string) session.Tab) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -350,7 +354,13 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 		// (the accept setting is owner, or the review did not pass): each
 		// waits for acceptance.
 		if !retried {
+			// A change set the same run journaled accepted needs nothing
+			// from the owner: main's model says proposed only until the
+			// plan PR merges.
 			for _, g := range st.Gated {
+				if runAccepted(st, g) {
+					continue
+				}
 				if state, ok := changeState(g); ok && state == string(changeset.StateProposed) {
 					add(InboxAccept, g, st.GatedAt, InboxItem{Detail: "waiting for acceptance", Next: ownerAcceptNext(g)})
 					items[len(items)-1].Change = g
@@ -400,6 +410,16 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 						Step: sl.Step, Session: sl.Session,
 						Detail: "session " + sl.Session + " has not reported since " + sl.Since,
 						Next:   "rhiza session message " + sl.Session + " <text>",
+					})
+				}
+			}
+			if live && apiErrored != nil {
+				for _, e := range apiErrored(st) {
+					at, _ := time.Parse(time.RFC3339, e.Since)
+					add(InboxAPIError, e.Session, at, InboxItem{
+						Step: e.Step, Session: e.Session,
+						Detail: "session " + e.Session + " " + e.Detail,
+						Next:   "rhiza session message " + e.Session + " <text>",
 					})
 				}
 			}
@@ -478,6 +498,13 @@ func inboxStalledOf(ctx *Ctx, common string) func(st run.State) []RunStalled {
 func inboxBlockedOf(ctx *Ctx, common string) func(st run.State) []RunPermission {
 	sessions := session.NewStore(session.Dir(common))
 	return func(st run.State) []RunPermission { return runPermissionAll(st, true, sessions) }
+}
+
+// inboxAPIErrorOf reads each live run's session records for every session of
+// the run's current step that stopped on an API error.
+func inboxAPIErrorOf(ctx *Ctx, common string) func(st run.State) []RunAPIError {
+	sessions := session.NewStore(session.Dir(common))
+	return func(st run.State) []RunAPIError { return runAPIErrorAll(st, true, sessions) }
 }
 
 // inboxTabOf reads a session's Rex tab from its record; the zero tab when
@@ -796,7 +823,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	host, _ := os.Hostname()
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
+	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
 	items = append(items, inboxUncoveredProposals(items, runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
@@ -1191,7 +1218,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	var found []InboxItem
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxTabOf(ctx, common))
+	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
 	all = append(all, inboxUncoveredProposals(all, runs, fold)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
 	if err != nil {
@@ -1512,4 +1539,15 @@ func workflowItems(common string, skips []daemon.Skip) []InboxItem {
 		})
 	}
 	return items
+}
+
+// runAccepted reports whether the run journaled an accepted entry for the
+// change set.
+func runAccepted(st run.State, change string) bool {
+	for _, a := range st.Accepts {
+		if a.Change == change && a.Verb == run.TypeAccepted {
+			return true
+		}
+	}
+	return false
 }

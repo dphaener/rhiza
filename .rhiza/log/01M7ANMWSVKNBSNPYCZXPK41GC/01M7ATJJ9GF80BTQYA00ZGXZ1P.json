@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ATFWJE9J8RWP1CEK2V8111",
+  "after": [
+    "01M7AP13FTN4C0S8WGW5YVZ7WQ"
+  ],
+  "at": "2026-11-13T16:06:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ce1602eb2 re-ran the Checks block: go test -trimpath ./internal/api/ -run TestInbox (exit 0, TestInboxSkipsRunAcceptedGated PASS), go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-owner-run-accept|stage-autonomy)' (exit 0, inbox-owner-run-accept and stage-autonomy PASS), rhiza ship generate (exit 0, 0 files changed), rhiza render (exit 0, no tracked changes). Diff touches only internal/api/inbox.go (runAccepted skips a gated change set with an accepted Accepts entry before the proposed check), the new internal/api/inbox_run_accepted_test.go, and the builder's actor record. The test feeds inboxItems a plan-run journal gating C1 and C2 with changeState proposed: both listed with no accepted entry, only C2 (next ownerAcceptNext) with C1 accepted, both with C1 rejected. No stubs or TODOs; gofmt clean."
+        },
+        "handle": "inbox-skips-run-accepted-gated-verified",
+        "id": "01M7ATJJ89WHAA3FA7MAC296TJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ATJJ88AEGDJDNF3195GCZ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ATJJ88AEGDJDNF3195GCZ5",
+        "id": "01M7ATJJ8YBAC1TAENXRJKAFHA",
+        "link": "01M7ATJJ8YBAC1TAENXMSWJNPH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ANT7A4WT45GF5PDBXQ0C57",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7ANMWSVKNBSNPYCZXPK41GC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ATJJ9GF80BTQYA00ZGXZ1P",
+  "type": "ops",
+  "v": 1
+}

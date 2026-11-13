@@ -1,0 +1,43 @@
+{
+  "actor": "01M7A9XRE5NMTV80SCFSMWKHPG",
+  "after": [
+    "01M7A9N3RJNEZX2CS3TH8GN71M"
+  ],
+  "at": "2026-11-13T11:16:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "session.message (internal/api/session_message.go typePointer) types only into a session whose status resolves idle and waits on a blocked one, so a blocked report would make the inbox's own next step hang; an idle report keeps the session messageable. The idle report session run writes before a re-prompt, when no Stop hook fired, carries no detail, so a session still being retried never shows as an api-error item. The detail prefix follows session.LimitPausedDetail, which Stallable already excludes; excluding this prefix too keeps the daemon's 20-minute nudge from doubling the item. A new kind rather than stalled says what happened and what to try.",
+          "statement": "A session left on an API error is recorded as an idle hook report whose detail starts 'stopped on an API error: ' and the error text; rhiza inbox lists it as an item of the new kind api-error with rhiza session message as the next step; it never counts as stalled, and the session's next hook report clears it"
+        },
+        "handle": "api-error-inbox-as-idle-detail",
+        "id": "01M7A9C493BVWZ0GCHJ72PXPQQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A9C493BVWZ0GCHJ5K2EKWN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api/session_run_apierror_test.go (go test -trimpath ./internal/api/ -run SessionRunAPIError) with a fake adapter, a fake process, a fake message sender and the poll and backoff shortened: an autonomous session whose new transcript ends in an API error gets one message naming the error after the first backoff and none before it; its record, last reported working by the hook, holds an idle hook report with no 'stopped on an API error: ' detail before each send, and inboxItems over that run lists no api-error item for the session while retries remain; an assistant line written during the backoff cancels the send; three consecutive API errors give three messages and a fourth gives none, with the record left on 'stopped on an API error: ' and the error text; an error, a recovered assistant line, then a new error re-prompts again; an owner-attended session's API error gives no message and the record at once; a usage-limit line gives no message and the usage-limit pause still happens; an API error in the transcript before this start's base gives nothing. Touches internal/api/session_run.go, internal/api/session_run_apierror.go, internal/api/session_run_apierror_test.go",
+          "statement": "While its agent runs, `rhiza session run` watches the session's transcript past where this start began, on the usage-limit poll; when it ends in an API error (adapter-reads-api-error) in a session an autonomous run launched, it waits the retry policy's backoff, then, if no later assistant line has appeared, records a plain idle hook report, with no 'stopped on an API error: ' detail so the inbox lists nothing while retries remain, unless the status already resolves idle and sends the session, through session.message, a message naming the error and telling it to carry on where it left off; it re-prompts at most 3 consecutive errors, and on the fourth, or on the first in an owner-attended run's session, it re-prompts nothing and records the session for the inbox (inbox-lists-api-error-sessions)"
+        },
+        "handle": "session-run-reprompts-api-error",
+        "id": "01M7A9C4DABT4TTGNKQ6R8ZSEZ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A9Z2KZD363WCKY35F2WKCW",
+  "type": "ops",
+  "v": 1
+}

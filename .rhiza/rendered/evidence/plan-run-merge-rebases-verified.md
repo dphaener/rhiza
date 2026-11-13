@@ -14,7 +14,7 @@ At 22cb5a04 read the diff: plan.toml's merge step gains on.fail = rebase, and re
 
 ### Out
 
-- verifies [plan-run-merge-rebases](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
+- verifies plan-run-merge-rebases (retired)
 
 ## History
 

@@ -1,0 +1,155 @@
+{
+  "actor": "01M7AA3KGYGXC7SZ9XACAH7Q9S",
+  "after": [
+    "01M7AA2PEPT6E1JBZJAFD4HPQJ"
+  ],
+  "at": "2026-11-13T11:25:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 at 1820b5bd5: built rhiza to a scratch path; hermetic root with project repo and a git wrapper delaying the first poll's settings read by 20s (value kept). rhiza daemon --once: watchdog on (default) logged one 'poll still running after 15s, in repo settings' then the poll-took line; rhiza.daemon.watchdog.enabled=false in git config or in rhiza.toml (rhiza daemon set) logged nothing; pollBehind=6 (30s limit) logged nothing; pollBehind=1 logged 'after 5s, in repo settings' once. Long-running daemon with the hang in the second poll: exactly one in-flight line, then the poll-took line. go test ./internal/api -run 'TestWatchdogPoll|TestWatchdogPolicy' and ./cmd/rhiza TestScripts/watchdog-policy pass"
+        },
+        "handle": "poll-overrun-logged-live-qa-3",
+        "id": "01M7AAFANNSS0E72ZTZ232XY4B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFANNSS0E72ZTYYJWVH68",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFANNSS0E72ZTYYJWVH68",
+        "id": "01M7AAFAR4QM0RZVME1G8V0B2A",
+        "link": "01M7AAFAR4QM0RZVME1DN1F3FM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: the same hung-settings runs logged 'watchdog: poll took 20.349s, over its limit of 15s (3 times the 5s poll interval); slowest: repo settings 20s, repo starts 43ms, repo demand 28ms', and nothing with the watchdog off. go test ./internal/api -run TestWatchdogPoll passes"
+        },
+        "handle": "poll-behind-names-steps-qa-3",
+        "id": "01M7AAFAT1VF2EXQA53FQBS7PN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFAT1VF2EXQA53F5KK8T4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFAT1VF2EXQA53F5KK8T4",
+        "id": "01M7AAFAVZRTRWAMTF9Z9MP5C9",
+        "link": "01M7AAFAVZRTRWAMTF9Y5WHJEZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J38C50QZG2X4JNEC3S8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: a git config read hung 40s in the first poll was killed (poll took 32.3s, 'slowest: repo settings 32s'); the poll went on and rhiza daemon --once exited 0. go test ./internal/api -run TestPollGit passes"
+        },
+        "handle": "poll-git-bounded-qa-3",
+        "id": "01M7AAFAXMPGYA9375NC35DKFZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFAXMPGYA9375N8Y70V5J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFAXMPGYA9375N8Y70V5J",
+        "id": "01M7AAFAZ311R6ZBQFYFSQAAYB",
+        "link": "01M7AAFAZ311R6ZBQFYCS9462M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HZMHFKMQ821D1SR6BFH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: sh -c 'sleep 3 & exec rhiza daemon': at 2s the inherited sleep was the daemon's child; at 6s it had been reaped (no defunct child), and the daemon stopped cleanly on SIGINT. go test ./cmd/rhiza -run TestReap passes"
+        },
+        "handle": "daemon-adopts-inherited-children-qa-3",
+        "id": "01M7AAFB0MHR7YCKXX82XHVGAK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFB0MHR7YCKXX808S8W70",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFB0MHR7YCKXX808S8W70",
+        "id": "01M7AAFB2CNC8WXH0J8G5XHTKD",
+        "link": "01M7AAFB2CNC8WXH0J8EF9KNSK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01JB2302EDM0R0N111NEV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: rhiza daemon --once and a long-running daemon in the scratch root ran their polls and exited cleanly with the sweep started from the poll; go test ./internal/api -run TestDaemonSweepLeftovers and ./internal/daemon/... pass"
+        },
+        "handle": "leftovers-sweep-off-poll-qa-3",
+        "id": "01M7AAFB4MG04BNM50H02PR8YY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFB4MG04BNM50GY471S27",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFB4MG04BNM50GY471S27",
+        "id": "01M7AAFB6RFN5FAP82SMWMRDDY",
+        "link": "01M7AAFB6RFN5FAP82SMC5XDED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: go test ./internal/leftovers/... passes; the leftovers code is unchanged since cycle 2's strace run (each scratch parent listed once) and the daemon runs here swept without error"
+        },
+        "handle": "scratch-sweep-one-listing-qa-3",
+        "id": "01M7AAFB8FRQHTRPA4PN29W0QK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AAFB8FRQHTRPA4PJGYRAYY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AAFB8FRQHTRPA4PJGYRAYY",
+        "id": "01M7AAFBA8ABQ5GN7QZCVKYPSY",
+        "link": "01M7AAFBA8ABQ5GN7QZB85WF1Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HP9C0SQC3RZMW0R2R18",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AAFBC1JP9QAQ4NFYM7TRY8",
+  "type": "ops",
+  "v": 1
+}

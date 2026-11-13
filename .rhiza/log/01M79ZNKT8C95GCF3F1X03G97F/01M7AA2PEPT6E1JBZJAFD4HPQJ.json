@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A9RKJVMXZQ11EN1Q76MHGP",
+  "after": [
+    "01M7A9DFXA25WCMSFHT8642MAE"
+  ],
+  "at": "2026-11-13T11:18:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 5 at c8a22036d. Acceptance `go test -trimpath ./internal/api -run TestWatchdogPollOverrun` exit 0 (TestWatchdogPollOverrun and TestWatchdogPollOverrunFirstPoll pass: one in-flight line naming 'in rhiza watchdog' and 'after 20ms' before the blocked step is released, none within the limit, none with the watchdog or poll-behind off). Commit Checks re-run: go vet ./internal/api exit 0; go test -trimpath -race -count=1 ./internal/api -run 'TestWatchdogPoll|TestWatchdogPolicy' exit 0; go test -trimpath ./cmd/rhiza -run TestScripts/watchdog-policy exit 0; rhiza ship generate and rhiza render exit 0 with no tracked diff. Daemon --once e2e reproduced with scratch builds of HEAD^ and HEAD, a hermetic root with rhiza.daemon.watchdog.enabled in rhiza.toml and a fake git hanging 20s on the second rhiza.project.watchdog.enabled read: base with watchdog off logged 'poll still running after 15s, in repo settings'; fixed with watchdog off logged nothing; fixed with watchdog on logged that line and then the poll-took line; all exit 0. Diff read: homePol is seeded from watchdogPolicyOf(conf.rows), the startup daemonConfOf(homeCtx) settings; watchPollOverrun logs at most once per poll and rearm keeps the limit timed from poll start. Leaf commits touch only internal/api daemon.go, watchdog_pollbehind.go, its test and watchdog_policy.go (the policy helper the first-poll fix needs), plus .rhiza records. No stubs or TODOs."
+        },
+        "handle": "poll-overrun-logged-live-verified-5",
+        "id": "01M7AA2PBPD0PS6SAPT31G8795",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AA2PBPD0PS6SAPT08XXBD7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AA2PBPD0PS6SAPT08XXBD7",
+        "id": "01M7AA2PCWZE83558MESM467NB",
+        "link": "01M7AA2PCWZE83558MER7620YM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01J6NM4S5VW0XRCPK60ZP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AA2PEPT6E1JBZJAFD4HPQJ",
+  "type": "ops",
+  "v": 1
+}

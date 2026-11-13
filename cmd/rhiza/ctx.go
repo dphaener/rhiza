@@ -75,6 +75,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Start:     startProgram,
 		Detach:    detachProgram,
 		Reap:      reapDrivers,
+		Adopt:     adoptChildren,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this
 		// terminal runs in; Rex sets them in every shell it starts.
 		RexSession: getenv("REX_SESSION"),

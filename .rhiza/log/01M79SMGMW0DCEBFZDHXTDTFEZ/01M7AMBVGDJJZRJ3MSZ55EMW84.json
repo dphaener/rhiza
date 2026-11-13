@@ -1,0 +1,43 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7AJF8FF2PQDA6QAZEVYYFPT"
+  ],
+  "at": "2026-11-13T14:18:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "6b209449329e2c3cfab855d15a50efbcba03ee8e",
+          "pr": "https://github.com/dphaener/rhiza/pull/549",
+          "result": "9 checks passed: changes SUCCESS, go-install SUCCESS, model SUCCESS, lint SKIPPED, scripts SKIPPED, api SKIPPED, rest SKIPPED, budgets SKIPPED, check SUCCESS",
+          "statement": "Pull request #549 (https://github.com/dphaener/rhiza/pull/549) passed CI at 6b20944",
+          "status": "verified"
+        },
+        "handle": "pr-549-fix-rows-on-the-web-roadmap-s",
+        "id": "01M7AMBV1BGK07PBYB7V3V7DR1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AMBV0F43V2Q95C06G8QVTA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AMBV0F43V2Q95C06G8QVTA",
+        "id": "01M7AMBV7AGT0TPQHRVBRPT3F1",
+        "link": "01M7AMBV7AGT0TPQHRVAGYX84B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79SWNGATEE7JHYB7Q9X2CBK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMBVGDJJZRJ3MSZ55EMW84",
+  "type": "ops",
+  "v": 1
+}

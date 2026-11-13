@@ -7,3 +7,6 @@ func procStart(pid int) string { return "" }
 
 // reapList does nothing off Linux.
 func reapList(list string, self daemonID) {}
+
+// adoptList does nothing off Linux.
+func adoptList(list string, self daemonID) {}

@@ -444,14 +444,15 @@ func (interviewAdapter) ContextReply(string, string) ([]byte, bool, error) { ret
 func (interviewAdapter) GuardReply(string, []byte, string) ([]byte, bool, error) {
 	return nil, false, nil
 }
+func (interviewAdapter) APIError([]byte) (string, bool) { return "", false }
 func (interviewAdapter) UsageLimit([]byte) (adapter.UsageLimit, bool) {
 	return adapter.UsageLimit{}, false
 }
 
-// ScratchGlobs puts a fake session's scratch folder at $HOME/scratch/<sid>.
-func (interviewAdapter) ScratchGlobs(sid string, getenv func(string) string) []string {
+// ScratchParents puts a fake session's scratch folder at $HOME/scratch/<sid>.
+func (interviewAdapter) ScratchParents(getenv func(string) string) []string {
 	if getenv("HOME") == "" {
 		return nil
 	}
-	return []string{filepath.Join(getenv("HOME"), "scratch", sid)}
+	return []string{filepath.Join(getenv("HOME"), "scratch")}
 }

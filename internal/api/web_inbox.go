@@ -9,7 +9,7 @@ import (
 // in the CLI inbox.
 var webInboxKinds = map[string]bool{
 	InboxQuestion: true, InboxOpen: true, InboxSignoff: true,
-	InboxFailed: true, InboxGaveUp: true, InboxStalled: true, InboxPermission: true,
+	InboxFailed: true, InboxGaveUp: true, InboxStalled: true, InboxPermission: true, InboxAPIError: true,
 }
 
 // WebInboxSource reads the inbox for the web UI's Overview from the
@@ -81,6 +81,9 @@ func webInboxViews(items []InboxItem) []web.InboxItemView {
 			// The prompt's message can hold commands and paths: the page only
 			// says the run waits on a permission.
 			views = append(views, view("", "a session waits for your permission"))
+		case InboxAPIError:
+			// The error's text and the session stay in the CLI inbox.
+			views = append(views, view("", "a session stopped on an API error"))
 		case InboxStalled:
 			views = append(views, view("", "its session has stopped reporting"))
 		}
