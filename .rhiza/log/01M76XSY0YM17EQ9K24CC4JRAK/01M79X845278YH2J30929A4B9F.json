@@ -1,0 +1,40 @@
+{
+  "actor": "01M79X45SFSET5MQ6KR1YJB9H3",
+  "after": [
+    "01M79X0VZR24VE5BJAA4T937P1"
+  ],
+  "at": "2026-11-13T07:34:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at 6f0d5d935. Re-ran every Checks: command, each exit 0: go test -trimpath ./internal/api/... -run QueueWait (TestQueueWaitJournal, TestQueueWaitFirstPollStarts, TestQueueWaitRestartWritesNoDuplicate, TestQueueWaitShipOwnerStartedOutside all PASS); go test -trimpath ./internal/daemon/...; go vet ./internal/daemon/ ./internal/api/; rhiza ship generate; rhiza render (no tracked diff after); make self-check (only pre-existing unclaimed warnings). Read the diff: JournalQueueWaits now takes the run journals and, before the skip filters, appends a started line at the run's start time with detail 'started outside the daemon' for a change set whose last line is a pre-start reason and whose run started after it, as Decision queue-wait-journal-outside-starts says. The new test covers ship-owner, then a run started by hand, then started at the run's time with that detail, and no further line on a later poll. The earlier acceptance points still pass. The leaf's statement and acceptance edits match the decision. No TODOs or stubs, and nothing changed outside the leaf beyond the builder's actor record and the rendered files."
+        },
+        "handle": "queue-wait-journal-lines-verified-2",
+        "id": "01M79X840ZDSKXR877F78G4QYZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79X840ZDSKXR877F4HBFV16",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79X840ZDSKXR877F4HBFV16",
+        "id": "01M79X8430MYJNRRKSTC6B0BXE",
+        "link": "01M79X8430MYJNRRKSTBGH5AV5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79DE92G4FFVHC5MFPY6EFGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSY0YM17EQ9K24CC4JRAK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79X845278YH2J30929A4B9F",
+  "type": "ops",
+  "v": 1
+}

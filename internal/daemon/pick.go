@@ -99,40 +99,69 @@ func Skips(candidates []string, runs []run.Journal, pending []string, host strin
 	return skips
 }
 
-func decide(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int, ship Ship) ([]string, []Skip) {
-	live := map[string]bool{}
-	latest := map[string]run.State{}
-	running := 0
+// RunStates classifies change sets by their runs: the one place that says
+// whether a change set has started already, shared by Pick's decide and the
+// queue-wait journal so the two cannot disagree.
+type RunStates struct {
+	latest  map[string]run.State
+	live    map[string]bool
+	held    map[string]bool
+	ship    Ship
+	running int
+}
+
+// NewRunStates reads runs (oldest first) and pending, the change sets
+// started and not yet journaled, as Pick takes them.
+func NewRunStates(runs []run.Journal, pending []string, host string, alive func(pid int) bool, ship Ship) *RunStates {
+	r := &RunStates{latest: map[string]run.State{}, live: map[string]bool{}, held: map[string]bool{}, ship: ship}
 	for _, j := range runs {
 		st := j.State()
-		latest[st.Change] = st
+		r.latest[st.Change] = st
 		switch st.Liveness(host, alive) {
 		case run.LiveRunning:
-			live[st.Change] = true
-			running++
+			r.live[st.Change] = true
+			r.running++
 		case run.LiveInterrupted:
-			live[st.Change] = true
+			r.live[st.Change] = true
 		}
 	}
-	held := map[string]bool{}
 	for _, cs := range pending {
-		if !live[cs] && !held[cs] {
-			held[cs] = true
-			running++
+		if !r.live[cs] && !r.held[cs] {
+			r.held[cs] = true
+			r.running++
 		}
 	}
+	return r
+}
+
+// PostStart returns the Skip reason of a change set whose run has already
+// started (SkipLive, SkipHeld, SkipShipped or SkipFailed), or "" when it
+// has no such state: no run yet, or its latest run was abandoned, retried
+// or has shipped it before it was last accepted or reopened.
+func (r *RunStates) PostStart(cs string) string {
+	st, ok := r.latest[cs]
+	switch {
+	case r.live[cs]:
+		return SkipLive
+	case r.held[cs]:
+		return SkipHeld
+	case ok && r.ship.shipped(st):
+		return SkipShipped
+	case ok && st.Ended && st.Result == run.Failed && !st.Abandoned():
+		return SkipFailed
+	}
+	return ""
+}
+
+func decide(candidates []string, runs []run.Journal, pending []string, host string, alive func(pid int) bool, max int, ship Ship) ([]string, []Skip) {
+	rs := NewRunStates(runs, pending, host, alive, ship)
+	running := rs.running
 	var picked []string
 	var skips []Skip
 	for _, cs := range candidates {
-		switch st, ok := latest[cs]; {
-		case live[cs]:
-			skips = append(skips, Skip{Change: cs, Reason: SkipLive})
-		case held[cs]:
-			skips = append(skips, Skip{Change: cs, Reason: SkipHeld})
-		case ok && ship.shipped(st):
-			skips = append(skips, Skip{Change: cs, Reason: SkipShipped})
-		case ok && st.Ended && st.Result == run.Failed && !st.Abandoned():
-			skips = append(skips, Skip{Change: cs, Reason: SkipFailed})
+		switch reason := rs.PostStart(cs); {
+		case reason != "":
+			skips = append(skips, Skip{Change: cs, Reason: reason})
 		case running >= max:
 			skips = append(skips, Skip{Change: cs, Reason: SkipNoSlot})
 		default:
