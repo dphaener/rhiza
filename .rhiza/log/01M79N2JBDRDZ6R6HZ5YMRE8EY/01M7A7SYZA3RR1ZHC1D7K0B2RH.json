@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A7K7ZFMWFPYS5H6G1GT1PH",
+  "after": [
+    "01M7A703TES4QQTAQW834Z9VQ4"
+  ],
+  "at": "2026-11-13T10:38:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 5 at b2d39e336: acceptance go test -trimpath ./internal/api/... -run DaemonGuideHold exit 0 (TestDaemonGuideHold: unwritable skills folder, accepted change set's build step not started over 3 polls, exactly one guide-stale inbox item naming the user guide, the error and rhiza guide install --agent claude, the step starts and the item is gone after the install; TestDaemonGuideHoldPlansAndResumes: queued bug request held as guide-stale, interrupted run not resumed, both proceed after the install). Re-ran the Checks block: TestDaemonGuideHold 0, TestDaemon 0, ./internal/daemon/... 0, TestScripts/describe-golden 0, rhiza ship generate 0, rhiza render 0; the new test fails (exit 1) with the three non-test files reverted to HEAD~1 in a scratch worktree. Diff read: changes are confined to the guide hold (request.go, daemon.go resume and continue paths, daemon_guide.go, Skip doc, golden), the continue lookup index is guarded by daemonContinueCanStart, no stubs or TODOs, tests use fakes only."
+        },
+        "handle": "daemon-holds-steps-on-stale-guide-verified-3",
+        "id": "01M7A7SYVV3QGWZ6N8YSFQY6NG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A7SYVT4DAJPVMWQ08EMWNR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A7SYVT4DAJPVMWQ08EMWNR",
+        "id": "01M7A7SYXV42BGR5M13AF390E3",
+        "link": "01M7A7SYXV42BGR5M13955YBSX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NEZ70EHGQE9VERBQ04GFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79N2JBDRDZ6R6HZ5YMRE8EY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A7SYZA3RR1ZHC1D7K0B2RH",
+  "type": "ops",
+  "v": 1
+}
