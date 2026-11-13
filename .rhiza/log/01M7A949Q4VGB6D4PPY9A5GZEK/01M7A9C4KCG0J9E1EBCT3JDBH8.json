@@ -1,0 +1,228 @@
+{
+  "actor": "01M7A953406SP5B456YBV0783G",
+  "after": [
+    "01M7A9AA2DVD8ZEM919M6MQB5K"
+  ],
+  "at": "2026-11-13T11:06:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7A949Q4VGB6D4PPY9A5GZEK",
+        "id": "01M7A9C46A5E1VQCM695RHEGA6",
+        "link": "01M7A9C46A5E1VQCM6923Q7P48",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "The incident transcripts (quality check dbb3e57f) end in Claude Code's synthetic API-error line (isApiErrorMessage, model <synthetic>, text 'Please run /login · API Error: 403 Attention Required! | Cloudflare'), the same shape claudecode's UsageLimit already reads, so the adapter can tell it apart from the model's prose. watchLimit in internal/api/session_run.go already reads every run session's transcript every 30s while its agent runs, attended or autonomous, so the check costs no new read and acts within a minute; the daemon would need a new per-session transcript read on every poll and only runs autonomous orchestration. A usage-limit line is also a synthetic API error and keeps its own pause path, so it is excluded.",
+          "statement": "A run session stopped on a transient API error is found and re-prompted by the `rhiza session run` process that started it, from its transcript, on the same poll that already watches for the usage limit, not by the daemon"
+        },
+        "handle": "api-error-reprompt-in-session-run",
+        "id": "01M7A9C46VS0N9X4DVF0JPBD44",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A9C46VS0N9X4DVF0FMYSZE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C46VS0N9X4DVF0FMYSZE",
+        "id": "01M7A9C47EDT851797BW7TTFCF",
+        "link": "01M7A9C47EDT851797BV2VX22V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9AA1VK4BF3JVAWBNPX6W8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent asks for 'retrying a few times with backoff, then raises an inbox item'. The incident's 403s were transient: each session resumed within seconds of a message about 15 minutes later, so short waits doubling from 1 minute cover a passing outage in about 7 minutes without hammering a failing API. A real outage or an expired login ('Please run /login') outlasts three tries and then needs a person. Keying the count on consecutive errors means a session that recovered and later hits a new error gets fresh retries. Re-prompting only autonomous runs follows idle-stall-autonomous-only and daemon-nudges-stalled: an owner-attended session may be the owner's own to resume, so it is surfaced, not typed into.",
+          "statement": "In a session an autonomous run launched, an API-error stop is re-prompted at most 3 times in a row, after waits of 1, 2 and 4 minutes from when the error is seen; an assistant line that is not an API error resets the count; a fourth consecutive API error, or any API error in a session of an owner-attended run, is not re-prompted and goes to the inbox at once"
+        },
+        "handle": "api-error-retry-policy",
+        "id": "01M7A9C47YW5N5EHZZHJQZX739",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A9C47YW5N5EHZZHGEHD1MK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C47YW5N5EHZZHGEHD1MK",
+        "id": "01M7A9C48H1MEZ1NVP3NFH9PNQ",
+        "link": "01M7A9C48H1MEZ1NVP3MZYYDJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9AA1VK4BF3JVAWBNPX6W8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "session.message (internal/api/session_message.go typePointer) types only into a session whose status resolves idle and waits on a blocked one, so a blocked report would make the inbox's own next step hang; an idle report keeps the session messageable, and it also lets the re-prompt be typed when no Stop hook fired. The detail prefix follows session.LimitPausedDetail, which Stallable already excludes; excluding this prefix too keeps the daemon's 20-minute nudge from doubling the item. A new kind rather than stalled says what happened and what to try.",
+          "statement": "A session left on an API error is recorded as an idle hook report whose detail starts 'stopped on an API error: ' and the error text; rhiza inbox lists it as an item of the new kind api-error with rhiza session message as the next step; it never counts as stalled, and the session's next hook report clears it"
+        },
+        "handle": "api-error-inbox-as-idle-detail",
+        "id": "01M7A9C493BVWZ0GCHJ72PXPQQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A9C493BVWZ0GCHJ5K2EKWN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C493BVWZ0GCHJ5K2EKWN",
+        "id": "01M7A9C49KB9KF6T1TPDWC5E9Q",
+        "link": "01M7A9C49KB9KF6T1TPCD03M7F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9AA1VK4BF3JVAWBNPX6W8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "internal/api/watchdog_policy.go DefaultAgentNudge and internal/session/status.go Stalled (from change set 01M6N9AF69) flag an idle or working session silent past 20 minutes in an autonomous run; the incident's sessions sat about 18 minutes, under that cutoff, before the orchestrator stepped in. The missing piece is recognising the API-error stop at once, which needs no silence threshold or process inspection.",
+          "statement": "The intent's other trigger, a transcript that has not grown for N minutes with no child process, is not built here: the watchdog's agentNudge (20m by default) and session.Stalled already nudge and list a silent autonomous run session; this change set catches the API-error stop itself"
+        },
+        "handle": "api-error-silence-left-to-watchdog",
+        "id": "01M7A9C4A6P40CDWVEP6J1P8KG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7A9C4A6P40CDWVEP31ZJXQB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4A6P40CDWVEP31ZJXQB",
+        "id": "01M7A9C4ASQJ1NASPMNSRNYY3J",
+        "link": "01M7A9C4ASQJ1NASPMNRKH7JVB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9AA1VK4BF3JVAWBNPX6W8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/adapter/claudecode (go test -trimpath ./internal/adapter/...): a transcript whose last assistant line is the synthetic 'Please run /login · API Error: 403 Attention Required! | Cloudflare' message reports an API error with that text; one whose last assistant line is the usage-limit message reports none (and UsageLimit still reports the limit); an API-error line followed by a later model assistant line reports none; 'API Error' in the model's own prose or a tool call's input reports none; an empty transcript reports none. The api package's fake adapters gain the method and go test -trimpath ./internal/api/ -run 'SessionRun|UsageLearn|SessionInterview|SessionAsk' passes. Touches internal/adapter/adapter.go, internal/adapter/claudecode/claudecode.go, internal/adapter/claudecode/claudecode_test.go, internal/api/*_test.go (fake adapters)",
+          "statement": "The agent adapter tells from a transcript that the agent's last turn ended on an API error that is not its usage limit, and returns the error's text: for Claude Code, the last assistant line is the synthetic API-error message (isApiErrorMessage or model <synthetic>) whose text is not the usage-limit message"
+        },
+        "handle": "adapter-reads-api-error",
+        "id": "01M7A9C4BPN1BANYKJJVXEZAF0",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "id": "01M7A9C4CEEKFF6PJJB192SA5H",
+        "link": "01M7A9C4CEEKFF6PJJAZBPRYT2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C46VS0N9X4DVF0FMYSZE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/api/session_run_apierror_test.go (go test -trimpath ./internal/api/ -run SessionRunAPIError) with a fake adapter, a fake process, a fake message sender and the poll and backoff shortened: an autonomous session whose new transcript ends in an API error gets one message naming the error after the first backoff and none before it; its record, last reported working by the hook, holds an idle hook report before the send; an assistant line written during the backoff cancels the send; three consecutive API errors give three messages and a fourth gives none, with the record left on 'stopped on an API error: ' and the error text; an error, a recovered assistant line, then a new error re-prompts again; an owner-attended session's API error gives no message and the record at once; a usage-limit line gives no message and the usage-limit pause still happens; an API error in the transcript before this start's base gives nothing. Touches internal/api/session_run.go, internal/api/session_run_apierror.go, internal/api/session_run_apierror_test.go",
+          "statement": "While its agent runs, `rhiza session run` watches the session's transcript past where this start began, on the usage-limit poll; when it ends in an API error (adapter-reads-api-error) in a session an autonomous run launched, it waits the retry policy's backoff, then, if no later assistant line has appeared, records an idle hook report unless the status already resolves idle and sends the session, through session.message, a message naming the error and telling it to carry on where it left off; it re-prompts at most 3 consecutive errors, and on the fourth, or on the first in an owner-attended run's session, it re-prompts nothing and records the session for the inbox (inbox-lists-api-error-sessions)"
+        },
+        "handle": "session-run-reprompts-api-error",
+        "id": "01M7A9C4DABT4TTGNKQ6R8ZSEZ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "op": "node.create",
+        "parent": "01M5TYGK7EFHKPB9JG3A2MH2G2"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "id": "01M7A9C4E338C7QCEMZ6A1JYC4",
+        "link": "01M7A9C4E338C7QCEMZ2MZ9RM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C46VS0N9X4DVF0FMYSZE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "id": "01M7A9C4ETRV5JRSEQENRZ34DB",
+        "link": "01M7A9C4ETRV5JRSEQEK5G33VW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C47YW5N5EHZZHGEHD1MK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A Go test in internal/session (go test -trimpath ./internal/session/...): an autonomous session idle 21 minutes with the API-error detail is not Stalled while one with a plain idle detail is. cmd/rhiza/testdata/script/inbox-api-error.txtar (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-api-error): with a live run journal and a session record whose hook report is idle with the API-error detail, rhiza inbox --json has one item of kind api-error with the session, the run, the error text and the session message next step, and none of kind stalled at T+21m; the text inbox shows it; after a later working hook report the item is gone. describe-golden.txtar is regenerated for the new kind (go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden), and go test -trimpath ./internal/api/ -run 'Inbox|DaemonNotice' and ./internal/tui/inboxapp/... pass. Touches internal/session/status.go, internal/session/status_test.go, internal/api/run.go, internal/api/inbox.go, internal/api/daemon.go, internal/api/web_inbox.go, cmd/rhiza/testdata/script/inbox-api-error.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "statement": "A live run's step session whose hook report is idle with a detail starting 'stopped on an API error: ' (session.APIErrorDetail) is listed by rhiza inbox as an item of kind api-error naming the session, its run and the error, with `rhiza session message <session> <text>` as the next step, and the daemon's notice, the web inbox and the inbox app show it; such a session is never stalled, and its next hook report clears the item"
+        },
+        "handle": "inbox-lists-api-error-sessions",
+        "id": "01M7A9C4G0XBK7HYT3S77A2AJQ",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "id": "01M7A9C4GNBP6JBRSA6HQ8YK50",
+        "link": "01M7A9C4GNBP6JBRSA6F2X28BT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C493BVWZ0GCHJ5K2EKWN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "id": "01M7A9C4HC0ZVKMWWH4ZPD2BNJ",
+        "link": "01M7A9C4HC0ZVKMWWH4W1M0JQX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4A6P40CDWVEP31ZJXQB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "id": "01M7A9C4J1YTRXKA6EN9TPES8N",
+        "link": "01M7A9C4J1YTRXKA6EN9NWWD2C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4BPN1BANYKJJREMJNFR",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7A9C4DABT4TTGNKQ5JFRSV9",
+        "id": "01M7A9C4JQ2F9HQ7369N1DNE4K",
+        "link": "01M7A9C4JQ2F9HQ7369HH9CZ78",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A9C4G0XBK7HYT3S4EJ6254",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A9C4KCG0J9E1EBCT3JDBH8",
+  "type": "ops",
+  "v": 1
+}

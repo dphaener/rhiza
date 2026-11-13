@@ -1,0 +1,33 @@
+{
+  "actor": "01M7A953406SP5B456YBV0783G",
+  "after": [
+    "01M7A949Q4VGB6D4PPY9BS6H3Q"
+  ],
+  "at": "2026-11-13T11:05:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "268cebdb8a66e4ea18cc935185b7a7c72bbfb0127c970e16e8d163fa636c70a2",
+          "session": "54eab379-f795-4280-92c5-01a1d4926df3",
+          "summary": "Autonomous plan run of the bug request; no owner was present and no question was put to the arbiter. Research: the incident transcripts (e.g. quality check dbb3e57f) end in Claude Code's synthetic API-error line (isApiErrorMessage, model <synthetic>, text 'Please run /login · API Error: 403 Attention Required! | Cloudflare'), the same line shape the claudecode adapter's UsageLimit already reads. `rhiza session run` already polls each run session's transcript every 30s (watchLimit, internal/api/session_run.go) for the usage limit. The watchdog's agentNudge (20m) and session.Stalled cover a silent session; the incident's sessions sat idle about 18 minutes, under that cutoff. session.message types only into an idle session and waits on a blocked one. Planned: the adapter reads a transient API error; session run re-prompts an autonomous run's session after it with backoff and, when retries run out (or at once in an owner-attended run), records it so the inbox lists an api-error item. The transcript-silence clause stays with the existing watchdog.",
+          "title": "Plan: re-prompt run sessions stopped on an API error (autonomous plan run)"
+        },
+        "handle": "api-error-reprompt-plan",
+        "id": "01M7A9AA1VK4BF3JVAWE0MZ8S5",
+        "key": null,
+        "kind": "source",
+        "node": "01M7A9AA1VK4BF3JVAWBNPX6W8",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7A949Q4VGB6D4PPY9A5GZEK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A9AA2DVD8ZEM919M6MQB5K",
+  "type": "ops",
+  "v": 1
+}
