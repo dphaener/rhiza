@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A6T2Q1FH8EEB9YASBQRK08",
+  "after": [
+    "01M7A6NFPGSMSK3B989VEN3Y6Q"
+  ],
+  "at": "2026-11-13T10:26:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at fe1ef0b8d: built ./cmd/rhiza to a scratch path, made a scratch root with projects alpha and beta (each one milestone and two proposed change sets, beta's second depending on its first) and ran the built daemon, paused with max-runs 0, serving the web UI on 127.0.0.1. /p/alpha/roadmap and /p/beta/roadmap each list only their own two change sets. /api/roadmap?all=true (home) and /p/<x>/api/roadmap?all=true return only that project's milestone and 2 change sets, and so do ?project=alpha and ?all=true&project=alpha on beta's API. /p/beta/changes/<beta two> shows Serves beta milestone and Depends on beta change one, and /p/beta/changes/<an alpha change set> answers 404. Failure cases: /p/gamma/roadmap 404, ?all=maybe 400 usage error, POST 405. The CLI's rhiza roadmap --all still lists both projects. go test -trimpath ./internal/api -run TestWebRoot, ./internal/web/... and ./cmd/rhiza -run 'TestScripts/.*roadmap.*' pass."
+        },
+        "handle": "web-roadmap-project-scoped-qa-1",
+        "id": "01M7A73WH09GD8DA69ABS1PAHH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A73WH09GD8DA69AAJV867X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A73WH09GD8DA69AAJV867X",
+        "id": "01M7A73WM0T54WPT4SZ24KR37T",
+        "link": "01M7A73WM0T54WPT4SYYD6JYA0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79S9N7DZZ35JRWW20V549XS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79S4M646SATZ2HW97GXK1MH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A73WP958VF5Z08KV17MARC",
+  "type": "ops",
+  "v": 1
+}
