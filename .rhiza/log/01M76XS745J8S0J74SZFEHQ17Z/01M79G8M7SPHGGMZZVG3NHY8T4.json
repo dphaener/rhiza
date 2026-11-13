@@ -1,0 +1,40 @@
+{
+  "actor": "01M79FS6DFK76KXFVKC81W0MS1",
+  "after": [
+    "01M79FTBYSNBVYTH6WNBEXCRTY"
+  ],
+  "at": "2026-11-13T03:47:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier (attempt 2) at ea1121b28. Read the diffs of cbbf0ef76 and ea1121b28: startLeaf in internal/run/leaves.go switches a verifier to low_risk_models only when verifierRisky is false; verifierRisky has no agent call and returns risky when the round attempt is past 1, the round is past 1, the review cycle is past 1, the runner cannot list changed files, the builder's/fixer's journalled start HEAD or the commit is missing, ChangedFiles errors, or a changed file matches risky_paths. stepRunner.ChangedFiles runs git diff --name-only -z. The spec's Model is what the leaf-session entry journals. Ran go test -trimpath ./internal/run/ -run 'TestVerifierTier|TestVerifierRisky' -v: all pass. With a role setting low_risk_models = [sonnet], models = [opus], risky_paths = [.github/**], the tests read the journal's verifier leaf-session models: sonnet for a first attempt changing only internal/x/x.go (diff range start HEAD..leaf commit checked), opus when .github/workflows/ci.yml changes, opus when the diff errors, opus on a role without low_risk_models; attempt 2 journals leaf-a 1 sonnet then leaf-a 2 opus (TestVerifierTierRetry); a retry in a fresh round journals opus for the round-2 verifier and sonnet for the other leaves' low-risk first attempts (TestVerifierTierFreshRound); review cycle 2 of a checks step journals opus (TestVerifierTierReviewCycle). This resolves attempt 1's three findings. Also ran go test -trimpath ./internal/run/... ./internal/api/ ./internal/workflow/: ok."
+        },
+        "handle": "verifier-tier-choice-verified",
+        "id": "01M79G8M6MQ79NZGW9VSYGDVFX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79G8M6MQ79NZGW9VRD5QXE7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79G8M6MQ79NZGW9VRD5QXE7",
+        "id": "01M79G8M775S7A4Q677PD94VES",
+        "link": "01M79G8M775S7A4Q677NM9FRZ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ29TQH0XYRCP38C2X9DK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79G8M7SPHGGMZZVG3NHY8T4",
+  "type": "ops",
+  "v": 1
+}
