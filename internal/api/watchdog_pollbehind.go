@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
@@ -22,10 +23,14 @@ type pollStep struct {
 	Took    time.Duration
 }
 
-// pollSteps times the steps of one poll. A nil *pollSteps times nothing.
+// pollSteps times the steps of one poll and knows which are running. A nil
+// *pollSteps times nothing. It is safe for the poll and the overrun watcher
+// to use at once.
 type pollSteps struct {
-	now   func() time.Time
-	steps []pollStep
+	now     func() time.Time
+	mu      sync.Mutex
+	steps   []pollStep
+	running []pollStep // started steps, innermost last; Took unused
 }
 
 func newPollSteps(now func() time.Time) *pollSteps { return &pollSteps{now: now} }
@@ -37,8 +42,15 @@ func (ps *pollSteps) run(project, name string, f func()) {
 		return
 	}
 	start := ps.now()
+	ps.mu.Lock()
+	ps.running = append(ps.running, pollStep{Project: project, Name: name})
+	ps.mu.Unlock()
 	defer func() {
-		ps.steps = append(ps.steps, pollStep{Project: project, Name: name, Took: ps.now().Sub(start)})
+		took := ps.now().Sub(start)
+		ps.mu.Lock()
+		ps.steps = append(ps.steps, pollStep{Project: project, Name: name, Took: took})
+		ps.running = ps.running[:len(ps.running)-1]
+		ps.mu.Unlock()
 	}()
 	f()
 }
@@ -48,7 +60,58 @@ func (ps *pollSteps) all() []pollStep {
 	if ps == nil {
 		return nil
 	}
-	return ps.steps
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	return slices.Clone(ps.steps)
+}
+
+// current is the innermost step running now, and false when none is.
+func (ps *pollSteps) current() (pollStep, bool) {
+	if ps == nil {
+		return pollStep{}, false
+	}
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	if len(ps.running) == 0 {
+		return pollStep{}, false
+	}
+	return ps.running[len(ps.running)-1], true
+}
+
+// watchPollOverrun starts the live check of a poll: when the poll is still
+// running after pol.PollBehind times interval, it calls log once with a line
+// naming the step and project it is in. The returned stop ends the poll's
+// watch; after it returns nothing is logged. A disabled watchdog or
+// poll-behind check watches nothing.
+func watchPollOverrun(ps *pollSteps, pol WatchdogPolicy, interval time.Duration, log func(line string)) (stop func()) {
+	if !pol.Enabled || pol.PollBehind < 1 || log == nil {
+		return func() {}
+	}
+	limit := interval * time.Duration(pol.PollBehind)
+	var mu sync.Mutex
+	done := false
+	t := time.AfterFunc(limit, func() {
+		mu.Lock()
+		defer mu.Unlock()
+		if done {
+			return
+		}
+		line := fmt.Sprintf("watchdog: poll still running after %s", limit)
+		if st, ok := ps.current(); ok {
+			where := st.Name
+			if st.Project != "" {
+				where = st.Project + " " + st.Name
+			}
+			line += ", in " + where
+		}
+		log(line)
+	})
+	return func() {
+		t.Stop()
+		mu.Lock()
+		done = true
+		mu.Unlock()
+	}
 }
 
 // pollSlowestShown is how many steps the poll-behind line names.

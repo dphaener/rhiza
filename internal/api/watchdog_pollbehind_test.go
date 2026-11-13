@@ -1,7 +1,9 @@
 package api
 
 import (
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -86,5 +88,60 @@ func TestWatchdogPollBehindSteps(t *testing.T) {
 	watchdogPollBehind(&state, pol, 5*time.Second, 15*time.Second, now, ps.all(), func(l string) { log = append(log, l) })
 	if len(log) != 0 {
 		t.Fatalf("a poll within the limit logged %q", log)
+	}
+}
+
+// TestWatchdogPollOverrun runs polls against a shortened limit: one whose
+// step blocks past it logs one line naming the step and project before the
+// step is released, a poll within the limit and a disabled check log none.
+func TestWatchdogPollOverrun(t *testing.T) {
+	const interval = 10 * time.Millisecond
+	var mu sync.Mutex
+	var lines []string
+	logf := func(l string) { mu.Lock(); lines = append(lines, l); mu.Unlock() }
+	got := func() []string { mu.Lock(); defer mu.Unlock(); return slices.Clone(lines) }
+	reset := func() { mu.Lock(); lines = nil; mu.Unlock() }
+
+	pol := WatchdogPolicy{Enabled: true, PollBehind: 2}
+	ps := newPollSteps(time.Now)
+	stop := watchPollOverrun(ps, pol, interval, logf)
+	release := make(chan struct{})
+	finished := make(chan struct{})
+	go func() {
+		ps.run("rhiza", "watchdog", func() { <-release })
+		close(finished)
+	}()
+	deadline := time.Now().Add(10 * time.Second)
+	for len(got()) == 0 && time.Now().Before(deadline) {
+		time.Sleep(5 * time.Millisecond)
+	}
+	// The line is in before the step is released.
+	if l := got(); len(l) != 1 || !strings.Contains(l[0], "in rhiza watchdog") || !strings.Contains(l[0], "after 20ms") {
+		t.Fatalf("lines %q, want one naming rhiza watchdog and 20ms", l)
+	}
+	time.Sleep(60 * time.Millisecond)
+	close(release)
+	<-finished
+	stop()
+	if l := got(); len(l) != 1 {
+		t.Fatalf("lines %q, want exactly one", l)
+	}
+
+	reset()
+	stop = watchPollOverrun(newPollSteps(time.Now), WatchdogPolicy{Enabled: true, PollBehind: 100}, interval, logf)
+	time.Sleep(30 * time.Millisecond)
+	stop()
+	time.Sleep(10 * time.Millisecond)
+	if l := got(); len(l) != 0 {
+		t.Fatalf("a poll within the limit logged %q", l)
+	}
+
+	for _, off := range []WatchdogPolicy{{Enabled: false, PollBehind: 2}, {Enabled: true, PollBehind: 0}} {
+		stop = watchPollOverrun(newPollSteps(time.Now), off, interval, logf)
+		time.Sleep(40 * time.Millisecond)
+		stop()
+		if l := got(); len(l) != 0 {
+			t.Fatalf("policy %+v logged %q", off, l)
+		}
 	}
 }

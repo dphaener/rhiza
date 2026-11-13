@@ -243,6 +243,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	poll := func() error {
 		pollStart := ctx.Now()
 		steps := newPollSteps(ctx.Now)
+		defer watchPollOverrun(steps, homePol, daemonPoll, func(line string) {
+			if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: %s\n", line)
+			}
+		})()
 		var reg rootcfg.Config
 		var err error
 		steps.run("", "registry load", func() { reg, err = rootcfg.Load(root) })
