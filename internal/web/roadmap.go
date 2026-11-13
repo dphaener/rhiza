@@ -51,6 +51,7 @@ type roadmapJSON struct {
 		ChangeSets []struct {
 			ID        string   `json:"id"`
 			State     string   `json:"state"`
+			Title     string   `json:"title"`
 			Intent    string   `json:"intent"`
 			Ready     bool     `json:"ready"`
 			DependsOn []string `json:"depends_on"`
@@ -102,7 +103,7 @@ func plural(n int, w string) string {
 
 // loadRoadmap reads the roadmap operation, whole, and shapes it into groups.
 // Milestones and umbrellas are named by their intent's statement, never by
-// handle or ID; each row shows the change set's intent and state.
+// handle or ID; each row shows the change set's title, its intent beneath and its state.
 func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 	var rm roadmapJSON
 	if err := apiGet(r, "/api/roadmap?all=true", &rm); err != nil {
@@ -130,14 +131,14 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 		}
 		count := map[string]int{}
 		for _, c := range g.ChangeSets {
-			sub, step := "", "—"
+			note, step := "", "—"
 			if c.Ready {
 				step = "ready"
 			}
 			if n := len(c.DependsOn); n > 0 {
-				sub = "depends on " + plural(n, "change set")
+				note = "depends on " + plural(n, "change set")
 			}
-			out.Rows = append(out.Rows, Row{Href: "/changes/" + c.ID, Title: c.Intent, Sub: sub,
+			out.Rows = append(out.Rows, Row{Href: "/changes/" + c.ID, Title: c.Title, Sub: c.Intent, Note: note,
 				Pill: Pill{State: c.State, Text: c.State}, Step: step})
 			count[c.State]++
 			v.Total++

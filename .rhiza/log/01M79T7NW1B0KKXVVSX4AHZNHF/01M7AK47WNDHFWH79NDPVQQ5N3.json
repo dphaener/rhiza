@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AJ46TN0QEXDE5AZKND569F",
+  "after": [
+    "01M7AHVMBK53MTZYZAKGKCRJRW"
+  ],
+  "at": "2026-11-13T13:56:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at be2335f89: built ./cmd/rhiza to a scratch path and ran it in a scratch repo under a scratch Rhiza root (env -i). Happy: roadmap --all --json gives title 'Stream exports' for a set title, 'Cache the roadmap' (intent's first clause) and 'No comma at all in this rather' (30-char cut) when none is set; roadmap --json and api call roadmap print the same bytes. A paused daemon serving the web UI rendered /p/repo/roadmap and /p/repo/fragments/roadmap with each row's link text the title and the full intent in <small> beneath; served rhiza.css clamps .rz-row-title small to 2 lines; a change set with a depends-on link keeps 'depends on 1 change set' as its own small.rz-row-note line; HTML in title and intent is escaped; row links return 200. Failure: /p/nope/roadmap 404, roadmap --milestone exits 2 with a usage error. /p/repo/ and /p/repo/runs still render 200. Scoped tests: go test ./internal/web/... ok, ./internal/api -run Roadmap ok, ./cmd/rhiza -run TestScripts/(describe-golden|roadmap) ok."
+        },
+        "handle": "web-roadmap-row-titles-qa-1",
+        "id": "01M7AK47EVPPFTDNTHXG4NEF32",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AK47EVPPFTDNTHXEJG05EC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AK47EVPPFTDNTHXEJG05EC",
+        "id": "01M7AK47J2DC2ZT8M2GTKXZJBZ",
+        "link": "01M7AK47J2DC2ZT8M2GQ6PP6H9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79TEDZ8NQS65M1CQQ1DSE52",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79T7NW1B0KKXVVSX4AHZNHF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AK47WNDHFWH79NDPVQQ5N3",
+  "type": "ops",
+  "v": 1
+}
