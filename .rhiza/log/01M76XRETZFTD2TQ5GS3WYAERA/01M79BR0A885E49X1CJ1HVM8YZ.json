@@ -1,0 +1,41 @@
+{
+  "actor": "01M79BPQF0HC6AP1NZJXC7DEHP",
+  "after": [
+    "01M79BP1T7TRF0F8GP6ZP9RGQF"
+  ],
+  "at": "2026-11-13T02:28:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding and the critic agree the node is stale: it pins the rule to review.md via TestReviewText, while review-guide turns review.md into an index and review-role-skills-installed requires review.md's old phrases checked by review_test.go to be found in the role topics instead. So the node must name the role topics. I weighed narrowing the node to only the topics whose plan acceptances already list the test-scope block (check-compliance, check-quality, fixer, ci-fix, gate-fix, conflict-fix), but that would silently drop the rule for check-qa, check-model and critics, which guides-scoped-tests (decided by ci-runs-full-suite and scoped-tests-serve-m25-generic-rule) covers today; this change set restructures the review guide and is not meant to weaken that rule. Including the shared block in those three topics is a small, consistent addition (the block is shared and command-free) and keeps the node's coverage while moving its home from review.md to the role topics.",
+          "statement": "guides-scoped-tests is updated to follow the split: the build topic keeps the rule for builders and verifiers (TestBuildText on build.md unchanged), and on the review side the rule lives in the shared test-scope block expanded into every review role topic (check-compliance, check-quality, check-qa, check-model, critic, fixer, ci-fix, gate-fix and conflict-fix), not in the review index. Its acceptance becomes: the build test asserts build.md states the rule, and the internal/guide tests assert each of the nine expanded role topics contains the test-scope block and none of build.md or the role topics contains go test, make check, make test or testscript; go test -trimpath ./internal/guide/... passes. The check-qa, check-model and critic topics, whose acceptances do not list test-scope today, gain the block so no role the node covered loses the rule.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scoped-tests-in-role-topics",
+        "id": "01M79BR06PH8ZCHF6PKWJDMMQB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79BR06PH8ZCHF6PKW34TC1H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79BR06PH8ZCHF6PKW34TC1H",
+        "id": "01M79BR08132VXGC8R9MQZ1BZ1",
+        "link": "01M79BR08132VXGC8R9JVH8HPB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMA240JCRD8ME3SZVEKRQ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BR0A885E49X1CJ1HVM8YZ",
+  "type": "ops",
+  "v": 1
+}

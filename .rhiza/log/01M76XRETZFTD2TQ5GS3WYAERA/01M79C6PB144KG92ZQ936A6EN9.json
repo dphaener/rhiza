@@ -1,0 +1,41 @@
+{
+  "actor": "01M79C57YFW501ERPF8SN0CQ30",
+  "after": [
+    "01M79C47N4TEZ3VS5C0M35G5WW"
+  ],
+  "at": "2026-11-13T02:36:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, delay-repro-guidance (acceptance pins the rule to the review topic beside the unstable-CI rule via TestReviewText 'delay-repro'), review.md today (the delay rule is the line right after the unstable-CI rule), Decision review-role-topics-shape and leaf review-guide (review becomes an index; role topics carry rules through shared blocks), and the sibling rulings on this review round, above all unstable-ci-in-role-topics, which moved the unstable-CI rule into the shared unstable-CI block expanded into fixer, ci-fix and gate-fix. The node is stale, not the plan. Putting the delay rule in that same block keeps it beside the unstable-CI rule as its acceptance already requires, needs no new block, and makes the three leaves whose acceptances already require the unstable-CI block carry it without new leaf work. I weighed also expanding it into check-quality and check-qa: checks run scoped tests, but a check that meets a flake records it as a finding and does not chase it; reproducing a race is fixer work, and the checks' host-safety is already covered by the shared command-budget block (no sleep or poll, about four minutes per command, background once). conflict-fix resolves merges, not reds, so it is left out as in the unstable-CI ruling. No CLI command, flag, --json shape, rhiza.* setting or .rhiza/ format changes, so no breaking note.",
+          "statement": "delay-repro-guidance is updated in this change set to follow the split, not by keeping the rule in the review index: AGENTS.md and the rhiza-build topic keep the delay-injection rule unchanged (TestClaudeMDScopedTests and TestBuildText as today), and on the review side the rule (inject a delay at the suspected race; never busy loops, CPU stress or parallel stress runs on the shared host) joins the shared unstable-CI block, beside the unstable-CI reproduce-locally rule, so it is expanded into the fixer, ci-fix and gate-fix topics; the node's statement names builders, verifiers and those three fixer roles instead of rhiza-review's checks and fixers, and its acceptance finds the rule in the expanded fixer, ci-fix and gate-fix texts through the guide package tests instead of TestReviewText on review.md.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "delay-repro-in-role-topics",
+        "id": "01M79C6P7RASBNPZC64EJXPAX0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79C6P7RASBNPZC64DXHM4VH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79C6P7RASBNPZC64DXHM4VH",
+        "id": "01M79C6P94CCJXTZSNPH8QT473",
+        "link": "01M79C6P94CCJXTZSNPF2NSDSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMAFG4MXMP85H1AR405ZF",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79C6PB144KG92ZQ936A6EN9",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,41 @@
+{
+  "actor": "01M79B5DTC6T0CSWQ2B87SNQ0G",
+  "after": [
+    "01M79ATBJHY5BFACBWMVD4JNYE"
+  ],
+  "at": "2026-11-13T02:19:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6505MN5E02V3Y30RQQVN0BT",
+        "handle": null,
+        "id": "01M79B7B8WYE2DTG98DH4RAAN1",
+        "node": "01M6505MN5E02V3Y30RMC16FN5",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a test that finds the fakes-only rule, naming Rex, agents and gh, in the expanded check-compliance, check-quality and check-model topics, finds in check-qa that qa is hands-on with the built binary and that fakes alone do not count, finds no scope check named, and that each topic stays within TopicCap",
+          "statement": "The check-compliance, check-quality and check-model topics tell their checks to test runs with fakes only, never real Rex, agents or gh; check-qa runs the built binary hands-on, since fakes alone do not count for it"
+        },
+        "unset": []
+      },
+      {
+        "base": "01M76XY4512EWBGYNTAC0B9MH0",
+        "handle": null,
+        "id": "01M79B7B9ZJ8SG0MNMXSB6ZSES",
+        "node": "01M76XY4512EWBGYNTAAH4TQ4Y",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... asserts the expanded fixer, ci-fix, gate-fix and conflict-fix topics each name rhiza ship generate, rhiza render and the Checks: block; go test -trimpath ./internal/workflow/... asserts the review.toml fixer prompt names the fixer topic and ship-change.toml's ci-fix, gate-fix and conflict-fix prompts name the ci-fix, gate-fix and conflict-fix topics.",
+          "statement": "The fixer, ci-fix, gate-fix and conflict-fix topics tell a fixer to run the commands that reproduce its findings, then rhiza ship generate and rhiza render, before its one commit, and to list each command with its exit code in a Checks: block of the commit body; the review workflow fixer prompt and the builtin ship-change workflow ci-fix, gate-fix and conflict-fix prompts reach them by naming their topic."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79B7BBWE9C7VKKTBFP0VXYS",
+  "type": "ops",
+  "v": 1
+}

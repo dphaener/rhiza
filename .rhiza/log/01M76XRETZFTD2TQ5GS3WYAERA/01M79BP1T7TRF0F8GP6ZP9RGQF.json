@@ -1,0 +1,41 @@
+{
+  "actor": "01M79BMVA13452A63VWY0KSA7F",
+  "after": [
+    "01M79BMAM57AJK7QS7V88MXV02"
+  ],
+  "at": "2026-11-13T02:27:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Read the question, role-prompts-scoped-tests (statement and acceptance requiring each prompt to carry the rule), leaf review-prompts-one-line (one-line prompts with no test-scope text), decision review-role-topics-shape (prompts shrink to one line naming their topic; everything else moves into the topics through shared blocks, the test-scope block included in every check, critic and fixer topic per their leaves' acceptance), and internal/workflow/workflow_test.go:1552 TestBuiltinRolePromptsScopeTests. The change set's intent is to move role instructions into topics, and the check-*/critic/fixer leaves already require the shared test-scope block, so the rule still reaches every agent; only the older node's wording (where the rule lives) is stale. Re-adding the rule to the prompts would contradict the shape decision and the one-line leaf. Phrasing the node as 'in the prompt or through the named topic' keeps the build workflow's prompts covered whichever form they take (the sibling Build role topics decision also shrinks them), and keeps the substance (scoped tests, no named commands) testable. Not breaking: no command, flag, --json shape, setting or .rhiza/ format changes.",
+          "statement": "Settle f1 by updating role-prompts-scoped-tests in this change set, not by putting test-scope text back into the one-line prompts: its statement becomes that every builder, verifier, check, critic and fixer of the built-in build and review workflows is told to run only the tests covering what its change touches and never the repo's full suite (which the PR's CI runs), either in its prompt or through the guide topic its prompt names, whose text includes the shared test-scope block; the review workflow's check, critic and fixer prompts reach it through check-<check>, critic and fixer. Its acceptance changes accordingly: the internal/workflow test (TestBuiltinRolePromptsScopeTests) asserts each such prompt either carries the rule or names a `rhiza guide <topic>` whose topic text (with shared blocks expanded) carries it, and that no prompt names go test, make check, make test or testscript; go test -trimpath ./internal/workflow/... and ./internal/guide/... pass. Leaf review-prompts-one-line stays as planned; the builder fixes the test with the node.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "role-prompts-scoped-tests-via-topics",
+        "id": "01M79BP1HNWZ98HJS9C55YHQKZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M79BP1HNWZ98HJS9C16QZ95S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79BP1HNWZ98HJS9C16QZ95S",
+        "id": "01M79BP1P7XJ775C8Q9W1TN51R",
+        "link": "01M79BP1P7XJ775C8Q9T9N9MYP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79BMA02G94Q32AF1ZHX5TEK",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79BP1T7TRF0F8GP6ZP9RGQF",
+  "type": "ops",
+  "v": 1
+}
