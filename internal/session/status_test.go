@@ -112,6 +112,7 @@ func TestStalled(t *testing.T) {
 		{"idle asked", auto(Status{Hook: &Report{State: StateIdle, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
 		{"working asked", auto(Status{Hook: &Report{State: StateWorking, At: at}, Asked: &Report{At: at}}), 21 * time.Minute, false},
 		{"idle usage paused", auto(hook(StateIdle, LimitPausedDetail)), 21 * time.Minute, false},
+		{"idle api error at 21m", auto(hook(StateIdle, APIErrorDetail+"API Error: 403")), 21 * time.Minute, false},
 		{"autonomous blocked", auto(hook(StateBlocked, "")), 21 * time.Minute, false},
 		{"autonomous exited", auto(Status{Hook: &Report{State: StateIdle, At: at}, Exit: &Report{State: StateExited, Code: &code, At: at}}), 21 * time.Minute, false},
 		{"usage paused", rec(hook(StateWorking, LimitPausedDetail+" until 2026-01-01T05:00:00Z")), 3 * time.Hour, false},

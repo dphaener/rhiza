@@ -80,3 +80,4 @@ func TestCheckMode(t *testing.T) {
 }
 
 func (fake) UsageLimit([]byte) (UsageLimit, bool) { return UsageLimit{}, false }
+func (fake) APIError([]byte) (string, bool)       { return "", false }

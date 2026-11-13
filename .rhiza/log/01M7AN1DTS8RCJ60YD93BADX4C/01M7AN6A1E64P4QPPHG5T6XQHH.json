@@ -1,0 +1,33 @@
+{
+  "actor": "01M7AN2F055M2NPDW44VE6RY65",
+  "after": [
+    "01M7AN1DTS8RCJ60YD93CA2NGT"
+  ],
+  "at": "2026-11-13T14:32:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "f3e403d44e521bbab2b59b21d3cd1f0aa167a978da0c8cfb1bad140685ba5303",
+          "session": "339ae36a-8982-47d2-b716-01a1d5511141",
+          "summary": "Autonomous plan run; no owner interview and no questions were needed. Research: scratchOps in internal/api/apply.go fails apply on the first fold problem of any kind, while check (internal/check/check.go fold) downgrades changeset.ErrConcurrent to a warning; Fold still applies both concurrent entries in fold order, so the folded ops are usable. scratchOps runs both on the start ops and after each appended item, so both calls fail today. Plan: one leaf that skips ErrConcurrent problems in scratchOps (errors.Is) and still fails on any other fold problem, tested by a testscript that builds a concurrent pair the way check.txtar does (hide one entry while writing the other) and then runs rhiza apply on it. The change set serves m4-runs-hold-up, as the earlier bug fix to rhiza session message (01M7AA6QGX335J8XPJX3D6T4DJ) does: plan and review runs write through apply, and this failure needs hand repair.",
+          "title": "Plan of the apply ErrConcurrent bug fix (autonomous, no owner)"
+        },
+        "handle": "apply-concurrent-plan",
+        "id": "01M7AN69WJ7YGN0EXYKZ1DSNF1",
+        "key": null,
+        "kind": "source",
+        "node": "01M7AN69WJ7YGN0EXYKXP4BKNG",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7AN1DTS8RCJ60YD93BADX4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AN6A1E64P4QPPHG5T6XQHH",
+  "type": "ops",
+  "v": 1
+}

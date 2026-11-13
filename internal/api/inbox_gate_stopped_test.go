@@ -45,7 +45,7 @@ func TestInboxListsGateStoppedPlanRun(t *testing.T) {
 	state := func(string) (string, bool) { return "accepted", true }
 	open := func(j run.Journal, live bool) []InboxItem {
 		var out []InboxItem
-		for _, it := range inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, state, nil, nil, nil) {
+		for _, it := range inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, state, nil, nil, nil, nil) {
 			if it.Kind == InboxOpen {
 				out = append(out, it)
 			}
