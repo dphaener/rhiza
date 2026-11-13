@@ -1,7 +1,8 @@
 # rhiza inbox lists each change set an owner-run (non-autonomous) plan run's
 # gate left proposed, under rhiza.autonomy.accept owner, as an accept item
 # with next rhiza accept --rule owner --change <id>. Once accepted the item
-# is gone.
+# is gone. A gated change set with a leaf is listed once, not also as an
+# uncovered proposal.
 
 mkdir repo
 cd repo
@@ -22,6 +23,7 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run findings $WORK/clean.json'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'
 exec sh -c 'rhiza link $(cat $WORK/a1) serves want-a'
+exec rhiza add capability a1-leaf
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run gate --json; echo exit=$?'
 stdout '^exit=0$'
 stdout '"autonomous": false'
@@ -30,6 +32,9 @@ exec rhiza inbox --json
 stdout '"kind": "accept"'
 stdout 'rhiza accept --rule owner --change '
 stdout 'waiting for acceptance'
+! stdout 'no plan run covers it'
+exec sh -c 'rhiza inbox --json | grep -c "\"kind\": \"accept\"" > $WORK/n'
+exec grep -x 1 $WORK/n
 
 exec sh -c 'rhiza accept --rule owner --change $(cat $WORK/a1)'
 exec rhiza inbox --json

@@ -1,0 +1,15 @@
+{
+  "actor": "01M7ASR7X3R924ECEH6DF3W73G",
+  "after": [],
+  "at": "2026-11-13T15:53:58Z",
+  "body": {
+    "intent": "State as a constraint on daemon-plans-uncovered-proposals that an abandoned plan, plan-milestone or plan-review run's gated entry still covers the proposals it names (uncoveredProposals, internal/api/proposals.go:38-50, and the inbox's gated accept item, internal/api/inbox.go:353), refining Decision failed-plan-run-covers' 'an abandoned run covers nothing', which only the failed-run rule follows",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7ASV1RV5T47SJA0H8KAVX67",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ASV1RV5T47SJA0HAXV9412",
+  "type": "open",
+  "v": 1
+}

@@ -1695,6 +1695,36 @@ func TestBuiltinPlanMilestone(t *testing.T) {
 	}
 }
 
+// The built-in plan-review workflow is plan without its interview: its
+// first step after expansion is milestone-check.
+func TestBuiltinPlanReview(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "plan-review") {
+		t.Fatalf("BuiltinNames = %v; want it to list plan-review", BuiltinNames())
+	}
+	data, ok := Builtin("plan-review")
+	if !ok {
+		t.Fatal("no plan-review built-in")
+	}
+	def, err := ParseWith("plan-review", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Start != "plan/milestone-check" {
+		t.Errorf("plan-review starts at %q; want plan/milestone-check", def.Start)
+	}
+	for n, st := range def.Steps {
+		if st.Kind == KindAgent && strings.Contains(st.Prompt, "rhiza-planner") {
+			t.Errorf("plan-review has planner step %s", n)
+		}
+	}
+	if _, ok := def.Steps["plan/interview"]; ok {
+		t.Error("plan-review has an interview step")
+	}
+	if _, ok := def.Steps["plan/gate"]; !ok {
+		t.Error("plan-review has no gate step")
+	}
+}
+
 // The plan workflows send open-pr's and rebase's failure to a triage that
 // passes only on a head the pre-push check failed on, to prepush-fix.
 func TestPlanPrePushFix(t *testing.T) {

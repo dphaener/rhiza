@@ -748,8 +748,9 @@ func daemonRestoreUnjournaled(events []daemon.Event) map[string]daemonPending {
 // passed failed before it journaled (a refused permission mode, a dirty
 // worktree, a usage error): it moves to unjournaled, which are not picked
 // nor take a slot until a journal of the change set shows, daemonUnjournaledHold
-// passes since the start, or the change set is no longer accepted (landed or
-// withdrawn: live says whether it still is), whichever comes first.
+// passes since the start, or the change set is no longer one the daemon
+// starts, accepted or proposed (landed or withdrawn: live says whether it
+// still is), whichever comes first.
 func daemonHeld(pending map[string]daemonPending, unjournaled map[string]daemonPending, runs []run.Journal, live func(string) bool, now time.Time) []string {
 	var held []string
 	for cs, p := range pending {
@@ -1016,9 +1017,11 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	diskLow := low
 	low = low || machine != nil
 	stopped := low || hold != nil
-	accepted := func(change string) bool {
+	// A start not journaled stays held while its change set is still one the
+	// daemon starts: accepted (a ship pick) or proposed (a plan review).
+	startable := func(change string) bool {
 		st, ok := fold.stateOf(change)
-		return ok && st == string(changeset.StateAccepted)
+		return ok && (st == string(changeset.StateAccepted) || st == string(changeset.StateProposed))
 	}
 	// Every start takes one slot of max: the runs running, the plan
 	// requests and schedules started and not journaled, and the change sets
@@ -1026,7 +1029,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	// already used. A queued milestone request's plan run goes first, then
 	// the resumes, each only in a free slot; the starts of this poll count
 	// for the starts after them.
-	held := daemonHeld(pending, unjournaled, runs, accepted, ctx.Now())
+	held := daemonHeld(pending, unjournaled, runs, startable, ctx.Now())
 	reqStarting := daemonRequestsStarting(ctx, rs, runs)
 	liveRunning := 0
 	for _, j := range runs {
@@ -1063,6 +1066,27 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		resumed = append(resumed, id)
 		used++
+	}
+	// A proposed change set no run covers gets a plan-review run, in a slot
+	// after the resumes and before the ship picks, as any other start: not
+	// under pause, low disk, the load and memory holds or a usage hold.
+	var reviewed []string
+	if !stopped && !paused {
+		for _, cs := range daemonUncoveredProposals(fold, runs, pending, unjournaled) {
+			if used >= max {
+				break
+			}
+			args := []string{"run", "start", "--foreground", cs, "--workflow", planReviewWorkflow, "--autonomous"}
+			if mode != "" {
+				args = append(args, "--permission-mode", mode)
+			}
+			if err := daemonDetachStart(ctx, "a plan review of "+cs, cs, args); err != nil {
+				return reviewed, resumed, milestoned, err
+			}
+			pending[cs] = daemonPending{at: ctx.Now(), runs: daemonRunsOf(runs, cs)}
+			reviewed = append(reviewed, cs)
+			used++
+		}
 	}
 	var unj []daemon.Skip
 	cands = slices.DeleteFunc(cands, func(cs string) bool {
@@ -1131,7 +1155,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		// The starts of this poll so far (resumes, a milestone request's plan
 		// run) and the starts not journaled that daemon.Pick cannot see
 		// (plan requests, schedules) take slots from the picks too.
-		extra := reqStarting + starting + resStarting + len(resumed) + len(milestoned)
+		extra := reqStarting + starting + resStarting + len(resumed) + len(milestoned) + len(reviewed)
 		shipMax := max - kept - extra
 		if shipMax < 0 {
 			shipMax = 0
@@ -1182,6 +1206,7 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 		}
 		journal(*skips, nil)
 	}
+	started = append(started, reviewed...)
 	for _, cs := range picked {
 		if err := daemonStart(ctx, fold, cs, autonomous, mode); err != nil {
 			return started, resumed, milestoned, err
@@ -2288,4 +2313,20 @@ func daemonMachineHold(ctx *Ctx, conf daemonConf, r daemon.Reading, prev *daemon
 		daemonLogf(ctx, "released the %s hold on new runs", prev.Reason)
 	}
 	return h
+}
+
+// daemonUncoveredProposals is uncoveredProposals of the fold's proposed
+// change sets, the starts held (pending or not journaled) counting as covered.
+func daemonUncoveredProposals(fold *daemonFolded, runs []run.Journal, pending, unjournaled map[string]daemonPending) []string {
+	if len(fold.proposed) == 0 {
+		return nil
+	}
+	held := map[string]bool{}
+	for cs := range pending {
+		held[cs] = true
+	}
+	for cs := range unjournaled {
+		held[cs] = true
+	}
+	return uncoveredProposals(fold.proposed, runs, held)
 }

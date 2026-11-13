@@ -34,6 +34,7 @@ type daemonFoldFix struct {
 	call      func(name, req string) any
 	refs      string
 	config    map[string]string
+	runsDir   string
 }
 
 func newDaemonFoldFix(t testing.TB) *daemonFoldFix { return newDaemonFoldFixN(t, 98, nil) }
@@ -78,6 +79,7 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 			t.Fatal(err)
 		}
 	}
+	var proposed []string
 	for i := range 6 {
 		cs := call("change.new", fmt.Sprintf(`{"intent":"Work %d"}`, i)).(ChangeNewResponse).ChangeSet
 		call("add", fmt.Sprintf(`{"kind":"capability","handle":"cap-%d"}`, i))
@@ -88,6 +90,7 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 			f.target = cs.String()
 		case i < 4:
 			call("propose", `{}`)
+			proposed = append(proposed, cs.String())
 		}
 	}
 	if grow != nil {
@@ -126,7 +129,20 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 	}
 	ctx.Self = "rhiza"
 	ctx.repoSession = true
-	f.rs = run.NewStore(run.Dir(common))
+	f.runsDir = run.Dir(common)
+	f.rs = run.NewStore(f.runsDir)
+	// The proposed change sets are covered (a failed plan-review run each),
+	// so a poll starts no plan review beside what the tests watch.
+	for i, cs := range proposed {
+		rid := fmt.Sprintf("review%d", i)
+		at := ctx.Now().Add(-time.Hour)
+		if err := f.rs.Create(rid, run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "plan-review", Change: cs}}); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.rs.Append(rid, run.Entry{Type: run.TypeFinished, At: at, End: run.Failed, Detail: "fixture"}); err != nil {
+			t.Fatal(err)
+		}
+	}
 	f.events = filepath.Join(t.TempDir(), "events")
 	f.cmd = `printf '%s\n' "$RHIZA_EVENT" >> ` + f.events
 	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, false)
