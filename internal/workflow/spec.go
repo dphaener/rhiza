@@ -52,6 +52,8 @@ var (
 	kAgent     = KeyDoc{Key: "agent", Desc: "The agent adapter's name; unset takes the run's, else the default"}
 	kPerm      = KeyDoc{Key: "permission_mode", Desc: "The agent's permission mode; unset takes the run's"}
 	kModels    = KeyDoc{Key: "models", Desc: "Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default"}
+	kLowRisk   = KeyDoc{Key: "low_risk_models", Desc: "Verifier role only: the models by attempt for a low-risk leaf; models stays the ladder for a risky one. Unset means models for every leaf"}
+	kRisky     = KeyDoc{Key: "risky_paths", Desc: "Verifier role only: path globs (** matches any number of directories; a glob without a slash matches a file name at any depth); a leaf changing a matching file is risky"}
 	kInterval  = KeyDoc{Key: "interval", Desc: "How often the step checks, such as \"10s\""}
 	kSplit     = KeyDoc{Key: "split", Desc: "How the panes lay out: auto (by the tab's shape, the default), right or below"}
 	kRolePrmpt = KeyDoc{Key: "prompt", Desc: "The role's first prompt to its agent", Required: true}
@@ -70,7 +72,7 @@ func KindDocs() []KindDoc {
 }
 
 // RoleKeys are the keys of a role or check sub-table.
-func RoleKeys() []KeyDoc { return []KeyDoc{kRolePrmpt, kAgent, kPerm, kModels} }
+func RoleKeys() []KeyDoc { return []KeyDoc{kRolePrmpt, kAgent, kPerm, kModels, kLowRisk, kRisky} }
 
 // PromptPlaceholder names the placeholders a kind of prompt may use.
 type PromptPlaceholder struct {
@@ -117,7 +119,7 @@ var kindDocs = map[string]KindDoc{
 		Keys:    []KeyDoc{kSplit, kInterval},
 		Tables: []KeyDoc{
 			{Key: "step.<name>.builder", Desc: "The builder role: prompt, agent, permission_mode, models by attempt", Required: true},
-			{Key: "step.<name>.verifier", Desc: "The verifier role, with the same keys", Required: true},
+			{Key: "step.<name>.verifier", Desc: "The verifier role, with the same keys plus low_risk_models and risky_paths", Required: true},
 		},
 	},
 	KindChecks: {

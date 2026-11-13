@@ -1,0 +1,40 @@
+{
+  "actor": "01M79HQFMQX4CRVQEWB41B54RD",
+  "after": [
+    "01M79HR5DM2XMM5Z99TB8FYPG4"
+  ],
+  "at": "2026-11-13T04:15:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Review cycle 2 re-verification at 5c9808a08. I read build.toml and review.toml: both verifiers keep models=[\"opus\"] and add low_risk_models=[\"sonnet\"] and the twelve risky_paths globs the leaf lists, and no new rhiza.* setting was added. The fix commit only updates build-workflow.txtar to expect sonnet verifiers for its low-risk leaves. go test -trimpath -count=1 ./internal/workflow passes, including TestBuiltinVerifierTierDefaults, which loads the build and review built-ins and checks the ladders and globs. go test -trimpath ./cmd/rhiza -run 'TestScripts/(workflow-describe|build-workflow|describe-golden)$' passes; workflow-describe checks the low_risk_models and risky_paths lines of `rhiza workflow describe build`. make self-check exits 0 in a clean detached worktree at 5c9808a08 with the run's RHIZA_* environment unset. In the run worktree it fails only because the verifier's own actor (RHIZA_ACTOR) has not been rendered."
+        },
+        "handle": "verifier-tier-defaults-verified-2",
+        "id": "01M79HW35A3G50VE4R1253JA03",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79HW35A3G50VE4R0YV58F2N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79HW35A3G50VE4R0YV58F2N",
+        "id": "01M79HW35ZR3TXJEN7RM7YFPG9",
+        "link": "01M79HW35ZR3TXJEN7RHWSPC8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79CZ2BQEZSPC3KEF7PZH5G0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XS745J8S0J74SZFEHQ17Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79HW36PYWH55RXEGMYEQKPZ",
+  "type": "ops",
+  "v": 1
+}

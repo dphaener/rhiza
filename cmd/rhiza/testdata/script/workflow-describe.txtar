@@ -14,6 +14,8 @@ stdout '^build \(builtin\) builtin:build$'
 stdout '^start '
 stdout 'on\.pass ->'
 stdout 'role builder models'
+stdout '^  role verifier low_risk_models \[sonnet\]$'
+stdout '^  role verifier risky_paths \[\*_test\.go, \*\*/\*_test\.go, \*\*/testdata/\*\*, .*\.github/\*\*.*\*\*/\*retry\*\]$'
 ! stdout '^autonomy '
 
 # the same bytes as the api
@@ -77,6 +79,17 @@ stdout '"name": "drop-db"'
 exec rhiza workflow describe build --json
 stdout '"cleanup": \[\]'
 
+# a verifier's tiering fields
+cp $WORK/tier.toml tier.toml
+exec rhiza workflow describe tier.toml
+stdout '^  role verifier low_risk_models \[sonnet\]$'
+stdout '^  role verifier risky_paths \[\*\*/testdata/\*\*, \.github/\*\*\]$'
+! stdout 'role builder low_risk'
+exec rhiza workflow describe tier.toml --json
+stdout '"low_risk_models": \[\s*"sonnet"\s*\]'
+stdout '"risky_paths": \['
+stdout '"low_risk_models": \[\]'
+
 # nothing was written: no runs, and the model still folds
 exec rhiza run ls
 ! stdout 'inc|build'
@@ -91,6 +104,16 @@ name = "custom"
 [step.only]
 kind = "command"
 run = "true"
+-- tier.toml --
+[step.build]
+kind = "leaves"
+[step.build.builder]
+prompt = "build {leaf}"
+[step.build.verifier]
+prompt = "verify {leaf}"
+models = ["opus"]
+low_risk_models = ["sonnet"]
+risky_paths = ["**/testdata/**", ".github/**"]
 -- inc.toml --
 [step.go]
 kind = "workflow"

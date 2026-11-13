@@ -400,6 +400,12 @@ type Role struct {
 	// Models is the role's model by attempt: attempt n takes the nth, and
 	// the last stays for every later attempt.
 	Models []string
+	// LowRiskModels is a verifier's model by attempt for a low-risk leaf;
+	// Models stays the ladder for a risky one. Empty means no tiering.
+	LowRiskModels []string
+	// RiskyPaths are a verifier's path globs, `**` matching any number of
+	// directories; a leaf changing a matching file is risky.
+	RiskyPaths []string
 }
 
 // Check is one check of a checks step: its name, unique in the step, and
@@ -659,6 +665,8 @@ type fileStep struct {
 	Prompt         string            `toml:"prompt"`
 	MaxVisits      int               `toml:"max_visits"`
 	Models         []string          `toml:"models"`
+	LowRiskModels  []string          `toml:"low_risk_models"`
+	RiskyPaths     []string          `toml:"risky_paths"`
 	Workflow       string            `toml:"workflow"`
 	Skip           []string          `toml:"skip"`
 	Split          string            `toml:"split"`
@@ -686,6 +694,8 @@ type fileRole struct {
 	Agent          string   `toml:"agent"`
 	PermissionMode string   `toml:"permission_mode"`
 	Models         []string `toml:"models"`
+	LowRiskModels  []string `toml:"low_risk_models"`
+	RiskyPaths     []string `toml:"risky_paths"`
 }
 
 // Load reads and parses the workflow file at path. A file without a `name`
@@ -806,7 +816,10 @@ func undecoded(md toml.MetaData) []toml.Key {
 // unknownKey names a key the format does not know, by step when it is in one.
 func unknownKey(k toml.Key) error {
 	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier || k[2] == RoleCritic || k[2] == RoleFixer) {
-		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models", k[1], k[2], toml.Key(k[3:]).String())
+		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models (a verifier also low_risk_models and risky_paths)", k[1], k[2], toml.Key(k[3:]).String())
+	}
+	if len(k) == 4 && k[0] == "step" && k[2] == RoleCheck && (k[3] == "low_risk_models" || k[3] == "risky_paths") {
+		return fmt.Errorf("step %q: check: low_risk_models and risky_paths are only for the verifier role; a check cannot have them, set them under [step.%s.verifier]", k[1], k[1])
 	}
 	if len(k) >= 4 && k[0] == "step" && k[2] == RoleCheck {
 		return fmt.Errorf("step %q: check: unknown key %q; want name, prompt, agent, permission_mode or models", k[1], toml.Key(k[3:]).String())
@@ -909,6 +922,12 @@ func buildStep(name string, fs fileStep) (Step, error) {
 			return fail("models is only for agent steps and a leaves step's builder and verifier; set it under [step.%s.builder] or [step.%s.verifier]", name, name)
 		}
 		return fail("models is only for agent steps and a leaves step's builder and verifier; %s step cannot have it", article(fs.Kind))
+	}
+	if fs.LowRiskModels != nil || fs.RiskyPaths != nil {
+		if fs.Kind == KindLeaves || fs.Kind == KindChecks {
+			return fail("low_risk_models and risky_paths belong to the verifier role, not the step; set them under [step.%s.verifier]", name)
+		}
+		return fail("low_risk_models and risky_paths belong to a leaves or checks step's verifier role; %s step has no verifier and cannot have them", article(fs.Kind))
 	}
 	if fs.Split != "" && fs.Kind != KindLeaves && fs.Kind != KindChecks {
 		return fail("split is only for leaves and checks steps; %s step cannot have it", article(fs.Kind))
@@ -1097,7 +1116,10 @@ func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		if err := checkModels(r.fr.Models); err != nil {
 			return fail("%s: models %v", r.name, err)
 		}
-		*r.dst = &Role{Prompt: r.fr.Prompt, Agent: r.fr.Agent, PermissionMode: r.fr.PermissionMode, Models: r.fr.Models}
+		if err := checkTier(r.name, *r.fr); err != nil {
+			return fail("%v", err)
+		}
+		*r.dst = &Role{Prompt: r.fr.Prompt, Agent: r.fr.Agent, PermissionMode: r.fr.PermissionMode, Models: r.fr.Models, LowRiskModels: r.fr.LowRiskModels, RiskyPaths: r.fr.RiskyPaths}
 	}
 	s.Interval = DefaultInterval
 	if fs.Interval != "" {
@@ -1240,7 +1262,31 @@ func buildRole(what, does string, fr fileRole, names []string) (Role, error) {
 	if err := checkModels(fr.Models); err != nil {
 		return Role{}, fmt.Errorf("%s: models %v", what, err)
 	}
-	return Role{Prompt: fr.Prompt, Agent: fr.Agent, PermissionMode: fr.PermissionMode, Models: fr.Models}, nil
+	if err := checkTier(does, fr); err != nil {
+		return Role{}, fmt.Errorf("%s: %v", what, err)
+	}
+	return Role{Prompt: fr.Prompt, Agent: fr.Agent, PermissionMode: fr.PermissionMode, Models: fr.Models, LowRiskModels: fr.LowRiskModels, RiskyPaths: fr.RiskyPaths}, nil
+}
+
+// checkTier checks a role's tiering fields: only the verifier role takes
+// low_risk_models and risky_paths, a model name is not blank and a glob is
+// neither empty nor malformed.
+func checkTier(role string, fr fileRole) error {
+	if fr.LowRiskModels == nil && fr.RiskyPaths == nil {
+		return nil
+	}
+	if role != RoleVerifier {
+		return fmt.Errorf("low_risk_models and risky_paths are only for the verifier role; %s cannot have them, set them under the verifier", role)
+	}
+	if err := checkModels(fr.LowRiskModels); err != nil {
+		return fmt.Errorf("verifier: low_risk_models %v", err)
+	}
+	for i, g := range fr.RiskyPaths {
+		if err := checkGlob(g); err != nil {
+			return fmt.Errorf("verifier: risky_paths entry %d %v", i+1, err)
+		}
+	}
+	return nil
 }
 
 // checkModels refuses a blank model name.
