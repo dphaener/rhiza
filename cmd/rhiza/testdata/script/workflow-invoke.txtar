@@ -1,0 +1,94 @@
+# An agent step's invoke is the first prompt its agent gets, rendered with the
+# session's file paths: '/myskill:conduct --prompt <path to its brief.md>'.
+# prompt is an alias of invoke. A placeholder no template knows is refused by
+# rhiza workflow check, naming it, and a table may not set both prompt and
+# invoke.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+mkdir $HOME/.claude/skills/myskill/skills/conduct
+cp $WORK/SKILL.md $HOME/.claude/skills/myskill/skills/conduct/SKILL.md
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Invoke template' --title 'Invoke template'
+mkdir .rhiza/workflows
+cp $WORK/invoke.toml .rhiza/workflows/invoke.toml
+
+exec sh -c 'rhiza run start --foreground --workflow invoke --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec cat $WORK/claude.args
+stdout '^/myskill:conduct --prompt '${WORK@R}'/repo/\.git/rhiza/runs/\w+/build-1/agent/brief\.md$'
+
+cp $WORK/alias.toml .rhiza/workflows/invoke.toml
+rm $WORK/claude.args
+exec sh -c 'rhiza run start --foreground --workflow invoke --permission-mode manual --json; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/claude.args
+stdout '^Build [0-9A-Z]+$'
+
+cp $WORK/unknown.toml .rhiza/workflows/invoke.toml
+! exec rhiza workflow check invoke
+stdout 'prompt uses unknown placeholder \{nope\}'
+
+cp $WORK/both.toml .rhiza/workflows/invoke.toml
+! exec rhiza workflow check invoke
+stdout 'prompt is an alias of invoke'
+
+-- SKILL.md --
+conduct
+-- invoke.toml --
+name = "invoke"
+
+[step.build]
+kind = "agent"
+invoke = "/myskill:conduct --prompt {brief}"
+on.pass = "done"
+-- alias.toml --
+name = "invoke"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+on.pass = "done"
+-- unknown.toml --
+name = "invoke"
+
+[step.build]
+kind = "agent"
+invoke = "Build {nope}"
+on.pass = "done"
+-- both.toml --
+name = "invoke"
+
+[step.build]
+kind = "agent"
+prompt = "a"
+invoke = "b"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a in "$@"; do last=$a; done
+printf '%s\n' "$last" > "$WORK/claude.args"
+exit 0

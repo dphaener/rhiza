@@ -56,7 +56,8 @@ var (
 	kRisky     = KeyDoc{Key: "risky_paths", Desc: "Verifier role only: path globs (** matches any number of directories; a glob without a slash matches a file name at any depth); a leaf changing a matching file is risky"}
 	kInterval  = KeyDoc{Key: "interval", Desc: "How often the step checks, such as \"10s\""}
 	kSplit     = KeyDoc{Key: "split", Desc: "How the panes lay out: auto (by the tab's shape, the default), right or below"}
-	kRolePrmpt = KeyDoc{Key: "prompt", Desc: "The role's first prompt to its agent", Required: true}
+	kRolePrmpt = KeyDoc{Key: "invoke", Desc: "The text the role's session starts with, a template over the placeholders below; prompt is an alias, and a table sets only one of them", Required: true}
+	kHandback  = KeyDoc{Key: "handback", Desc: "The text a hand-back sends the role's session, a template over the same placeholders"}
 )
 
 // KindDocs describes every step kind, in Kinds order.
@@ -72,7 +73,9 @@ func KindDocs() []KindDoc {
 }
 
 // RoleKeys are the keys of a role or check sub-table.
-func RoleKeys() []KeyDoc { return []KeyDoc{kRolePrmpt, kAgent, kPerm, kModels, kLowRisk, kRisky} }
+func RoleKeys() []KeyDoc {
+	return []KeyDoc{kRolePrmpt, kHandback, kAgent, kPerm, kModels, kLowRisk, kRisky}
+}
 
 // PromptPlaceholder names the placeholders a kind of prompt may use.
 type PromptPlaceholder struct {
@@ -94,7 +97,8 @@ var kindDocs = map[string]KindDoc{
 	KindAgent: {
 		Summary: "Runs one agent session with a prompt. It passes when the session says it is done (`rhiza session done`) or exits 0, and fails when it exits otherwise.",
 		Keys: []KeyDoc{
-			{Key: "prompt", Desc: "The agent's first prompt, a template over {change}, {slug}, {title}, {run} and {step}", Required: true},
+			{Key: "invoke", Desc: "The text the agent's session starts with, a template over {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf} and {attempt}; prompt is an alias, and a step sets only one of them", Required: true},
+			{Key: "handback", Desc: "The text a hand-back sends the agent's session, a template over the same placeholders"},
 			kAgent, kPerm, kModels,
 			{Key: "until", Desc: "A shell command: the step also passes when the session is idle and it exits 0, leaving the session open"},
 			{Key: "until_when", Desc: "With until: idle (check whenever the session sits idle, the default) or done (only once the agent says it is done)"},

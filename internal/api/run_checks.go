@@ -52,13 +52,12 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
+	session := run.CheckSessionName(spec.Check.Name, spec.Role, spec.Cycle)
 	req.Prompt = role.RenderCheckPrompt(workflow.CheckVars{
-		PromptVars: workflow.PromptVars{
-			Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
-		},
-		Check: spec.Check.Name, Cycle: spec.Cycle,
+		PromptVars: r.promptVars(t, spec.Step.Name, session),
+		Check:      spec.Check.Name, Cycle: spec.Cycle,
 	})
-	if err := r.prepareSession(&req, spec.Step.Name, run.CheckSessionName(spec.Check.Name, spec.Role, spec.Cycle)); err != nil {
+	if err := r.prepareSession(&req, spec.Step.Name, session); err != nil {
 		return "", err
 	}
 	resp, err := runSessionStart(r.ctx, req)
@@ -86,10 +85,9 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Prompt = changeSetFixerPrompt(*role, spec, workflow.PromptVars{
-		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
-	})
-	if err := r.prepareSession(&req, spec.Step.Name, run.ChangeSetFixSessionName(spec.Cycle, spec.Attempt)); err != nil {
+	session := run.ChangeSetFixSessionName(spec.Cycle, spec.Attempt)
+	req.Prompt = changeSetFixerPrompt(*role, spec, r.promptVars(t, spec.Step.Name, session))
+	if err := r.prepareSession(&req, spec.Step.Name, session); err != nil {
 		return "", err
 	}
 	resp, err := runSessionStart(r.ctx, req)

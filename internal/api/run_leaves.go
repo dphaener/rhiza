@@ -105,13 +105,11 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
-	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
-		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
-	})
 	name := run.LeafSessionName(spec.Role, spec.Leaf.Handle, spec.Attempt)
 	if spec.Cycle > 0 {
 		name = run.LeafFixSessionName(spec.Role, spec.Leaf.Handle, spec.Cycle, spec.Attempt)
 	}
+	req.Prompt = leafPrompt(*role, spec, r.promptVars(t, spec.Step.Name, name))
 	if err := r.prepareSession(&req, spec.Step.Name, name); err != nil {
 		return "", err
 	}

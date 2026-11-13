@@ -11,6 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/slice"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // The files a run's session finds in its directory, and the environment
@@ -164,4 +165,17 @@ func briefEnv(dir string) (set, unset []string) {
 		return append(set, envHandback+"="+filepath.Join(dir, handbackFile)), nil
 	}
 	return set, []string{envHandback}
+}
+
+// promptVars are the values a session's invoke and handback templates
+// take: the change set, run and step, the paths of the session's brief.md,
+// slice.json and handback.md (named whether or not the last exists yet)
+// and the run's worktree.
+func (r *stepRunner) promptVars(t changeWorktree, step, session string) workflow.PromptVars {
+	v := workflow.PromptVars{Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: step, Worktree: t.worktree}
+	if common, err := gitCommonDir(r.ctx); err == nil {
+		dir := run.SessionDir(common, r.run, step, r.runState().CurrentVisit, session)
+		v.Brief, v.Slice, v.Handback = filepath.Join(dir, briefFile), filepath.Join(dir, sliceFile), filepath.Join(dir, handbackFile)
+	}
+	return v
 }
