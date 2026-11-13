@@ -1,0 +1,40 @@
+{
+  "actor": "01M79MM9QKYNRVEP3T6TK5RBHC",
+  "after": [
+    "01M79MFYK164VZ298J4X4HKJYQ"
+  ],
+  "at": "2026-11-13T05:05:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cc7f78ac9 re-ran the Checks: block: go test -trimpath ./internal/guide/... (exit 0), go test -trimpath ./internal/api -run Guide (exit 0), go test -trimpath ./cmd/rhiza -run TestScripts/guide$ and TestScripts/guide-install$ (exit 0), rhiza ship generate (exit 0, 0 files changed), rhiza render (exit 0). internal/guide/check_compliance_test.go asserts the six sections in order, the session-done, test-scope, command-budget, never-list and severity blocks expanded (never-list inside Must not do), the isolation rule in Task, the under-built/scope-creep/unaccounted-files criteria with severities, the one-line-with-evidence rule and the rhiza run findings --check heredoc with {\"findings\":[]}; a negative test bans Go, make, repo paths, Checks:, trailer and commit text. rhiza guide check-compliance output read and matches. Diff touches only the new topic, its registry entry, guide list tests and the builder's actor record; no TODOs."
+        },
+        "handle": "check-compliance-topic-verified",
+        "id": "01M79MQ35W81VXRMJJ0X3T8BX7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M79MQ35V5TT48SHGQSZJRK97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M79MQ35V5TT48SHGQSZJRK97",
+        "id": "01M79MQ394RQPDQT29M5GA0FNQ",
+        "link": "01M79MQ394RQPDQT29M3BFNATF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79AH1XVVY9F9AW9TFH2B12H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XRETZFTD2TQ5GS3WYAERA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M79MQ3E2RWGB4N9Q1WC1CC70",
+  "type": "ops",
+  "v": 1
+}
