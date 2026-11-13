@@ -57,6 +57,9 @@ type StatusReport struct {
 	// and Attempt its cycle, then its live fix sessions (fixStatus), each
 	// with its review cycle as Attempt.
 	Live []LeafStatus
+	// Spawned are the child sessions the sessions of Step spawned, in the
+	// order they started, each with its state (Spawn.Ended) and outcome.
+	Spawned []Spawn
 	// Ended are the leaves live in the last report and not in this one:
 	// the caller clears what it showed for them.
 	Ended []LeafStatus
@@ -82,6 +85,16 @@ type LeafStatus struct {
 // its definition and, when its current step is a leaves step, that
 // step's leaves in leaf order (nil when not known yet).
 func deriveStatus(st State, def *workflow.Definition, leaves []Leaf) StatusReport {
+	rep := deriveStatusSteps(st, def, leaves)
+	for _, sp := range st.Spawns {
+		if sp.Step == rep.Step {
+			rep.Spawned = append(rep.Spawned, sp)
+		}
+	}
+	return rep
+}
+
+func deriveStatusSteps(st State, def *workflow.Definition, leaves []Leaf) StatusReport {
 	rep := StatusReport{Run: st.ID, Change: st.Change, Title: st.Title, Step: st.Current, State: StatusWorking}
 	if rep.Step == "" {
 		rep.Step = st.FinishedStep

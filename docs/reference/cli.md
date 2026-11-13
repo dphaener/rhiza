@@ -1921,6 +1921,7 @@ Output (`--json` fields):
 - `sessions` (array of object): The sessions it launched or read token use for, in order of first appearance, each with its latest reading
 - `signoff_waiting` (boolean): True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise
 - `signoffs` (array of object): The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none
+- `spawned` (array of object): The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none
 - `stalled` (object): A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise
 - `started_at` (string): When it started, RFC 3339 UTC
 - `state` (string): running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run
