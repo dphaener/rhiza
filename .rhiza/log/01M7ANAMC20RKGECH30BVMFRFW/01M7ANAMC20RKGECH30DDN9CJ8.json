@@ -1,0 +1,15 @@
+{
+  "actor": "01M7AN7WR3W1YCZ0S1FNXSEFNA",
+  "after": [],
+  "at": "2026-11-13T14:35:04Z",
+  "body": {
+    "intent": "State as a constraint of daemon-plans-uncovered-proposals that a finished plan, plan-milestone or plan-review run on a proposed change set that ended without failing covers it even with no gated entry naming it (and that a live plan run's gated entry covers too), as uncoveredProposals in internal/api/proposals.go already does",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7ANAMC20RKGECH30BVMFRFW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANAMC20RKGECH30DDN9CJ8",
+  "type": "open",
+  "v": 1
+}
