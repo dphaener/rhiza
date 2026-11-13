@@ -402,7 +402,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "land-main-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/lints", "review/lint-fix", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "land-main-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -1174,7 +1174,7 @@ func TestReviewBuiltin(t *testing.T) {
 	if def.Name != "review" || def.Start != "code" {
 		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
 	}
-	if want := []string{"code", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
+	if want := []string{"code", "lints", "lint-fix", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	code := def.Steps["code"]
@@ -1183,6 +1183,13 @@ func TestReviewBuiltin(t *testing.T) {
 	}
 	if _, ok := code.On[OutcomeFail]; ok {
 		t.Errorf("code has on.fail %q; a failed code check ends the run", code.On[OutcomeFail])
+	}
+	if l := def.Steps["lints"]; l.Kind != KindCommand || l.Run != "rhiza run lint-check" {
+		t.Errorf("lints = %+v; want command rhiza run lint-check", l)
+	}
+	lf := def.Steps["lint-fix"]
+	if lf.Kind != KindAgent || lf.MaxVisits != 1 || lf.Until != "true" || !strings.HasPrefix(lf.Prompt, "/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run") {
+		t.Errorf("lint-fix = %+v; want a one-visit fixer agent step", lf)
 	}
 	review := def.Steps["review"]
 	if review.Kind != KindChecks || review.Split != SplitAuto || review.MaxVisits < 2 {
@@ -1270,8 +1277,11 @@ func TestReviewBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"code", OutcomePass, "review", EndNone},
+		{"code", OutcomePass, "lints", EndNone},
 		{"code", OutcomeFail, "", EndFailed},
+		{"lints", OutcomePass, "review", EndNone},
+		{"lints", OutcomeFail, "lint-fix", EndNone},
+		{"lint-fix", OutcomePass, "review", EndNone},
 		{"review", OutcomePass, "render", EndNone},
 		{"render", OutcomePass, "signoff", EndNone},
 		{"render", OutcomeFail, "", EndFailed},
@@ -2343,6 +2353,7 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 		"conflict-fix":        "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: follow rhiza guide conflict-fix.",
 		"conflict-fix-landed": "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch: follow rhiza guide conflict-fix.",
 		"model-conflict-fix":  "/rhiza-conflict-fix Fix the model conflict that refused the land of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+		"review/lint-fix":     "/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run: follow rhiza guide fixer.",
 	}
 	agents := 0
 	for name, s := range def.Steps {
