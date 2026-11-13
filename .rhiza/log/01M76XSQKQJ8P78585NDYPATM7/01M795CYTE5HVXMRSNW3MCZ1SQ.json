@@ -1,0 +1,40 @@
+{
+  "actor": "01M794SMQRTKZQBMBK6T50XR5S",
+  "after": [
+    "01M7955SW0ANBWM3BEFYS8BA7V"
+  ],
+  "at": "2026-11-13T00:37:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 3414d9ac7 (attempt 2), in a detached checkout: go test -trimpath ./internal/api -run 'ShipPushDiverged|TestShipFollow|TestShipRebase' -v -count=1 PASS. TestShipPushDivergedMergesOrigin (ship.open-pr and ship.rebase subtests) uses scratch repos with a bare origin. Another clone pushes a commit on theirs.txt to origin's cs/ship-it, and the local branch commits mine.txt. The step merges (a merge commit exists), pushes, origin's ref equals local HEAD, and the history keeps 'earlier push'. TestShipPushDivergedConflictStops (both steps) makes a conflicting clash.txt: the error names 'earlier push', there is no MERGE_HEAD, HEAD is unmoved and nothing is pushed. noForceOrRebase records every git call through ctx.Git and ctx.Exec and finds no rebase, --force, -f, --force-with-lease or +refspec. Read shipMergeOrigin in internal/api/ship_close.go: merge --no-edit, then merge --abort plus a Conflictf naming the HEAD..origin commits on failure. Attempt 1's finding f2 (TestShipFollowRefusesLocalCommits red) is fixed: the test is rewritten as TestShipFollowRefusesConflictingOrigin and PASSes. The full go test -trimpath ./internal/api -count=1 also passes (ok, 594s). The other attempt-1 findings (actor reuse in session.go) are outside this leaf."
+        },
+        "handle": "ship-push-merges-own-origin-verified-2",
+        "id": "01M795CYPXYYE04KG6D8C9ZS8M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M795CYPXYYE04KG6D5Z99FB9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M795CYPXYYE04KG6D5Z99FB9",
+        "id": "01M795CYSEP9YBYJ71MFMX0J8E",
+        "link": "01M795CYSEP9YBYJ71MFDR9J28",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XZG4SPZ8481AWNBER0JJS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XSQKQJ8P78585NDYPATM7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M795CYTE5HVXMRSNW3MCZ1SQ",
+  "type": "ops",
+  "v": 1
+}
