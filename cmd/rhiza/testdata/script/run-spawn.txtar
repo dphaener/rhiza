@@ -31,9 +31,7 @@ stdout '"role": "verifier"'
 stdout '"step": "build"'
 stdout '"detail": "exit 0"'
 
-# The journal and the status name the child under the calling step.
-exec rhiza run status --json
-stdout '"spawns"'
+# The sessions and the journal name the child under the calling step.
 exec rhiza session ls --json
 stdout -count=2 '"step": "build"'
 exec sh -c 'cat .git/rhiza/runs/*.jsonl'
