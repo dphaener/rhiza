@@ -17,8 +17,13 @@ type ProjectView struct {
 	// Running and Waiting count the project's live runs by state.
 	Running, Waiting int
 	// Inbox is how many items wait on the owner in this project.
-	Inbox  int
-	Health []HealthPill
+	Inbox int
+	// NeedsYou is the project's needs-you count: open questions, change
+	// sets waiting for the owner's sign-off, failed runs and stuck runs,
+	// read from the project alone and never the daemon's machine-wide
+	// holds. Every surface that shows it shows this number.
+	NeedsYou int
+	Health   []HealthPill
 }
 
 // ProjectsSource reads every registered project as it is now, by name.

@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/web"
@@ -108,6 +109,7 @@ func WebProjectsSource(ctx *Ctx, root, homeName string) web.ProjectsSource {
 					}
 				}
 				v.Inbox = len(WebInboxSource(c)())
+				v.NeedsYou = len(WebNeedsYou(c, time.Now()))
 				mu.Lock()
 				h := healths[name]
 				if h == nil {
