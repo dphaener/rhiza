@@ -60,7 +60,7 @@ stdout '^Run [0-9A-Z]{26} failed$'
 stdout 'arbiter failed on question review-[0-9a-z]{26}-r3-f1 \([0-9A-Z]{26}\): no live Decision answers question'
 stderr 'step review: arbiter fail on question [0-9A-Z]{26}'
 ! exists $WORK/next.ran
-exec sh -c 'rhiza run status $(ls -t .git/rhiza/runs | head -1 | sed "s/\.jsonl$//")'
+exec sh -c 'rhiza run status $(ls -t .git/rhiza/runs | grep "\.jsonl$" | head -1 | sed "s/\.jsonl$//")'
 stdout 'failed'
 stdout 'arbiter failed on question review-[0-9a-z]{26}-r3-f1'
 exec cat $WORK/arbiter.log
@@ -72,7 +72,7 @@ stdout '^Run [0-9A-Z]{26} succeeded$'
 exists $WORK/next.ran
 exec cat $WORK/arbiter.log
 stdout -count=2 '^Decide question'
-exec sh -c 'f=.git/rhiza/runs/$(ls -t .git/rhiza/runs | head -1); grep -c "\"type\":\"asked\"" $f; grep -c "\"type\":\"arbit" $f; true'
+exec sh -c 'f=.git/rhiza/runs/$(ls -t .git/rhiza/runs | grep "\.jsonl$" | head -1); grep -c "\"type\":\"asked\"" $f; grep -c "\"type\":\"arbit" $f; true'
 stdout '^1\n0$'
 
 fold-ok

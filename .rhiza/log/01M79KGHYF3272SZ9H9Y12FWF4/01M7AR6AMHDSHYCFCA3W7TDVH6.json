@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AR3616AKHDBRCNF194MBKR",
+  "after": [
+    "01M7AQWK9Z296SJ090R4SDGZPR"
+  ],
+  "at": "2026-11-13T15:25:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d4010285f (attempt 2): go test -trimpath ./internal/guide -run TestContract exit 0 (TestContract and TestContractRefFailureNamesTopic pass); go test -trimpath ./internal/guide/... exit 0; rhiza ship generate and rhiza render exit 0 with a clean tree. In a scratch copy, removing {cycle} from contract.md makes TestContract exit 1 with 'contract lacks {cycle}', and removing the shared contract-ref line fails with every role topic named. A built binary's rhiza guide contract prints 40 lines listing the six obligations each with its gate, all invoke placeholders ({change},{slug},{title},{run},{step},{brief},{slice},{handback},{worktree},{leaf},{attempt},{check},{cycle}) matching internal/workflow/workflow.go plus the new file placeholders, RHIZA_BRIEF/SLICE/HANDBACK beside the other RHIZA_ variables, and brief.md, slice.json, handback.md; all 17 role topics print 'rhiza guide contract'. Attempt-1 finding f1 (missing placeholders) is fixed and tested. Role topic edits are wording only (to stay under the cap); no obligation changed."
+        },
+        "handle": "guide-contract-verified",
+        "id": "01M7AR6AECAFX6MXTAQ2BYF6WP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AR6AEB4MWG9DVHTMB0533M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AR6AEB4MWG9DVHTMB0533M",
+        "id": "01M7AR6AH8AKD1XC606666QXBW",
+        "link": "01M7AR6AH8AKD1XC6062TQYJZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AR6AMHDSHYCFCA3W7TDVH6",
+  "type": "ops",
+  "v": 1
+}

@@ -74,5 +74,6 @@ every trailer, `Co-Authored-By:` included, in the one final paragraph, no blank 
 
 <!-- shared: severities nested -->
 
-When you end with findings unfixed, say which and why as the last thing you write
+When you end with findings unfixed, say which and why as your last words
 before `rhiza session done`.
+<!-- shared: contract-ref -->

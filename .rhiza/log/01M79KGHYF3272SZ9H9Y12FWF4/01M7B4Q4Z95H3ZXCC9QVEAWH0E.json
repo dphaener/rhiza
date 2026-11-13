@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B3TVXJWEDM315RG5265AG1",
+  "after": [
+    "01M7B24DAC2TM6D8YB2DFMSQ88"
+  ],
+  "at": "2026-11-13T19:03:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 5 at 7e0e27742: go test -trimpath ./internal/api -run TestSessionBrief -count=1 passes (TestSessionBrief, Unwritable, Decisions, OwnDecisionsConstraints), including the new checks-verifier case started through StartLeaf with Cycle 1 and checked to get its own directory named by LeafFixSessionName with brief.md and slice.json; go test -trimpath ./cmd/rhiza -run TestScripts/brief-files passes; go test -trimpath -timeout 25m -skip TestReadBudget ./internal/api/... ok (491s); go vet ./internal/api exit 0; rhiza ship generate and rhiza render exit 0 with no tracked changes. The fix commit changes only run_brief_test.go plus its actor record; no TODOs or stubs in run_brief.go, run_brief_test.go or brief-files.txtar."
+        },
+        "handle": "session-brief-wiring-verified-5",
+        "id": "01M7B4Q4KKCBPCAKAEM90TNEG9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B4Q4KKCBPCAKAEM8VGHYR3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B4Q4KKCBPCAKAEM8VGHYR3",
+        "id": "01M7B4Q4QK1YKK4N2H8T9DN6Z3",
+        "link": "01M7B4Q4QK1YKK4N2H8PNM3QEZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B4Q4Z95H3ZXCC9QVEAWH0E",
+  "type": "ops",
+  "v": 1
+}

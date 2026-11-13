@@ -36,13 +36,13 @@ stdout -count=2 '^launch: .* --permission-mode manual( |$)'
 ! stdout 'dangerously'
 
 # A bypass mode is refused under --autonomous too, and writes no journal.
-exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | wc -l | tr -d " "'
 stdout '^2$'
 ! exec rhiza run start --foreground --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait
 stderr 'permission mode bypassPermissions bypasses the agent''s permission checks: that needs a machine with trust = "dedicated"'
 ! exec rhiza run start --foreground --workflow oneagent --autonomous --permission-mode bypassPermissions --no-wait --json
 stdout 'trust = \\"dedicated\\"'
-exec sh -c 'ls .git/rhiza/runs | wc -l | tr -d " "'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | wc -l | tr -d " "'
 stdout '^2$'
 exec cat $WORK/argv.log
 stdout -count=2 '^launch: '

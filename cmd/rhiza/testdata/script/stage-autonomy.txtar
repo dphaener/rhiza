@@ -60,11 +60,11 @@ stdout '^1$'
 exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/rb'
 exec rhiza add intent want-b
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/before'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/before'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec rhiza run start --foreground --workflow hold --autonomous --no-wait
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
 exec rhiza land
 exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
 exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'

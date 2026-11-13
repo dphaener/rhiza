@@ -63,3 +63,5 @@ becomes a question for the arbiter, who records the answer with
 `wording=(assumed, would have escalated)`. End your turn and wait at the prompt for the
 answer message, then carry on. Quote no owner words, because there are none; still add the
 Source.
+
+<!-- shared: contract-ref -->

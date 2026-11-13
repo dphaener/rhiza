@@ -16,6 +16,7 @@ func buildWorkflow(s Step, fs fileStep, fail func(string, ...any) (Step, error))
 		set bool
 	}{
 		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
 		{"agent", fs.Agent != ""},
 		{"permission_mode", fs.PermissionMode != ""},
 		{"run", fs.Run != ""},

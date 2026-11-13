@@ -28,7 +28,7 @@ exec git push -q origin main:cs/ship-it
 cp $WORK/red.queue $WORK/checks
 ! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual
 stdout '^- Detail: step "ci-triage" ended with outcome "fail"$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec rhiza run status
 stdout '^- pr-green \(visit 1\): fail, then ci-triage'
 

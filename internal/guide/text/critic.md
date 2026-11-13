@@ -65,7 +65,7 @@ Decision.
 
 <!-- shared: never-list nested -->
 - Add a finding, raise a severity or rewrite a finding: a problem the check missed is not yours to report.
-- Edit code, or write model nodes into the change set under review.
+- Edit code, or write nodes into the change set reviewed.
 
 ## Context
 
@@ -73,4 +73,5 @@ Decision.
 
 <!-- shared: severities nested -->
 
-Fixers act on the findings you confirm or downgrade; a dropped finding is not fixed.
+Fixers act on what you confirm or downgrade; a dropped finding is not fixed.
+<!-- shared: contract-ref -->

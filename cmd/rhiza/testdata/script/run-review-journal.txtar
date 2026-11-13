@@ -23,7 +23,7 @@ mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # No rounds yet: status has none.
 exec rhiza run status --json

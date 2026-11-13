@@ -39,7 +39,7 @@ exec rhiza run start --foreground --workflow ask --permission-mode manual --auto
 stdout '^Run [0-9A-Z]{26} succeeded$'
 exec cat $WORK/accept.out
 stdout '"rule": "autonomous"'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/autorun'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/autorun'
 
 # status --json lists the accept and the question with its Decision.
 exec sh -c 'rhiza run status $(cat $WORK/autorun) --json'
@@ -70,7 +70,7 @@ stdout '^- question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\): Which colour\? — decision 
 # A normal run lists neither.
 exec rhiza run start --foreground --workflow plain
 stdout '^Run ([0-9A-Z]{26}) succeeded$'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" | grep -v $(cat $WORK/autorun) > $WORK/plainrun'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v $(cat $WORK/autorun) > $WORK/plainrun'
 exec sh -c 'rhiza run status $(cat $WORK/plainrun) --json'
 ! stdout '"accepts"'
 ! stdout '"questions"'
