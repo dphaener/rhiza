@@ -302,6 +302,10 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("cannot launch a session: this caller runs no programs")
 	}
 
+	if err := checkStartSkill(ctx, a, r.Prompt, worktree); err != nil {
+		return nil, err
+	}
+
 	current, err := w.current()
 	if err != nil {
 		return nil, err
@@ -1260,4 +1264,29 @@ func reportLine(r SessionReport) string {
 		s += ": " + r.Detail
 	}
 	return s + " at " + r.At
+}
+
+// checkStartSkill fails before anything is launched when prompt starts with
+// a slash command whose skill the agent has not installed, in its config
+// folder or the worktree's: the agent would answer it "Unknown command"
+// and sit idle, its task unread. It is an environment failure, not the
+// session's: no record is written, so no attempt is used up. An adapter
+// that reads no slash commands, or a prompt without one, passes.
+func checkStartSkill(ctx *Ctx, a adapter.Adapter, prompt, worktree string) error {
+	sc, ok := a.(adapter.SkillChecker)
+	if !ok {
+		return nil
+	}
+	name, ok := sc.StartSkill(prompt)
+	if !ok {
+		return nil
+	}
+	for _, g := range sc.SkillGlobs(name, ctxGetenv(ctx), worktree) {
+		if m, err := filepath.Glob(g); err == nil && len(m) > 0 {
+			return nil
+		}
+	}
+	agent := sc.GuideAgent()
+	cmd := "rhiza guide install --agent " + agent
+	return Errorf("start command /%s unknown to %s: skill not installed; run %s", name, agent, cmd).WithNext(cmd)
 }

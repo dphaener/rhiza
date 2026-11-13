@@ -953,3 +953,78 @@ func TestGuardReply(t *testing.T) {
 		t.Error("PostToolUse denied")
 	}
 }
+
+func TestStartSkill(t *testing.T) {
+	cases := []struct {
+		prompt, name string
+		ok           bool
+	}{
+		{"/rhiza-builder Build leaf x", "rhiza-builder", true},
+		{"/rhiza:rhiza-builder", "rhiza:rhiza-builder", true},
+		{"/rhiza-verifier\nVerify", "rhiza-verifier", true},
+		{"build the leaf", "", false},
+		{" /rhiza-builder x", "", false},
+		{"/", "", false},
+		{"/../etc/passwd x", "", false},
+		{"", "", false},
+	}
+	for _, c := range cases {
+		name, ok := Adapter{}.StartSkill(c.prompt)
+		if name != c.name || ok != c.ok {
+			t.Errorf("StartSkill(%q) = %q, %v; want %q, %v", c.prompt, name, ok, c.name, c.ok)
+		}
+	}
+}
+
+// found reports whether any of the globs matches a file.
+func found(t *testing.T, globs []string) bool {
+	t.Helper()
+	for _, g := range globs {
+		if m, err := filepath.Glob(g); err != nil {
+			t.Fatal(err)
+		} else if len(m) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func TestSkillGlobs(t *testing.T) {
+	home, wt := t.TempDir(), t.TempDir()
+	getenv := func(k string) string {
+		if k == "HOME" {
+			return home
+		}
+		return ""
+	}
+	write := func(path string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if found(t, Adapter{}.SkillGlobs("rhiza-builder", getenv, wt)) {
+		t.Error("missing skill found")
+	}
+	write(filepath.Join(home, ".claude", "skills", "rhiza", "skills", "rhiza-verifier", "SKILL.md"))
+	if found(t, Adapter{}.SkillGlobs("rhiza-builder", getenv, wt)) {
+		t.Error("a guide without rhiza-builder has it")
+	}
+	if !found(t, Adapter{}.SkillGlobs("rhiza-verifier", getenv, wt)) {
+		t.Error("installed plugin skill not found")
+	}
+	write(filepath.Join(home, ".claude", "skills", "rhiza", "skills", "rhiza-builder", "SKILL.md"))
+	if !found(t, Adapter{}.SkillGlobs("rhiza-builder", getenv, wt)) || !found(t, Adapter{}.SkillGlobs("rhiza:rhiza-builder", getenv, wt)) {
+		t.Error("installed skill not found")
+	}
+	write(filepath.Join(wt, ".claude", "skills", "mine", "SKILL.md"))
+	if !found(t, Adapter{}.SkillGlobs("mine", getenv, wt)) {
+		t.Error("worktree skill not found")
+	}
+	if g := (Adapter{}).SkillGlobs("../x", getenv, wt); g != nil {
+		t.Errorf("unsafe name got globs %v", g)
+	}
+}
