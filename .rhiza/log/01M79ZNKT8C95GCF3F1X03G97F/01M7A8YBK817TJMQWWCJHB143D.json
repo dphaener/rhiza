@@ -1,0 +1,40 @@
+{
+  "actor": "01M7A8S3XG2PH29YXBVFTSPF8R",
+  "after": [
+    "01M7A8N4VTANRT6YXDRXC7C7ED"
+  ],
+  "at": "2026-11-13T10:58:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran Checks: go vet ./internal/api, go test ./internal/api -run 'Daemon|Sweep|Reexec|Leftover', go test ./cmd/rhiza -run TestScripts/daemon-, go test ./internal/daemon, TestDaemonSweepLeftovers (OffPoll + PrunesOnlyOrphans): all exit 0. Diff adds leftSweep.Wait() deferred in runDaemon and before re-exec; no TODOs/stubs."
+        },
+        "handle": "leftovers-sweep-off-poll-verified-2",
+        "id": "01M7A8YBGT343JB298D7RAZRAN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7A8YBGT343JB298D43A84R6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7A8YBGT343JB298D43A84R6",
+        "id": "01M7A8YBJ7Q0WNK6B3BW7Z3JVT",
+        "link": "01M7A8YBJ7Q0WNK6B3BSTEBTND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A01HSS3X0K4M3EM9XWRDFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79ZNKT8C95GCF3F1X03G97F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7A8YBK817TJMQWWCJHB143D",
+  "type": "ops",
+  "v": 1
+}
