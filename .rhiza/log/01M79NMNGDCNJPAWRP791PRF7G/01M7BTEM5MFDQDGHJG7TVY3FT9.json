@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BT2F1NRJ0PX43S98N9T5T5",
+  "after": [
+    "01M7BNVSB9FVB3BTBYRP2D5Y2Z"
+  ],
+  "at": "2026-11-14T01:23:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified attempt 2 at 35b8358ce. Re-ran: go test -trimpath ./internal/web/ (exit 0); go test -trimpath ./internal/web -run TestRoadmapMilestones -v (acceptance, PASS, exit 0); go test -trimpath ./internal/api/ -run 'Milestone|ReadOnly|WebMilestones' (exit 0); make self-check in a clean detached worktree of HEAD (ok; in the run checkout it fails only on this verifier's own unrendered actor record). Did not re-run the 25m full ./internal/api run, which the commit records as a timeout under host load with no failing test; it is over the command budget and CI runs it. Diff read: milestones.go now folds served change sets not already folded (landed ones) so their title field is shown; roadmap_test.go adds a landed change set whose title differs from its intent and asserts title then intent sub-line. TestRoadmapMilestones covers every acceptance point: two-project isolation, no finished milestone among open ones, group order with building now and proposed, title/intent, state words, bar segments and counts (7/2/1/1), closed done-points fold, backlog and umbrella after milestones, finished milestones in an in-page fold with no link. Nothing outside the leaf changed besides rendered actor files; no stubs or TODOs."
+        },
+        "handle": "web-roadmap-milestone-page-verified-2",
+        "id": "01M7BTEKTHW1FYXQY89CST7HE0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BTEKTHW1FYXQY89A8N303M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BTEKTHW1FYXQY89A8N303M",
+        "id": "01M7BTEM0AYAYYSXZKAKHMDSM1",
+        "link": "01M7BTEM0AYAYYSXZKAH28838P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BTEM5MFDQDGHJG7TVY3FT9",
+  "type": "ops",
+  "v": 1
+}
