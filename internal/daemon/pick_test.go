@@ -55,20 +55,24 @@ func TestResumableOnlyAcceptedOrLandedPastLand(t *testing.T) {
 		runs = append(runs, run.Journal{ID: "run-" + cs, Entries: es})
 	}
 	add("accepted", "accepted", "ship-change", false)
-	add("landed-past", "landed", "ship-change", true)
+	// The classic workflow lands in a land step; the conductor default
+	// (ship-change) has none, so its merge is its landing.
+	add("landed-past", "landed", "ship-change-classic", true)
 	add("landed-never", "landed", "ship-change", false)
 	add("landed-merge", "landed", "ship-change", false, "merge")
 	add("landed-incl", "landed", "ship-change", false, "ship-change/merge")
 	add("landed-check", "landed", "ship-change", false, "ship-change/merge-check", "premerge")
+	add("landed-closeout", "landed", "ship-change", false, "merge", "main-ci", "close-out")
+	add("landed-gate", "landed", "ship-change", false, "conduct", "gate", "push")
 	add("landed-plan", "landed", "plan", false)
 	add("withdrawn-plan", "withdrawn", "plan", false)
 	add("rejected-plan", "rejected", "plan", false)
 	add("superseded-plan", "superseded", "plan", false)
 	for _, s := range []string{"rejected", "withdrawn", "proposed", "draft"} {
-		add(s, s, "ship-change", true)
+		add(s, s, "ship-change-classic", true)
 	}
 	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) string { return states[cs] }, now)
-	want := []string{"run-accepted", "run-landed-past", "run-landed-merge", "run-landed-incl", "run-landed-plan"}
+	want := []string{"run-accepted", "run-landed-past", "run-landed-merge", "run-landed-incl", "run-landed-closeout", "run-landed-plan"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Resumable = %v, want %v", got, want)
 	}
