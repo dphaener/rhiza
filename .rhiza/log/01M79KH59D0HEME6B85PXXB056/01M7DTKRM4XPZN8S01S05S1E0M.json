@@ -1,0 +1,339 @@
+{
+  "actor": "01M7DSYJSHNY181ETMZA8BADDZ",
+  "after": [
+    "01M7C8BM23JT6F3MMKMJ4AMWV6"
+  ],
+  "at": "2026-11-14T20:05:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: go test ./internal/workflow -run TestAgentStepChecks and ./internal/api -run 'TestRunFindingsAgentStepChecks|TestRunFindingsCheckNames' pass; the built binary's workflow describe ship-change shows conduct declaring roles plan, code, qa; run findings --check plan outside a run is refused naming RHIZA_RUN (exit 2)."
+        },
+        "handle": "agent-step-checks-qa-2",
+        "id": "01M7DTKPF3E5HYKG33Y9QYDA8M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKPF3E5HYKG33Y900M59H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKPF3E5HYKG33Y900M59H",
+        "id": "01M7DTKPJASM6M3THNTN026W7T",
+        "link": "01M7DTKPJASM6M3THNTJ9YQ5JV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS2SDWJ2NYPKKVW4HXB7G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: workflow describe ship-change in a fresh repo lists conduct, gate, signoff, push, wait-ci, merge, main-ci, close-out, ship, deploy-check, with every non-pass route up to merge going to handback:conduct and none after it; workflow check ship-change is valid; go test -run 'TestBuiltinShipChange|TestBuildCheck' pass; run build-check and review-check outside a run are refused cleanly (exit 2)."
+        },
+        "handle": "builtin-conductor-default-qa-2",
+        "id": "01M7DTKPPSJJX217VQK8DY1MMW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKPPSJJX217VQK6RSXYYS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKPPSJJX217VQK6RSXYYS",
+        "id": "01M7DTKPT9MQS405PQ53C7EEHA",
+        "link": "01M7DTKPT9MQS405PQ52WE8E9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: workflow ls lists ship-change-classic (builtin); workflow check ship-change-classic is valid; diff of builtin/ship-change-classic.toml against testdata/ship-change-pre-m36.toml is only the name line, and the golden equals origin/main's ship-change.toml; workflow new --from ship-change-classic writes a file that checks valid; TestBuiltinClassicUnchanged passes."
+        },
+        "handle": "builtin-ship-change-classic-qa-2",
+        "id": "01M7DTKPWTJN83516V0KN114QZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKPWTJN83516V0KAA0D9Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKPWTJN83516V0KAA0D9Y",
+        "id": "01M7DTKPZ065YZ0VTEJEKWYZGP",
+        "link": "01M7DTKPZ065YZ0VTEJD3PE9F0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE1SEZAAMTA1A37YWDR0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: All 30 named scripts pass, in three capped batches; the api tests TestPrePushJournal and TestInboxReadsChangeSetsOnce pass, as do the eight workflow tests. grep -L ship-change-classic on the 33 files prints nothing. Builtin(\"ship-change\") appears only in TestBuiltinShipChange."
+        },
+        "handle": "classic-tests-pinned-qa-2",
+        "id": "01M7DTKQ14Q9ZBWSSMW82WMAG0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQ14Q9ZBWSSMW5FZBMCE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQ14Q9ZBWSSMW5FZBMCE",
+        "id": "01M7DTKQ30CHSNZD197J1H1KKE",
+        "link": "01M7DTKQ30CHSNZD197GWW60DM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: In a scratch repo: SHIP_HEAD_RHIZA naming a fake head made render exec it with 'render --json' in the repo dir; with a real head build, render and land went through it and landed the change set (accepted to landed); with the head as the running binary, render ran in-process; a missing head with no SHIP_HEAD_BUILD made render and land fail with 'not a built rhiza', with nothing rendered or landed. TestLandRenderHeadBuild passes."
+        },
+        "handle": "conductor-land-render-head-build-qa-2",
+        "id": "01M7DTKQ4PG15QSSN2QWGTKBWP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQ4PG15QSSN2QSJJZRBF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQ4PG15QSSN2QSJJZRBF",
+        "id": "01M7DTKQ6H3FCSZEAE3M4N42E1",
+        "link": "01M7DTKQ6H3FCSZEAE3GBPPWYJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7APRTE58PCDAC5VEJWK8Z59",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: run start --dry-run on a leafless accepted change set, with no --workflow and with --workflow ship-change, prints '- Workflow: ship-change' (exit 0). The four named scripts, and daemon-picks and daemon-status, pass. internal/daemon TestResumable|TestPick|TestSkips pass."
+        },
+        "handle": "default-tests-follow-conductor-qa-2",
+        "id": "01M7DTKQ89A6FZH9E728FYMPKJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQ89A6FZH9E725XYD5QR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQ89A6FZH9E725XYD5QR",
+        "id": "01M7DTKQA1SQW6HCVBCP51P6ZG",
+        "link": "01M7DTKQA1SQW6HCVBCNZKJ36D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMSA5N0PTMBVTD00XHHBSG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: docs/runs-and-daemon.md no longer says 'build and then review' for ship-change. It, docs/custom-workflows.md and guide workflows name the conductor default's steps and ship-change-classic pinned via [ready]. TestWorkflowsText and internal/doclinks pass."
+        },
+        "handle": "docs-conductor-default-qa-2",
+        "id": "01M7DTKQC0MQYAGER6E5B8R2MB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQC0MQYAGER6E3BM46ZC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQC0MQYAGER6E3BM46ZC",
+        "id": "01M7DTKQDS126G74AKF43BR6W4",
+        "link": "01M7DTKQDS126G74AKF0PTYPNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXH9AZCZPEX26PHDJ1V5M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: In this repo, workflow describe ship-rhiza and bugfix show every hand-back route as handback:ship-change/conduct. A repo ship-change.toml including ship-change is refused as including itself. TestIncludeHandbackTarget and TestHandbackIncluded pass."
+        },
+        "handle": "handback-target-survives-include-qa-2",
+        "id": "01M7DTKQFTJ8WXV53WXGXRFN40",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQFTJ8WXV53WXDE1GF6S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQFTJ8WXV53WXDE1GF6S",
+        "id": "01M7DTKQHQZXRE5VDGPR8YN1X5",
+        "link": "01M7DTKQHQZXRE5VDGPN61BNGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BYHZXGY011H2GCS1CZXX49",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: go test ./internal/run -run TestPastLanding, ./internal/daemon -run TestResumable and ./internal/api -run TestRunResume pass, and the inbox-landed-resumable script passes with fixtures that visited merge and ship-change/merge."
+        },
+        "handle": "landed-run-resumable-past-merge-qa-2",
+        "id": "01M7DTKQKQTRCBWG4ZEM9XPQFC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQKQTRCBWG4ZEH6FS5E3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQKQTRCBWG4ZEH6FS5E3",
+        "id": "01M7DTKQNP03ZKPBKQ3K403XXF",
+        "link": "01M7DTKQNP03ZKPBKQ3H63A3QX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AP37F8KV6E7D4SWA7XTBW2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: Built binary, leafless accepted change set: run start --dry-run with ship-change and with a repo workflow including ship-change starts (exit 0). With ship-change-classic, a repo workflow including build or ship-change-classic, and a dispatch.toml pinning [ready] feature = ship-change-classic, it is refused with exit 3 and 'has no leaves: <workflow> builds and reviews its leaves'. TestCheckShipLeaves and run-ship-needs-leaves pass."
+        },
+        "handle": "leafless-refusal-by-leaves-step-qa-2",
+        "id": "01M7DTKQQWN1EEZZMH3JXKJGXB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKQQWN1EEZZMH3J8XZGE2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKQQWN1EEZZMH3J8XZGE2",
+        "id": "01M7DTKQX9GH2T8D4G8EGCMZZA",
+        "link": "01M7DTKQX9GH2T8D4G8EFCR7ED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXFBEANQM6G4MHTGZJ9MA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: go test ./internal/api -run TestReviewCheck passes (TestReviewCheckDeclaredChecks, TestReviewCheckConductor, TestReviewCheckRefusesStaleRound and TestReviewCheckFindingsFlag). The built binary's run review-check outside a run is refused naming RHIZA_RUN."
+        },
+        "handle": "review-check-declared-checks-qa-2",
+        "id": "01M7DTKR23WZ3ZMWYGVVWHJYJF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKR23WZ3ZMWYGVRJNH419",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKR23WZ3ZMWYGVRJNH419",
+        "id": "01M7DTKR510VXBEB9MP4NGEPR6",
+        "link": "01M7DTKR510VXBEB9MP46KGTBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS4TR5TGACVFJEDFEFZYE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: In this repo, workflow describe ship-change resolves to builtin:ship-change; .rhiza/workflows/ship-change.toml is gone. describe ship-rhiza shows the env GOTMPDIR, SHIP_HEAD_RHIZA and SHIP_HEAD_BUILD, go-cleanup (sh .rhiza/workflows/go-cleanup.sh), the 10 included steps and handback:ship-change/conduct. bugfix shows the same. workflow check ship-rhiza, bugfix and plan-bug are valid, with only the bypass warnings AGENTS.md expects. make self-check in a clean detached worktree at HEAD exits 0. TestShipFixPromptsOneLine passes."
+        },
+        "handle": "rhiza-repo-conductor-default-qa-2",
+        "id": "01M7DTKR7R3PE71HDQ5JF87V0X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKR7R3PE71HDQ5F2H41KX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKR7R3PE71HDQ5F2H41KX",
+        "id": "01M7DTKR9SDX8Z9495GWKR30FA",
+        "link": "01M7DTKR9SDX8Z9495GRXKYQ7X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: In a scratch repo, render with SHIP_HEAD_RHIZA missing and SHIP_HEAD_BUILD set built the head once and wrote <bin>.built-at at HEAD. A second render did not rebuild; after a new commit it rebuilt (builds 1, 1, 2). A failing SHIP_HEAD_BUILD failed with its output and 'nothing was rendered or pushed', with nothing rendered. TestShipHeadBuildOnDemand and ship-land-branch-build pass."
+        },
+        "handle": "ship-head-build-on-demand-qa-2",
+        "id": "01M7DTKRBVSZC2QCSZ37XZT9F2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKRBVSZC2QCSZ34FYM8Q3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKRBVSZC2QCSZ34FYM8Q3",
+        "id": "01M7DTKRDV0MEG95WBFMJ6WK34",
+        "link": "01M7DTKRDV0MEG95WBFGT6HDTX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AKMZ9QVN9EJJDVT64WXM13",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1b3323a74, scratch build of the branch: The ship-change-one-ci script passes, as does ship-check-settles-conflict. ship rebase --no-push against a bare origin merged origin/main into the branch, printed 'Pushed nothing (--no-push)' and left origin's branch at the same SHA. On a code conflict it left the merge in progress (UU, exit 1) with origin unchanged, and on an up-to-date branch it said nothing to merge (exit 0)."
+        },
+        "handle": "ship-one-ci-round-qa-2",
+        "id": "01M7DTKRFWDKYGKPRT66PN4HEK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DTKRFWDKYGKPRT63AY23FN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DTKRFWDKYGKPRT63AY23FN",
+        "id": "01M7DTKRHZC92SP9AX0KB47XXW",
+        "link": "01M7DTKRHZC92SP9AX0K0PVNK5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7DTKRM4XPZN8S01S05S1E0M",
+  "type": "ops",
+  "v": 1
+}
