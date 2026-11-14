@@ -1843,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -1851,7 +1851,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "value": {
-            "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes",
+            "description": "The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes",
             "type": "string"
           }
         },
@@ -19605,7 +19605,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "agent": {
-            "description": "The agent adapter of agent steps that name none; default the built-in default adapter",
+            "description": "The agent adapter of agent steps that name none; default the project's rhiza.project.agent, else the built-in default adapter",
             "type": "string"
           },
           "autonomous": {
@@ -24623,7 +24623,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "agent": {
-            "description": "The agent adapter to launch; default the built-in default adapter",
+            "description": "The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter",
             "type": "string"
           },
           "change": {
@@ -26639,7 +26639,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "agent": {
-            "description": "The agent adapter to launch; default the built-in default adapter",
+            "description": "The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter",
             "type": "string"
           },
           "invoke": {

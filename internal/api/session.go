@@ -85,7 +85,7 @@ const (
 type SessionStartRequest struct {
 	Change         string `json:"change,omitempty" arg:"0" desc:"The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one"`
 	PermissionMode string `json:"permission_mode" desc:"The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused"`
-	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the built-in default adapter"`
+	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter"`
 	Step           string `json:"step,omitempty" desc:"The step the session works on, lower-case words joined by dashes; default build, which the tab title leaves out"`
 	Run            string `json:"run,omitempty" desc:"The run the launch belongs to, if any"`
 	Prompt         string `json:"prompt,omitempty" desc:"The agent's first prompt; default none"`
@@ -454,8 +454,9 @@ func (t changeWorktree) open(ctx *Ctx) (*workspace, error) {
 	return ww, nil
 }
 
-// startAdapter returns the request's adapter after checking its permission
-// mode: one is required, it must be the adapter's, and a mode that bypasses
+// startAdapter returns the request's adapter (its --agent, else the
+// project's rhiza.project.agent, else the registered default) after
+// checking its permission mode: one is required, it must be the adapter's, and a mode that bypasses
 // permission checks is refused, since no machine is trusted for it yet.
 func startAdapter(ctx *Ctx, r SessionStartRequest) (adapter.Adapter, error) {
 	if r.PermissionMode == "" {
@@ -463,6 +464,14 @@ func startAdapter(ctx *Ctx, r SessionStartRequest) (adapter.Adapter, error) {
 			WithNext(sessionStartNext)
 	}
 	var a adapter.Adapter
+	if r.Agent == "" {
+		// The project's own agent, else the registered default.
+		name, err := projectAgent(ctx)
+		if err != nil {
+			return nil, err
+		}
+		r.Agent = name
+	}
 	if r.Agent == "" {
 		if a = adapter.Default(); a == nil {
 			return nil, Errorf("no default agent adapter is registered")
