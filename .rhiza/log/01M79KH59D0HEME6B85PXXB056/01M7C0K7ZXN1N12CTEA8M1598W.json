@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C0G9QG9CKYVA32ZF5K7C6N",
+  "after": [
+    "01M7C0EEP4Z7JS546D9YWZE5KN"
+  ],
+  "at": "2026-11-14T03:11:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 424a3641d: go test -trimpath ./internal/workflow -run TestBuiltinClassicUnchanged exit 0 (also the whole internal/workflow package passes); a rhiza built from this commit runs `workflow check ship-change-classic`: valid (builtin:ship-change-classic), exit 0; rhiza ship generate and rhiza render exit 0 with no tracked changes; testscripts workflow-ls, workflow-check*, workflow-describe* and describe-golden pass. diff shows ship-change-classic.toml equal to testdata/ship-change-pre-m36.toml except line 1 (name), and the golden equal byte for byte to the current builtin/ship-change.toml. The test checks both name lines, the rest of the file, BuiltinNames listing ship-change-classic and that it parses. The diff touches only the three named files plus this run's .rhiza log and rendered records, with no TODOs or stubs."
+        },
+        "handle": "builtin-ship-change-classic-verified",
+        "id": "01M7C0K7K3SJ21BZE1NWAG0PSZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C0K7K3SJ21BZE1NTESJT3Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C0K7K3SJ21BZE1NTESJT3Q",
+        "id": "01M7C0K7VA07V1VYKFXJ9MBP43",
+        "link": "01M7C0K7VA07V1VYKFXGKD3XF7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE1SEZAAMTA1A37YWDR0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C0K7ZXN1N12CTEA8M1598W",
+  "type": "ops",
+  "v": 1
+}
