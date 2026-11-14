@@ -521,7 +521,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 

@@ -14,9 +14,12 @@ type InboxItemView struct {
 	// Title is what to read: a question's full text, else the change set's title.
 	Title string
 	// Detail is the line under the title: why it waits.
-	Detail   string
-	Run      string
-	Change   string
+	Detail string
+	Run    string
+	Change string
+	// Question is the handle of the open question the row asks to answer,
+	// for the answer form; empty on any other row.
+	Question string
 	Step     string
 	At       string // RFC 3339, when it began to wait
 	Relative string
@@ -32,7 +35,7 @@ var inboxLabels = map[string]string{
 
 // inboxRows is the items as dense rows, oldest first, each marked in the
 // warning accent (the waiting pill).
-func inboxRows(items []InboxItemView) []Row {
+func inboxRows(items []InboxItemView, forms formSpec) []Row {
 	items = append([]InboxItemView(nil), items...)
 	sort.SliceStable(items, func(i, j int) bool { return items[i].At < items[j].At })
 	rows := make([]Row, 0, len(items))
@@ -48,7 +51,7 @@ func inboxRows(items []InboxItemView) []Row {
 		rows = append(rows, Row{
 			Href: href, Title: it.Title, Sub: it.Detail,
 			Pill: Pill{State: "waiting", Text: label}, Step: it.Step,
-			Time: it.Relative, Datetime: it.At,
+			Time: it.Relative, Datetime: it.At, Forms: forms.of(it),
 		})
 	}
 	return rows
@@ -63,7 +66,7 @@ type inboxKey struct{}
 
 func inboxOf(r *http.Request) InboxPanel {
 	if src, _ := r.Context().Value(inboxKey{}).(InboxSource); src != nil {
-		return InboxPanel{Rows: inboxRows(src())}
+		return InboxPanel{Rows: inboxRows(src(), formsOf(r, ""))}
 	}
 	return InboxPanel{}
 }

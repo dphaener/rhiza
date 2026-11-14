@@ -1,0 +1,109 @@
+{
+  "actor": "01M7BQ41EPYHWHK3XESQHJ6YCQ",
+  "after": [
+    "01M7BQ0QWC5X79XPHYFEADAS67"
+  ],
+  "at": "2026-11-14T00:30:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 with the branch built to a scratch path and run as a scratch root daemon (web token set): a real command-only plan run stopped at rhiza run gate on two open questions. The root merged inbox showed both with answer forms posting to /p/proj/actions/answer (csrf hidden field, statement HTML-escaped). A cookie+csrf POST answering the first got 200 'Answered. The run continues once its other questions are answered.' and wrote one Decision in the run's worktree; repeating it got 400 'Nothing to do' and wrote no second Decision; no csrf 403; blank text 400. Answering the last got 'Answered. The run continues.', the daemon resumed the run and its next step ran: the run succeeded and the inbox emptied. A second run with one question answered through rhiza question answer --run and the other through the web also resumed and succeeded; a web repeat of the CLI-answered one and an unknown question were refused. Answering an ended run 409, an unknown run 404, a missing question 400, no auth 401. Approve on a non-stopped or unknown run 'Nothing to do', empty run 'Nothing to approve'. Scoped go test ./internal/api -run 'TestWebAnswerAction|TestWebApproveAction|TestWebPauseAction|TestWebTokenSetting' and ./internal/web -run TestWeb pass."
+        },
+        "handle": "web-action-answer-qa-2",
+        "id": "01M7BQCMR3FA1C96SXAKSJVA7M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BQCMR3FA1C96SXAJ8KRKY9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BQCMR3FA1C96SXAJ8KRKY9",
+        "id": "01M7BQCMTFA0E9HZBP4SPHEXTF",
+        "link": "01M7BQCMTETYZ39ECCNP09WNQG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch root daemon: cookie+csrf POSTs to /p/proj/actions/pause with scope project/daemon and paused true/false answered 'This project is paused.', 'The daemon is paused.', and the resumed forms, leaving rhiza.daemon.paused=false in rhiza.toml and rhiza.project.paused=false in the project's git config. Bearer POSTs to /retry, /abandon, /merge, /actions/retry, /actions/merge, /p/proj/actions/abandon, /p/proj/runs/X/retry were 404; /api/daemon.set, /p/proj/api/run.resume, question.answer and run.approve were 405."
+        },
+        "handle": "web-action-pause-qa-2",
+        "id": "01M7BQCMXN0KFERP4TBZRQ35D1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BQCMXN0KFERP4TBZG8TA25",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BQCMXN0KFERP4TBZG8TA25",
+        "id": "01M7BQCMZXV34F28MQQB375FHN",
+        "link": "01M7BQCMZXV34F28MQQ9PAG4GJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch root daemon: page forms carry a csrf hidden field; a cookie POST to the answer action with no csrf and to the pause action with a wrong csrf got 403 and changed nothing; the page's csrf value acted; a bearer POST needed none."
+        },
+        "handle": "web-csrf-qa-2",
+        "id": "01M7BQCN30PTEH43K4VY819YZ5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BQCN30PTEH43K4VVP8VDAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BQCN30PTEH43K4VVP8VDAK",
+        "id": "01M7BQCN6HZGKNFH80WN27KB7P",
+        "link": "01M7BQCN6HZGKNFH80WMWXTWC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: rhiza daemon set rhiza.web.token replied 'set'; rhiza daemon settings showed 'set', and neither rhiza daemon status --json nor unauthenticated GET /api/daemon.settings, /api/daemon.status, /p/proj/api/daemon.settings, /p/proj/api/daemon.status contained the value. GET ?token= set the cookie (303). A wrong bearer and no auth got 401. With the token removed from rhiza.toml, POSTs got 403, pages showed no forms and GET / stayed 200."
+        },
+        "handle": "web-token-qa-2",
+        "id": "01M7BQCN9FCSHTXXWNY2WYKZTY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BQCN9FCSHTXXWNXZK416GX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BQCN9FCSHTXXWNXZK416GX",
+        "id": "01M7BQCNC3XYW0JT4JPWW133K7",
+        "link": "01M7BQCNC3XYW0JT4JPVW6KC1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BQCNEK356WM6BJ6KY2QNHX",
+  "type": "ops",
+  "v": 1
+}

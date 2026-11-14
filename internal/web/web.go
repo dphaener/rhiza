@@ -77,6 +77,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
+	"action":   template.Must(template.New("").ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/action.html")),
 	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/live-runs.html", "templates/inbox.html", "templates/milestones.html")),
 	"run":      template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/run.html")),
 	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
@@ -89,6 +90,8 @@ var pages = map[string]*template.Template{
 		"Empty":   func(t, x string) Empty { return Empty{t, x} },
 	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/projects.html")),
 	"mergedinbox": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/inbox.html", "templates/mergedinbox.html")),
+	"node":        template.Must(template.New("").Funcs(template.FuncMap{"Glyph": func(k string) Glyph { return Glyph{Kind: k} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/node.html")),
+	"nodemissing": template.Must(template.New("").Funcs(template.FuncMap{"Empty": func(t, x string) Empty { return Empty{t, x} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/nodemissing.html")),
 	"roadmap":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
@@ -97,6 +100,8 @@ type page struct {
 	Title, Nav string
 	// Daemon is the header's daemon pill; empty Text leaves it out.
 	Daemon Pill
+	// NoDaemon leaves the header's daemon pill out without reading the daemon.
+	NoDaemon bool
 	// DaemonView is the Overview's daemon panel.
 	DaemonView DaemonView
 	// Runs is the Overview's live runs panel.
@@ -121,11 +126,15 @@ type page struct {
 }
 
 func render(w http.ResponseWriter, r *http.Request, name string, p page) {
+	renderStatus(w, r, http.StatusOK, name, p)
+}
+
+func renderStatus(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if sc := scopeOf(r); sc != nil {
 		p.Base, p.Project = sc.Prefix, sc.Name
 	}
 	p.NeedsYou = needsYouOf(r)
-	if p.Daemon.Text == "" {
+	if p.Daemon.Text == "" && !p.NoDaemon {
 		p.Daemon = daemonOf(r).Pill()
 	}
 	var buf bytes.Buffer
@@ -134,6 +143,7 @@ func render(w http.ResponseWriter, r *http.Request, name string, p page) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
 	w.Write(scopeOf(r).rewrite(buf.Bytes()))
 }
 
@@ -193,8 +203,12 @@ func HandlerWithNeedsYou(daemon DaemonSource, runs RunsSource, inbox InboxSource
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
+	mux.HandleFunc("POST "+AnswerPath, serveAnswer)
+	mux.HandleFunc("POST "+ApprovePath, serveApprove)
+	mux.HandleFunc("POST "+PausePath, servePause)
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
 	mux.HandleFunc("GET /changes/{id}", serveChange)
+	mux.HandleFunc("GET /nodes/{ref}", serveNode)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /runs/{id}", servRun)
 	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {

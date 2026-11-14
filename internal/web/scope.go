@@ -33,13 +33,13 @@ func pageKind(tail string) string {
 	switch first {
 	case "runs", "roadmap":
 		return "/" + first
-	case "changes":
+	case "changes", "nodes":
 		return "/roadmap"
 	}
 	return "/"
 }
 
-var rootLink = regexp.MustCompile(`(href|src|data-rz-fragment)="/([^"]*)"`)
+var rootLink = regexp.MustCompile(`(href|src|action|data-rz-fragment)="/([^"]*)"`)
 
 // rewrite points the root-relative links of a page served under /p/<project>/
 // at that project, leaving links already into /p/, /projects or /inbox as

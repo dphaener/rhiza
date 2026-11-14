@@ -23,6 +23,10 @@ A few safe actions (Recommended), picked by the owner
 ### In
 
 - decided-by [m37-safe-actions](../intent/milestone-37/m37-safe-actions.md)
+- decided-by [web-token](../capability/rhiza/web-monitor/web-token.md)
+- decided-by [web-action-answer](../capability/rhiza/web-monitor/web-action-answer.md)
+- decided-by [web-action-pause](../capability/rhiza/web-monitor/web-action-pause.md)
+- decided-by [web-csrf](../capability/rhiza/web-monitor/web-csrf.md)
 
 ## History
 
