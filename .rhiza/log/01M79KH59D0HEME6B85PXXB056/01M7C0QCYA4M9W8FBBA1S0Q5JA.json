@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C0N373VQFM5GTZVWQB7NDN",
+  "after": [
+    "01M7C0K7ZXN1N12CTEA8M1598W"
+  ],
+  "at": "2026-11-14T03:13:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a79fc39d8 re-ran the Checks block: go test -trimpath ./internal/api -run 'TestReviewCheckDeclaredChecks|TestReviewCheckRefusesStaleRound|TestReviewCheckFindingsFlag|TestReviewCheckConductor' exit 0 (all four PASS), rhiza ship generate exit 0 (0 changed), rhiza render exit 0. TestReviewCheckDeclaredChecks builds a run at step gate past an agent step conduct declaring plan, code and qa: missing rounds fail, minor-only rounds pass, a confirmed major of code fails with exit 1 and its reason in the message, a downgrade to minor and a drop each pass. TestReviewCheckRefusesStaleRound and TestReviewCheckFindingsFlag drive plan-workflow runs and still pass. The diff adds only that test (plus actor/render files); conductorReviewCheck in internal/api/run_review.go is already on main, and the answered question review-check-declared-checks-follows-main limits the build to the missing test and keeps the missing-round failure. No stubs or TODOs; fakes only."
+        },
+        "handle": "review-check-declared-checks-verified",
+        "id": "01M7C0QCP6WQVVY9W607MZNB8G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C0QCP6WQVVY9W605QRXQNB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C0QCP6WQVVY9W605QRXQNB",
+        "id": "01M7C0QCSDSAH5CCQR8GJ5CCCQ",
+        "link": "01M7C0QCSDSAH5CCQR8FHBS8CH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS4TR5TGACVFJEDFEFZYE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C0QCYA4M9W8FBBA1S0Q5JA",
+  "type": "ops",
+  "v": 1
+}
