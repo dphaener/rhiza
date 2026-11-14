@@ -2835,3 +2835,35 @@ func TestAgentStepChecks(t *testing.T) {
 		})
 	}
 }
+
+// TestBuiltinClassicUnchanged pins ship-change-classic to today's
+// ship-change (a golden copy from before milestone 36), apart from its name.
+func TestBuiltinClassicUnchanged(t *testing.T) {
+	golden, err := os.ReadFile(filepath.Join("testdata", "ship-change-pre-m36.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := Builtin("ship-change-classic")
+	if !ok {
+		t.Fatal("no built-in ship-change-classic")
+	}
+	rest := func(b []byte) string {
+		_, after, _ := strings.Cut(string(b), "\n")
+		return after
+	}
+	if !strings.HasPrefix(string(got), "name = \"ship-change-classic\"\n") {
+		t.Errorf("ship-change-classic starts %q; want its name line", strings.SplitN(string(got), "\n", 2)[0])
+	}
+	if !strings.HasPrefix(string(golden), "name = \"ship-change\"\n") {
+		t.Errorf("golden starts %q; want the ship-change name line", strings.SplitN(string(golden), "\n", 2)[0])
+	}
+	if rest(got) != rest(golden) {
+		t.Error("ship-change-classic.toml differs from testdata/ship-change-pre-m36.toml beyond the name line")
+	}
+	if !slices.Contains(BuiltinNames(), "ship-change-classic") {
+		t.Fatalf("BuiltinNames = %v; want it to list ship-change-classic", BuiltinNames())
+	}
+	if _, err := ParseWith("ship-change-classic", got, builtinResolver); err != nil {
+		t.Errorf("ship-change-classic does not parse: %v", err)
+	}
+}
