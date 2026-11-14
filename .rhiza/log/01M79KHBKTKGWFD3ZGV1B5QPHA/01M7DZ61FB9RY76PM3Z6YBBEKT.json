@@ -1,0 +1,40 @@
+{
+  "actor": "01M7DZ05NSA9RBNZ51MH1VDEST",
+  "after": [
+    "01M7DYPQ6A7AKJE6YGSTQXKCAM"
+  ],
+  "at": "2026-11-14T21:24:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1363302a4 re-ran the Checks: block: go test -trimpath -p 2 ./internal/api -run 'TestWorkflowCheckUnresolvedInvoke|TestSkillCheck|TestExposureWarnings|StartSkill' exit 0 (TestWorkflowCheckUnresolvedInvoke/Missing asserts one warning each for the builder /rhiza-builder with the guide install command and the agent step /my-tidy, valid true and exit 0; /Installed asserts no warning with the skills in the agent's config folder and the repo); go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(workflow-check|run-start-skill-missing)' exit 0 (workflow-check-invoke shows the warnings in text and --json, exit 0, none once installed); go vet ./internal/api exit 0; rhiza ship generate exit 0 with 0 changed files; rhiza render changed only my own actor record. A scratch build's rhiza workflow check bugfix gives no spurious invoke warning. The diff touches only the four files the acceptance names plus rendered actor records, shares checkStartSkill's lookup as missingStartSkill, leaves valid and the exit code alone as skill-check-plan-shape decides, and has no stubs or TODOs."
+        },
+        "handle": "workflow-check-unresolved-invoke-verified",
+        "id": "01M7DZ61D8EFTMDGER10EWSZED",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DZ61D8EFTMDGER0WQ88J6W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DZ61D8EFTMDGER0WQ88J6W",
+        "id": "01M7DZ61E8G38PQWZZB6WPTGDX",
+        "link": "01M7DZ61E8G38PQWZZB690SM27",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A21WH33SFE7PWYMAJMV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "id": "01M7DZ61FB9RY76PM3Z6YBBEKT",
+  "type": "ops",
+  "v": 1
+}
