@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C225NH8XWPTJXXHCE9R925",
+  "after": [
+    "01M7C18GZ9EM9F2RCT4JWQXRQG"
+  ],
+  "at": "2026-11-14T03:38:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d97b0e7f1: go test -trimpath ./internal/api -run TestShip exit 0; go test -trimpath ./internal/api -run TestShipHeadBuildOnDemand -v passes all six cases (missing binary built once then rendered with and stamped with HEAD; built-at an earlier commit rebuilt; built at current HEAD not rebuilt; empty SHIP_HEAD_BUILD fails 'not a built rhiza' with no build; failing build carries its output and 'nothing was rendered or pushed'; ship.land with a failing build makes no commit or push); go test -trimpath ./cmd/rhiza -run TestScripts/ship-land-branch-build exit 0 with the new case where a missing SHIP_HEAD_RHIZA is built by ship land, logs land and render to head.log and lands. Diff read: shipHeadBuild (used by ship land and every ship render) builds via shipRebuildHead (sh -c in ctx.Root) when the binary is missing or its .built-at record differs from HEAD; shipRebuildHead stamps .built-at and adds the build output to its error. runShipCloseOut never renders or uses the head binary, so the land path, which shares shipHeadBuild, covers the acceptance's close-out case. Only the three named files plus the actor record changed; no stubs or TODOs."
+        },
+        "handle": "ship-head-build-on-demand-verified",
+        "id": "01M7C24J3ASSSD81BV9KRCR63X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C24J3ASSSD81BV9KQ0NXGX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C24J3ASSSD81BV9KQ0NXGX",
+        "id": "01M7C24J6PSGFBKT9WWWZZS897",
+        "link": "01M7C24J6PSGFBKT9WWTTNP982",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AKMZ9QVN9EJJDVT64WXM13",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C24JCSF5SBZTE7PS3K9ZSQ",
+  "type": "ops",
+  "v": 1
+}
