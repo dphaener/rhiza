@@ -1,6 +1,8 @@
 package api
 
 import (
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 	"time"
@@ -204,8 +206,11 @@ func TestDaemonCandidatesBacklog(t *testing.T) {
 
 // A leafless, milestone-serving change set is a candidate when its dispatched
 // workflow is a conductor default (an agent step first, declaring checks);
-// under a classic workflow it keeps the no-leaves skip, a leafless backlog
-// change set is still skipped, and an umbrella change set is still not ready.
+// the same change set dispatched to a leaves-first workflow keeps the
+// no-leaves skip, a leafless backlog change set is still skipped, and an
+// umbrella change set is still not ready. The dispatch goes through the real
+// resolution: the repo's [ready] rule names the workflow, changeConducts
+// resolves and reads it.
 func TestPickNoLeaves(t *testing.T) {
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
@@ -216,28 +221,68 @@ func TestPickNoLeaves(t *testing.T) {
 		f.serve(cs, serves)
 		return cs
 	}
-	conducted, classic, backlog := mk("conducted", m), mk("classic", m), mk("backlog", plain)
+	leafless, backlog := mk("leafless", m), mk("backlog", plain)
 	first := mk("first", m)
-	notReady := mk("not-ready", m)
-	f.dep(notReady, first)
+	u := f.intent("umb", id.ID{}, "c")
+	f.in.umbrellas[u] = true
+	umbrella := mk("umbrella", u)
 
+	root := t.TempDir()
+	writeWorkflow(t, root, "conductor", "name = \"conductor\"\n\n[step.conduct]\nkind = \"agent\"\nprompt = \"Conduct {change}\"\non.pass = \"done\"\n\n[[step.conduct.check]]\nname = \"plan\"\n")
+	writeWorkflow(t, root, "classic", "name = \"classic\"\n\n[step.build]\nkind = \"leaves\"\non.pass = \"done\"\n\n[step.build.builder]\nprompt = \"b\"\n\n[step.build.verifier]\nprompt = \"v\"\n")
+	for _, name := range []string{"conductor", "classic"} {
+		if _, _, _, err := resolveWorkflow(root, name); err != nil {
+			t.Fatalf("workflow %s: %v", name, err)
+		}
+	}
+	dispatchTo := func(name string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(root, ".rhiza", "dispatch.toml"), []byte("[ready]\nfeature = \""+name+"\"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	hasLeaves := func(cs id.ID) bool { return cs == first }
-	sched := daemonSchedule{Backlog: policy.BacklogAfter, Conducts: func(cs id.ID) bool { return cs == conducted || cs == backlog || cs == notReady }}
-	cands, skips := daemonCandidates(f.core(), hasLeaves, sched)
-	reasons := map[string]string{}
-	for _, sk := range skips {
-		reasons[sk.Change] = sk.Reason
-	}
-	if !slices.Contains(cands, conducted.String()) {
-		t.Errorf("candidates = %v, want the conducted change set", cands)
-	}
-	for cs, want := range map[id.ID]string{classic: daemon.SkipNoLeaves, backlog: daemon.SkipNoLeaves, notReady: daemon.SkipNotReady} {
-		if reasons[cs.String()] != want {
-			t.Errorf("skip of %s = %q, want %q (skips %v)", cs, reasons[cs.String()], want, skips)
+	open := changeset.Open{Kind: changeset.KindIntention}
+	sched := daemonSchedule{Backlog: policy.BacklogAfter, Conducts: func(id.ID) bool { return changeConducts(root, open) }}
+	pick := func() ([]string, map[string]string) {
+		t.Helper()
+		cands, skips := daemonCandidates(f.core(), hasLeaves, sched)
+		reasons := map[string]string{}
+		for _, sk := range skips {
+			reasons[sk.Change] = sk.Reason
 		}
-		if slices.Contains(cands, cs.String()) {
-			t.Errorf("%s is a candidate: %v", cs, cands)
+		return cands, reasons
+	}
+	still := func(cands []string, reasons map[string]string, wants map[id.ID]string) {
+		t.Helper()
+		for cs, want := range wants {
+			if reasons[cs.String()] != want {
+				t.Errorf("skip of %s = %q, want %q (skips %v)", cs, reasons[cs.String()], want, reasons)
+			}
+			if slices.Contains(cands, cs.String()) {
+				t.Errorf("%s is a candidate: %v", cs, cands)
+			}
 		}
+	}
+
+	dispatchTo("conductor")
+	if name, err := readyWorkflow(root, open); err != nil || name != "conductor" {
+		t.Fatalf("ready workflow = %q, %v; want conductor", name, err)
+	}
+	cands, reasons := pick()
+	if !slices.Contains(cands, leafless.String()) {
+		t.Errorf("dispatched to conductor: candidates = %v, want the leafless change set (skips %v)", cands, reasons)
+	}
+	still(cands, reasons, map[id.ID]string{backlog: daemon.SkipNoLeaves, umbrella: daemon.SkipNotReady})
+
+	dispatchTo("classic")
+	if name, err := readyWorkflow(root, open); err != nil || name != "classic" {
+		t.Fatalf("ready workflow = %q, %v; want classic", name, err)
+	}
+	cands, reasons = pick()
+	still(cands, reasons, map[id.ID]string{leafless: daemon.SkipNoLeaves, backlog: daemon.SkipNoLeaves, umbrella: daemon.SkipNotReady})
+	if !slices.Contains(cands, first.String()) {
+		t.Errorf("dispatched to classic: candidates = %v, want the change set with a leaf", cands)
 	}
 }
 

@@ -2,7 +2,8 @@
 # writing anything, naming `rhiza run start --workflow plan` as next: no run is
 # journaled and no worktree is made. The same command on a change set
 # with a leaf starts the run. The repo overrides ship-change with one
-# command step, so nothing reaches Claude Code, GitHub or Rex.
+# command step, then with a conductor default whose agent is the fake
+# bin/claude, so nothing reaches Claude Code, GitHub or Rex.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -40,22 +41,45 @@ exists .git/rhiza/runs
 
 # A ship-change that starts with an agent step declaring checks is the
 # conductor default: it plans a leafless change set itself, so the run
-# starts (a dry run, so the fake agent never runs).
+# starts on the same leafless change set, and the fake agent (bin/claude,
+# run through the fake bin/rex) is the conductor.
 exec rhiza change new 'Conduct me' --title 'Conduct'
-! exec rhiza run start --foreground --workflow ship-change --dry-run
+! exec rhiza run start --foreground --workflow ship-change
 stderr 'has no leaves'
+! exists $WORK/claude.args
 cp ../ship-change-conductor.toml .rhiza/workflows/ship-change.toml
 exec git add -A
 exec git commit -qm conductor
-exec rhiza run start --foreground --workflow ship-change --permission-mode manual --dry-run
-stdout 'would start'
+exec rhiza run start --foreground --workflow ship-change --permission-mode manual --json
 ! stderr 'has no leaves'
+stdout '"state": "succeeded"'
+exists .git/rhiza/runs
+exec cat $WORK/claude.args
+stdout 'Conduct change set [0-9A-Z]{26}'
+exec rhiza run status --json
+stdout '"title": "Conduct"'
+stdout '"state": "succeeded"'
+stdout '"step": "conduct"'
+stdout '"outcome": "pass"'
 
 -- bin/rex --
 #!/bin/sh
-exit 0
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
 -- bin/claude --
 #!/bin/sh
+echo "$@" > "$WORK/claude.args"
 exit 0
 -- ship-change-conductor.toml --
 name = "ship-change"
