@@ -25979,7 +25979,12 @@ cmp stdout describe.golden.json
       "name": "ship.rebase",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "no_push": {
+            "description": "Merge origin's main into the branch, settling rendered-only conflicts, and stop: run no local gate and no pre-push check, push nothing and record no pushed head; a conflict in code is left in progress as usual (for a conductor bringing main in before the gate and push steps)",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },

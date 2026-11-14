@@ -2867,3 +2867,85 @@ func TestBuiltinClassicUnchanged(t *testing.T) {
 		t.Errorf("ship-change-classic does not parse: %v", err)
 	}
 }
+
+// The builtin ship-change is the conductor default: ten steps, the conduct
+// step declaring plan, code and qa, a gate step, every red up to the merge
+// handing back to conduct, and nothing after the merge able to.
+func TestBuiltinShipChange(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"conduct", "gate", "signoff", "push", "wait-ci", "merge", "main-ci", "close-out", "ship", "deploy-check"}
+	if got := def.Order; strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("steps = %v; want %v", got, want)
+	}
+	for _, s := range def.Steps {
+		if s.Kind == KindLeaves || s.Kind == KindChecks {
+			t.Errorf("step %s is a %s step", s.Name, s.Kind)
+		}
+	}
+	conduct := def.Steps["conduct"]
+	var checks []string
+	for _, c := range conduct.Checks {
+		checks = append(checks, c.Name)
+	}
+	if strings.Join(checks, ",") != "plan,code,qa" {
+		t.Errorf("conduct checks = %v", checks)
+	}
+	if !strings.Contains(conduct.Prompt, "rhiza ship rebase --no-push") {
+		t.Errorf("conduct prompt does not tell the conductor to run rhiza ship rebase --no-push: %q", conduct.Prompt)
+	}
+	gate := def.Steps["gate"]
+	if gate.Kind != KindGate {
+		t.Errorf("gate kind = %s", gate.Kind)
+	}
+	wantCmds := []string{"rhiza run build-check", "rhiza run review-check", "rhiza check", "rhiza ship gate"}
+	if strings.Join(gate.Commands, "|") != strings.Join(wantCmds, "|") {
+		t.Errorf("gate commands = %v", gate.Commands)
+	}
+	back := HandbackPrefix + "conduct"
+	for _, name := range want[:6] {
+		s := def.Steps[name]
+		for o, target := range s.On {
+			if o == OutcomePass {
+				continue
+			}
+			if target != back {
+				t.Errorf("step %s on.%s = %q; want %q", name, o, target, back)
+			}
+		}
+		if len(s.On) < 2 && name != "conduct" {
+			t.Errorf("step %s has no failure route", name)
+		}
+	}
+	if got := def.Steps["merge"].On; len(got) != 2 || got[OutcomePass] != "main-ci" || got[OutcomeFail] != back {
+		t.Errorf("merge routes = %v; want only pass and fail", got)
+	}
+	if def.Steps["push"].On[OutcomePass] != "wait-ci" {
+		t.Errorf("push passes to %q", def.Steps["push"].On[OutcomePass])
+	}
+	if s := def.Steps["main-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --main" {
+		t.Errorf("main-ci = kind %s until %q", s.Kind, s.Until)
+	}
+	for _, name := range want[6:] {
+		s := def.Steps[name]
+		for o, target := range s.On {
+			if o != OutcomePass || strings.HasPrefix(target, HandbackPrefix) {
+				t.Errorf("step %s has route on.%s = %q after the merge", name, o, target)
+			}
+		}
+	}
+	for name, cmd := range map[string]string{"close-out": "rhiza ship close-out", "ship": "rhiza ship command", "deploy-check": "rhiza ship deploy"} {
+		if def.Steps[name].Run != cmd {
+			t.Errorf("step %s runs %q; want %q", name, def.Steps[name].Run, cmd)
+		}
+	}
+	if def.HandbackCap != 3 {
+		t.Errorf("handback_cap = %d; want 3", def.HandbackCap)
+	}
+}

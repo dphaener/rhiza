@@ -2554,10 +2554,14 @@ Exit code: set by the result, besides the shared codes.
 Merge origin's main into a change set's branch when main has moved past it, settling rendered-only conflicts by rendering again, and push it plainly; a conflict in code is left as a merge in progress.
 
 ```
-rhiza ship rebase
+rhiza ship rebase [--no-push]
 ```
 
 Appends to the log.
+
+Arguments and flags:
+
+- `--no-push`: Merge origin's main into the branch, settling rendered-only conflicts, and stop: run no local gate and no pre-push check, push nothing and record no pushed head; a conflict in code is left in progress as usual (for a conductor bringing main in before the gate and push steps)
 
 Output (`--json` fields):
 

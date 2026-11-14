@@ -1316,6 +1316,32 @@ func TestShipRebaseClean(t *testing.T) {
 	}
 }
 
+// --no-push merges main and stops: no push, no pushed head recorded, so
+// origin's branch stays where it was.
+func TestShipRebaseNoPush(t *testing.T) {
+	f, state := shipRebaseFixture(t)
+	f.git.out[rebaseMerge] = ""
+	resp, err := callOp(t, f.ctx, "ship.rebase", `{"no_push":true}`)
+	if err != nil {
+		t.Fatalf("ship.rebase --no-push: %v", err)
+	}
+	r := resp.(ShipRebaseResponse)
+	if !r.Behind || !r.Rebased || r.Pushed != "" || r.Gate != nil || r.ExitCode() != 0 {
+		t.Fatalf("rebase = %+v", r)
+	}
+	for _, c := range f.git.calls {
+		if strings.HasPrefix(c, "push") {
+			t.Errorf("git call %q with --no-push", c)
+		}
+	}
+	if st, _ := readShipState(state); st.Pushed != "" {
+		t.Errorf("state records a pushed head: %+v", st)
+	}
+	if got := human(t, r); !strings.Contains(got, "Pushed nothing") {
+		t.Errorf("human = %q", got)
+	}
+}
+
 func TestShipRebaseRenderedConflict(t *testing.T) {
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
