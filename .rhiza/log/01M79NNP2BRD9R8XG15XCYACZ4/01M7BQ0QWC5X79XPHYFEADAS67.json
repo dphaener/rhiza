@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BNR73N3PZQY211FC29N7Q5",
+  "after": [
+    "01M7BK2AVF5T2RHVS610JC31HW"
+  ],
+  "at": "2026-11-14T00:23:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier, attempt 2 at 6ca6ee68a. These all exited 0: go test -trimpath ./internal/web -run 'TestWebAnswerFormsCarryCSRFAndAreAbsentWithoutToken|TestWebAnswerPostConfirms|TestWebApproveRefusesMissingCSRF|TestWebAnswerMergedInboxFormsPostIntoTheProject' (4 PASS); go test -trimpath ./internal/api -run 'TestWebAnswerAction|TestWebApproveAction|TestWebPauseAction' (project and root subtests PASS); go test -trimpath -timeout 40m ./internal/api/... (ok, 856s); go vet ./internal/api; rhiza ship generate and rhiza render (no tracked change). Diff review: WebActions' answer handler now refuses a question already answered and queues run.resume once every gate question has a Decision. That addresses compliance f1 (the new TestWebAnswerAction/root subtest posts through WebRootHandler at /p/repo/actions/answer) and QA blocker f1 (the continuation is queued, and a repeat answer is refused). No stubs or TODOs; the change stays within internal/api/web_actions*.go and .rhiza records; tests use fakes only."
+        },
+        "handle": "web-action-answer-verified-2",
+        "id": "01M7BQ0QQ1S1X5RXX22HG52VGT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BQ0QQ1S1X5RXX22E8W9EBX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BQ0QQ1S1X5RXX22E8W9EBX",
+        "id": "01M7BQ0QRZ75SSE16Q00C2HRX6",
+        "link": "01M7BQ0QRZ75SSE16PZZR6MFMH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BQ0QWC5X79XPHYFEADAS67",
+  "type": "ops",
+  "v": 1
+}
