@@ -375,11 +375,11 @@ func builtinResolver(name string) ([]byte, error) {
 }
 
 func TestShipChangeBuiltin(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -433,7 +433,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 			t.Errorf("%s = %+v; want a command running ship check --conflicts, pass %q, fail %q", n, st, want.pass, want.fail)
 		}
 	}
-	checkShipChangePrePushFix(t, "ship-change", def)
+	checkShipChangePrePushFix(t, "ship-change-classic", def)
 	// Both fixers' merges reach their push through its local gate.
 	for n, next := range map[string]string{"conflict-fix": "render-pr", "conflict-fix-landed": "gate-rebase-merge"} {
 		fx := def.Steps[n]
@@ -1894,7 +1894,7 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			}
 		}
 	}
-	ship := load("ship-change")
+	ship := load("ship-change-classic")
 	checks := 0
 	for name, s := range ship.Steps {
 		cmd := s.Run + s.Until
@@ -1918,11 +1918,11 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 // land it is gate-fix-merge, whose loop never reaches land or a pre-land
 // step again.
 func TestShipChangeLocalGate(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2144,11 +2144,11 @@ func TestKindDocsCoverKinds(t *testing.T) {
 // passes only for a recorded conflict, to a fixer that returns through
 // gate-land.
 func TestShipChangeModelConflictFix(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2176,11 +2176,11 @@ func TestShipChangeModelConflictFix(t *testing.T) {
 }
 
 func TestShipChangeLandedInfraWaitScript(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	builtin, err := ParseWith("ship-change", data, builtinResolver)
+	builtin, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2368,11 +2368,11 @@ func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
 // topic, with no session-done, Checks: or trailer text left in it, and
 // Rhiza's own ship-change and docs workflows use the same lines.
 func TestShipFixPromptsOneLine(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2434,11 +2434,11 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 // on.fail, taken only for a merge behind main or conflicting, is the one
 // way back to gate-rebase-merge.
 func TestShipChangeMergeRefusedStops(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2472,8 +2472,8 @@ func TestWaitMaxInterval(t *testing.T) {
 }
 
 func TestMaxIntervalShipChangeCIWaits(t *testing.T) {
-	data, _ := Builtin("ship-change")
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	data, _ := Builtin("ship-change-classic")
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}

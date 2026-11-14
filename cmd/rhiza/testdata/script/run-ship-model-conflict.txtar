@@ -25,7 +25,7 @@ env PATH=$WORK/bin:$PATH
 cd $WORK
 exec sh $WORK/setup.sh conflict
 cd repo
-exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
@@ -54,7 +54,7 @@ stdout '^- State: landed'
 cd $WORK
 exec sh $WORK/setup.sh plain
 cd repo
-exec sh -c 'rhiza run start --foreground $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic $(cat $WORK/cs) --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec touch $WORK/refuse
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'

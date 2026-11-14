@@ -101,7 +101,7 @@ fold-ok
 -- changes.json --
 {"findings":[{"check":"alpha","severity":"major","leaf":"other","place":"other.txt:1","reason":"say more"}]}
 -- question.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSQUESTION"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"CSQUESTION"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}
 -- review.toml --

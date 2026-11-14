@@ -47,7 +47,7 @@ exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; printf "%s\n" - - > $WORK/fix
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec rhiza run status
@@ -101,7 +101,7 @@ exec sh -c 'printf "%s\n" "Land the change set and record its CI=m1" > $WORK/tri
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
@@ -126,7 +126,7 @@ exec sh -c 'rm -f $WORK/triggers; : > $WORK/fixer-pushes'
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec git -C $WORK/other push -q origin n1:main
 exec touch $WORK/refuse
@@ -145,7 +145,7 @@ exec sh -c 'rm -f $WORK/refuse; printf "%s\n" "*=m1" "Land the change set and re
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec git -C $WORK/other push -q origin m2:main
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground --json; echo exit=$?'
@@ -170,7 +170,7 @@ exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo 
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
 stdout '^Run \S+ succeeded$'
 stderr 'step conflict-fix: blocked on question'
 stderr 'step conflict-fix: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
@@ -199,7 +199,7 @@ exec sh $WORK/setup.sh
 cd repo
 env REX_BLOCK=block:root
 env REX_SESSION=session:s1
-exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual &
+exec rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual &
 exec sh -c 'i=0; while [ $i -lt 800 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
 exec rhiza run status --json
 stdout '"state": "blocked"'
@@ -225,7 +225,7 @@ exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo 
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
 stdout '^Run \S+ failed$'
 exec rhiza run status
 stdout '^- conflict-fix \(visit 1\): fail'

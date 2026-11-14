@@ -688,7 +688,7 @@ func TestPrePushJournal(t *testing.T) {
 	rs := run.NewStore(run.Dir(filepath.Join(r.root, ".git")))
 	const id = "01M77PREPUSH0000000000000A"
 	first := run.Entry{Type: run.TypeStarted, At: time.Now(), Step: "ship",
-		Started: &run.Started{Workflow: "ship-change", Change: "01M5PWGEF85Y185JZ2ZGCNH40N", Worktree: r.root}}
+		Started: &run.Started{Workflow: "ship-change-classic", Change: "01M5PWGEF85Y185JZ2ZGCNH40N", Worktree: r.root}}
 	if err := rs.Create(id, first); err != nil {
 		t.Fatal(err)
 	}

@@ -89,7 +89,7 @@ stdout 'feature queued: Add exports'
 # One interrupted run (the change set's, on this host, its process gone) and
 # one free slot of two: the milestone request takes it, the run is not
 # resumed and the feature stays queued.
-exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
+exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change-classic\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
 exec rhiza daemon --permission-mode manual --once --max-runs 2
 stdout -count=1 '^Started the plan run of request '
 ! stdout '^Resumed run'
@@ -147,7 +147,7 @@ on.pass = "done"
 -- claude/projects/p/s.jsonl --
 {"type":"assistant","isSidechain":false,"timestamp":"2026-10-24T11:30:00Z","message":{"id":"m1","usage":{"input_tokens":2000,"output_tokens":0,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}
 -- live.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":""}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":""}}
 {"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
 -- bin/rex --
 #!/bin/sh

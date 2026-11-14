@@ -35,7 +35,7 @@ exec git push -q -u origin main
 exec rhiza daemon set rhiza.ship.deployUrl $HEALTH_URL
 exec rhiza daemon set rhiza.ship.deployTimeout 300ms
 
-! exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous
+! exec rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous
 stdout '^Run \S+ failed$'
 stdout '^- Detail: step "deploy-check" ended with outcome "fail"$'
 stderr '^Deploy not healthy: http://127\.0\.0\.1:[0-9]+/health still answered HTTP 503 after [0-9]+ polls over 300ms\.$'

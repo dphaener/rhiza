@@ -73,7 +73,7 @@ grep '^rex block inspect -s rhiza-other --json block:b9$' $WORK/rex.log
 grep '^rex focus -s rhiza-other block:b9$' $WORK/rex.log
 ! grep 'rhiza-folder' $WORK/rex.log
 -- run.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":""}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":""}}
 {"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999,"rex_block":"block:b9"}}
 -- present.json --
 {"sessions":[{"session_id":"session:1","label":"rhiza-alpha"},{"session_id":"session:2","label":"rhiza-other"}]}

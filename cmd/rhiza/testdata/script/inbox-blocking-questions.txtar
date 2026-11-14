@@ -74,6 +74,6 @@ stdout 'question: Which store\?'
 exec rhiza inbox --json
 ! stdout '"kind": "blocker"'
 -- question.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSID"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"CSID"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}

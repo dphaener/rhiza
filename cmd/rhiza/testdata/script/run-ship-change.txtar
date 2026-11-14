@@ -53,7 +53,7 @@ exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
 
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"state": "stopped"'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
@@ -84,7 +84,7 @@ exec sh -c 'grep -c "^pr create" $WORK/gh.log'
 stdout '^1$'
 grep '^pr create .*--title Ship it' $WORK/gh.log
 grep '^# Review of run ' $WORK/pr-body.md
-grep '^Change set 01M5PWGEF85Y185JZ2ZGCNH40N: Ship it\. Workflow ship-change' $WORK/pr-body.md
+grep '^Change set 01M5PWGEF85Y185JZ2ZGCNH40N: Ship it\. Workflow ship-change-classic' $WORK/pr-body.md
 grep '^## Checks of step review/review$' $WORK/pr-body.md
 grep '^### alpha' $WORK/pr-body.md
 grep '^### beta' $WORK/pr-body.md
@@ -115,7 +115,7 @@ stderr '^No deploy health URL set \(rhiza\.ship\.deployUrl\): skipping the deplo
 
 # The run was the built-in ship-change, every step passing in order.
 exec rhiza run status --json
-stdout '"workflow": "ship-change"'
+stdout '"workflow": "ship-change-classic"'
 stdout '"state": "succeeded"'
 exec rhiza run status
 stdout '^- signoff \(visit 1\): pass, then gate-rebase'

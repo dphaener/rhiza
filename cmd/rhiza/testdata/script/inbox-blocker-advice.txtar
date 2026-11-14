@@ -41,7 +41,7 @@ stdout '^  in plain words: Should leaf-a keep the old export path\?$'
 stdout '^  recommendation: Keep the old path$'
 stdout '^  reasons: Callers still use it$'
 -- failed.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"01M5SWR000000000000000000A"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"01M5SWR000000000000000000A"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"advisor","at":"2026-01-01T01:00:00Z","step":"build","session":"A1","asker":"QID"}
 {"type":"recommended","at":"2026-01-01T01:05:00Z","step":"build","session":"A1","asker":"QID","text":"Keep the old path","detail":"Callers still use it","restated":"Should leaf-a keep the old export path?"}

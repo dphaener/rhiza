@@ -84,7 +84,7 @@ exec sh -c 'echo > $WORK/go'
 wait
 
 -- autoquestion.jsonl --
-{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSAUTO","autonomous":true}}
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"CSAUTO","autonomous":true}}
 {"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"blocked","at":"2030-01-01T00:01:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?"}}
 -- work.toml --

@@ -26,7 +26,7 @@ env PATH=$WORK/bin:$PATH
 exec sh -c 'echo 1 > $WORK/need'
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 stdout '^exit=0$'
 exec rhiza run status
@@ -82,7 +82,7 @@ exec sh -c 'echo 99 > $WORK/need'
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 ! stdout '"signoff_waiting": true'
 exec rhiza run status
 stdout '^- ci-fix \(visit 2\): pass, then render-pr'
@@ -101,7 +101,7 @@ cd $WORK
 exec sh $WORK/setup.sh
 exec sh -c 'touch $WORK/infra'
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait --json; echo exit=$?'
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec sh -c 'rhiza run resume --foreground $(cat $WORK/runid) --no-wait'
 exec rhiza run status

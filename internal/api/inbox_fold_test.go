@@ -32,7 +32,7 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 	}
 	for i, cs := range sets {
 		id := fmt.Sprintf("run-%02d", i)
-		if err := f.rs.Create(id, run.Entry{Type: run.TypeStarted, At: at.Add(time.Duration(i) * time.Minute), Started: &run.Started{Workflow: "ship-change", Change: cs}}); err != nil {
+		if err := f.rs.Create(id, run.Entry{Type: run.TypeStarted, At: at.Add(time.Duration(i) * time.Minute), Started: &run.Started{Workflow: "ship-change-classic", Change: cs}}); err != nil {
 			t.Fatal(err)
 		}
 		if err := f.rs.Append(id, run.Entry{Type: run.TypeFinished, At: at.Add(time.Duration(i)*time.Minute + time.Second), End: run.Failed, Detail: "boom"}); err != nil {
