@@ -760,8 +760,8 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
-	if def.Name == shipChangeWorkflow && !conductorWorkflow(def) {
-		if err := checkShipLeaves(t); err != nil {
+	if workflowHasLeavesStep(def) {
+		if err := checkShipLeaves(t, def.Name); err != nil {
 			return nil, err
 		}
 	}
@@ -1091,18 +1091,31 @@ func refuseLiveRun(rs *run.Store, change, except string) error {
 		WithNext("rhiza run resume " + j.ID)
 }
 
-// shipChangeWorkflow is the workflow that ships a change set through
-// build and review, both of which work on its leaves.
+// shipChangeWorkflow is the name of the default ship workflow.
 const shipChangeWorkflow = "ship-change"
 
-// checkShipLeaves refuses a change set with no leaves: ship-change would
-// build nothing, so it is planned first.
-func checkShipLeaves(t changeWorktree) error {
+// workflowHasLeavesStep reports whether the workflow's expanded steps
+// include a leaves step, which builds and reviews the change set's leaves.
+func workflowHasLeavesStep(def *workflow.Definition) bool {
+	if def == nil {
+		return false
+	}
+	for _, s := range def.Steps {
+		if s.Kind == workflow.KindLeaves {
+			return true
+		}
+	}
+	return false
+}
+
+// checkShipLeaves refuses a change set with no leaves for a workflow with a
+// leaves step: it would build nothing, so the change set is planned first.
+func checkShipLeaves(t changeWorktree, name string) error {
 	c, ok := t.w.changeSet(t.cs)
 	if ok && len(changeLeaves(t.w.model(t.cs), c.Ops)) > 0 {
 		return nil
 	}
-	return Conflictf("change set %s has no leaves: ship-change builds and reviews its leaves, so plan it first", t.cs).
+	return Conflictf("change set %s has no leaves: %s builds and reviews its leaves, so plan it first", t.cs, name).
 		WithNext("rhiza run start --workflow plan")
 }
 

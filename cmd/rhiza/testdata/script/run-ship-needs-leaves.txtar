@@ -1,4 +1,4 @@
-# run start ship-change refuses a change set with no leaves before
+# run start ship-change-classic (any workflow with a leaves step) refuses a change set with no leaves before
 # writing anything, naming `rhiza run start --workflow plan` as next: no run is
 # journaled and no worktree is made. The same command on a change set
 # with a leaf starts the run. The repo overrides ship-change with one
@@ -20,19 +20,21 @@ exec git commit -qm init
 # A change set that adds no capability has no leaves.
 exec rhiza change new 'Nothing to build' --title 'Nothing' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
-! exec rhiza run start --foreground --workflow ship-change
+! exec rhiza run start --foreground --workflow ship-change-classic --permission-mode manual
 stderr 'has no leaves'
+stderr 'ship-change-classic builds and reviews its leaves'
 stderr 'rhiza run start --workflow plan'
 ! exists .git/rhiza/runs
 exec git worktree list
 ! stdout 'nothing'
 
 # The same refusal over the API carries the next command.
-! exec rhiza run start --foreground --workflow ship-change --json
+! exec rhiza run start --foreground --workflow ship-change-classic --permission-mode manual --json
 stdout '"next": "rhiza run start --workflow plan"'
 ! exists .git/rhiza/runs
 
-# A change set with a leaf starts the run.
+# A workflow with no leaves step (the repo's ship-change here) starts on a
+# leafless change set; a change set with a leaf starts the run too.
 exec rhiza change new 'Something to build' --title 'Something' --json
 exec rhiza add capability thing --field 'statement=A thing'
 exec rhiza run start --foreground --workflow ship-change
@@ -44,9 +46,6 @@ exists .git/rhiza/runs
 # starts on the same leafless change set, and the fake agent (bin/claude,
 # run through the fake bin/rex) is the conductor.
 exec rhiza change new 'Conduct me' --title 'Conduct'
-! exec rhiza run start --foreground --workflow ship-change
-stderr 'has no leaves'
-! exists $WORK/claude.args
 cp ../ship-change-conductor.toml .rhiza/workflows/ship-change.toml
 exec git add -A
 exec git commit -qm conductor
