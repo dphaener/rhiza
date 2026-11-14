@@ -86,12 +86,13 @@ exec rm $WORK/claude.log
 stdout 'as check fails: 1 of 3 gates pass$'
 stdout '^  fail findings +the check recorded no round with rhiza run findings --check fixture in cycle 1$'
 stdout '^  fail session-done +the check never ran rhiza session done before it exited$'
-# Only the check runs, in the further cycles a review gives a failing
-# check: no critic, fixer, builder or advisor session starts.
+stdout '^  run: failed: .*skill check runs its check once: cycle 2 is not started$'
+# Only the check runs, once: its review's further cycles are not
+# started, and no critic, fixer, builder or advisor session starts.
 exec cat $WORK/claude.log
-stdout -count=3 '^check fixture bare [123] greeting=hello$'
+stdout -count=1 '^check fixture bare 1 greeting=hello$'
 exec sh -c 'wc -l < $WORK/claude.log'
-stdout '^3$'
+stdout '^1$'
 ! exec rhiza skill check '/rhiza-check-plan bare {check}' --role check --permission-mode manual --json
 stdout '"name": "findings",\s+"result": "fail"'
 exec sh -c 'git status --porcelain; ls -R .rhiza/log'

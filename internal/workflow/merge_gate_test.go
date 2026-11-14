@@ -84,6 +84,38 @@ kind = "command"
 run = "rhiza ship merge"
 on.pass = "done"
 `, []UngatedMerge{{Step: "merge", Path: []string{"build", "gate", "merge"}}}},
+		{"an echoed gate is no gate", `name = "w"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "echo rhiza ship gate"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "done"
+`, []UngatedMerge{{Step: "merge", Path: []string{"build", "gate", "merge"}}}},
+		{"a gate after another command is a gate", `name = "w"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "go vet ./... && rhiza run gate"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "done"
+`, nil},
 		{"no merge", `name = "w"
 [step.build]
 kind = "agent"

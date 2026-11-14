@@ -136,10 +136,11 @@ const (
 	skillCheckNoMode  = "skill-check-none"
 )
 
-// envSkillCheckOnce, set in the builder fixture's scratch rhiza, refuses
-// a leaf builder's start past its round's first attempt: a failed builder
-// ends the scratch run instead of launching the agent again, as only the
-// first attempt is graded.
+// envSkillCheckOnce, set in the builder and check fixtures' scratch rhiza,
+// refuses a leaf builder's start past its round's first attempt and a
+// check's past its first cycle: a failed builder or check ends the
+// scratch run instead of launching the agent again, as only the first
+// attempt or cycle is graded.
 const envSkillCheckOnce = "RHIZA_SKILL_CHECK_ONCE"
 
 // skillCheckRoot is the scratch folder's root config: the scratch repo
@@ -264,7 +265,7 @@ func (s *scratch) exec(dir, name string, args ...string) (string, error) {
 	for _, v := range skillCheckUnset {
 		full = append(full, "-u", v)
 	}
-	if s.role == workflow.RoleBuilder {
+	if s.role == workflow.RoleBuilder || s.role == workflow.RoleCheck {
 		full = append(full, envSkillCheckOnce+"=1")
 	}
 	full = append(append(full, name), args...)
@@ -430,9 +431,9 @@ func (s *scratch) commit(msg string) error {
 // leaves step whose builder runs invoke, its verifier never started (the
 // scratch rhiza runs the builder once, envSkillCheckOnce); a leaves step whose verifier
 // runs invoke, its builder never started; or a checks step with one
-// check that runs invoke, its critic, fixer and verifier never started.
-// A check that fails re-runs in the further cycles a review gives it; the
-// gates read its first. Its arbiter step launches no advisor.
+// check that runs invoke, its critic, fixer and verifier never started
+// (the scratch rhiza runs the check in its first cycle only,
+// envSkillCheckOnce). Its arbiter step launches no advisor.
 func skillCheckDefinition(role, invoke string) ([]byte, error) {
 	unused := func(r string) map[string]string {
 		return map[string]string{"invoke": skillCheckUnused + r + " never runs."}
@@ -489,13 +490,7 @@ func (s *scratch) grade(runErr error) ([]SkillGate, string, error) {
 		return nil, "", Errorf("the scratch run did not start: %s", why)
 	}
 	st := js[len(js)-1].State()
-	ran := st.Result
-	if ran == "" {
-		ran = "unfinished"
-	}
-	if st.Detail != "" {
-		ran += ": " + st.Detail
-	}
+	ran := runOutcome(st, s.role)
 	var leaf run.LeafState
 	for _, l := range st.Leaves {
 		if l.Handle == skillCheckLeaf {
@@ -509,6 +504,23 @@ func (s *scratch) grade(runErr error) ([]SkillGate, string, error) {
 		return s.gradeCheck(common, st, ran), ran, nil
 	}
 	return s.gradeBuilder(common, st, leaf, ran), ran, nil
+}
+
+// runOutcome is how the scratch run ended: its result and detail, except
+// that the fixture's own stop at a role it never runs (skillCheckUnused
+// refused at its start) is reported as skill check's stop, not a failure.
+func runOutcome(st run.State, role string) string {
+	if st.Result == run.Failed && strings.Contains(st.Detail, "start command "+strings.Fields(skillCheckUnused)[0]+" ") {
+		return "stopped by skill check after the " + role + ": the fixture starts no other role's session"
+	}
+	ran := st.Result
+	if ran == "" {
+		ran = "unfinished"
+	}
+	if st.Detail != "" {
+		ran += ": " + st.Detail
+	}
+	return ran
 }
 
 // notStarted fails each of gates: the role's session never started.

@@ -31,6 +31,10 @@ stdout '^skill check /rhiza-builder good \{leaf\} as builder passes: 3 of 3 gate
 stdout '^  pass session-done +the builder ran rhiza session done$'
 stdout '^  pass trailers +commit \w+ carries Change:, Actor: and Leaf: trailers$'
 stdout '^  pass check +rhiza check is clean at the builder''s commit \w+$'
+# The fixture's own stop at its verifier, which never runs, is skill
+# check's stop: no failure, no install advice.
+stdout '^  run: stopped by skill check after the builder: the fixture starts no other role''s session$'
+! stdout 'rhiza-skill-check-unused|guide install'
 exec grep -c '^builder greeting-file good' $WORK/claude.log
 stdout '^1$'
 exec sh -c 'git status --porcelain; ls -R .rhiza/log'

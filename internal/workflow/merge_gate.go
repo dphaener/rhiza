@@ -16,15 +16,18 @@ func IsMergeStep(s Step) bool {
 	return s.Kind == KindCommand && mergeCommand.MatchString(s.Run)
 }
 
-// gateCommand matches a run that calls rhiza run gate or rhiza ship gate,
-// as a whole command, and failedFlag its --failed flag.
+// gateCommand matches a run that calls rhiza run gate or rhiza ship gate
+// as a command of its own: at the run's start or after a shell separator
+// (;, &, |, a newline or an opening parenthesis), not as an argument of
+// echo or another command. failedFlag matches its --failed flag.
 var (
-	gateCommand = regexp.MustCompile(`(^|[^\w-])rhiza\s+(run|ship)\s+gate($|[^\w-])`)
+	gateCommand = regexp.MustCompile(`(^|[;&|(\n])\s*rhiza\s+(run|ship)\s+gate($|[^\w-])`)
 	failedFlag  = regexp.MustCompile(`(^|\s)--failed($|[\s=])`)
 )
 
 // isGateStep says the step gates a merge: a gate step, or a command step
-// whose run calls rhiza run gate or rhiza ship gate, not with --failed
+// whose run invokes rhiza run gate or rhiza ship gate as a command
+// (gateCommand), not with --failed
 // (which re-runs only what failed before).
 func isGateStep(s Step) bool {
 	if s.Kind == KindGate {
