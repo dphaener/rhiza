@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AMFJE5Y9G414T0VA2KVPGF",
+  "after": [
+    "01M7AMS95WCP36N4N0NK8TW81R"
+  ],
+  "at": "2026-11-13T14:25:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-start-ready-dispatch|change-workflow-pin|bugfix-workflow-autonomous|daemon-root-ship-workflow)$' passes with ship-change the conductor default, run-start-ready-dispatch and change-workflow-pin showing the default's dry run on a leafless change set succeeding with '- Workflow: ship-change'; go test -trimpath ./internal/daemon -run 'TestResumable|TestPick|TestSkips' passes. Touches cmd/rhiza/testdata/script/run-start-ready-dispatch.txtar, cmd/rhiza/testdata/script/change-workflow-pin.txtar, cmd/rhiza/testdata/script/bugfix-workflow-autonomous.txtar, cmd/rhiza/testdata/script/daemon-root-ship-workflow.txtar and internal/daemon/pick_test.go.",
+          "statement": "The existing tests of the default ship-change itself follow the conductor default: run-start-ready-dispatch.txtar and change-workflow-pin.txtar expect the default's dry run to start a leafless change set (no 'ship-change builds and reviews its leaves' or leaves-step refusal); bugfix-workflow-autonomous.txtar and daemon-root-ship-workflow.txtar assert the new builtin's steps; and the daemon pick tests in internal/daemon/pick_test.go that assert a step of the default name the new builtin's steps. No test is deleted."
+        },
+        "handle": "default-tests-follow-conductor",
+        "id": "01M7AMSA5N0PTMBVTD044P84RB",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7AMSA5N0PTMBVTD00XHHBSG",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMSA837B78FP7X0DZ9FSCG",
+  "type": "ops",
+  "v": 1
+}

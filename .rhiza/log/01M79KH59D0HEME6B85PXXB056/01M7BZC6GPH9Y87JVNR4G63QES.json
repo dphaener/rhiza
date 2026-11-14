@@ -1,0 +1,41 @@
+{
+  "actor": "01M7BZAMG69WWQWVYDBSNA5GTF",
+  "after": [
+    "01M7BZ9F0Q6BN370GRMMXNQC2C"
+  ],
+  "at": "2026-11-14T02:49:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "origin/main internal/api/run_review.go conductorReviewCheck (landed by critic-on-major, change set 01M79KGZ) already reads each declared check's latest round, fails on standing blockers and majors, and deliberately fails a declared check with no round so the conductor cannot skip a check and still pass its gate. That missing-round rule is landed, documented in the code and serves this change set's intent (every red hands back to conduct), so loosening it to 'passes in every other case' would weaken the gate and contradict main. The leaf's own core behaviour duplicates landed work, so the right settlement is to align the leaf with main and keep its build to the test and gaps main lacks (main has TestReviewCheckConductor but no TestReviewCheckDeclaredChecks), not to change the code or drop the leaf, which builtin-conductor-default depends on.",
+          "statement": "review-check-declared-checks restates main's landed conductorReviewCheck rather than re-specifying it: its statement and acceptance must match main, so review-check on a run past a step declaring checks fails (exit 1) when any declared check recorded no round (naming the missing checks) as well as when any latest round has a blocker or major the critic has not downgraded or dropped (naming each); it passes only when every declared check has a round and none has a standing blocker or major. The leaf's build is limited to what main lacks (the acceptance test covering minor-only pass, a named confirmed major failing, a missing round failing, and a downgrade or drop passing, plus any wiring the conductor default needs); it changes no landed behaviour.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "review-check-declared-checks-follows-main",
+        "id": "01M7BZC6DPZ2BH0A3V8KAE1R1M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7BZC6DPZ2BH0A3V8FE1M1EQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZC6DPZ2BH0A3V8FE1M1EQ",
+        "id": "01M7BZC6F4MY2KBTJB8ST0YVXE",
+        "link": "01M7BZC6F4MY2KBTJB8RGRY8AM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BZ7EB4840AK4XWZXBGCP7Y",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BZC6GPH9Y87JVNR4G63QES",
+  "type": "ops",
+  "v": 1
+}

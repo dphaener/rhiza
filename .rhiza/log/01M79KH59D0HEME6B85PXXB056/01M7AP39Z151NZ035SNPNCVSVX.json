@@ -1,0 +1,30 @@
+{
+  "actor": "01M7ANWHX5VVNP4K50PD689T19",
+  "after": [
+    "01M7AP38RMYN2XQDZRZJQF5GD0"
+  ],
+  "at": "2026-11-13T14:48:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestDaemonPicks|TestDaemonCandidatesLeafless' shows a leafless ready change set skipped as no-leaves when its workflow is ship-change-classic or a repo workflow including build, and a candidate when its workflow has no leaves step; go test -trimpath ./cmd/rhiza -run TestScripts/daemon-status passes. Touches internal/api/daemon.go, internal/api/daemon_fold.go, internal/api/daemon_picks_test.go and, only if its no-leaves expectation names the default workflow, cmd/rhiza/testdata/script/daemon-status.txtar.",
+          "statement": "The daemon skips a ready accepted change set with no leaves as no-leaves only when the workflow it would start for it (the change set's pinned workflow, else the dispatch [ready] workflow for its kind, else the builtin ship-change) expands to include a leaves step, the same test rhiza run start uses after leafless-refusal-by-leaves-step; under a workflow with no leaves step, like the conductor default, a leafless change set is a candidate and the daemon starts it, so its conductor plans its leaves."
+        },
+        "handle": "daemon-leafless-by-leaves-step",
+        "id": "01M7AP39WRDG3MCXNRAREPDJTS",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7AP39WRDG3MCXNRAMHGWW54",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AP39Z151NZ035SNPNCVSVX",
+  "type": "ops",
+  "v": 1
+}

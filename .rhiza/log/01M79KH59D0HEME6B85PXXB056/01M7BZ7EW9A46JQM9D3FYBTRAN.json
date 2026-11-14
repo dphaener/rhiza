@@ -1,0 +1,127 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7BYJ0AE3Q5QHZ3HDF078WYJ"
+  ],
+  "at": "2026-11-14T02:47:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f1 (contradiction on agent-step-checks): Already built on main by change set 01M79KGZ (commit c09395b12, #575, leaf review-three-checks): internal/api/run_review.go reviewStep already treats an agent step with Checks as a review step, reviewCheck refuses an undeclared check naming the step's checks, and internal/workflow/workflow_test.go has TestAgentStepChecks. Main also declares them as [[step.conduct.check]] tables with a name key, not the checks = [\"plan\", \"code\", \"qa\"] key this leaf specifies. The plan should drop the leaf or restate it as the gap that is left, in main's syntax. The critic confirmed it: Verified on origin/main: c09395b12 (#575) is on main, internal/workflow/workflow_test.go:2808 has TestAgentStepChecks, and main declares checks as [[step.conduct.check]] tables with name = \"...\" (run_review_test.go:302, daemon_picks_test.go:231), not checks = [\"plan\",\"code\",\"qa\"]. The leaf re-specifies landed behaviour in a syntax main's parser does not use, so a builder would contradict the code. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f1",
+        "id": "01M7BZ7E6SHBJCMR8SH967CHQM",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7E6SHBJCMR8SH6C2MWHX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZ7E6SHBJCMR8SH6C2MWHX",
+        "id": "01M7BZ7E98KDW7V804SJ9TKH2G",
+        "link": "01M7BZ7E98KDW7V804SGTM2NES",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS2SDWJ2NYPKKVW4HXB7G",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f2 (contradiction on review-check-declared-checks): Already on main: conductorReviewCheck in internal/api/run_review.go (01M79KGZ, leaf critic-on-major) runs when a step declares checks. It reads each declared check's latest round and fails on standing blocker or major findings. Main also fails when a declared check recorded no round, but this leaf says review-check passes in every other case. The plan re-specifies landed behaviour and contradicts the code on missing rounds. The critic confirmed it: Verified: origin/main internal/api/run_review.go:1235 conductorReviewCheck runs for a step that declares checks, and at :1267 it fails when a declared check recorded no round. The leaf says review-check passes in every case other than a standing blocker or major, which contradicts main on the missing-round case and re-specifies landed work. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f2",
+        "id": "01M7BZ7EB4840AK4XWZY7B286N",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7EB4840AK4XWZXBGCP7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZ7EB4840AK4XWZXBGCP7Y",
+        "id": "01M7BZ7ECQDN9VQ7BC0BJ2XZHF",
+        "link": "01M7BZ7ECQDN9VQ7BC0BC423N5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS4TR5TGACVFJEDFEFZYE",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f3 (contradiction on handback-target-survives-include): internal/workflow/include.go's inlined.outer on main already maps handback:<step> to handback:<workflow>/<step> (CutPrefix on HandbackPrefix, landed in #572 by change set 01M79KGR, leaf handback-route). An unknown included step is already refused by Validate as not a step of the workflow. The leaf's premise that outer prefixes the whole target into <workflow>/handback:<step> does not hold. The critic confirmed it: Verified: origin/main internal/workflow/include.go:226-227 already does strings.CutPrefix(t, HandbackPrefix) and returns HandbackPrefix + workflow + \"/\" + step, so the leaf's premise (outer prefixes the whole target into <workflow>/handback:<step>) is false on main. The leaf contradicts the code it would change. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f3",
+        "id": "01M7BZ7EERY8PQN0AAF86SBKZX",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7EERY8PQN0AAF643PNEB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZ7EERY8PQN0AAF643PNEB",
+        "id": "01M7BZ7EGF7EFHPRW0X3Z48AVK",
+        "link": "01M7BZ7EGF7EFHPRW0X3V4FD0E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BYHZXGY011H2GCS1CZXX49",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f4 (contradiction on builtin-conductor-default): The conduct step's prompt has the conductor run rhiza ship rebase on a main-moved hand-back. But ship rebase (internal/api/ship_rebase.go) merges origin/main, runs the local gate and the pre-push check, and pushes the branch, recording the pushed head. The conduct topic (internal/guide/text/conduct.md: 'Merge or push: the ship run does both') forbids the conductor to push. The leaf also says the push step pushes the new head and never re-pushes an unchanged one, but after ship rebase the head is already pushed. The critic confirmed it: Verified: origin/main internal/api/ship_rebase.go (header :6-16, Pushed field :61) merges origin/main, runs the local gate and pushes the merged head. internal/guide/text/conduct.md:50 lists 'Merge or push: the ship run does both' among what the conductor must not do. The leaf has the conductor run ship rebase on a main-moved hand-back and also says the push step pushes the new head, but ship rebase has already pushed it. Contradiction, major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f4",
+        "id": "01M7BZ7EJEATB4NEHKF1SH4T85",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7EJEATB4NEHKEY1S89NV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZ7EJEATB4NEHKEY1S89NV",
+        "id": "01M7BZ7EM3D21P94RV5SM3G696",
+        "link": "01M7BZ7EM3D21P94RV5SD80KMJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f5 (contradiction on builtin-conductor-default): Main's CI is one step running rhiza ship check --main. If the merge commit's tree differs from the tested head (main moved between ship merge's check and GitHub's merge), ship check --main dispatches CI on the merge commit and has to wait for it to settle (internal/api/ship_main.go shipCheckMainDispatch). Classic does this with a wait step, wait-main (until = rhiza ship check --main --settled), before main-green. A single command step checks once and goes red while the dispatched CI is still pending, which the plan treats as main being red. The critic confirmed it: Verified: origin/main shipCheckMainDispatch (internal/api/ship_main.go:101-106) returns Passed=false while CI is not settled, and ShipCheckResponse.ExitCode (ship.go:320-328) maps that to exit 1. Classic waits with step wait-main (kind wait, until = rhiza ship check --main --settled, builtin/ship-change.toml:468-471) before main-green. The leaf's single main-CI step with no on.fail route would stop the run as 'main is red' while dispatched CI is still pending. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f5",
+        "id": "01M7BZ7ENTZ4H1WGF0YYDWBYXC",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7ENTZ4H1WGF0YX6DE5P1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZ7ENTZ4H1WGF0YX6DE5P1",
+        "id": "01M7BZ7ER1WFD62MSMAD7XNNKX",
+        "link": "01M7BZ7ER1WFD62MSMAC2R921F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BZ7EW9A46JQM9D3FYBTRAN",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,99 @@
+{
+  "actor": "01M7BYF1TS0G1RZAJEWXHMPS4T",
+  "after": [
+    "01M7APRZPKYBZ86F2GY99M4P8B"
+  ],
+  "at": "2026-11-14T02:35:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "In this repo, rhiza workflow describe ship-change resolves to the builtin; rhiza workflow describe ship-rhiza shows the [env], the go-cleanup cleanup running sh .rhiza/workflows/go-cleanup.sh, the builtin's 10 steps and every hand-back route as handback:ship-change/conduct; rhiza workflow describe bugfix still shows the go-cleanup cleanup and its hand-back routes as handback:ship-change/conduct; rhiza workflow check passes with no new warning beyond the autonomous ones AGENTS.md expects; rhiza check accepts .rhiza/dispatch.toml naming ship-rhiza for [ready] feature and bugfix for bug; go test -trimpath ./internal/workflow -run TestShipFixPromptsOneLine passes with .rhiza/workflows/ship-change.toml gone, its repo-file loop reading ship-rhiza and docs; make self-check passes. Touches .rhiza/workflows/ship-change.toml (removed), .rhiza/workflows/ship-rhiza.toml, .rhiza/dispatch.toml, .rhiza/workflows/bugfix.toml and internal/workflow/workflow_test.go (only TestShipFixPromptsOneLine's repo-file loop).",
+          "statement": "Rhiza's own repo runs the builtin conductor default: its .rhiza/workflows/ship-change.toml shadow is removed, its [env] (GOTMPDIR, SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) and its [[cleanup]] go-cleanup (sh .rhiza/workflows/go-cleanup.sh) move to a thin .rhiza/workflows/ship-rhiza.toml that includes the builtin ship-change, .rhiza/dispatch.toml sets [ready] feature = \"ship-rhiza\", and bugfix.toml keeps its own [env] and [[cleanup]] go-cleanup and includes the new builtin. Through the include, every hand-back route of the builtin names the included conduct step (handback:ship-change/conduct). TestShipFixPromptsOneLine's loop over this repo's workflow files reads ship-rhiza instead of the removed ship-change shadow."
+        },
+        "handle": "rhiza-repo-conductor-default",
+        "id": "01M79KPE3XB2JBTEB9ZZYPMBM4",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "op": "node.create",
+        "parent": "01M5SWT9GPK3F87HZRV8V9XY8D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-headless-runs|run-log|run-ship-change|run-ship-change-rebase|run-ship-ci-fix|run-ship-ci-lint-fix|run-ship-conflict-fix|run-ship-deploy-check|run-ship-deploy-timeout|run-ship-land-conflict|run-ship-main-dispatch|run-ship-main-dispatch-fail|run-ship-main-dispatch-resume|run-ship-model-conflict|run-ship-rerun-fail|run-ship-rerun-pass|daemon-max-runs-pending|daemon-milestone-request|daemon-notify|daemon-notify-hook|daemon-rex-session|inbox-blocker-advice|inbox-blocking-questions|inbox-landed-resumable|inbox-list|inbox-open|inbox-permission|inbox-projects|inbox-signoff|inbox-stale)$' go test -trimpath ./internal/api -run 'TestPrePushJournal|TestInboxReadsChangeSetsOnce' and go test -trimpath ./internal/workflow -run 'TestShipChangeBuiltin|TestPlanRerunsCIFlakes|TestShipChangeLocalGate|TestShipChangeModelConflictFix|TestShipChangeLandedInfraWaitScript|TestShipFixPromptsOneLine|TestShipChangeMergeRefusedStops|TestMaxIntervalShipChangeCIWaits' pass with ship-change still the classic flow, and grep -L ship-change-classic run on those 30 scripts and on internal/api/ship_prepush_test.go, internal/api/inbox_fold_test.go and internal/workflow/workflow_test.go prints nothing, and inside the bodies of those eight workflow tests no Builtin(\"ship-change\") or load(\"ship-change\") remains (a grep -n of that pattern on internal/workflow/workflow_test.go prints only lines within TestBuiltinShipChange, which builtin-conductor-default adds and which reads the new builtin). The first 16 scripts start a run on the default ship-change (rhiza run start with no --workflow, or the daemon's ready pick in daemon-headless-runs) and assert its steps; each passes --workflow ship-change-classic, or a .rhiza/dispatch.toml with [ready] feature = \"ship-change-classic\" for the daemon. The other 14 seed a run log whose started entry names workflow ship-change at a classic step; each names ship-change-classic there. TestPrePushJournal and TestInboxReadsChangeSetsOnce seed run.Started{Workflow: \"ship-change\"}; each names ship-change-classic. The eight workflow tests TestShipChangeBuiltin, TestPlanRerunsCIFlakes, TestShipChangeLocalGate, TestShipChangeModelConflictFix, TestShipChangeLandedInfraWaitScript, TestShipFixPromptsOneLine, TestShipChangeMergeRefusedStops and TestMaxIntervalShipChangeCIWaits parse the builtin ship-change and assert classic steps (infra waits, ship check steps, model-conflict fix, merge refused); each loads ship-change-classic (Builtin(\"ship-change-classic\") or load(\"ship-change-classic\")) instead. Scripts that copy their own .rhiza/workflows/ship-change.toml (run-ship-infra-wait, run-ship-landed-infra-wait, run-ship-retry-ci-triage, run-ship-retry-pending, run-ship-merge-draft, run-ship-merge-main-moved, run-ship-change-fail, headless-run-agent-tabs, plan-workflow-ci-infra-timeout, plan-workflow-pr, run-records-dispatch, run-ship-needs-leaves) shadow the builtin and are left as they are; leafless-refusal-by-leaves-step owns run-ship-needs-leaves. Touches exactly those 30 scripts, internal/api/ship_prepush_test.go, internal/api/inbox_fold_test.go and internal/workflow/workflow_test.go (only those eight tests; builtin-conductor-default adds TestBuiltinShipChange to the same file).",
+          "statement": "Every existing test that drives the classic ship-change's own steps (land, rebase, conflict, CI, gate and infra loops, sign-off, merge, deploy) names ship-change-classic, by --workflow or a dispatch.toml in the script, so it keeps covering the ship machinery after the default changes; no such test is deleted."
+        },
+        "handle": "classic-tests-pinned",
+        "id": "01M7AHXFP07DFAG8GEEFXW8V8N",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestPastLanding shows the method true for a run that visited land, merge, ship-change/land or ship-change/merge, and false for one that visited neither (including a step such as ship-change/merge-check or premerge whose last segment is not land or merge); go test -trimpath ./internal/daemon -run TestResumableOnlyAcceptedOrLandedPastLand shows an interrupted run on a landed change set that visited merge but not land picked, one that visited ship-change/merge picked, and one that visited neither skipped; go test -trimpath ./internal/api -run TestRunResumeLandedPastMerge shows rhiza run resume accepting such a run (bare merge and ship-change/merge) and still refusing a landed run that visited neither; go test -trimpath ./cmd/rhiza -run TestScripts/inbox-landed-resumable passes with fixture runs that visited merge, and ship-change/merge, but not land listed and not skipped. Touches internal/run/journal.go, internal/run/journal_test.go, internal/api/run.go, internal/api/run_test.go, internal/daemon/pick.go, internal/daemon/pick_test.go, internal/api/inbox.go and cmd/rhiza/testdata/script/inbox-landed-resumable.txtar.",
+          "statement": "A non-plan run on a landed change set counts as past its landing when it entered a land step or a merge step, not only a land step, so a conductor-default run (which lands on the branch and has no land step) interrupted after its merge (main's CI, close-out, ship, deploy-check) is resumable: rhiza run resume lets it through instead of refusing it as no longer accepted, the daemon's resumable pick takes it, and the inbox lists it instead of leaving it out as gone. A step counts as land or merge when its name is land or merge, or its last segment after the final \"/\" is, so an included step (ship-change/merge in this repo's ship-rhiza and bugfix runs) counts too. One run.State method decides it for all three; a landed run that entered neither stays refused, skipped and gone as today."
+        },
+        "handle": "landed-run-resumable-past-merge",
+        "id": "01M7AP37F8KV6E7D4SWB7YSWG6",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7AP37F8KV6E7D4SWA7XTBW2",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestIncludeHandbackTarget passes: a workflow including one whose step has on.fail = \"handback:conduct\" parses with that included step's on.fail = \"handback:<workflow>/conduct\", and the included conduct step present as <workflow>/conduct; an included handback:nosuch is refused with an error naming nosuch and the included workflow; done and failed targets still map as today. go test -trimpath ./internal/run -run TestHandbackIncluded passes: a run on such an including workflow whose included step fails hands back to <workflow>/conduct and continues from it. Touches internal/workflow/include.go, internal/workflow/include_test.go and internal/run's handback test file.",
+          "statement": "A handback:<step> route inside an included workflow keeps pointing at the included step: when a workflow step includes another, include.go's inlined.outer maps handback:<step> to handback:<workflow>/<step> (as it prefixes a plain step target), instead of prefixing the whole target into <workflow>/handback:<step>; a handback naming a step the included workflow does not have is refused at parse, naming the step and the workflow."
+        },
+        "handle": "handback-target-survives-include",
+        "id": "01M7BYHZXGY011H2GCS1TEZKWW",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7BYHZXGY011H2GCS1CZXX49",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M7BYHZXGY011H2GCS1CZXX49",
+        "id": "01M7BYJ00C7ZDB8PKX6PE0V5V5",
+        "link": "01M7BYJ00C7ZDB8PKX6MQ5H3FY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCETKJR0AX7B576P4C76",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7BYHZXGY011H2GCS1CZXX49",
+        "id": "01M7BYJ025GF4S9FQJ0C0SMM9D",
+        "link": "01M7BYJ025GF4S9FQJ09GX1JNE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "id": "01M7BYJ04K1N0P7ASM7YJMBRPW",
+        "link": "01M7BYJ04K1N0P7ASM7Y78MZ2M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BYHZXGY011H2GCS1CZXX49",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BYJ0AE3Q5QHZ3HDF078WYJ",
+  "type": "ops",
+  "v": 1
+}

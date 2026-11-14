@@ -1,0 +1,20 @@
+{
+  "actor": "01M7APH65SE9M0ZXKTJAXJ8393",
+  "after": [
+    "01M7APRJM2KJ1D16T6FAZFE4XZ"
+  ],
+  "at": "2026-11-13T15:00:07Z",
+  "body": {
+    "drop": [
+      "01M7AP39WRDG3MCXNRAREPDJTS",
+      "01M7AP3B3DP8P68DTB9T3CHM9F",
+      "01M7AP3CBBNH43VE6ZR2D3J2HM"
+    ],
+    "ops": []
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7APRKV1G5W8F6WDTFRNNYF1",
+  "type": "ops",
+  "v": 1
+}

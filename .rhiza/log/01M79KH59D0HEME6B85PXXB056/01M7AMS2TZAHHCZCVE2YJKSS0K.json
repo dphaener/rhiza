@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AMFJE5Y9G414T0VA2KVPGF",
+  "after": [
+    "01M7AMS206MDK4N2012211X6FC"
+  ],
+  "at": "2026-11-13T14:25:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestAgentStepChecks shows an agent step's checks parsed in file order and rhiza workflow check refusing an empty or repeated check name; go test -trimpath ./internal/api -run TestRunFindingsAgentStepChecks shows rhiza run findings --check and rhiza run verdict --check recording a round for a declared check at an agent step, refusing an undeclared check with a message naming the declared ones, and refusing --check at an agent step with no checks. Touches internal/workflow/workflow.go, internal/workflow/workflow_test.go, internal/api/run_review.go and internal/api/run_review_test.go.",
+          "statement": "An agent step may declare review checks by name (checks = [\"plan\", \"code\", \"qa\"] in its table), with no critic or fixer roles of its own. While a run is at that step, rhiza run findings --check and rhiza run verdict --check accept a check it declares and record the round as they do in a checks step, and refuse a check it does not declare with a message naming the declared ones; at an agent step that declares no checks, --check is refused as today. Checks steps work as they do now."
+        },
+        "handle": "agent-step-checks",
+        "id": "01M7AMS2SEP4Z12HP5P0020FT4",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7AMS2SDWJ2NYPKKVW4HXB7G",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMS2TZAHHCZCVE2YJKSS0K",
+  "type": "ops",
+  "v": 1
+}
