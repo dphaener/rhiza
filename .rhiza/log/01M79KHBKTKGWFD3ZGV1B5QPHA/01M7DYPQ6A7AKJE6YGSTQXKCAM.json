@@ -1,0 +1,40 @@
+{
+  "actor": "01M7DYJGYYZNYVV4BTVTX8524Q",
+  "after": [
+    "01M7DXMTRAPKMZJ08X1MTTNYT4"
+  ],
+  "at": "2026-11-14T21:16:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f8e3bc8a6 re-ran the Checks: block: go test -trimpath -p 2 -count=1 ./cmd/rhiza -run 'TestScripts/^(skill-check-roles|skill-check|describe-golden)$' ok; go test ./internal/api -run TestSkillCheck ok (TestSkillCheckRoles and its Definitions, Unused skill refused, Findings gate, Not started, Report subtests pass); ./internal/api -run 'Describe|Help|Schema|Decode|Registry|Operation' ok; go vet ./internal/api clean; describe-golden -update, rhiza ship generate and rhiza render left no diff to the commit's files; make self-check passes in a clean detached worktree. skill-check-roles.txtar, with a fake claude and fake rex, shows: a verifier that writes Evidence and says done passes 3 of 3 gates (session-done, evidence, check); one writing a finding instead fails 'evidence' by name and exits non-zero (ExitCode 1 asserted in TestSkillCheckRoles/Report); a check recording a round with rhiza run findings --check passes 3 of 3; one recording none fails 'findings' by name; --role planner is refused with 'want builder, verifier or check'; git status and .rhiza/log of the current repo are unchanged after every case, and no builder session starts. The diff touches the three named files plus the regenerated describe-golden, docs/reference/cli.md, and the builder's actor record and renders; no TODOs or stubs."
+        },
+        "handle": "skill-check-verifier-check-verified",
+        "id": "01M7DYPQ3XFGV0P4PWC2QB7G07",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7DYPQ3XFGV0P4PWBYZ0S6PE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DYPQ3XFGV0P4PWBYZ0S6PE",
+        "id": "01M7DYPQ4Y58KTPPVNR0DAJZ08",
+        "link": "01M7DYPQ4Y58KTPPVNQWQS1YQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "id": "01M7DYPQ6A7AKJE6YGSTQXKCAM",
+  "type": "ops",
+  "v": 1
+}
