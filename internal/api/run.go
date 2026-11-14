@@ -1192,7 +1192,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		}
 		// A non-plan run that reached its land step goes on past it: what
 		// is left (wait-main, close-out) happens after the landing.
-		if ok && !st.IsPlanRun() && changeset.State(state) == changeset.StateLanded && st.Visits["land"] > 0 {
+		if ok && !st.IsPlanRun() && changeset.State(state) == changeset.StateLanded && st.PastLanding() {
 			ok = false
 		}
 		if ok && changeset.State(state).Terminal() {

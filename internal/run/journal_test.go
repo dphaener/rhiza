@@ -1129,3 +1129,18 @@ func TestKindsPlanReviewAdditions(t *testing.T) {
 		}
 	}
 }
+
+func TestPastLanding(t *testing.T) {
+	for step, want := range map[string]bool{
+		"land": true, "merge": true, "ship-change/land": true, "ship-change/merge": true,
+		"ship-change/merge-check": false, "premerge": false, "build": false, "landing": false,
+	} {
+		st := State{Visits: map[string]int{step: 1}}
+		if got := st.PastLanding(); got != want {
+			t.Errorf("visited %q: PastLanding = %v, want %v", step, got, want)
+		}
+	}
+	if (State{Visits: map[string]int{"land": 0}}).PastLanding() || (State{}).PastLanding() {
+		t.Error("no visit counts as past landing")
+	}
+}

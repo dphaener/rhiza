@@ -161,6 +161,41 @@ func TestRunResumeLetsLandedPlanRunUnderOtherWorkflow(t *testing.T) {
 	}
 }
 
+// run resume lets a non-plan run on a landed change set through when it
+// entered a merge step (bare or included), and still refuses one that entered
+// neither land nor merge.
+func TestRunResumeLandedPastMerge(t *testing.T) {
+	f := newSessionFixture(t, "merged")
+	rs := run.NewStore(run.Dir(f.common))
+	try := func(id, step string) error {
+		t.Helper()
+		cs := newChange(t, f.ctx, `{"intent":"Fix the bug `+id+`","title":"Fix the bug `+id+`"}`).ChangeSet
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, f.ctx, s, `{}`)
+		}
+		s := run.Started{Workflow: "bugfix", Change: cs.String(), Definition: twoCommands}
+		if err := rs.Create(id, run.Entry{Type: run.TypeStarted, At: time.Now(), Step: "one", Started: &s}); err != nil {
+			t.Fatal(err)
+		}
+		if err := rs.Append(id, run.Entry{Type: run.TypeEntered, At: time.Now(), Step: step, Visit: 1}); err != nil {
+			t.Fatal(err)
+		}
+		f.ctx.DryRun = true
+		defer func() { f.ctx.DryRun = false }()
+		_, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`"}`)
+		return err
+	}
+	for id, step := range map[string]string{"RMERGE": "merge", "RINCL": "ship-change/merge"} {
+		if err := try(id, step); err != nil {
+			t.Errorf("resume of a landed run past %s: %v, want it resumed", step, err)
+		}
+	}
+	err := try("RNONE", "ship-change/merge-check")
+	if err == nil || !strings.Contains(err.Error(), "no longer accepted") {
+		t.Fatalf("resume of a landed run that visited neither: %v, want it refused", err)
+	}
+}
+
 // The ready workflow is the change set's recorded workflow, else the [ready]
 // rule for its kind, else ship-change.
 func TestReadyWorkflowOrder(t *testing.T) {
