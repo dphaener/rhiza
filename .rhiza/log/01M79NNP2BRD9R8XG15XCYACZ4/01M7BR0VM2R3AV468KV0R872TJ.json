@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7BQCNEK356WM6BJ6KY2QNHX"
+  ],
+  "at": "2026-11-14T00:41:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "db71d3a3ecfa193d018f1d739c523f8ddfdaa55d",
+          "pr": "https://github.com/dphaener/rhiza/pull/574",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #574 (https://github.com/dphaener/rhiza/pull/574) passed CI at db71d3a",
+          "status": "verified"
+        },
+        "handle": "pr-574-safe-actions-in-the-web-ui",
+        "id": "01M7BR0V89ZPFPXHK18P9JM829",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BR0V89ZPFPXHK18MS9545R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BR0V89ZPFPXHK18MS9545R",
+        "id": "01M7BR0V9BWDT6WPWGRMXQJZ34",
+        "link": "01M7BR0V9BWDT6WPWGRK7EYSMT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BR0V89ZPFPXHK18MS9545R",
+        "id": "01M7BR0VAE85PESSYV48E79PCG",
+        "link": "01M7BR0VAE85PESSYV45R33JCM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BR0V89ZPFPXHK18MS9545R",
+        "id": "01M7BR0VD5Y79JZH5EBADKWKJG",
+        "link": "01M7BR0VD5Y79JZH5EB80MMQ31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BR0V89ZPFPXHK18MS9545R",
+        "id": "01M7BR0VESHXVJSXCR2VPAQWKR",
+        "link": "01M7BR0VESHXVJSXCR2RG85GDX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFEKF6584S58PGZP17YAF2",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BR0V89ZPFPXHK18MS9545R",
+        "id": "01M7BR0VFZXVDVZ5BX2JQ3QVAF",
+        "link": "01M7BR0VFZXVDVZ5BX2H1AGGSF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BR0VM2R3AV468KV0R872TJ",
+  "type": "ops",
+  "v": 1
+}

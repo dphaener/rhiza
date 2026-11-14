@@ -8,7 +8,7 @@ This will run as part of the daemon process and be served on localhost. The user
 
 ## statement
 
-The first web UI is served by the daemon process on localhost, read-only and for monitoring only; the owner handles any port forwarding.
+The first web UI is served by the daemon process on localhost, and that first pass was read-only and for monitoring only (web-safe-actions since adds the safe actions behind the web token); the owner handles any port forwarding.
 
 ## Links
 
@@ -41,3 +41,4 @@ The first web UI is served by the daemon process on localhost, read-only and for
 ## History
 
 - `01M6PF31YCJ041HB94MDWQR331` I want to build out the first pass of a web UI that can be used to monitor the progress of Rhiza. This will run as part of the daemon process and be served on localhost. The user will be responsible for any port forwarding (if it's running on this VM for instance). First pass will be read only. For monitoring purposes only and we will build from there. The first requirement will be to obtain a design. You will generate a prompt that I will then feed to Claude design to generate a design system.
+- `01M79NNP2BRD9R8XG15XCYACZ4` Safe actions in the web UI behind a required web token: answer an inbox item, approve a sign-off, pause or resume the daemon or a project; nothing else
