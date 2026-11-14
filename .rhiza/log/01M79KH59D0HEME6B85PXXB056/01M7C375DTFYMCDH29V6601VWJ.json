@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C2RYE8D3WMH9HJV7PJ5CCQ",
+  "after": [
+    "01M7C24JCSF5SBZTE7PS3K9ZSQ"
+  ],
+  "at": "2026-11-14T03:57:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 29632c774: go test -trimpath ./cmd/rhiza -run 'TestScripts/(<the 30 named scripts>)$' passed all 30 (exit 0); go test -trimpath ./internal/api -run 'TestPrePushJournal|TestInboxReadsChangeSetsOnce' passed; go test -trimpath ./internal/workflow -run with the eight ship tests passed (all eight PASS). grep -L ship-change-classic on the 30 scripts, ship_prepush_test.go, inbox_fold_test.go and workflow_test.go printed nothing; grep -nE 'Builtin\\(\"ship-change\"\\)|load\\(\"ship-change\"\\)' internal/workflow/workflow_test.go printed nothing. The diff shows run-start scripts pass --workflow ship-change-classic, daemon-headless-runs copies a dispatch.toml with [ready] feature = \"ship-change-classic\", seeded started entries and run.Started name ship-change-classic, and the workflow_test.go hunks are only inside the eight named tests. None of the 12 shadowing scripts was touched, and nothing outside the leaf changed except the builder's staged actor record. No TODOs. The Checks rhiza ship generate and rhiza render both exited 0 with no tracked change."
+        },
+        "handle": "classic-tests-pinned-verified",
+        "id": "01M7C374RWSX36CWMR1JTZ2XS3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C374RWSX36CWMR1H9NYGKA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C374RWSX36CWMR1H9NYGKA",
+        "id": "01M7C3755SQ2X7KE71E6TYJPQ3",
+        "link": "01M7C3755SQ2X7KE71E6F9MNS4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C375DTFYMCDH29V6601VWJ",
+  "type": "ops",
+  "v": 1
+}
