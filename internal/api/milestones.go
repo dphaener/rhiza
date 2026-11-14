@@ -14,8 +14,12 @@ package api
 // set; else planned when it has a proposed one; else designing.
 
 import (
+	"cmp"
+	"fmt"
+	"io"
 	"reflect"
 	"slices"
+	"sync"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
@@ -71,6 +75,33 @@ type MilestoneChangeSet struct {
 	ID    id.ID           `json:"id" desc:"The change set's ID"`
 	Title string          `json:"title" desc:"The change set's short title"`
 	State changeset.State `json:"state" desc:"draft, proposed, accepted, landed, rejected, withdrawn or superseded"`
+}
+
+// Human writes the milestones as text: each with its state and its done
+// points, each marked met or not with its change sets.
+func (r MilestonesResponse) Human(w io.Writer) {
+	fmt.Fprintln(w, "# Milestones")
+	if len(r.Milestones) == 0 {
+		fmt.Fprintln(w, "\nNo milestones yet.")
+		return
+	}
+	for _, m := range r.Milestones {
+		fmt.Fprintf(w, "\n## [%s] %s %s\n", m.State, cmp.Or(m.Handle, shortID(m.ID)), m.Statement)
+		if len(m.DonePoints) > 0 {
+			fmt.Fprintln(w)
+		}
+		for _, d := range m.DonePoints {
+			mark := " "
+			if d.Met {
+				mark = "x"
+			}
+			fmt.Fprintf(w, "- [%s] %s %s\n", mark, cmp.Or(d.Handle, shortID(d.ID)), d.Statement)
+			for _, c := range d.ChangeSets {
+				fmt.Fprintf(w, "  - [%s] %s %s\n", c.State, shortID(c.ID), c.Title)
+			}
+		}
+	}
+	fmt.Fprintf(w, "\n%d of %d finished\n", r.Finished, len(r.Milestones))
 }
 
 // milestoneStateOf is the state word of a milestone with done points dps and
@@ -158,10 +189,14 @@ func runMilestones(ctx *Ctx, req any) (any, error) {
 		states[c.ID] = c.State
 		titles[c.ID] = changeset.Open{Intent: c.Intent}.DisplayTitle()
 	}
+	// EachInFlight calls back from several decode workers at once.
+	var mu sync.Mutex
 	flown := map[id.ID]changeset.ChangeSet{}
 	if err := r.x.EachInFlight(func(c id.ID, es []entry.Entry) {
 		s, _ := changeset.FoldCanonical(c, es)
+		mu.Lock()
 		flown[c] = s
+		mu.Unlock()
 	}); err != nil {
 		return nil, readError(err)
 	}
