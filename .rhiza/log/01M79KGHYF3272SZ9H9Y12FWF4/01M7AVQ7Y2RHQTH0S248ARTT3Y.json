@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AVD1EQB3MAJTTSB8RF0JM0",
+  "after": [
+    "01M7ATN48BVAHM4D2BSVW9XS8W"
+  ],
+  "at": "2026-11-13T16:26:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 56d9f9a9e re-ran the Checks block: go test -trimpath ./internal/api -run 'TestArbiterBrief|TestAdvisorBrief' (exit 0; TestArbiterBrief, TestAdvisorBrief, TestArbiterBriefUnwritable PASS), go test -trimpath ./internal/run/... (exit 0), rhiza ship generate (exit 0, 0 files changed), rhiza render (exit 0); also go vet on internal/api and internal/run (exit 0) and go test -trimpath ./internal/api -run 'Arbiter|Advisor|Brief|SessionStart|Session' (exit 0). Read the diff: StartArbiter/StartAdvisor call prepareKeyed, which has runSessionStart fill <commondir>/rhiza/runs/<run>/arbiter|advisor/<session id>/ (run.KeyedSessionDir) with brief.md and slice.json after the session ID is allocated and before the record is written or Rex is called. This is the layout Decision arbiter-advisor-dirs-per-session sets, answering review question r3-f2 and replacing the leaf's original <arbiter step>/arbiter-<question id> and advisor/advisor-<asker> names. The tests check RHIZA_BRIEF and RHIZA_SLICE, that slice.json equals the slice op's canonical output, that the arbiter and advisor prompts are unchanged, and that a second advisor gets its own directory and leaves the first one's files alone. The failure case (a runs path that is a file) returns an error naming the path, with no Rex call. arbiterWrites is untouched. No change outside the leaf's files beyond the session.go hook and the actor record, and no TODOs."
+        },
+        "handle": "arbiter-advisor-brief-verified",
+        "id": "01M7AVQ7S53TA0E8AN9CJC3D8H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AVQ7S53TA0E8AN9CB32N9N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AVQ7S53TA0E8AN9CB32N9N",
+        "id": "01M7AVQ7VCJJMSFFHEP14QW320",
+        "link": "01M7AVQ7VCJJMSFFHENXFW2V1S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AJZ8CQ9MFGF06EWDVC1JAJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AVQ7Y2RHQTH0S248ARTT3Y",
+  "type": "ops",
+  "v": 1
+}

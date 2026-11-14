@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AM0315XCJV39R2NT8D7Z2E",
+  "after": [
+    "01M7AEENSB9ENRX35YBTGH56BJ"
+  ],
+  "at": "2026-11-13T14:29:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d4f3f9e1b (attempt 2): go test -trimpath ./internal/api/... -skip Budget -timeout 25m ok; go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-|ready)' ok (includes inbox-uncovered-proposal.txtar and inbox-owner-run-accept.txtar); rhiza ship generate and rhiza render exit 0 with no diff. Diff read: inboxUncoveredProposals/uncoveredAcceptItems add one accept item per proposed change set with leaves that uncoveredProposals leaves uncovered, detail 'waiting for acceptance: no plan run covers it', next ownerAcceptNext, regardless of rhiza.autonomy.accept, skipping change sets already holding a gated accept item. The txtar asserts 3 items under accept auto and owner, 2 after a failed plan run, 1 after accept, 0 with a live plan run; inbox-owner-run-accept.txtar gives the gated change set a leaf and asserts exactly one accept item; inbox_test.go covers live/failed/abandoned runs, gated dedup and other kinds. Attempt 1 findings f1 and f2 are addressed. ready code is untouched. No stubs or TODOs."
+        },
+        "handle": "inbox-lists-uncovered-proposals-verified",
+        "id": "01M7AN1720B0FY01YY0CFM48YQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AN1720B0FY01YY0A9WJ9WT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AN1720B0FY01YY0A9WJ9WT",
+        "id": "01M7AN173GMSKNY3XX0RT0DG9F",
+        "link": "01M7AN173GMSKNY3XX0PDN0WA8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26CAT1FTRENTDNPR4XD18",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AN174NWAKNJNC2QYW8WK0Z",
+  "type": "ops",
+  "v": 1
+}

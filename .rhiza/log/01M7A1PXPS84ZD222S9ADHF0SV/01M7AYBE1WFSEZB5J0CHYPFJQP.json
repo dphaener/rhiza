@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AW6PZSF9366SK3NN1XB5DW",
+  "after": [
+    "01M7ASNHYKHY17ASK25W7WSS9P"
+  ],
+  "at": "2026-11-13T17:12:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 5 at 309e097b3 (fixer commit: .rhiza log entries, rendered actor pages and index.md only; no Go or test code changed), in a clean detached worktree: Checks block re-run: make self-check (env -i) exit 0; rhiza ship generate exit 0, 0 files staged; rhiza render exit 0 (wrote only the verifier's own new actor page and index.md). Acceptance: go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-' ok (38.8s, daemon-plans-proposals.txtar included); go test -trimpath ./internal/api/... as written hit the default 10m package timeout twice on this 4-core host under load 6-9 (still running TestLinkEndpointKinds, which is untouched and progressing, not hung), the same as at attempt 2. With -timeout 40m every test passed except TestReadBudget, a CPU timing budget: driver poll idle median 6.249ms CPU over its 5ms budget, at 9% CPU pressure on the shared host. This leaf does not touch driver poll, and TestReadBudget passed at attempt 2 with the same leaf code. Both files named in the acceptance exist. Diff read: nothing outside .rhiza changed, no stubs or TODOs, fakes only."
+        },
+        "handle": "daemon-plans-uncovered-proposals-verified-5",
+        "id": "01M7AYBDZJ34M61Q5WS7XE631F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AYBDZJ34M61Q5WS56W8XQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AYBDZJ34M61Q5WS56W8XQH",
+        "id": "01M7AYBE0RA9GXMB6PXQXT0M9F",
+        "link": "01M7AYBE0RA9GXMB6PXQ87V3KW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AYBE1WFSEZB5J0CHYPFJQP",
+  "type": "ops",
+  "v": 1
+}

@@ -33,6 +33,9 @@ Three: Plan, Code, QA (Recommended), picked by the owner
 ### In
 
 - decided-by [m36-conductor](../intent/milestone-36/m36-conductor.md)
+- decided-by [review-three-checks](../capability/rhiza/workflows/built-in-workflows/review-three-checks.md)
+- decided-by [critic-on-major](../capability/rhiza/workflows/built-in-workflows/critic-on-major.md)
+- decided-by [check-plan-code-topics](../capability/rhiza/guide/agent-guide/check-plan-code-topics.md)
 
 ## History
 

@@ -1,4 +1,4 @@
-{{define "content"}}<div class="rz-detailhead" style="margin-bottom:32px">
+{{define "content"}}<div class="rz-detailhead">
   <p class="rz-crumb"><a href="/roadmap">Roadmap</a></p>
   <h1>{{.Data.Title}}</h1>
   <div class="rz-facts">{{template "pill" .Data.State}}<span class="rz-meta">{{.Data.Kind}}</span><span class="rz-meta">{{.Data.Facts}}</span>{{if .Data.Questions}}<span class="rz-meta" style="color:var(--rose)">{{len .Data.Questions}} open</span>{{end}}</div>
@@ -6,18 +6,20 @@
 <div class="rz-grid rz-grid--2">
   <div class="rz-stack">
     <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Intent</p><h2>Why this exists</h2></div></div>
-      <p style="font-size:17px;line-height:1.6;max-width:62ch">{{.Data.Intent}}</p></section>
+      <p style="font-size:var(--fs-17);line-height:var(--lh-1-6);max-width:62ch">{{.Data.Intent}}</p></section>
     <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Leaves</p><h2>{{.Data.Facts}}</h2></div></div>
-      {{if .Data.Leaves}}<ul class="rz-leaves">{{range .Data.Leaves}}<li class="rz-leaf">{{template "glyph" (Glyph "capability")}}<div><div class="rz-leaf-head">{{if .Evidence}}<span class="rz-evidence rz-evidence--yes">has evidence</span>{{else}}<span class="rz-evidence rz-evidence--no">no evidence yet</span>{{end}}</div>
-<p class="rz-leaf-stmt" style="margin-top:4px">{{.Statement}}</p></div>
-{{if .Acceptance}}<div class="rz-leaf-check"><span class="rz-kicker">Acceptance</span><span style="font-size:13px;color:var(--ink-2)">{{.Acceptance}}</span></div>{{end}}</li>{{end}}</ul>{{else}}{{template "empty" (Empty "No leaves" "This change set adds no capability.")}}{{end}}</section>
+      {{if .Data.Leaves}}<ul class="rz-leaves">{{range .Data.Leaves}}<li class="rz-leaf">{{template "glyph" (Glyph "capability")}}<div class="rz-leaf-body"><div class="rz-leaf-head">{{if .Verified}}<span class="rz-evidence rz-evidence--yes">Verified, has evidence</span>{{else if .Evidence}}<span class="rz-evidence rz-evidence--yes">has evidence</span>{{else}}<span class="rz-evidence rz-evidence--no">no evidence yet</span>{{end}}</div>
+<p class="rz-leaf-stmt"><a href="{{.Href}}">{{.Statement}}</a></p></div>
+{{if .Acceptance}}<div class="rz-leaf-check"><span class="rz-kicker">Acceptance</span><span style="font-size:var(--fs-13);color:var(--ink-2)">{{.Acceptance}}</span></div>{{end}}</li>{{end}}</ul>{{else}}{{template "empty" (Empty "No leaves yet" "This change set has none yet.")}}{{end}}</section>
     {{if .Data.Questions}}<section class="rz-panel rz-panel--waiting"><div class="rz-panel-head"><div><p class="rz-kicker">Open questions</p><h2>{{len .Data.Questions}} waiting on you</h2></div></div>
       {{range .Data.Questions}}<div class="rz-question">{{template "glyph" (Glyph "question")}}<p>{{.}}</p></div>{{end}}</section>{{end}}
   </div>
   <div class="rz-stack">
-    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Relations</p><h2>Serves and depends on</h2></div></div>
-      <dl class="rz-dl"><dt>Serves</dt><dd>{{range .Data.Serves}}<a href="{{.Href}}">{{.Text}}</a> {{else}}—{{end}}</dd>
+    <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Facts</p></div></div>
+      <dl class="rz-dl">{{range .Data.FactList}}<dt>{{.Label}}</dt><dd>{{if .Href}}<a href="{{.Href}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}</dd>{{end}}
       <dt>Depends on</dt><dd>{{range .Data.DependsOn}}<div><a href="{{.Href}}">{{.Text}}</a> {{template "pill" .Pill}}</div>{{else}}—{{end}}</dd></dl></section>
+    {{if .Data.Why}}<section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">Why</p><h2>Decided in planning</h2></div></div>
+      <ul class="rz-links">{{range .Data.Why}}<li><a class="rz-lk" href="{{.Href}}">{{template "glyph" (Glyph .Glyph)}}<span><b>{{.Text}}</b><small>{{.Sub}}</small></span></a></li>{{end}}</ul></section>{{end}}
     <section class="rz-panel rz-panel--flush"><div class="rz-panel-head"><div><p class="rz-kicker">Runs</p><h2>{{len .Data.Runs}} runs</h2></div></div>
       {{if .Data.Runs}}{{template "rows" .Data.Runs}}{{else}}{{template "empty" (Empty "No runs" "Nothing has run on this change set.")}}{{end}}</section>
     <section class="rz-panel"><div class="rz-panel-head"><div><p class="rz-kicker">History</p><h2>Lifecycle</h2></div></div>

@@ -1,0 +1,41 @@
+{
+  "actor": "01M7AMBAQ9SBWKX3TC8XS6N4JY",
+  "after": [
+    "01M7AMAN9460ZTKH0081V63FXK"
+  ],
+  "at": "2026-11-13T14:18:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The question comes from plan review round 3, finding f1, which the critic confirmed. run-brief-files' statement and the decision brief-files-and-invoke-placement name five session-directory forms. The round-2 revision added the two checks-step fixer and verifier forms to stop directories colliding, yet the acceptance tests only three forms. A leaf fixer and the change set fixer both carry the role fixer in one cycle, so they are the likeliest collision and need a test most. Extending the acceptance is the fix the finding asks for. It needs no change to the statement or the scheme, and it stays inside brief_test.go, the file the leaf already touches, so it is the narrowest answer that fits the change set's intent.",
+          "statement": "run-brief-files' TestSessionDir acceptance covers all five session-directory forms its statement names. To the 'all names different' case add, within one cycle of a checks step: a leaf fixer and a leaf verifier of the same leaf at one attempt (<role>-<leaf>-<cycle>-<attempt>), the same leaf fixer at attempt 2, and the change set fixer at attempts 1 and 2 (fixer-<cycle>-<attempt>). The leaf fixer and the change set fixer of one cycle and attempt must get distinct directories, and none of these may equal a check's or critic's directory of that cycle. The leaf's statement and the rest of its acceptance stay as they are.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "session-dir-acceptance-covers-fixers",
+        "id": "01M7AMCVPFJR2PHRF2MKDVV3VC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7AMCVPFJR2PHRF2MFV6CE9K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AMCVPFJR2PHRF2MFV6CE9K",
+        "id": "01M7AMCVRS2K6X617J2021C1JK",
+        "link": "01M7AMCVRS2K6X617J1WCDJGYJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMAMP79YB822F2TPS54Z7B",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMCVVQX4BKSX45WXY75GHS",
+  "type": "ops",
+  "v": 1
+}

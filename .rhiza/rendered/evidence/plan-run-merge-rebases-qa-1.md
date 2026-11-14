@@ -14,7 +14,7 @@ Built rhiza from the branch head (go build -trimpath) and ran rhiza run start --
 
 ### Out
 
-- verifies [plan-run-merge-rebases](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
+- verifies plan-run-merge-rebases (retired)
 
 ## History
 

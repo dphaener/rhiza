@@ -1,0 +1,74 @@
+{
+  "actor": "01M7B7R7Y04B0352MJCG8FYTG7",
+  "after": [
+    "01M7B8AM9YP8VYTNTXJJ9JKAHK"
+  ],
+  "at": "2026-11-13T20:07:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7B7P8D389GB7N94YPTXAQCS",
+        "id": "01M7B8BJ4DWHMQDVJ1B3ZT51RQ",
+        "link": "01M7B8BJ4DWHMQDVJ1B1CHE3F7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4RRY5ZEVDSZ0E2M11DRB",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "CI's budgets timing log shows the idle-poll median stepped from about 1.2-2.5 ms to 2.4-4.8 ms (6.0 ms in PR #567's failing attempt, 3% CPU pressure) exactly at PR #516's merge, while every read budget stayed far under 50 ms; the added cost is the forced catch-up the fixture's per-poll Evidence call now makes, which an idle driver never pays. Raising the budget would hide a real idle regression later; quarantining would drop TestReadBudget's whole read budget; weakening settle() would reopen the headless-run-agent-tabs race #516 fixed.",
+          "statement": "Fix the flake in the measure, not the product or the budget: driverPollBudget's idle measure times a poll without a verifier's Evidence judgment, because since PR #516 every Evidence read forces an index catch-up (settle) and the real driver judges Evidence only once, when a verifier session ends (judgeVerifier), never on an idle poll. idlePollCPUBudget stays 5 ms, unrelatedPollCPUBudget 50 ms, and #516's forced catch-up in stepRunner.Evidence stays as it is",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "idle-poll-budget-judges-no-evidence",
+        "id": "01M7B8BJ5V9P5G0JQRH1YZJT04",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B8BJ5V9P5G0JQRGYEGBDD4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B8BJ5V9P5G0JQRGYEGBDD4",
+        "id": "01M7B8BJ788W8WM895SKST4PPG",
+        "link": "01M7B8BJ788W8WM895SHKNPMNZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B8AM8RXZ0MVMXEG656Q3HB",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Reproduce first: go test -trimpath -count=1 -p 1 -run '^TestReadBudget$' ./internal/api with RHIZA_BUDGET_LOG set to a scratch file, run 3 times one after another (never in parallel and never under generated CPU load, per AGENTS.md), recording each run's 'driver poll idle' median and CPU pressure in the Checks: block. Then in driverPollBudget the idle measure polls without judging Evidence (f.poll with no leaf), the warm-up polls and the 'after an unrelated entry' measure stay as they are, idlePollCPUBudget stays 5 ms and unrelatedPollCPUBudget 50 ms, the comment above the idle measure says why an idle poll judges no Evidence, and stepRunner.Evidence and settle() are unchanged. The same 3 runs then pass, each idle median recorded, their middle value lower than before on the same machine; go test -trimpath -count=1 -run '^(TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites)$' ./internal/api passes. Only internal/api/run_model_cache_test.go changes.",
+          "statement": "The driver CPU budget in TestReadBudget (driverPollBudget, internal/api/run_model_cache_test.go) times an idle poll as a real idle driver makes it, the leaves, answers and session status with no verifier Evidence judgment, so the forced catch-up Evidence makes when a verifier ends no longer pushes the idle median against its 5 ms budget"
+        },
+        "handle": "idle-poll-budget-times-idle-poll",
+        "id": "01M7B8BJ8E3YCTNWCHPWAPT9S8",
+        "key": "zzzzzzzzr",
+        "kind": "capability",
+        "node": "01M7B8BJ8E3YCTNWCHPT45HN4P",
+        "op": "node.create",
+        "parent": "01M61R7HFGRYD2Q1FG4K5N65ME"
+      },
+      {
+        "decision": null,
+        "from": "01M7B8BJ8E3YCTNWCHPT45HN4P",
+        "id": "01M7B8BJDQCXYRBM7GQ9KG3MT1",
+        "link": "01M7B8BJDQCXYRBM7GQ8WQ35SG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B8BJ5V9P5G0JQRGYEGBDD4",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7B7P8D389GB7N94YPTXAQCS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B8BJHF162CR73NH85NNPRR",
+  "type": "ops",
+  "v": 1
+}

@@ -26,7 +26,7 @@ verified
 
 ### Out
 
-- verifies [plan-run-merge-rebases](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-run-merge-rebases.md)
+- verifies plan-run-merge-rebases (retired)
 
 ## History
 

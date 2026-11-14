@@ -1,0 +1,55 @@
+{
+  "actor": "01M7B3KJAWC5SMJMNMXSGN0GPM",
+  "after": [
+    "01M7B38BJXHT5WF39T4EVYATDH"
+  ],
+  "at": "2026-11-13T18:46:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestMilestonesOperation returns, for a fixture with milestone A (a draft, a proposed, an accepted, a landed and a withdrawn change set; done point A1 served only by the landed one, done point A2 by the accepted one), A1 met and A2 not, every change set with its state, and A building; milestone B with only a proposed change set planned, milestone C with only drafts designing, milestone D whose one done point's only change set is landed finished, and a finished count of 1; the roadmap operation's response for the same fixture is unchanged (proposed and accepted only); go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes with the golden regenerated.",
+          "statement": "A new milestones operation (rhiza milestones --json), separate from the roadmap operation, which stays as it is, gives each of a project's milestones its done points (its child intents), each with whether it is met, its change sets in every state (draft, proposed, accepted, landed, withdrawn) with each one's state, and its state word; and counts how many of the project's milestones are finished. A done point is met when at least one change set serves it (directly or through a child intent) and every one of those that is not withdrawn is landed. A milestone is finished when it has done points and all are met; else building when it has an accepted or a landed change set; else planned when it has a proposed one; else designing."
+        },
+        "handle": "web-roadmap-milestone-data",
+        "id": "01M7B38B8RHGSEEJ3KWBJQWPHS",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestRoadmapMilestones shows, for a two-project root, no row from the other project, no finished milestone among the open ones, the groups in order with a change set whose run is going under building now and a proposed change set under proposed, titles from the change set's title field with the intent as the clamped sub-line, the state words, a progress bar whose segments and counts match the milestone's landed, accepted, proposed and withdrawn change sets, the done points inside a closed fold, the backlog and an umbrella group after the milestones, and the finished milestones in one in-page fold with no link to another page.",
+          "statement": "The roadmap page shows its project's open (not finished) milestones from the milestones operation, as in pages/roadmap.html: each with its state in words, a segmented progress bar and counts of landed, accepted, proposed and withdrawn change sets, its done points folded, and its change sets grouped (building now, from the runs; accepted; proposed; landed; drafts; withdrawn ones counted in the bar and the landed group's fold) with the short title, the intent clamped to two lines and a state pill; after the milestones, the backlog and each umbrella, from the roadmap operation as today; the finished milestones, and a group's change sets past those shown, fold into disclosures that expand in place on the roadmap, opening no other page."
+        },
+        "handle": "web-roadmap-milestone-page",
+        "id": "01M7B38BDN8999D5B70MAAFP94",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7B38BDN8999D5B70GG5HASC",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "base": "01M6PFKAN1436CCE15ST7N4A05",
+        "handle": null,
+        "id": "01M7B3PE08BRJEFAD0XBXXBG5M",
+        "node": "01M6PFKAN1436CCE15SQMFT2B9",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A web package test renders /roadmap over a fixture with two milestones and a backlog and asserts the milestones as the milestones operation gives them, then the backlog and umbrella groups in the roadmap operation's order, each change set's state and link.",
+          "statement": "The Roadmap page at /roadmap shows its project's open milestones as web-roadmap-milestone-page describes, then the backlog, then each umbrella, labelled as such, in rhiza roadmap's order, each change set with its intent and state, linking to its change set page; it re-renders live when a change set moves."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B3PE55V1KX831E3RRGR9G7",
+  "type": "ops",
+  "v": 1
+}

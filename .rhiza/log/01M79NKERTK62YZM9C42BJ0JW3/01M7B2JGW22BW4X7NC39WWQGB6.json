@@ -1,0 +1,41 @@
+{
+  "actor": "01M7B2H704A6EQ836WPNXBH76G",
+  "after": [
+    "01M7B2GQXTPPZ1XBFHSXW385KW"
+  ],
+  "at": "2026-11-13T18:26:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding offers two fixes: add the dependency to 01M79NM3RJZFSZE1XHGHCRZSRM, or have this leaf drop the claim. The first edits another proposed change set's plan, which this change set (01M79NKERTK62YZM9C42BJ0JW3, the web frame) does not own and cannot enforce; that change set has its own leaves, its own acceptance (TestHomeNeedsYou) and its own planner. The second is fully within this change set and removes the contradiction outright. Nothing is lost for the frame: the header and picker still share one function, which is what web-project-picker ('a real project picker shared by every screen') and web-frame-header need. Both definitions already list the same five kinds and the same 20-minute stuck rule, so Home can adopt the shared function later at no cost; recording that as a follow-up for Home's plan keeps the intent without stating a dependency the model does not hold.",
+          "statement": "web-project-needs-you drops its claim about change set 01M79NM3RJZFSZE1XHGHCRZSRM: it defines the needs-you count and the one function that counts and lists the items for this change set's header and picker only, and promises nothing about Home. Whether web-home-needs-you reuses that function (and gains a depends-on link) is settled when that change set is planned or revised, not here.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "needs-you-count-scoped-to-frame",
+        "id": "01M7B2JGSK8YSNVHGZDSGE0FFC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7B2JGSK8YSNVHGZDS2GVG0C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2JGSK8YSNVHGZDS2GVG0C",
+        "id": "01M7B2JGTJH0ET9A0Q15AFCET4",
+        "link": "01M7B2JGTJH0ET9A0Q127AXA36",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B2GQSBCTN0TD11H6832ZQJ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2JGW22BW4X7NC39WWQGB6",
+  "type": "ops",
+  "v": 1
+}

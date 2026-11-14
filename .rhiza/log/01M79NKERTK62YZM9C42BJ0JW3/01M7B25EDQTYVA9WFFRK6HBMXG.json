@@ -1,0 +1,145 @@
+{
+  "actor": "01M7B20G9E1P4VGYSV3W04R836",
+  "after": [
+    "01M7B1K2V88FW1C4XS3RE84787"
+  ],
+  "at": "2026-11-13T18:19:22Z",
+  "body": {
+    "drop": [
+      "01M79Q90P3FHK31R498P3V0Z8Z",
+      "01M79Q90T74N735BSJRVY4NT6R"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList' passes with the goldens regenerated from the new header: the picker button carries the needs-you count and points at /picker, the nav names Home, Runs and Roadmap with aria-current on the current page, and a two-project root's page names no project but the current one anywhere in its body (failure case: a project with nothing waiting shows no count badge).",
+          "statement": "Every web page shares one header as in pages/frame-and-spacing.html and pages/home.html: the Rhiza wordmark, the project picker button with the current project's needs-you count (the count web-project-needs-you defines, read from that project alone), the Home, Runs and Roadmap nav, the daemon pill and the live indicator; 56px tall on a phone with the nav on its own 44px row, 52px on desktop; no list of project names in the header or anywhere in the page's markup, the picker's list being loaded from /picker (web-picker-sheet) when the button opens it. It is built after web-project-needs-you and web-picker-sheet, on the layout web-picker-sheet leaves without the inline switcher."
+        },
+        "handle": "web-frame-header",
+        "id": "01M79Q90M4F549HKEWB6AGGPKX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q90M4F549HKEWB54K9B9P",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run TestTypeScale passes: it parses static/css/rhiza-tokens.css and finds exactly the size tokens 11, 12, 13, 14, 15, 16, 17, 20, 22, 26, 28, 32 and 36px and the line-height tokens 1, 1.6, 16, 18, 20, 22, 26, 30, 34, 36 and 40px; it fails on any font-size, line-height or font shorthand in static/css/rhiza.css or a template's inline style whose size or line height is not var() of one of those tokens; and it reads every font declaration in pages/*.html and fails if one sets a size or line height the tokens lack, so the scale cannot drop a size an approved design uses (failure cases: a 28px/32px stat value fails, and a 10.5px row head fails).",
+          "statement": "Every web page sets its text from one type scale, defined once as size and line-height tokens in static/css/rhiza-tokens.css and taken from what the design pages (pages/*.html) set. Display face: page title 36/40 on desktop and 32/36 on a phone, quote 26/34 on desktop and 22/30 on a phone, detail and section title 28/34, panel title 20/26, step and empty-state title 17/22, wordmark 20/1 on desktop and 22/1 on a phone. Body face: lead 17/1.6, project name 16/22, body 15/22, rows and tables 14/20, meta 13/18, label 12/16, buttons and controls 15/1 and 14/1, and 13/20 for inline evidence. Mono face: ids and numbers 13/20, mono meta 13/18, times 12/20 and 12/18, crumbs 12/16, counts and pills 12/1, kickers, row heads and severities 11/16 and 11/20, the wordmark's tag 11/1. So the sizes are 11, 12, 13, 14, 15, 16, 17, 20, 22, 26, 28, 32 and 36px, and the line heights 1, 1.6, 16, 18, 20, 22, 26, 30, 34, 36 and 40px. static/css/rhiza.css's sizes outside them move to the step of the same role: 10.5px kickers, row heads, severities and wordmark tag to 11px, 11.5px pills to 12px, 12.5px row steps, times and meta to 12px (12/20 and 12/18), 13.5px history rows to 14/20, the 28/32 stat value to 28/34, and the phone page and detail titles 30/34 and 24/30 to 32/36 and 28/34. static/css/rhiza.css and the templates set no size or line height outside the tokens."
+        },
+        "handle": "web-type-scale",
+        "id": "01M7B1K2MDGPBDPTQ7EJFZEKJQ",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web ./internal/api -run 'TestProjectNeedsYou' passes: for a project fixture with one open question, one sign-off, one failed run, one run in an agent step whose last journal entry is 21 minutes old and one hold, the ProjectView's needs-you count is 5; a run whose last journal entry is 5 minutes old adds nothing, and a project with nothing waiting has a count of 0 (failure case: a run with no journal entry for 19 minutes counted as stuck fails).",
+          "statement": "Each project's needs-you count is a new ProjectView field (internal/web/projects.go), filled by its producer in internal/api/web_root.go from that project's model and runs, and defined here: the number of open questions, change sets waiting for the owner's sign-off, failed runs, stuck runs (a run in an agent step with no journal entry for 20 minutes) and holds. One function computes it and lists the items, so web-home-needs-you (change set 01M79NM3RJZFSZE1XHGHCRZSRM, which depends on this change set and builds after it) can count and list Home's 'things need you' with the same function, and the header, the picker and Home's title show the same number. A project's live state is Running plus Waiting above zero."
+        },
+        "handle": "web-project-needs-you",
+        "id": "01M7B25DXMVDVRKGHGYR2KF0HG",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestProjectPicker|TestSwitcherNamesReadOnlyForPages' passes: TestProjectPicker GETs /picker for a page of a two-project root and finds both listed with live state and needs-you counts, the one with items first, each link keeping the page kind (from /p/a/roadmap, b links to /p/b/roadmap), All projects linking to the merged inbox, and the search field present only with six or more projects; TestSwitcherNamesReadOnlyForPages, rewritten, fails if an asset, a fragment or a page render under /p/<project>/ calls the ProjectsSource, and if one GET /picker does not call it exactly once.",
+          "statement": "The header's project button opens a picker (a bottom sheet on a phone, a menu on desktop, as in pages/project-picker.html) listing every registered project with whether it is live and its needs-you count (both from web-project-needs-you), projects with something waiting first, plus an All projects entry for the merged inbox; switching keeps the same kind of page, and a search field appears once there are more than five projects. The list is not in the page: the root serves it at /picker, given the current page's path, and reads the ProjectsSource only for that request, so assets, fragments and page renders still never read it. This leaf retires RootWithSwitcher's ProjectNames list and the inline project-name switcher in templates/layout.html; web-frame-header, built after it, rewrites the header around the picker button."
+        },
+        "handle": "web-picker-sheet",
+        "id": "01M7B25DYN1X19CGG3X9N0E450",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7B25DYN1X19CGG3X73K97J5",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "id": "01M7B25DZEABBMK28DHS0SEYDM",
+        "link": "01M7B25DZEABBMK28DHNFS55YJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B25DYN1X19CGG3X73K97J5",
+        "id": "01M7B25E0Q6NF9KXH1QTY59ZZS",
+        "link": "01M7B25E0Q6NF9KXH1QTX0TT4G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6H7J2EJMZSYNCAYC1RQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7B25DYN1X19CGG3X73K97J5",
+        "id": "01M7B25E2DTGRM2CEYX70KHP5V",
+        "link": "01M7B25E2DTGRM2CEYX45PC0TT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q90M4F549HKEWB54K9B9P",
+        "id": "01M7B25E79F6J9E6SHXF0E418Z",
+        "link": "01M7B25E79F6J9E6SHXDE0Z04A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79Q90M4F549HKEWB54K9B9P",
+        "id": "01M7B25E8W0B1HTH4J03DFK897",
+        "link": "01M7B25E8W0B1HTH4J00V3Z7B8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DYN1X19CGG3X73K97J5",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestPageHeadSpacing' passes: it parses static/css/rhiza.css and fails unless the space above the page head (.rz-main's top padding) is var(--space-6) by default and var(--space-7) inside the desktop media query, the gap between the page title and its line is var(--space-3), the page head's margin to the content is var(--space-6), a list row (.rz-row) has 10px padding above and below and a var(--rule) bottom border, and a tappable row (a row that is or holds a link) has min-height 44px (failure cases: a 48px top padding outside the desktop query fails, and a tappable row with no min-height fails).",
+          "statement": "Every web page follows the page-head and row rules in pages/frame-and-spacing.html: header to page head space-6 (32px) on a phone and space-7 (48px) on desktop, page title to its line space-3 (12px), page head to content space-6 (32px), and list rows 10px above and below with a 1px line between and a 44px minimum height when the row is tappable."
+        },
+        "handle": "web-page-head-spacing",
+        "id": "01M7B25EAACMG725WJG0JXDTJY",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7B25EAACMG725WJG09RAG5E",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      },
+      {
+        "decision": null,
+        "from": "01M7B25EAACMG725WJG09RAG5E",
+        "id": "01M7B25ECH4943FSXKG9S4NTZK",
+        "link": "01M7B25ECH4943FSXKG5Z4Z3K5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79NR6NG83GYEE2C1ZJED0FY",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B25EDQTYVA9WFFRK6HBMXG",
+  "type": "ops",
+  "v": 1
+}

@@ -181,9 +181,17 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		Prompt:            rec.Prompt,
 		Model:             rec.Model,
 	}
+	if rec.Resume != "" {
+		launch.Resume, launch.Prompt = true, rec.Resume
+	}
 	argv, err := a.Command(launch)
 	if err != nil {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
+	}
+	if rec.Resume != "" && !ctx.DryRun {
+		if _, err := st.Update(rec.ID, func(x *session.Record) { x.Resume = "" }); err != nil {
+			return nil, Errorf("clear the resume text of session %s: %v", rec.ID, err)
+		}
 	}
 	env, unset := launchEnv(rec)
 	if rec.Run != "" && !ctx.DryRun {
@@ -224,7 +232,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 			follow.stop()
 			return nil, recordRunFailure(ctx, st, rec.ID, fmt.Sprintf("start %s: %v", a.Name(), err))
 		}
-		stopWatch := watchLimit(ctx, a, rec.ID, base, p)
+		stopWatch := watchLimit(ctx, a, st, rec, base, p)
 		code, err = p.Wait()
 		stopWatch()
 		if err != nil {
@@ -322,8 +330,11 @@ func transcriptLen(ctx *Ctx, a adapter.Adapter, sid string) int {
 // watchLimit kills p once what the agent wrote to the session's transcript
 // past base shows it stopped at its usage limit: an interactive agent stays
 // open at its prompt there instead of exiting, so the pause would never
-// come. The returned stop ends the watching and waits until it has.
-func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (stop func()) {
+// come. It also re-prompts a session whose last turn ended on an API error
+// (apiErrorWatch). The returned stop ends the watching and waits until it has.
+func watchLimit(ctx *Ctx, a adapter.Adapter, st *session.Store, rec session.Record, base int, p Process) (stop func()) {
+	sid := rec.ID
+	w := &apiErrorWatch{ctx: ctx, a: a, st: st, sid: sid, autonomous: rec.Autonomous}
 	if ctx.Home == "" && ctx.Getenv == nil {
 		return func() {}
 	}
@@ -346,6 +357,7 @@ func watchLimit(ctx *Ctx, a adapter.Adapter, sid string, base int, p Process) (s
 				p.Kill()
 				return
 			}
+			w.poll(t[base:])
 		}
 	}()
 	return func() {
@@ -555,7 +567,7 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	default:
 		unset = append(unset, envCheck, envCycle)
 	}
-	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 {
+	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 || rec.Parent != "" {
 		set = append(set, envRole+"="+rec.Role)
 	} else {
 		unset = append(unset, envRole)
@@ -565,6 +577,8 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	} else {
 		unset = append(unset, envCommit)
 	}
+	bset, bunset := briefEnv(rec.Brief)
+	set, unset = append(set, bset...), append(unset, bunset...)
 	if rec.Root != "" {
 		set = append(set, envRoot+"="+rec.Root)
 	} else {

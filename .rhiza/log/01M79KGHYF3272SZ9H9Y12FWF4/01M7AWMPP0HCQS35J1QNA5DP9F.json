@@ -1,0 +1,132 @@
+{
+  "actor": "01M7AW7CXHE4EC54GNQCN5MX9C",
+  "after": [
+    "01M7AW29HA7PDFJ76G8SXFBV5Y"
+  ],
+  "at": "2026-11-13T16:42:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build (go build -trimpath) in hermetic repos with fake rex/claude: agent step invoke rendering every placeholder ({leaf}/{attempt} empty) delivered as the first prompt, brief/slice/handback paths under .git/rhiza/runs/<run>/build-1/agent/; prompt alias works; leaves builder attempt 2 = rendered invoke then the attempt line; leaf and change set fixers = rendered invoke then confirmed findings lines; check at cycle 1 got exactly its invoke. workflow check refuses unknown placeholders in invoke and handback (agent, verifier, check), prompt+invoke on step, builder, check and critic, handback on command/wait/arbiter and at leaves step level. Rough edges recorded as minor findings f2, f3."
+        },
+        "handle": "agent-invoke-template-qa-1",
+        "id": "01M7AWMNY1N8Z5G63F682XJEF1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AWMNY1N8Z5G63F673QHCEM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AWMNY1N8Z5G63F673QHCEM",
+        "id": "01M7AWMP0EYTGYTTS7DNG3RKQT",
+        "link": "01M7AWMP0EYTGYTTS7DKSNCDRZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: real runs wrote brief.md with sections in order (change set title/ID/intent, leaves with acceptance, decisions, constraints, check commands showing rhiza.ship.prePushCheck or none, contract ending Full contract: rhiza guide contract); identical bytes across sessions of one run; distinct directories build-1/builder-<leaf>-<attempt>, verifier-<leaf>-<attempt>, review-1/qa-check-1, qa-critic-1, fixer-<leaf>-<cycle>-<attempt>, verifier-<leaf>-<cycle>-<attempt>, fixer-<cycle>-<attempt>. A blocking file at the session path fails the start naming the path. handback.md writer has no trigger here; covered by go test ./internal/run (ok)."
+        },
+        "handle": "run-brief-files-qa-1",
+        "id": "01M7AWMP3KG7MEV6N5H8HK8SF4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AWMP3KG7MEV6N5H7D6R1TG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AWMP3KG7MEV6N5H7D6R1TG",
+        "id": "01M7AWMP5V0CNC8R54WBT4DGRM",
+        "link": "01M7AWMP5V0CNC8R54WAJMRBK7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA: agent, builder, verifier, check, critic, fixers all got RHIZA_BRIEF and RHIZA_SLICE, no RHIZA_HANDBACK; slice.json byte-equal to rhiza slice --change --json run by the agent at start; session start outside a run got none; an unwritable session dir failed the run naming the path with no agent started. But brief.md lists Decisions none and Constraints none when the change set has its own decision and constraint (finding f1, blocker)."
+        },
+        "handle": "session-brief-wiring-qa-1",
+        "id": "01M7AWMP88STC84PMD25WRDHDV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AWMP88STC84PMD24CEZW7V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AWMP88STC84PMD24CEZW7V",
+        "id": "01M7AWMPA3CP7RBX215Z1WX3X8",
+        "link": "01M7AWMPA3CP7RBX215VKSZ4QD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: advisor sessions started by real failing runs got RHIZA_BRIEF under .git/rhiza/runs/<run>/advisor/<session id>/brief.md, one directory per advisor (two advisors in one run got two), prompt unchanged; arbiter covered by go test ./internal/api -run TestArbiterBrief (ok)."
+        },
+        "handle": "arbiter-advisor-brief-qa-1",
+        "id": "01M7AWMPC3GK513DY3DDZQ1BS6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AWMPC3GK513DY3DC21TWDN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AWMPC3GK513DY3DC21TWDN",
+        "id": "01M7AWMPF5NBZHD2S8RM8YMQX9",
+        "link": "01M7AWMPF5NBZHD2S8RJKSXBRH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AJZ8CQ9MFGF06EWDVC1JAJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built rhiza guide contract prints obligations with gates, invoke placeholders, RHIZA_ variables incl. BRIEF/SLICE/HANDBACK and the three files (40 lines); rhiza guide <role> names rhiza guide contract for advisor, arbiter, builder, verifier, the four checks, ci-fix, conflict-fix, gate-fix, critic, fixer, plan-critic, plan-reviewer, plan-reviser, planner; go test ./internal/guide ok."
+        },
+        "handle": "guide-contract-qa-1",
+        "id": "01M7AWMPH74RY0SQW0EQQRVHKJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AWMPH74RY0SQW0EPB45EM1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AWMPH74RY0SQW0EPB45EM1",
+        "id": "01M7AWMPKDX2XVJVXE5TJMWMDE",
+        "link": "01M7AWMPKDX2XVJVXE5RXJKC1X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AWMPP0HCQS35J1QNA5DP9F",
+  "type": "ops",
+  "v": 1
+}

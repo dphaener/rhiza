@@ -1,0 +1,30 @@
+{
+  "actor": "01M7BJE1MR1X2HWGK2TD2RFD4E",
+  "after": [
+    "01M7BJAZWJ9XFMG73539P83Y5N"
+  ],
+  "at": "2026-11-13T23:04:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebTokenNoneSetRefusesEveryPost|TestWebTokenWrongOrMissingRefused|TestWebTokenCookieAfterQueryVisit|TestWebTokenBearerAccepted|TestWebTokenActionsOn' shows every POST refused when no token is set, a POST refused with a wrong or missing token, the cookie set after a ?token= visit, and a bearer header accepted; go test -trimpath ./internal/api -run TestWebTokenSetting shows daemon.set accepts rhiza.web.token, the daemon's web handler (web_root.go) gates POSTs on the token it reads from that setting, and neither daemon.settings nor an unauthenticated GET /api/daemon.settings through WebProjectHandler returns the token's value.",
+          "statement": "A web token (rhiza.web.token, set with rhiza daemon set and read by the daemon's web handler) turns on the web UI's actions: a browser presents it once with ?token= and keeps it in an HttpOnly cookie, a script sends it as a bearer header; the token's value is never shown, so daemon.settings and the web UI's read-only API (GET /api/daemon.settings) report only whether it is set; without a token set, pages show no action controls and every POST is refused, and pages stay readable as today."
+        },
+        "handle": "web-token",
+        "id": "01M79Q8PX68N5R6XWD5RHK7GNX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BJFQQYQ4YTHH44W4HG9ZV3",
+  "type": "ops",
+  "v": 1
+}

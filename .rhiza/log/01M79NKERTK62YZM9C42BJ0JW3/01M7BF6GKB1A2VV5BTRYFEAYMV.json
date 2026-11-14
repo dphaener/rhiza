@@ -1,0 +1,93 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7BE8W7SVVD0MCDBVXSFXG8K"
+  ],
+  "at": "2026-11-13T22:07:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "1fabaf2946e1c26b3a1e7da4d2fe9e5124fecda6",
+          "pr": "https://github.com/dphaener/rhiza/pull/571",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #571 (https://github.com/dphaener/rhiza/pull/571) passed CI at 1fabaf2",
+          "status": "verified"
+        },
+        "handle": "pr-571-the-web-ui-s-frame",
+        "id": "01M7BF6FZTTY4QJJ682KBW65X3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6G1F7TGEW3A8S5H63DNC",
+        "link": "01M7BF6G1F7TGEW3A8S3QC2FA6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6G2KTDMBSCASX0YTJ95W",
+        "link": "01M7BF6G2KTDMBSCASX0EY2JR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90R4MS5J2BXQ7DGXA1TS",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6G4490Z8RRAY517EV2CY",
+        "link": "01M7BF6G4490Z8RRAY4ZA0BB7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1K2MDGPBDPTQ7EFZYG1NH",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6G6734VB9PN2AJDE9J4Q",
+        "link": "01M7BF6G6734VB9PN2AESB3NB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DXMVDVRKGHGYNPVZGQP",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6G8K11ZNY7P5MG2NWGBK",
+        "link": "01M7BF6G8K11ZNY7P5MDTRK18P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25DYN1X19CGG3X73K97J5",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BF6FZTTY4QJJ682J2T0P9K",
+        "id": "01M7BF6GAF6XHMZSN526PHHMTE",
+        "link": "01M7BF6GAF6XHMZSN522VBM00B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B25EAACMG725WJG09RAG5E",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BF6GKB1A2VV5BTRYFEAYMV",
+  "type": "ops",
+  "v": 1
+}

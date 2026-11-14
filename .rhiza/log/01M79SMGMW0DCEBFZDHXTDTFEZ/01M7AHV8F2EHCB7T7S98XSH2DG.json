@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AFKGETP2J52KMYW6YGVVKQ",
+  "after": [
+    "01M79T0EDK5G9TR4KZNM7B6BR0"
+  ],
+  "at": "2026-11-13T13:34:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 80d5853e0: go test -trimpath -count=1 -run TestWebRootRoadmapRowsResolve -v ./internal/api/ PASS (0.47s); go test -trimpath ./internal/web/... ok; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 with a clean tree. The full go test -trimpath ./internal/api/... ran 3 times on this host at load average 6-16. Each run hit the 10m package timeout, each with a different test still running (TestLinkEndpointKinds, TestReadBudgetApply, TestInboxGateQuestionsBudget), including once with -skip TestReadBudget. Since every run stopped at a different test, I took this for host load, not a hang; I saw no evidence of a hang. The commit only adds one test file plus an actor record, so the timeout is not attributed to it; the PR's CI make check must confirm the package. Diff read: internal/api/web_roadmap_rows_test.go registers projects alpha and beta under one rhiza.toml root. Each has a milestone change set that serves a milestone intent and a backlog change set that depends-on it. The test serves WebRootHandler, GETs /p/<p>/roadmap, and asserts every /changes/ row href is under /p/<p>/changes/ and the page has no text from the other project's change set intents. It GETs each row (200), then every /changes/ link on those pages, depends-on included, asserts it is in the same project and gets 200. Every acceptance point is tested. The test does not check the other project's change set IDs by value; a cross-project row href would still fail the prefix and 200 checks. Nothing outside the leaf changed, there are no stubs or TODOs, and the tests use fakes only."
+        },
+        "handle": "web-roadmap-rows-resolve-verified",
+        "id": "01M7AHV8920GA4WQB1SXZHABS9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AHV8920GA4WQB1STFVY0ZW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AHV8920GA4WQB1STFVY0ZW",
+        "id": "01M7AHV8BPBZHR6BY93DQ1EYJ1",
+        "link": "01M7AHV8BPBZHR6BY93CBB2AY0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79SWNGATEE7JHYB7Q9X2CBK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79SMGMW0DCEBFZDHXTDTFEZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHV8F2EHCB7T7S98XSH2DG",
+  "type": "ops",
+  "v": 1
+}

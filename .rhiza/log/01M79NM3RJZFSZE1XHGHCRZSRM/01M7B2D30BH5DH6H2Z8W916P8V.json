@@ -1,0 +1,127 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7B20EEA3DHZ62PH8HSXN4DQ"
+  ],
+  "at": "2026-11-13T18:23:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on web-home-needs-you): The leaf defines a stuck run as 'no journal entry for 20 minutes while in an agent step', but the code judges stalls by session progress, not journal entries. watchdogProgress (internal/api/daemon_watchdog.go:79) takes the later of the last journal entry and the step's session reports, and skips sessions that wait on an answer or a usage limit. RunStalled (internal/api/run.go:186) and the inbox's 'stalled' kind (internal/api/inbox.go:406) mean a session silent for more than 20 minutes. Builder sessions report progress without writing journal entries, so a builder still working after 20 minutes would show as stuck on Home while rhiza inbox shows nothing. A run that is really stalled would also show twice: once as the new stuck card and once as the existing stalled inbox item. The leaf should reuse the inbox's stalled item (RunStalled) rather than define its own rule. The critic confirmed it: web-home-needs-you defines stuck as 'no journal entry for 20 minutes while in an agent step', and its acceptance tests only a journal entry 5 minutes old. The code judges a stall by session reports: session.Stalled (internal/session/status.go:133-155, StallAfter 20m on rep.At), runStalledAll (internal/api/run.go:479), and watchdogProgress (daemon_watchdog.go:82), which takes the later of the journal and the session reports. The inbox already lists these as InboxStalled (inbox.go:406). A builder that reports but writes no journal entry would show as stuck on Home and not in rhiza inbox, and a run that really is stalled would get two cards. This contradiction is major. How should it be settled?"
+        },
+        "handle": "review-01m7b16pagej92z155zy5h31z1-r3-f1",
+        "id": "01M7B2D2G7CZ4N2XAMNAT5J0J5",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2D2G6QJG29X5AN9FZX6BD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2D2G6QJG29X5AN9FZX6BD",
+        "id": "01M7B2D2H913E6NDPC4ZXGYFDW",
+        "link": "01M7B2D2H913E6NDPC4ZJKYVD4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (uncovered-intent on web-home-needs-you): The intent says Home shows every inbox item, but the leaf lists only questions, sign-offs, failed runs, stuck runs and holds. This plan retires web-overview-inbox, which listed what waits on the owner 'as rhiza inbox does'. Today's web inbox (webInboxKinds, internal/api/web_inbox.go:10) also lists open items (questions a run stopped on), runs the daemon gave up on, permission prompts and API errors. The inbox also has accept, skipped and blocker items. No leaf covers these, so Home would drop permission-blocked sessions and runs the daemon gave up on, which the current Overview shows. The critic confirmed it: The intent says 'every ... inbox item'. web-home-needs-you lists only question, sign-off, failed, stuck and hold, while webInboxKinds (internal/api/web_inbox.go:10) also gives today's Overview open, gave-up, permission and api-error items. The plan retires web-overview-inbox and points to needs-you and waiting-pr, so Home would drop items that are shown on / today. An uncovered intent clause is major. How should it be settled?"
+        },
+        "handle": "review-01m7b16pagej92z155zy5h31z1-r3-f2",
+        "id": "01M7B2D2JDAZ5Z95JRP5XSC538",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2D2JDAZ5Z95JRP4VWG1NZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2D2JDAZ5Z95JRP4VWG1NZ",
+        "id": "01M7B2D2KWG5MCNMRN5N7A5KRF",
+        "link": "01M7B2D2KWG5MCNMRN5N4Q9GPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8KK9D7VB062YN1ASJC7B",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (contradiction on web-home-waiting-pr): A PR whose CI is red again after the rerun belongs to a run that ended Failed while waiting on CI (watchdogCIRerun, internal/api/daemon_watchdog.go:667 only reads runs with st.Ended and Result Failed). The inbox already lists that run as a failed item (InboxFailed, internal/api/inbox.go:371), and web-home-needs-you shows it as a failed-run card. So the same PR would get two cards and be counted twice in the title. The leaf rules out double cards for the watchdog's holds but not for this failed run, and its acceptance never checks it. The critic confirmed it: watchdogCIRerun (daemon_watchdog.go, around line 680) reads only ended runs with Result Failed that wait on CI. When the head goes red again after the rerun it sets CIDone and leaves the run Failed. inboxItems adds that run as InboxFailed (inbox.go:371) unless it was retried, scheduled or is gone. So web-home-needs-you shows it as a failed-run card and web-home-waiting-pr shows it as a waiting-PR item, which is two cards and two in the count. waiting-pr rules out double cards only for holds, and its acceptance does not check this case. This contradiction is major. How should it be settled?"
+        },
+        "handle": "review-01m7b16pagej92z155zy5h31z1-r3-f3",
+        "id": "01M7B2D2NWZ5P34YAV2P8JZ2XX",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2D2NWZ5P34YAV2P6A5FCY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2D2NWZ5P34YAV2P6A5FCY",
+        "id": "01M7B2D2PZQTTRG2SS83Z0904E",
+        "link": "01M7B2D2PZQTTRG2SS827R4E4N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1MJTM4B76DF6R9HRNP962",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f4 (contradiction on web-home-daemon-panel): This plan retires web-overview-daemon (the health parts at /), and the new daemon panel shows load, version and usage but no health. web-overview-fast is left standing, and it still requires / and /fragments/daemon to show the health pills, pending until the first report lands, from the cached health report. Once Home replaces Overview at /, the model contradicts itself: either the panel keeps the health pills or web-overview-fast must be retired or reworded. No leaf of the plan decides which. The critic confirmed it: web-overview-fast (01M6QSR4PW1N772QAPCE2E9N9W) is not retired in this change set: no entry in its log names it. It still says / and its daemon fragment show the health pills from the cached report, pending until the first one lands. The plan retires web-overview-daemon, and web-home-daemon-panel shows load, version and usage on desktop only, with no health. The model then contradicts itself about /, and no leaf settles which statement holds. Major. How should it be settled?"
+        },
+        "handle": "review-01m7b16pagej92z155zy5h31z1-r3-f4",
+        "id": "01M7B2D2RHM6AYH1RBN3CVS78E",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2D2RHM6AYH1RBN2K5H8BN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2D2RHM6AYH1RBN2K5H8BN",
+        "id": "01M7B2D2SJ5MT4E6G4NQM3430C",
+        "link": "01M7B2D2SJ5MT4E6G4NQ0GT3HW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B1MKCMM0T6XWAVPMMX4THS",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f5 (contradiction on web-home-running): web-overview-live stays standing and still says each Overview section (runs, inbox, milestone, daemon) re-renders live on its events. This plan retires all four of those sections and replaces / with Home. None of the Home leaves (needs-you, running, waiting-pr, shipped-today, milestone, daemon-panel) says whether its section stays live or which events re-render it. The model is left describing live sections that no longer exist and says nothing about Home's own. The critic confirmed it: web-overview-live (01M6PFJX4SRG58AJJWHZYKN4DK) is not retired or amended here. It still says each Overview section (runs, inbox, milestone, daemon) re-renders on its events, but the plan retires all four sections. None of the new Home leaves says whether it is live or which events re-render it. The model describes sections that no longer exist and is silent about Home's own. This contradiction is major. How should it be settled?"
+        },
+        "handle": "review-01m7b16pagej92z155zy5h31z1-r3-f5",
+        "id": "01M7B2D2V078FJWJFAANASKEHD",
+        "key": null,
+        "kind": "question",
+        "node": "01M7B2D2V078FJWJFAAN8HS800",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B2D2V078FJWJFAAN8HS800",
+        "id": "01M7B2D2WBYAZJ33DEXP4RQD43",
+        "link": "01M7B2D2WBYAZJ33DEXKN5X0DS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8KMEKXQ87W0GCYQFDMXM",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M79NM3RJZFSZE1XHGHCRZSRM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B2D30BH5DH6H2Z8W916P8V",
+  "type": "ops",
+  "v": 1
+}

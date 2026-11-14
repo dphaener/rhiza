@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B75AZJ961N305VNSY54YYY",
+  "after": [
+    "01M7B7HVVWW5XQ1D18SWFJ32PM"
+  ],
+  "at": "2026-11-13T20:25:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f08934769: acceptance `go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList'` exit 0; TestHeaderNoBadgeWhenNothingWaits (failure case, count 0 shows no rz-count) passes; `go test -trimpath ./internal/web/...` ok; `rhiza ship generate` and `rhiza render` exit 0 with a clean tree. `go test -trimpath ./internal/api` hit go's default 10m package timeout twice on a loaded 4-core host (inside TestReadBudgetApply at 53s); rerun as the Makefile does (-timeout 20m class, -skip TestReadBudget) it passed (ok, 910s). Diff read: layout.html header has wordmark, picker button (data-rz-picker=/picker, current project name, needs-you badge only when >0, from HandlerWithNeedsYou fed by WebNeedsYou of that project alone), Home/Runs/Roadmap nav with aria-current, daemon pill, live indicator; Projects/Inbox links gone; phone header min-height 56px with the nav on a 44px row, desktop --header-h 52px; the test asserts a two-project root's /p/a/runs names neither /p/b nor b. Goldens regenerated. No TODOs, no changes outside the leaf."
+        },
+        "handle": "web-frame-header-verified",
+        "id": "01M7B9BY7CR6GMRNHBWC7TABHR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B9BY7CR6GMRNHBWC7K63GC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B9BY7CR6GMRNHBWC7K63GC",
+        "id": "01M7B9BY9SXRHGHEDSH20W0S52",
+        "link": "01M7B9BY9SXRHGHEDSGYPGW37K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B9BYDDM6HQA0YA2AHC3KR0",
+  "type": "ops",
+  "v": 1
+}

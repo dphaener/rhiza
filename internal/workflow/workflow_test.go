@@ -59,7 +59,7 @@ func TestLoadRefused(t *testing.T) {
 		file string
 		want []string
 	}{
-		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`}},
+		{"unknown-kind.toml", []string{`step "repeat": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`}},
 		{"missing-target.toml", []string{`step "build": on.pass names "nope", which is not a step; want a step or done or failed`}},
 		{"bad-outcome.toml", []string{`step "build": on.sucess: a command step has no outcome "sucess"; want on.pass or on.fail`}},
 	}
@@ -157,7 +157,7 @@ func TestParseErrors(t *testing.T) {
 		want string
 	}{
 		{"unknown kind", "[step.x]\nkind = \"loop\"\n",
-			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
+			`step "x": unknown kind "loop": want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`},
 		{"workflow without workflow", "[step.x]\nkind = \"workflow\"\n",
 			`step "x": a workflow step needs workflow =`},
 		{"workflow on command", cmd + "workflow = \"b\"\n",
@@ -167,7 +167,7 @@ func TestParseErrors(t *testing.T) {
 		{"workflow without resolver", "[step.x]\nkind = \"workflow\"\nworkflow = \"b\"\n",
 			`step "x": workflow "b" cannot be resolved here`},
 		{"no kind", "[step.x]\nrun = \"true\"\n",
-			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow`},
+			`step "x": no kind: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate`},
 		{"missing target", cmd + "on.pass = \"nope\"\n",
 			`step "a": on.pass names "nope", which is not a step; want a step or done or failed`},
 		{"unknown step key", cmd + "retries = 2\n",
@@ -402,7 +402,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 	if _, ok := def.Steps["review/signoff"]; ok {
 		t.Error("review's signoff step is not skipped")
 	}
-	want := []string{"build/build", "build/render", "build/check", "review/code", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "land-main-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
+	want := []string{"build/build", "build/render", "build/check", "review/code", "review/lints", "review/lint-fix", "review/review", "review/render", "render-pr", "local-gate", "gate-fix", "open-pr", "open-pr-triage", "wait-pr", "pr-green", "conflict-triage", "gate-triage", "conflict-fix", "ci-triage", "wait-ci-rerun", "ci-fix", "signoff", "gate-rebase", "rebase", "rebase-triage", "rebase-gate-failed", "wait-rebased", "rebased-green", "gate-land", "land", "land-triage", "land-conflict-triage", "land-main-conflict-triage", "model-conflict-fix", "wait-landed", "landed-green",
 		"gate-rebase-merge", "conflict-triage-landed", "conflict-fix-landed", "rebase-merge", "rebase-merge-gate-failed", "landed-infra-triage", "landed-infra-wait", "gate-fix-merge", "render-merge", "gate-push-merge", "push-merge", "push-merge-triage", "wait-rebased-merge", "rebased-merge-green", "merge", "wait-main", "main-green", "close-out", "ship", "deploy-check"}
 	if !slices.Equal(def.Order, want) {
 		t.Errorf("steps = %v; want %v", def.Order, want)
@@ -562,7 +562,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 3, "wait-rebased": 3, "rebased-green": 4, "merge": 3, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
+	caps := map[string]int{"rebase": 6, "wait-rebased": 6, "rebased-green": 6, "merge": 6, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
@@ -894,11 +894,11 @@ func TestLeavesStepRefused(t *testing.T) {
 		{"missing verifier", leavesBase + builder,
 			`step "build": a leaves step needs a [step.build.verifier] table with prompt = `},
 		{"blank builder prompt", leavesBase + "[step.build.builder]\nprompt = \" \"\n" + verifier,
-			`step "build": builder needs prompt = "<what the builder should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {leaf}, {attempt}`},
+			`step "build": builder needs prompt = "<what the builder should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}`},
 		{"unknown placeholder", leavesBase + builder + "[step.build.verifier]\nprompt = \"verify {leef}\"\n",
 			`step "build": verifier: prompt uses unknown placeholder {leef}`},
 		{"unknown sub-table key", leavesBase + builder + verifier + "retries = 3\n",
-			`step "build": verifier: unknown key "retries"; want prompt, agent, permission_mode or models`},
+			`step "build": verifier: unknown key "retries"; want invoke (or prompt), handback, agent, permission_mode or models`},
 		{"models on a wait step", wait + "models = [\"opus\"]\n",
 			`step "w": models is only for agent steps and a leaves step's builder and verifier; a wait step cannot have it`},
 		{"models on a command step", cmd + "models = [\"opus\"]\n",
@@ -925,8 +925,8 @@ func TestLeavesStepRefused(t *testing.T) {
 			`step "build": a leaves step cannot have until`},
 		{"until_when on a leaves step", leavesBase + "until_when = \"done\"\n" + builder + verifier,
 			`step "build": a leaves step cannot have until_when`},
-		{"leaf placeholder on an agent step", "[step.a]\nkind = \"agent\"\nprompt = \"do {leaf}\"\n",
-			`step "a": prompt uses unknown placeholder {leaf}`},
+		{"check placeholder on an agent step", "[step.a]\nkind = \"agent\"\nprompt = \"do {check}\"\n",
+			`step "a": prompt uses unknown placeholder {check}`},
 		{"bad outcome", leavesBase + "on.timeout = \"done\"\n" + builder + verifier,
 			`step "build": on.timeout: a leaves step has no outcome "timeout"; want on.pass or on.fail`},
 	} {
@@ -1029,13 +1029,13 @@ func TestChecksStepRefused(t *testing.T) {
 		{"check with no name", head + "[[step.review.check]]\nprompt = \"x\"\n" + roles,
 			`step "review": check 1 has no name: set name = "..."`},
 		{"blank check prompt", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \" \"\n" + roles,
-			`step "review": check "lint" needs prompt = "<what the check should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}`},
+			`step "review": check "lint" needs prompt = "<what the check should do>"; it may use {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}`},
 		{"unknown check key", head + check("lint") + "retries = 3\n" + roles,
-			`step "review": check: unknown key "retries"; want name, prompt, agent, permission_mode or models`},
+			`step "review": check: unknown key "retries"; want name, invoke (or prompt), handback, agent, permission_mode or models`},
 		{"unknown critic key", head + check("lint") + critic + "retries = 3\n" + fixer + verifier,
-			`step "review": critic: unknown key "retries"; want prompt, agent, permission_mode or models`},
+			`step "review": critic: unknown key "retries"; want invoke (or prompt), handback, agent, permission_mode or models`},
 		{"unknown fixer key", head + check("lint") + critic + fixer + "retries = 3\n" + verifier,
-			`step "review": fixer: unknown key "retries"; want prompt, agent, permission_mode or models`},
+			`step "review": fixer: unknown key "retries"; want invoke (or prompt), handback, agent, permission_mode or models`},
 		{"missing critic", head + check("lint") + fixer + verifier,
 			`step "review": a checks step needs a [step.review.critic] table with prompt = `},
 		{"missing fixer", head + check("lint") + critic + verifier,
@@ -1044,10 +1044,10 @@ func TestChecksStepRefused(t *testing.T) {
 			`step "review": a checks step needs a [step.review.verifier] table with prompt = `},
 		{"blank critic prompt", head + check("lint") + "[step.review.critic]\nprompt = \"\"\n" + fixer + verifier,
 			`step "review": critic needs prompt = "<what the critic should do>"`},
-		{"unknown check placeholder", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \"do {leaf}\"\n" + roles,
-			`step "review": check "lint": prompt uses unknown placeholder {leaf}; want one of {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}`},
+		{"unknown check placeholder", head + "[[step.review.check]]\nname = \"lint\"\nprompt = \"do {nope}\"\n" + roles,
+			`step "review": check "lint": prompt uses unknown placeholder {nope}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}`},
 		{"check placeholder on the fixer", head + check("lint") + critic + "[step.review.fixer]\nprompt = \"fix {check}\"\n" + verifier,
-			`step "review": fixer: prompt uses unknown placeholder {check}; want one of {change}, {slug}, {title}, {run}, {step}, {leaf}, {cycle}`},
+			`step "review": fixer: prompt uses unknown placeholder {check}; want one of {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {cycle}`},
 		{"cycle placeholder on the verifier", head + check("lint") + critic + fixer + "[step.review.verifier]\nprompt = \"verify {cycle}\"\n",
 			`step "review": verifier: prompt uses unknown placeholder {cycle}`},
 		{"blank check model", head + check("lint") + "models = [\"\"]\n" + roles,
@@ -1075,7 +1075,7 @@ func TestChecksStepRefused(t *testing.T) {
 		{"bad outcome", head + "on.timeout = \"done\"\n" + check("lint") + roles,
 			`step "review": on.timeout: a checks step has no outcome "timeout"; want on.pass or on.fail`},
 		{"check on an agent step", agent + "[[step.a.check]]\nname = \"lint\"\nprompt = \"x\"\n",
-			`step "a": check is only for checks steps; an agent step cannot have it`},
+			`step "a": check "lint": an agent step's check is only a name`},
 		{"critic on an agent step", agent + "[step.a.critic]\nprompt = \"x\"\n",
 			`step "a": critic is only for checks steps; an agent step cannot have it`},
 		{"fixer on a leaves step", leavesBase + leavesRoles + "[step.build.fixer]\nprompt = \"x\"\n",
@@ -1174,7 +1174,7 @@ func TestReviewBuiltin(t *testing.T) {
 	if def.Name != "review" || def.Start != "code" {
 		t.Errorf("name %q, start %q; want review, code", def.Name, def.Start)
 	}
-	if want := []string{"code", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
+	if want := []string{"code", "lints", "lint-fix", "review", "render", "signoff"}; !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
 	code := def.Steps["code"]
@@ -1183,6 +1183,13 @@ func TestReviewBuiltin(t *testing.T) {
 	}
 	if _, ok := code.On[OutcomeFail]; ok {
 		t.Errorf("code has on.fail %q; a failed code check ends the run", code.On[OutcomeFail])
+	}
+	if l := def.Steps["lints"]; l.Kind != KindCommand || l.Run != "rhiza run lint-check" {
+		t.Errorf("lints = %+v; want command rhiza run lint-check", l)
+	}
+	lf := def.Steps["lint-fix"]
+	if lf.Kind != KindAgent || lf.MaxVisits != 1 || lf.Until != "true" || !strings.HasPrefix(lf.Prompt, "/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run") {
+		t.Errorf("lint-fix = %+v; want a one-visit fixer agent step", lf)
 	}
 	review := def.Steps["review"]
 	if review.Kind != KindChecks || review.Split != SplitAuto || review.MaxVisits < 2 {
@@ -1270,8 +1277,11 @@ func TestReviewBuiltin(t *testing.T) {
 		step, outcome, next string
 		end                 End
 	}{
-		{"code", OutcomePass, "review", EndNone},
+		{"code", OutcomePass, "lints", EndNone},
 		{"code", OutcomeFail, "", EndFailed},
+		{"lints", OutcomePass, "review", EndNone},
+		{"lints", OutcomeFail, "lint-fix", EndNone},
+		{"lint-fix", OutcomePass, "review", EndNone},
 		{"review", OutcomePass, "render", EndNone},
 		{"render", OutcomePass, "signoff", EndNone},
 		{"render", OutcomeFail, "", EndFailed},
@@ -1695,6 +1705,36 @@ func TestBuiltinPlanMilestone(t *testing.T) {
 	}
 }
 
+// The built-in plan-review workflow is plan without its interview: its
+// first step after expansion is milestone-check.
+func TestBuiltinPlanReview(t *testing.T) {
+	if !slices.Contains(BuiltinNames(), "plan-review") {
+		t.Fatalf("BuiltinNames = %v; want it to list plan-review", BuiltinNames())
+	}
+	data, ok := Builtin("plan-review")
+	if !ok {
+		t.Fatal("no plan-review built-in")
+	}
+	def, err := ParseWith("plan-review", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if def.Start != "plan/milestone-check" {
+		t.Errorf("plan-review starts at %q; want plan/milestone-check", def.Start)
+	}
+	for n, st := range def.Steps {
+		if st.Kind == KindAgent && strings.Contains(st.Prompt, "rhiza-planner") {
+			t.Errorf("plan-review has planner step %s", n)
+		}
+	}
+	if _, ok := def.Steps["plan/interview"]; ok {
+		t.Error("plan-review has an interview step")
+	}
+	if _, ok := def.Steps["plan/gate"]; !ok {
+		t.Error("plan-review has no gate step")
+	}
+}
+
 // The plan workflows send open-pr's and rebase's failure to a triage that
 // passes only on a head the pre-push check failed on, to prepush-fix.
 func TestPlanPrePushFix(t *testing.T) {
@@ -1834,6 +1874,9 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			wantFail, wantVisits := "", 3
 			if step == "pr-green" || step == "rebased-green" {
 				wantFail, wantVisits = step+"-infra", 4
+			}
+			if step == "rebased-green" || step == "wait-rebased" {
+				wantVisits = 6
 			}
 			if s.On["pass"] != pass || s.On["fail"] != wantFail || s.MaxVisits != wantVisits {
 				t.Errorf("%s %s routes = pass %q fail %q max_visits %d; want pass %q, fail %q, %d", name, step, s.On["pass"], s.On["fail"], s.MaxVisits, pass, wantFail, wantVisits)
@@ -2340,6 +2383,7 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 		"conflict-fix":        "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: follow rhiza guide conflict-fix.",
 		"conflict-fix-landed": "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch: follow rhiza guide conflict-fix.",
 		"model-conflict-fix":  "/rhiza-conflict-fix Fix the model conflict that refused the land of change set {change} in run {run}: follow rhiza guide conflict-fix.",
+		"review/lint-fix":     "/rhiza-fixer Fix the model lint hits that rhiza run lint-check lists for change set {change} before the checks run: follow rhiza guide fixer.",
 	}
 	agents := 0
 	for name, s := range def.Steps {
@@ -2531,5 +2575,263 @@ func TestDocsReviewMatchesBuiltinReview(t *testing.T) {
 		if !strings.Contains(d.Fixer.Prompt, w) {
 			t.Errorf("docs-review fixer prompt lacks %q", w)
 		}
+	}
+}
+
+func TestInvokeTemplate(t *testing.T) {
+	const src = `
+[step.conduct]
+kind = "agent"
+invoke = "/myskill:conduct --prompt {brief}"
+handback = "again: {handback} for {run}"
+
+[step.alias]
+kind = "agent"
+prompt = "old {change}"
+
+[step.leafy]
+kind = "agent"
+invoke = "do [{leaf}] [{attempt}]"
+handback = "again [{leaf}] [{attempt}]"
+
+[step.build]
+kind = "leaves"
+[step.build.builder]
+invoke = "build {leaf} {attempt}"
+handback = "rebuild {leaf} {handback}"
+[step.build.verifier]
+prompt = "verify {leaf}"
+handback = "reverify {slice}"
+
+[step.review]
+kind = "checks"
+[[step.review.check]]
+name = "qa"
+invoke = "check {check} {cycle}"
+handback = "recheck {check}"
+[[step.review.check]]
+name = "leafy"
+invoke = "check [{leaf}] [{attempt}]"
+handback = "recheck [{leaf}] [{attempt}]"
+[step.review.critic]
+invoke = "critic {cycle}"
+handback = "again {worktree} [{leaf}] [{attempt}]"
+[step.review.fixer]
+invoke = "fix {leaf} {cycle}"
+handback = "fix again {leaf} [{attempt}]"
+[step.review.verifier]
+invoke = "verify {leaf}"
+handback = "reverify {leaf}"
+`
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pv := PromptVars{Change: "C", Slug: "S", Title: "T", Run: "R", Step: "st", Brief: "/b/brief.md", Slice: "/b/slice.json", Handback: "/b/handback.md", Worktree: "/wt"}
+
+	conduct := d.Steps["conduct"]
+	if got, want := conduct.RenderPrompt(pv), "/myskill:conduct --prompt /b/brief.md"; got != want {
+		t.Errorf("invoke = %q, want %q", got, want)
+	}
+	if got, want := conduct.RenderHandback(pv), "again: /b/handback.md for R"; got != want {
+		t.Errorf("handback = %q, want %q", got, want)
+	}
+	if got := d.Steps["alias"].RenderPrompt(pv); got != "old C" {
+		t.Errorf("prompt alias = %q", got)
+	}
+	leafy := d.Steps["leafy"]
+	if got := leafy.RenderPrompt(pv); got != "do [] []" {
+		t.Errorf("agent step {leaf} {attempt} invoke = %q, want them empty", got)
+	}
+	if got := leafy.RenderHandback(pv); got != "again [] []" {
+		t.Errorf("agent step {leaf} {attempt} handback = %q, want them empty", got)
+	}
+
+	b := d.Steps["build"]
+	lv := LeafVars{PromptVars: pv, Leaf: "lf", Attempt: 2}
+	if got := b.Builder.RenderPrompt(lv); got != "build lf 2" {
+		t.Errorf("builder invoke = %q", got)
+	}
+	if got := b.Builder.RenderHandback(lv); got != "rebuild lf /b/handback.md" {
+		t.Errorf("builder handback = %q", got)
+	}
+	if got := b.Verifier.RenderPrompt(lv); got != "verify lf" {
+		t.Errorf("verifier prompt = %q", got)
+	}
+	if got := b.Verifier.RenderHandback(lv); got != "reverify /b/slice.json" {
+		t.Errorf("verifier handback = %q", got)
+	}
+
+	r := d.Steps["review"]
+	cv := CheckVars{PromptVars: pv, Check: "qa", Cycle: 3}
+	c, _ := r.Check("qa")
+	if got := c.Role.RenderCheckPrompt(cv); got != "check qa 3" {
+		t.Errorf("check invoke = %q", got)
+	}
+	if got := c.Role.RenderCheckHandback(cv); got != "recheck qa" {
+		t.Errorf("check handback = %q", got)
+	}
+	if got := r.Critic.RenderCheckPrompt(cv); got != "critic 3" {
+		t.Errorf("critic invoke = %q", got)
+	}
+	if got := r.Critic.RenderCheckHandback(cv); got != "again /wt [] []" {
+		t.Errorf("critic handback = %q, want {leaf} {attempt} empty", got)
+	}
+	lc, _ := r.Check("leafy")
+	if got := lc.Role.RenderCheckPrompt(cv); got != "check [] []" {
+		t.Errorf("check {leaf} {attempt} invoke = %q, want them empty", got)
+	}
+	if got := lc.Role.RenderCheckHandback(cv); got != "recheck [] []" {
+		t.Errorf("check {leaf} {attempt} handback = %q, want them empty", got)
+	}
+	fv := FixerVars{PromptVars: pv, Leaf: "lf", Attempt: 2, Cycle: 1}
+	if got := r.Fixer.RenderFixerPrompt(fv); got != "fix lf 1" {
+		t.Errorf("fixer invoke = %q", got)
+	}
+	if got := r.Fixer.RenderFixerHandback(fv); got != "fix again lf [2]" {
+		t.Errorf("fixer handback = %q", got)
+	}
+	if got := r.Fixer.RenderFixerHandback(FixerVars{PromptVars: pv, Cycle: 1}); got != "fix again  []" {
+		t.Errorf("fixer handback with no leaf or attempt = %q, want them empty", got)
+	}
+	if got := r.Verifier.RenderPrompt(lv); got != "verify lf" {
+		t.Errorf("checks verifier invoke = %q", got)
+	}
+	if got := r.Verifier.RenderHandback(lv); got != "reverify lf" {
+		t.Errorf("checks verifier handback = %q", got)
+	}
+
+	all := Step{Prompt: "{change}{slug}{title}{run}{step}{brief}{slice}{handback}{worktree}"}
+	if got := all.RenderPrompt(pv); got != "CSTRst/b/brief.md/b/slice.json/b/handback.md/wt" {
+		t.Errorf("every placeholder = %q", got)
+	}
+
+	refused := []struct{ name, src, want string }{
+		{"unknown invoke placeholder", "[step.a]\nkind = \"agent\"\ninvoke = \"do {nope}\"\n", `step "a": prompt uses unknown placeholder {nope}`},
+		{"unknown handback placeholder", "[step.a]\nkind = \"agent\"\ninvoke = \"x\"\nhandback = \"do {nope}\"\n", `step "a": handback uses unknown placeholder {nope}`},
+		{"both prompt and invoke", "[step.a]\nkind = \"agent\"\nprompt = \"x\"\ninvoke = \"y\"\n", `step "a": prompt is an alias of invoke: set one of them, not both`},
+		{"both on a role", "[step.b]\nkind = \"leaves\"\n[step.b.builder]\nprompt = \"x\"\ninvoke = \"y\"\n[step.b.verifier]\nprompt = \"z\"\n", `builder: prompt is an alias of invoke`},
+		{"handback on a command", "[step.c]\nkind = \"command\"\nrun = \"true\"\nhandback = \"x\"\n", `step "c": handback is only for agent steps`},
+		{"unknown role handback placeholder", "[step.b]\nkind = \"leaves\"\n[step.b.builder]\ninvoke = \"x\"\nhandback = \"{check}\"\n[step.b.verifier]\nprompt = \"z\"\n", `builder: handback uses unknown placeholder {check}`},
+	}
+	for _, tt := range refused {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("p", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("err = %v, want it to contain %q", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestGateStep(t *testing.T) {
+	ok := "[step.g]\nkind = \"gate\"\ncommands = [\"go vet ./...\", \"go test ./...\"]\non.fail = \"fix\"\n[step.fix]\nkind = \"agent\"\nprompt = \"fix\"\n"
+	d, err := Parse("w", []byte(ok))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := d.Steps["g"]
+	if g.Kind != KindGate || !slices.Equal(g.Commands, []string{"go vet ./...", "go test ./..."}) {
+		t.Errorf("gate step = %+v", g)
+	}
+	if next, _ := d.Next("g", OutcomeFail); next != "fix" {
+		t.Errorf("fail goes to %q, want fix", next)
+	}
+	gate := "[step.g]\nkind = \"gate\"\n"
+	tests := []struct{ name, src, want string }{
+		{"no commands", gate, `step "g": a gate step needs commands`},
+		{"empty commands", gate + "commands = []\n", `step "g": a gate step needs commands`},
+		{"blank command", gate + "commands = [\"true\", \" \"]\n", `step "g": commands[1] is empty`},
+		{"prompt", gate + "commands = [\"true\"]\nprompt = \"x\"\n", `step "g": a gate step cannot have prompt`},
+		{"agent", gate + "commands = [\"true\"]\nagent = \"x\"\n", `step "g": a gate step cannot have agent`},
+		{"models", gate + "commands = [\"true\"]\nmodels = [\"opus\"]\n", `step "g": a gate step cannot have models`},
+		{"run", gate + "commands = [\"true\"]\nrun = \"true\"\n", `step "g": a gate step cannot have run`},
+		{"commands on command", "[step.a]\nkind = \"command\"\nrun = \"true\"\ncommands = [\"x\"]\n", `step "a": commands is only for gate steps`},
+		{"bad outcome", gate + "commands = [\"true\"]\non.timeout = \"done\"\n", `step "g": on.timeout: a gate step has no outcome "timeout"`},
+	}
+	for _, tt := range tests {
+		_, err := Parse("w", []byte(tt.src))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("%s: err = %v, want %q", tt.name, err, tt.want)
+		}
+		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
+			t.Errorf("%s: Validate found no problem", tt.name)
+		}
+	}
+	if _, ps := Validate("w", []byte(ok), nil); len(ps) != 0 {
+		t.Errorf("valid gate: %v", ps)
+	}
+}
+
+func TestHandbackTarget(t *testing.T) {
+	base := "[step.build]\nkind = \"agent\"\nprompt = \"build\"\non.pass = \"g\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:build\"\n"
+	d, err := Parse("w", []byte(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.HandbackCap != DefaultHandbackCap {
+		t.Errorf("handback_cap = %d, want %d", d.HandbackCap, DefaultHandbackCap)
+	}
+	if h, ok := d.HandbackTarget("g", OutcomeFail); !ok || h != "build" {
+		t.Errorf("HandbackTarget = %q, %v", h, ok)
+	}
+	if _, ok := d.HandbackTarget("g", OutcomePass); ok {
+		t.Error("pass has a hand-back target")
+	}
+	if next, end := d.Next("g", OutcomeFail); next != "build" || end != EndNone {
+		t.Errorf("Next = %q, %v", next, end)
+	}
+	d, err = Parse("w", []byte("handback_cap = 5\n"+base))
+	if err != nil || d.HandbackCap != 5 {
+		t.Fatalf("cap %v, %v", d, err)
+	}
+	tests := []struct{ name, src, want string }{
+		{"unknown step", "[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:nope\"\n", `step "g": on.fail hands back to "nope", which is not a step`},
+		{"not an agent", "[step.c]\nkind = \"command\"\nrun = \"true\"\n[step.g]\nkind = \"gate\"\ncommands = [\"true\"]\non.fail = \"handback:c\"\n", `step "g": on.fail hands back to "c", which is a command step`},
+		{"cap zero", "handback_cap = 0\n" + base, "handback_cap is 0"},
+		{"cap negative", "handback_cap = -2\n" + base, "handback_cap is -2"},
+		{"cap text", "handback_cap = \"x\"\n" + base, "handback_cap is x"},
+	}
+	for _, tt := range tests {
+		_, err := Parse("w", []byte(tt.src))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("%s: err = %v, want %q", tt.name, err, tt.want)
+		}
+		if _, ps := Validate("w", []byte(tt.src), nil); len(ps) == 0 {
+			t.Errorf("%s: Validate found no problem", tt.name)
+		}
+	}
+}
+
+// An agent step may declare review checks by name, like a checks step; a
+// check with no name or a repeated name is refused.
+func TestAgentStepChecks(t *testing.T) {
+	src := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n"
+	d, err := Parse("w", []byte(src+"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := d.Steps["conduct"]
+	var names []string
+	for _, c := range s.Checks {
+		names = append(names, c.Name)
+	}
+	if strings.Join(names, ",") != "plan,code,qa" {
+		t.Errorf("checks %v", names)
+	}
+	if _, ok := s.Check("code"); !ok {
+		t.Error("Check(code) not found")
+	}
+	for _, tt := range []struct{ name, src, want string }{
+		{"no name", src + "[[step.conduct.check]]\nprompt = \"x\"\n", "check 1 has no name"},
+		{"duplicate", src + "[[step.conduct.check]]\nname = \"qa\"\n[[step.conduct.check]]\nname = \"qa\"\n", `check "qa" is declared twice`},
+		{"prompt", src + "[[step.conduct.check]]\nname = \"qa\"\nprompt = \"x\"\n", "is only a name"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("w", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error %v; want %q", err, tt.want)
+			}
+		})
 	}
 }

@@ -41,6 +41,7 @@ type daemonMove struct {
 type daemonFolded struct {
 	res       planResult
 	cands     []string
+	proposed  []string
 	planSkips []daemon.Skip
 	sets      map[id.ID]changeset.ChangeSet
 	overlaps  []InboxItem
@@ -205,10 +206,19 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	} else {
 		sched.Backlog = pol.Backlog
 	}
+	sched.Conducts = func(cs id.ID) bool {
+		c, ok := f.sets[cs]
+		return ok && changeConducts(ctx.Root, c.Open)
+	}
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
 		return ok && len(changeLeaves(newModelSets(list, cs), c.Ops)) > 0
 	}, sched)
+	for _, c := range list {
+		if c.State == changeset.StateProposed && len(changeLeaves(newModelSets(list, c.ID), c.Ops)) > 0 {
+			f.proposed = append(f.proposed, c.ID.String())
+		}
+	}
 	m0 := newModelSets(list, id.ID{})
 	if ovs := gmodel.Overlaps(list); len(ovs) > 0 {
 		f.overlaps = overlapItems(ovs, m0)

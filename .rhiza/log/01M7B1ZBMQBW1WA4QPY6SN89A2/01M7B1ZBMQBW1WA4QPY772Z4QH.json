@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T18:16:04Z",
+  "body": {
+    "intent": "Record agent actor claude-code-da6160b3 for session da6160b3-fca1-475d-a623-01a1d61f8a5b",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7B1ZBMQBW1WA4QPY6SN89A2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B1ZBMQBW1WA4QPY772Z4QH",
+  "type": "open",
+  "v": 1
+}

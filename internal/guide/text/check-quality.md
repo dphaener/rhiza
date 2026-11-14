@@ -81,5 +81,5 @@ Test with fakes only, never real Rex, agents or `gh`.
 
 <!-- shared: severities nested -->
 
-A critic then confirms, downgrades or drops your blockers and majors; fixers act on
-what stays.
+A critic then confirms, downgrades or drops your blockers and majors.
+<!-- shared: contract-ref -->

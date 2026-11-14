@@ -1,0 +1,91 @@
+# A command step failing twice hands the run back to its agent step each
+# time: the agent's session ended, so it is resumed in the same conversation
+# (the same session ID, claude --resume) with the step's handback text, and
+# handback.md in its session directory names the failing command and the
+# output tail. The third pass of the command passes and the run succeeds.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/check
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Handback' --title 'Handback' --json
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/handback.toml .rhiza/workflows/handback.toml
+
+exec sh -c 'rhiza run start --foreground --workflow handback --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+
+# The agent started once and was resumed twice, all as one session.
+exec cat $WORK/claude.log
+stdout -count=1 '^start '
+stdout -count=2 '^resume '
+exec rhiza session ls --json
+stdout -count=1 '"step": "build"'
+
+# Each resume was told the step's handback text, the file naming the
+# failing command and its output tail.
+exec cat $WORK/claude.log
+stdout 'resume .*Fix it, see .*/handback\.md'
+exec cat $WORK/handback.seen
+stdout '`check`'
+stdout 'tests red 2'
+
+# The run's journal holds the two hand-backs.
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout -count=2 '"type":"handback"'
+
+-- handback.toml --
+name = "handback"
+
+[step.build]
+kind = "agent"
+invoke = "Build {change}"
+handback = "Fix it, see {handback}"
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "check"
+on.pass = "done"
+on.fail = "handback:build"
+-- bin/check --
+#!/bin/sh
+n=$(cat "$WORK/n" 2>/dev/null || echo 0)
+n=$((n+1))
+echo $n > "$WORK/n"
+echo "tests red $n"
+[ "$n" -ge 3 ]
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+# A fake agent: logs whether it started or resumed, keeps a transcript for
+# --resume and copies handback.md when there is one.
+kind=start
+[ "$1" = --resume ] && kind=resume
+for a; do last=$a; done
+echo "$kind $RHIZA_SESSION $last" >> "$WORK/claude.log"
+echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+[ -n "$RHIZA_HANDBACK" ] && cat "$RHIZA_HANDBACK" > "$WORK/handback.seen"
+exit 0

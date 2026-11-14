@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BHHC8FZZ62FNHD3AR1KXF9",
+  "after": [
+    "01M7BGXC4QN75SHMQEWJ94XQX5"
+  ],
+  "at": "2026-11-13T22:51:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a1857908f re-ran every Checks: command, all exit 0: go test -trimpath ./internal/web -run 'TestWebAnswer|TestWebApprove' (4 tests PASS: forms carry the CSRF field and are absent with no token/wrong cookie/no token set; answer and approve POSTs with token+CSRF confirm 'Answered. The run continues.'/'Approved. The run continues.'; answer and approve POSTs missing or with a wrong CSRF field get 403 and run nothing; merged inbox forms post into /p/<project>); go test -trimpath ./internal/api -run 'TestWebAnswerAction|TestWebApproveAction' (PASS: POST through WebProjectHandler runs the real question.answer, writing the answering Decision, and the real run.approve journals one sign-off, a second approve refused without a run ID; through WebRootHandler the merged inbox at the root shows an approve form posting to /p/repo/actions/approve and the POST runs run.approve; no token gives 401); go test -trimpath ./internal/web; go test -trimpath ./internal/api -run 'Web|Inbox|Describe|Docs|Signoff|ReadOnly'; make self-check; rhiza ship generate; rhiza render. Read the diff: changes are limited to the web actions (internal/web actions, inbox/merged inbox forms, templates, css, api WebActions and handler wiring) plus the leaf's log and rendered actor; no stubs or TODOs; tests use fakes and temp stores only."
+        },
+        "handle": "web-action-answer-verified",
+        "id": "01M7BHQQTYDWNFGW0RCJ6K1FSZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BHQQTYDWNFGW0RCHCT22HP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BHQQTYDWNFGW0RCHCT22HP",
+        "id": "01M7BHQR1S3XN50FBBH0TSAPEE",
+        "link": "01M7BHQR1S3XN50FBBGYXK1MSJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BHQR79VPXWE15VNHWG0XW3",
+  "type": "ops",
+  "v": 1
+}

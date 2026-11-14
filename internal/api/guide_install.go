@@ -44,6 +44,8 @@ const (
 	pluginVerifierPath        = "skills/rhiza-verifier/SKILL.md"
 	pluginCheckCompliancePath = "skills/rhiza-check-compliance/SKILL.md"
 	pluginCheckQualityPath    = "skills/rhiza-check-quality/SKILL.md"
+	pluginCheckPlanPath       = "skills/rhiza-check-plan/SKILL.md"
+	pluginCheckCodePath       = "skills/rhiza-check-code/SKILL.md"
 	pluginCheckQAPath         = "skills/rhiza-check-qa/SKILL.md"
 	pluginCheckModelPath      = "skills/rhiza-check-model/SKILL.md"
 	pluginCriticPath          = "skills/rhiza-critic/SKILL.md"
@@ -51,6 +53,7 @@ const (
 	pluginCIFixPath           = "skills/rhiza-ci-fix/SKILL.md"
 	pluginGateFixPath         = "skills/rhiza-gate-fix/SKILL.md"
 	pluginConflictFixPath     = "skills/rhiza-conflict-fix/SKILL.md"
+	pluginConductPath         = "skills/rhiza-conduct/SKILL.md"
 )
 
 // pluginPaths lists every file guide.install writes, in the order it
@@ -61,8 +64,8 @@ var pluginPaths = slices.Concat(
 	slices.Sorted(slices.Values([]string{
 		pluginRetryPath, pluginBuildPath, pluginBuilderPath, pluginPlanPath, pluginPlannerPath,
 		pluginPlanReviewerPath, pluginPlanCriticPath, pluginPlanReviserPath, pluginReviewPath, pluginScrubPath, pluginVerifierPath,
-		pluginCheckCompliancePath, pluginCheckQualityPath, pluginCheckQAPath, pluginCheckModelPath, pluginCriticPath,
-		pluginFixerPath, pluginCIFixPath, pluginGateFixPath, pluginConflictFixPath,
+		pluginCheckCompliancePath, pluginCheckQualityPath, pluginCheckPlanPath, pluginCheckCodePath, pluginCheckQAPath, pluginCheckModelPath, pluginCriticPath,
+		pluginFixerPath, pluginCIFixPath, pluginGateFixPath, pluginConflictFixPath, pluginConductPath,
 	})),
 )
 
@@ -70,7 +73,7 @@ var pluginPaths = slices.Concat(
 const pluginName = "rhiza"
 
 // pluginDescription is the plugin manifest's description.
-const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review and the nine review role skills, and a " +
+const pluginDescription = "The Rhiza agent guide: the rhiza, rhiza-scrub, rhiza-plan, rhiza-planner, rhiza-plan-reviewer, rhiza-plan-critic, rhiza-plan-reviser, rhiza-build, rhiza-builder, rhiza-verifier, rhiza-build-retry, rhiza-review, rhiza-conduct and the eleven review role skills, and a " +
 	"SessionStart hook that runs rhiza status --hook."
 
 // pluginMarker is the manifest's ownership marker: a plugin.json holding
@@ -259,11 +262,13 @@ func pluginFiles(version string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// The nine review role topics are skills too, so each review session loads
+	// The eleven review role topics are skills too, so each review session loads
 	// its own by its description.
 	reviewRoles := map[string]string{
 		pluginCheckCompliancePath: "check-compliance",
 		pluginCheckQualityPath:    "check-quality",
+		pluginCheckPlanPath:       "check-plan",
+		pluginCheckCodePath:       "check-code",
 		pluginCheckQAPath:         "check-qa",
 		pluginCheckModelPath:      "check-model",
 		pluginCriticPath:          "critic",
@@ -272,7 +277,12 @@ func pluginFiles(version string) (map[string][]byte, error) {
 		pluginGateFixPath:         "gate-fix",
 		pluginConflictFixPath:     "conflict-fix",
 	}
+	conduct, err := skillFile("rhiza-conduct", "conduct")
+	if err != nil {
+		return nil, err
+	}
 	out := map[string][]byte{
+		pluginConductPath:      conduct,
 		pluginManifestPath:     manifest,
 		pluginSkillPath:        skill,
 		pluginHooksPath:        hooks,

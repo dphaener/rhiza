@@ -51,11 +51,30 @@ type roadmapJSON struct {
 		ChangeSets []struct {
 			ID        string   `json:"id"`
 			State     string   `json:"state"`
+			Title     string   `json:"title"`
 			Intent    string   `json:"intent"`
 			Ready     bool     `json:"ready"`
 			DependsOn []string `json:"depends_on"`
 		} `json:"change_sets"`
 	} `json:"groups"`
+}
+
+// The milestones operation's response, as far as the page reads it.
+type milestonesJSON struct {
+	Milestones []struct {
+		Statement  string `json:"statement"`
+		State      string `json:"state"`
+		DonePoints []struct {
+			Statement string `json:"statement"`
+			Met       bool   `json:"met"`
+		} `json:"done_points"`
+		ChangeSets []struct {
+			ID     string `json:"id"`
+			Title  string `json:"title"`
+			Intent string `json:"intent"`
+			State  string `json:"state"`
+		} `json:"change_sets"`
+	} `json:"milestones"`
 }
 
 // Seg is one state's share of a group's bar and legend.
@@ -64,20 +83,52 @@ type Seg struct {
 	N     int
 }
 
-// RoadmapGroup is a milestone, the backlog or an umbrella, as the roadmap
-// operation's group kind says: its title, a bar of its change sets by state
-// and a row for each.
+// shownRows is how many of a group's change sets show before its fold.
+const shownRows = 5
+
+// RowGroup is a labelled run of change set rows: the first few shown and
+// the rest in a fold that opens in place.
+type RowGroup struct {
+	Label string
+	Shown []Row
+	More  []Row
+	// MoreText is the fold's summary, e.g. "7 more landed, 1 withdrawn".
+	MoreText string
+}
+
+// DonePointView is a milestone's done point and whether it is met.
+type DonePointView struct {
+	Text string
+	Met  bool
+}
+
+// RoadmapGroup is a milestone, the backlog or an umbrella: its title, a bar
+// of its change sets by state and its rows. A milestone has its state word,
+// its done points and its rows in RowGroups; the backlog and an umbrella
+// have Rows.
 type RoadmapGroup struct {
 	Kind, Title string
+	State       string
 	Segs        []Seg
+	DonePoints  []DonePointView
+	Met         int
+	RowGroups   []RowGroup
 	Rows        []Row
 }
 
+// FinishedMilestone is a finished milestone's name and done points.
+type FinishedMilestone struct {
+	Name       string
+	DonePoints []DonePointView
+}
+
 // RoadmapView is what the roadmap page and its live section render: the
-// operation's groups, in its order.
+// open milestones, then the backlog and the umbrellas, and the finished
+// milestones.
 type RoadmapView struct {
-	Groups []RoadmapGroup
-	Total  int
+	Groups   []RoadmapGroup
+	Finished []FinishedMilestone
+	Total    int
 }
 
 func (v *RoadmapView) Kicker() string {
@@ -100,23 +151,164 @@ func plural(n int, w string) string {
 	return fmt.Sprintf("%d %ss", n, w)
 }
 
-// loadRoadmap reads the roadmap operation, whole, and shapes it into groups.
-// Milestones and umbrellas are named by their intent's statement, never by
-// handle or ID; each row shows the change set's intent and state.
+// activeRuns is the change sets with a run not finished: going, waiting on
+// the owner or stopped.
+func activeRuns(r *http.Request) map[string]string {
+	var runs struct {
+		Runs []struct {
+			Change string `json:"change"`
+			State  string `json:"state"`
+		} `json:"runs"`
+	}
+	out := map[string]string{}
+	if err := apiGet(r, "/api/run.ls?limit=1000", &runs); err != nil {
+		return out
+	}
+	for _, ru := range runs.Runs {
+		if ru.Change == "" || ru.State == "succeeded" || ru.State == "failed" {
+			continue
+		}
+		if cur, ok := out[ru.Change]; !ok || cur != "running" {
+			out[ru.Change] = ru.State
+		}
+	}
+	return out
+}
+
+// fold splits rows into the first shownRows and the rest.
+func fold(label string, rows []Row, more string) RowGroup {
+	g := RowGroup{Label: label, Shown: rows}
+	if len(rows) > shownRows {
+		g.Shown, g.More = rows[:shownRows], rows[shownRows:]
+		g.MoreText = more
+	}
+	return g
+}
+
+// milestoneGroup shapes an open milestone: its bar, its done points and its
+// change sets grouped by what is happening to them.
+func milestoneGroup(m milestonesJSON, i int, runs map[string]string) RoadmapGroup {
+	ms := m.Milestones[i]
+	g := RoadmapGroup{Kind: "milestone", Title: ms.Statement, State: ms.State}
+	for _, d := range ms.DonePoints {
+		g.DonePoints = append(g.DonePoints, DonePointView{d.Statement, d.Met})
+		if d.Met {
+			g.Met++
+		}
+	}
+	row := func(c struct {
+		ID     string `json:"id"`
+		Title  string `json:"title"`
+		Intent string `json:"intent"`
+		State  string `json:"state"`
+	}, p Pill) Row {
+		return Row{Href: "/changes/" + c.ID, Title: c.Title, Sub: c.Intent, Pill: p, Step: "—"}
+	}
+	var building, accepted, proposed, landed, withdrawn, drafts []Row
+	count := map[string]int{}
+	for _, c := range ms.ChangeSets {
+		switch c.State {
+		case "accepted":
+			count["accepted"]++
+			if st, ok := runs[c.ID]; ok {
+				p := Pill{"running", "building"}
+				if st != "running" {
+					p = Pill{"waiting", "stuck"}
+				}
+				rw := row(c, p)
+				rw.Live = st == "running"
+				building = append(building, rw)
+			} else {
+				accepted = append(accepted, row(c, Pill{"accepted", "accepted"}))
+			}
+		case "proposed":
+			count["proposed"]++
+			proposed = append(proposed, row(c, Pill{"proposed", "proposed"}))
+		case "landed":
+			count["landed"]++
+			landed = append(landed, row(c, Pill{"landed", "landed"}))
+		case "withdrawn":
+			count["withdrawn"]++
+			withdrawn = append(withdrawn, row(c, Pill{"withdrawn", "withdrawn"}))
+		case "draft":
+			drafts = append(drafts, row(c, Pill{"draft", "draft"}))
+		}
+	}
+	for _, s := range []string{"landed", "accepted", "proposed", "withdrawn"} {
+		if count[s] > 0 {
+			g.Segs = append(g.Segs, Seg{s, count[s]})
+		}
+	}
+	moreOf := func(rows []Row, n int, word string) string {
+		return fmt.Sprintf("%d more %s", len(rows)-n, word)
+	}
+	add := func(label string, rows []Row, word string) {
+		if len(rows) > 0 {
+			g.RowGroups = append(g.RowGroups, fold(label, rows, moreOf(rows, shownRows, word)))
+		}
+	}
+	add("Building now", building, "building")
+	add("Accepted, waiting", accepted, "accepted")
+	add("Proposed", proposed, "proposed")
+	// Landed shows its first rows; the rest and every withdrawn change set
+	// are in its fold.
+	if len(landed)+len(withdrawn) > 0 {
+		lg := fold("Landed", landed, "")
+		lg.More = append(lg.More, withdrawn...)
+		var parts []string
+		if n := len(lg.More) - len(withdrawn); n > 0 {
+			parts = append(parts, fmt.Sprintf("%d more landed", n))
+		}
+		if len(withdrawn) > 0 {
+			parts = append(parts, fmt.Sprintf("%d withdrawn", len(withdrawn)))
+		}
+		lg.MoreText = strings.Join(parts, ", ")
+		g.RowGroups = append(g.RowGroups, lg)
+	}
+	add("Drafts", drafts, "drafts")
+	return g
+}
+
+// loadRoadmap reads the milestones operation for the open milestones and the
+// roadmap operation for the backlog and the umbrellas, and shapes them into
+// groups. Milestones and umbrellas are named by their intent's statement,
+// never by handle or ID; each row shows the change set's title, its intent
+// beneath and its state.
 func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 	var rm roadmapJSON
 	if err := apiGet(r, "/api/roadmap?all=true", &rm); err != nil {
 		return nil, err
 	}
+	var ms milestonesJSON
+	if err := apiGet(r, "/api/milestones", &ms); err != nil {
+		return nil, err
+	}
 	v := &RoadmapView{}
-	states := []string{"accepted", "proposed"}
-	for _, g := range rm.Groups {
-		out := RoadmapGroup{Kind: g.Kind, Title: "Not in a milestone"}
-		if g.Kind != "backlog" {
-			out.Title = "Milestone"
-			if g.Kind == "umbrella" {
-				out.Title = "Umbrella"
+	runs := activeRuns(r)
+	for i, m := range ms.Milestones {
+		if m.State == "finished" {
+			f := FinishedMilestone{Name: m.Statement}
+			for _, d := range m.DonePoints {
+				f.DonePoints = append(f.DonePoints, DonePointView{d.Statement, d.Met})
 			}
+			v.Finished = append(v.Finished, f)
+			continue
+		}
+		g := milestoneGroup(ms, i, runs)
+		for _, c := range m.ChangeSets {
+			if c.State == "draft" || c.State == "proposed" || c.State == "accepted" || c.State == "landed" || c.State == "withdrawn" {
+				v.Total++
+			}
+		}
+		v.Groups = append(v.Groups, g)
+	}
+	for _, g := range rm.Groups {
+		if g.Kind == "milestone" {
+			continue
+		}
+		out := RoadmapGroup{Kind: g.Kind, Title: "Not in a milestone"}
+		if g.Kind == "umbrella" {
+			out.Title = "Umbrella"
 			var s struct {
 				Node struct {
 					Fields map[string]string `json:"fields"`
@@ -130,19 +322,19 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 		}
 		count := map[string]int{}
 		for _, c := range g.ChangeSets {
-			sub, step := "", "—"
+			note, step := "", "—"
 			if c.Ready {
 				step = "ready"
 			}
 			if n := len(c.DependsOn); n > 0 {
-				sub = "depends on " + plural(n, "change set")
+				note = "depends on " + plural(n, "change set")
 			}
-			out.Rows = append(out.Rows, Row{Href: "/changes/" + c.ID, Title: c.Intent, Sub: sub,
+			out.Rows = append(out.Rows, Row{Href: "/changes/" + c.ID, Title: c.Title, Sub: c.Intent, Note: note,
 				Pill: Pill{State: c.State, Text: c.State}, Step: step})
 			count[c.State]++
 			v.Total++
 		}
-		for _, s := range states {
+		for _, s := range []string{"accepted", "proposed"} {
 			if count[s] > 0 {
 				out.Segs = append(out.Segs, Seg{s, count[s]})
 			}

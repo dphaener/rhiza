@@ -3,6 +3,8 @@ package run
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strconv"
@@ -2678,5 +2680,212 @@ on.timeout = "failed"
 	}
 	if total != 5*time.Minute {
 		t.Fatalf("slept %v in %v, want exactly the 5m timeout", total, c.sleeps)
+	}
+}
+
+const gateWF = `
+[step.gate]
+kind = "gate"
+commands = ["vet", "test", "lint"]
+on.pass = "done"
+on.fail = "fix"
+[step.fix]
+kind = "command"
+run = "fix"
+on.pass = "failed"
+`
+
+// outputRunner gives the fake runner a command's whole output.
+type outputRunner struct {
+	*fakeRunner
+	out map[string]string // output per command's run
+}
+
+func (o outputRunner) CommandOutput(step workflow.Step, env []string) (int, string, error) {
+	code, _, err := o.fakeRunner.Command(step, env)
+	return code, o.out[step.Run], err
+}
+
+func TestGateStep(t *testing.T) {
+	t.Run("passes", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), []string{"gate:pass"}) {
+			t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+		}
+		if r.commands["gate"] != 3 || st.Steps[0].Detail != "3 commands passed" {
+			t.Errorf("commands %d detail %q", r.commands["gate"], st.Steps[0].Detail)
+		}
+	})
+	t.Run("fails keeping full output and running the rest", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.codes["gate"] = []int{0, 1, 0}
+		e.Runner = outputRunner{r, map[string]string{"test": "line1\nline2\n--- FAIL: TestX\n"}}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(outcomes(st), []string{"gate:fail", "fix:pass"}) {
+			t.Fatalf("steps %v", outcomes(st))
+		}
+		if r.commands["gate"] != 3 {
+			t.Errorf("gate ran %d commands, want all 3", r.commands["gate"])
+		}
+		d := st.Steps[0].Detail
+		path := filepath.Join(e.Store.RunDir(runID), "gate-gate-1-2.log")
+		for _, want := range []string{"1 of 3", "`test`", "exit 1", path} {
+			if !strings.Contains(d, want) {
+				t.Errorf("detail %q lacks %q", d, want)
+			}
+		}
+		if strings.Contains(d, "`vet`") || strings.Contains(d, "`lint`") {
+			t.Errorf("detail names a passing command: %q", d)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil || string(got) != "line1\nline2\n--- FAIL: TestX\n" {
+			t.Errorf("kept output %q, %v", got, err)
+		}
+	})
+	t.Run("runner without full output keeps its detail", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.codes["gate"] = []int{0, 0, 2}
+		r.details["gate"] = "tail text"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := os.ReadFile(filepath.Join(e.Store.RunDir(runID), "gate-gate-1-3.log"))
+		if err != nil || string(got) != "tail text" {
+			t.Errorf("kept %q, %v", got, err)
+		}
+		if !strings.Contains(st.Steps[0].Detail, "`lint`: exit 2") {
+			t.Errorf("detail %q", st.Steps[0].Detail)
+		}
+	})
+	t.Run("included gate keeps output in the run directory", func(t *testing.T) {
+		const outer = "name = \"wf\"\n[step.sub]\nkind = \"workflow\"\nworkflow = \"inner\"\n"
+		const inner = "name = \"inner\"\n[step.ig]\nkind = \"gate\"\ncommands = [\"boom\"]\n"
+		def, err := workflow.ParseWith("wf", []byte(outer), func(string) ([]byte, error) { return []byte(inner), nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+		store := newStore(t)
+		if err := Start(store, runID, Started{Workflow: "wf", Definition: outer, Includes: def.Includes, Change: "CS1"}, t0, def); err != nil {
+			t.Fatal(err)
+		}
+		r := newFakeRunner()
+		r.store = store
+		r.codes["inner/ig"] = []int{4}
+		e := &Engine{Store: store, Runner: outputRunner{r, map[string]string{"boom": "inner-out\n"}}, Clock: &fakeClock{}, Now: func() time.Time { return at(1) }}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		path := filepath.Join(store.RunDir(runID), "gate-inner_ig-1-1.log")
+		var d string
+		for _, s := range st.Steps {
+			if s.Step == "inner/ig" {
+				d = s.Detail
+			}
+		}
+		if !strings.Contains(d, "full output: "+path) {
+			t.Errorf("detail %q lacks %q", d, path)
+		}
+		if got, err := os.ReadFile(path); err != nil || string(got) != "inner-out\n" {
+			t.Errorf("kept %q, %v", got, err)
+		}
+	})
+	t.Run("runner error fails the run", func(t *testing.T) {
+		e, r, _, _ := setup(t, gateWF)
+		r.failOn["gate"] = errors.New("sh: not found")
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Result != Failed {
+			t.Errorf("result %q", st.Result)
+		}
+	})
+}
+
+const handbackWF = `
+[step.build]
+kind = "agent"
+prompt = "build"
+on.pass = "check"
+[step.check]
+kind = "command"
+run = "check"
+on.pass = "done"
+on.fail = "handback:build"
+`
+
+func TestHandbackRoute(t *testing.T) {
+	t.Run("re-enters the agent step each time", func(t *testing.T) {
+		e, r, _, _ := setup(t, handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 0}
+		r.details["check"] = "tests red"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := []string{"build:pass", "check:fail", "build:pass", "check:fail", "build:pass", "check:pass"}
+		if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), want) {
+			t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+		}
+		if len(st.Handbacks) != 2 || st.Handbacks[0].Target != "build" || !strings.Contains(st.Handbacks[0].Cause, "tests red") || st.Handbacks[0].Step != "check" {
+			t.Errorf("handbacks %+v", st.Handbacks)
+		}
+	})
+	t.Run("a fourth failure parks the run", func(t *testing.T) {
+		e, r, _, _ := setup(t, handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 1, 1, 1}
+		r.details["check"] = "tests red"
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Ended || len(st.Handbacks) != 3 || st.Current != "check" {
+			t.Fatalf("ended %v handbacks %d current %q", st.Ended, len(st.Handbacks), st.Current)
+		}
+		for _, want := range []string{HandbackParked, `"check"`, "3 hand-backs", `"build"`, "tests red"} {
+			if !strings.Contains(st.Stopped, want) {
+				t.Errorf("stopped %q lacks %q", st.Stopped, want)
+			}
+		}
+	})
+	t.Run("handback_cap sets the limit", func(t *testing.T) {
+		e, r, _, _ := setup(t, "handback_cap = 1\n"+handbackWF)
+		r.outcome["S-build"] = workflow.OutcomePass
+		r.codes["check"] = []int{1, 1, 1}
+		st, err := e.Run(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Ended || len(st.Handbacks) != 1 || !strings.HasPrefix(st.Stopped, HandbackParked) {
+			t.Fatalf("ended %v handbacks %d stopped %q", st.Ended, len(st.Handbacks), st.Stopped)
+		}
+	})
+}
+
+func TestHandbackCauseOf(t *testing.T) {
+	gate := workflow.Step{Name: "gate", Kind: workflow.KindGate}
+	c := CauseOf(gate, "fail", "gate failed: 1 of 2 commands\ncommand 2 `make gate`: exit 1; full output: /r/g.log")
+	if len(c.Commands) != 1 || c.Commands[0] != (FailedCommand{"make gate", "/r/g.log"}) {
+		t.Errorf("gate cause %+v", c)
+	}
+	cmd := workflow.Step{Name: "check", Kind: workflow.KindCommand, Run: "make check"}
+	c = CauseOf(cmd, "fail", "exit 1\nFAIL x")
+	if len(c.Commands) != 1 || c.Commands[0].Command != "make check" || c.Commands[0].OutputPath != "" || c.Output != "FAIL x" {
+		t.Errorf("command cause %+v", c)
+	}
+	c = CauseOf(workflow.Step{Name: "s", Kind: workflow.KindCommand, Run: "rhiza ship check --json"}, "fail", "exit 1\n{}")
+	if len(c.Commands) != 0 || c.Cause != "exit 1\n{}" {
+		t.Errorf("ship check cause %+v", c)
 	}
 }

@@ -1,0 +1,73 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7BY4A36XXEBXXDHJNM90003"
+  ],
+  "at": "2026-11-14T02:38:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "9c90ea6379bcfde973d5c566c5e07edef30406e5",
+          "pr": "https://github.com/dphaener/rhiza/pull/576",
+          "result": "13 checks passed: changes SUCCESS, go-install SUCCESS, model SKIPPED, lint SUCCESS, scripts (1/4) SUCCESS, scripts (2/4) SUCCESS, scripts (3/4) SUCCESS, scripts (4/4) SUCCESS, api (1/2) SUCCESS, api (2/2) SUCCESS, rest SUCCESS, budgets SUCCESS, check SUCCESS",
+          "statement": "Pull request #576 (https://github.com/dphaener/rhiza/pull/576) passed CI at 9c90ea6",
+          "status": "verified"
+        },
+        "handle": "pr-576-web-roadmap-and-change-set",
+        "id": "01M7BYPQ0AG260ZWE6XWBWY0A5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BYPQ0AG260ZWE6XW1HG84J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BYPQ0AG260ZWE6XW1HG84J",
+        "id": "01M7BYPQ2ESH8DV4DX2N8DHN4M",
+        "link": "01M7BYPQ2ESH8DV4DX2JVFRR37",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BYPQ0AG260ZWE6XW1HG84J",
+        "id": "01M7BYPQ64WH81WZQH2KEGXD0S",
+        "link": "01M7BYPQ64WH81WZQH2H33F71V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BYPQ0AG260ZWE6XW1HG84J",
+        "id": "01M7BYPQ7RMNCX4HGVXPCZK2SM",
+        "link": "01M7BYPQ7RMNCX4HGVXK337VRW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7BYPQ0AG260ZWE6XW1HG84J",
+        "id": "01M7BYPQ9FKSPTW1R5X2NFZ7YJ",
+        "link": "01M7BYPQ9FKSPTW1R5X16NSW8B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAN1436CCE15SQMFT2B9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BYPQEQ4Q315Y01RJMAT15D",
+  "type": "ops",
+  "v": 1
+}

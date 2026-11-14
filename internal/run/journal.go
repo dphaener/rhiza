@@ -4,6 +4,7 @@
 package run
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"time"
@@ -13,12 +14,21 @@ import (
 
 // Entry types.
 const (
-	TypeStarted  = "started"
-	TypeEntered  = "entered"
-	TypeSession  = "session"
-	TypeEnded    = "ended"
-	TypeStopped  = "stopped"
-	TypeFinished = "finished"
+	TypeStarted = "started"
+	TypeEntered = "entered"
+	TypeSession = "session"
+	TypeEnded   = "ended"
+	TypeStopped = "stopped"
+	// TypeHandback is a routing step handing the run back to an agent step
+	// (its on.<outcome> was handback:<step>): Step the routing step, Next
+	// the agent step, Outcome the red outcome, Detail the cause. It gives
+	// every step its full max_visits again, as a retry does.
+	TypeHandback = "handback"
+	// TypeHandbackDelivered says the agent step the hand-back named has
+	// been given it (its session messaged or resumed with the handback
+	// text); until then a restarted driver delivers it again, once.
+	TypeHandbackDelivered = "handback-delivered"
+	TypeFinished          = "finished"
 	// TypeCleanup is a cleanup step's result once the run has finished:
 	// Step the cleanup step's name, Outcome pass or fail, Detail its exit
 	// and output tail. It never changes the run's result.
@@ -98,6 +108,15 @@ const (
 	// TypeDaemonResumed records that the daemon resumed the run, which it
 	// does once.
 	TypeDaemonResumed = "daemon-resumed"
+	// TypeSpawn, TypeSpawnHeld and TypeSpawnEnded are a session's child
+	// sessions (rhiza run spawn): a child started under the calling step
+	// (Step, Parent the caller's session, Session the child, Role, Leaf and
+	// Model its own), the spawn waiting while a usage or machine hold is on
+	// (Detail says which), and the child's end (Outcome pass or fail, Detail
+	// its exit or reason).
+	TypeSpawn      = "spawn"
+	TypeSpawnHeld  = "spawn-held"
+	TypeSpawnEnded = "spawn-ended"
 	// TypeWarning records a warning on the run: Detail says what. It never
 	// changes the run's state or result, and may follow the finished entry.
 	TypeWarning = "warning"
@@ -398,7 +417,8 @@ type Block struct {
 //	           check's failure itself)
 //	code-check: Step, Outcome (pass or fail), Detail (rhiza run code-check
 //	           ran rhiza check and build-check on the run's change set while
-//	           the run was at step Step; Detail names each cause of a fail)
+//	           the run was at step Step; Detail names each cause of a fail; Lints
+//	           are the model lints' hits, never causes)
 //	pre-push:  Step, Outcome (passed or failed), Commit (the head checked),
 //	           Detail (the command: rhiza check, then the project's
 //	           prePushCheck), Text (a failure's failing lines, the end of
@@ -424,6 +444,7 @@ type Entry struct {
 	Outcome string    `json:"outcome,omitempty"`
 	Next    string    `json:"next,omitempty"`
 	Detail  string    `json:"detail,omitempty"`
+	Lints   []LintHit `json:"lints,omitempty"`
 	Session string    `json:"session,omitempty"`
 	Started *Started  `json:"started,omitempty"`
 	End     string    `json:"end,omitempty"`
@@ -492,6 +513,8 @@ type Entry struct {
 	Rule string `json:"rule,omitempty"`
 	// Process is a process entry's process.
 	Process *Process `json:"process,omitempty"`
+	// Parent is a spawn entry's calling session.
+	Parent string `json:"parent,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -675,6 +698,49 @@ type RunSession struct {
 	Step    string
 	Session string
 }
+
+// Handback is one hand-back of the run: the routing step that went red, the
+// agent step it handed back to and the cause.
+type Handback struct {
+	Step    string
+	Target  string
+	Outcome string
+	Cause   string
+	At      time.Time
+}
+
+// HandbackParked prefixes the stopped detail of a run that reached its
+// handback_cap and went red again.
+const HandbackParked = "handback cap reached: "
+
+// Spawn is one child session a step's session spawned: Step the calling
+// step, Parent the calling session, Session the child. Outcome and Detail
+// are empty until the child ends.
+type Spawn struct {
+	Step    string
+	Parent  string
+	Session string
+	Role    string
+	Leaf    string
+	Model   string
+	Outcome string
+	Detail  string
+	Ended   bool
+}
+
+// SpawnHold is a spawn that waited on a hold: Step the calling step, Detail
+// what held it, At when. Until is when the hold lifted and the child
+// started, zero while it waits.
+type SpawnHold struct {
+	Step   string
+	Parent string
+	Detail string
+	At     time.Time
+	Until  time.Time
+}
+
+// Held reports whether the spawn still waits on its hold.
+func (h SpawnHold) Held() bool { return h.Until.IsZero() }
 
 // Amendment is one amended entry: a step's brief or plan file replaced
 // while the step ran. File is relative to the run's worktree and Actor is
@@ -1148,12 +1214,23 @@ type Retry struct {
 
 // State is a journal folded.
 type State struct {
-	ID       string
-	Workflow string
-	Pick     string
-	Change   string
-	Title    string
-	Worktree string
+	ID string
+	// Spawns are the child sessions sessions of the run spawned, and
+	// SpawnHolds the spawns that waited on a hold, in journal order.
+	Spawns     []Spawn
+	SpawnHolds []SpawnHold
+	// Handbacks are the run's hand-backs in journal order, and
+	// HandbackBase each step's Visits as they stood at the last of them.
+	Handbacks    []Handback
+	HandbackBase map[string]int
+	// PendingHandback is the last hand-back no agent step has been given
+	// yet, nil when none waits.
+	PendingHandback *Handback
+	Workflow        string
+	Pick            string
+	Change          string
+	Title           string
+	Worktree        string
 	// Trigger and TriggerName are the started entry's: a scheduled run has
 	// a trigger and no change set.
 	Trigger        string
@@ -1338,7 +1415,18 @@ type CodeCheck struct {
 	Step    string
 	Outcome string
 	Detail  string
-	At      time.Time
+	// Lints are the model lints' hits; they never make a fail.
+	Lints []LintHit
+	At    time.Time
+}
+
+// LintHit is one model lint hit a code-check entry carries.
+type LintHit struct {
+	Node   string `json:"node"`
+	Handle string `json:"handle,omitempty"`
+	Field  string `json:"field,omitempty"`
+	Kind   string `json:"kind"`
+	Ref    string `json:"ref,omitempty"`
 }
 
 // PrePushCheck is one pre-push entry: the check's Outcome (passed or
@@ -1577,7 +1665,7 @@ func (j Journal) State() State {
 		case TypePrePush:
 			st.PrePushChecks = append(st.PrePushChecks, PrePushCheck{Step: e.Step, Outcome: e.Outcome, Commit: e.Commit, Command: e.Detail, Output: e.Text, At: e.At})
 		case TypeCodeCheck:
-			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, At: e.At})
+			st.CodeChecks = append(st.CodeChecks, CodeCheck{Step: e.Step, Outcome: e.Outcome, Detail: e.Detail, Lints: e.Lints, At: e.At})
 		case TypeCheckSession:
 			c := st.check(e)
 			c.Sessions = append(c.Sessions, CheckSession{
@@ -1702,6 +1790,22 @@ func (j Journal) State() State {
 				Step: e.Step, Session: e.Session, Actor: e.Actor, To: e.To,
 				Text: e.Text, Summary: e.Summary, Structured: e.Structured, At: e.At,
 			})
+		case TypeSpawnHeld:
+			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Detail: e.Detail, At: e.At})
+		case TypeSpawn:
+			st.addSession(e.Step, e.Session)
+			st.Spawns = append(st.Spawns, Spawn{Step: e.Step, Parent: e.Parent, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Model: e.Model})
+			for i := range st.SpawnHolds {
+				if h := &st.SpawnHolds[i]; h.Held() && h.Parent == e.Parent && h.Step == e.Step {
+					h.Until = e.At
+				}
+			}
+		case TypeSpawnEnded:
+			for i := range st.Spawns {
+				if sp := &st.Spawns[i]; sp.Session == e.Session && !sp.Ended {
+					sp.Ended, sp.Outcome, sp.Detail = true, e.Outcome, e.Detail
+				}
+			}
 		case TypeTokens:
 			st.addSession(e.Step, e.Session)
 			if e.Tokens != nil {
@@ -1738,6 +1842,13 @@ func (j Journal) State() State {
 			if n := len(st.Rounds); n > 0 {
 				st.Rounds[n-1].Verdicts = append(st.Rounds[n-1].Verdicts, e.Verdicts...)
 			}
+		case TypeHandback:
+			hb := Handback{Step: e.Step, Target: e.Next, Outcome: e.Outcome, Cause: e.Detail, At: e.At}
+			st.Handbacks = append(st.Handbacks, hb)
+			st.PendingHandback = &hb
+			st.HandbackBase = maps.Clone(st.Visits)
+		case TypeHandbackDelivered:
+			st.PendingHandback = nil
 		case TypeStopped:
 			st.Stopped, st.StoppedAt = e.Detail, e.At
 		case TypeFinished:
@@ -1903,10 +2014,22 @@ func (st State) BlockOf(session string) (SessionBlock, bool) {
 	return SessionBlock{}, false
 }
 
+// LastSession is the session of step's latest visit that had one, "" for
+// none.
+func (st State) LastSession(step string) string {
+	for i := len(st.Steps) - 1; i >= 0; i-- {
+		if d := st.Steps[i]; d.Step == step && d.Session != "" {
+			return d.Session
+		}
+	}
+	return ""
+}
+
 // CapVisits is how many visits of step count against its max_visits: those
-// since the run's last retried entry, or all of them when it has none.
+// since the run's last retried or handback entry, or all of them when it
+// has none.
 func (st State) CapVisits(step string) int {
-	return st.Visits[step] - st.RetryBase[step]
+	return st.Visits[step] - max(st.RetryBase[step], st.HandbackBase[step])
 }
 
 // FailedStep is the step a failed run would be retried at: the step its

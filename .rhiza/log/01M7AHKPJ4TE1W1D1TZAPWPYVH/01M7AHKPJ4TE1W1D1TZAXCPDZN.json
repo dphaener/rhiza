@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T13:30:07Z",
+  "body": {
+    "intent": "Record agent actor claude-code-e4cbfa01 for session e4cbfa01-4c7c-4f9e-9452-01a1d519830a",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7AHKPJ4TE1W1D1TZAPWPYVH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHKPJ4TE1W1D1TZAXCPDZN",
+  "type": "open",
+  "v": 1
+}

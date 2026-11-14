@@ -201,7 +201,36 @@ type RunInfo struct {
 	PrePush         *RunPrePush        `json:"pre_push,omitempty" desc:"The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran"`
 	Signoffs        []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
 	PR              string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
+	Spawned         []RunSpawned       `json:"spawned,omitempty" desc:"The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none"`
 	SignoffWaiting  bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+}
+
+// RunSpawned is one child session a step's session spawned.
+type RunSpawned struct {
+	Step      string `json:"step" desc:"The step whose session spawned it"`
+	Parent    string `json:"parent,omitempty" desc:"The session that spawned it"`
+	Session   string `json:"session" desc:"The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation"`
+	Role      string `json:"role" desc:"The child's role, such as builder or verifier"`
+	Leaf      string `json:"leaf,omitempty" desc:"The leaf's handle it works on; absent for none"`
+	Statement string `json:"statement,omitempty" desc:"That leaf's statement, when the model has it"`
+	Model     string `json:"model,omitempty" desc:"The model it runs; empty for the agent's default"`
+	State     string `json:"state" enum:"running,ended" desc:"running or ended"`
+	Outcome   string `json:"outcome,omitempty" enum:"pass,fail" desc:"pass or fail once it ended; empty while it runs"`
+	Detail    string `json:"detail,omitempty" desc:"A failed child's reason: its exit, or why it ended"`
+}
+
+// runSpawned is the response form of a journal's spawned sessions.
+func runSpawned(st run.State) []RunSpawned {
+	var out []RunSpawned
+	for _, sp := range st.Spawns {
+		rs := RunSpawned{Step: sp.Step, Parent: sp.Parent, Session: sp.Session, Role: sp.Role, Leaf: sp.Leaf,
+			Model: sp.Model, State: "running", Outcome: sp.Outcome, Detail: sp.Detail}
+		if sp.Ended {
+			rs.State = "ended"
+		}
+		out = append(out, rs)
+	}
+	return out
 }
 
 // RunStageAutonomy is one stage's autonomy as a run started.
@@ -224,10 +253,11 @@ func runStageAutonomy(in []run.StageAutonomy) []RunStageAutonomy {
 // RunCodeCheck is one code check: rhiza check and build-check on the
 // run's change set.
 type RunCodeCheck struct {
-	Step    string `json:"step,omitempty" desc:"The step the run was at"`
-	Outcome string `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
-	Detail  string `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
-	At      string `json:"at" desc:"When it ran, RFC 3339 UTC"`
+	Step    string       `json:"step,omitempty" desc:"The step the run was at"`
+	Outcome string       `json:"outcome" enum:"pass,fail" desc:"pass or fail"`
+	Detail  string       `json:"detail,omitempty" desc:"A fail's causes, separated by semicolons"`
+	Lints   []RunLintHit `json:"lints,omitempty" desc:"The model lints' hits; they never make a fail"`
+	At      string       `json:"at" desc:"When it ran, RFC 3339 UTC"`
 }
 
 // RunPrePush is a pre-push check's result.
@@ -526,6 +556,36 @@ func runPermissionAll(st run.State, live bool, sessions *session.Store) []RunPer
 	return out
 }
 
+// RunAPIError is a session whose last turn ended on an API error.
+type RunAPIError struct {
+	Step    string
+	Session string
+	Detail  string // "stopped on an API error: <text>"
+	Since   string
+}
+
+// runAPIErrorAll is every session of the current step of a live, unfinished
+// run whose hook report is idle with the API-error detail. The next hook
+// report of the session replaces it.
+func runAPIErrorAll(st run.State, live bool, sessions *session.Store) []RunAPIError {
+	if !live || st.Ended || sessions == nil {
+		return nil
+	}
+	var out []RunAPIError
+	for _, sid := range stepSessions(st) {
+		rec, err := sessions.Read(sid)
+		if err != nil {
+			continue
+		}
+		rep, src := session.Resolve(rec)
+		if src != session.SourceHook || rep.State != session.StateIdle || !strings.HasPrefix(rep.Detail, session.APIErrorDetail) {
+			continue
+		}
+		out = append(out, RunAPIError{Step: st.Current, Session: sid, Detail: strings.TrimSpace(rep.Detail), Since: rfc3339(rep.At)})
+	}
+	return out
+}
+
 // stepSessions are the sessions of the run's current step that can still
 // be working, in the order runStalledAll checks them. A session whose pane
 // is closed is gone.
@@ -700,7 +760,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
-	if def.Name == shipChangeWorkflow {
+	if def.Name == shipChangeWorkflow && !conductorWorkflow(def) {
 		if err := checkShipLeaves(t); err != nil {
 			return nil, err
 		}
@@ -1413,6 +1473,31 @@ func worktreeUser(rs *run.Store, id string, st run.State) (string, error) {
 	return "", nil
 }
 
+// spawnedStatements names each spawned child's leaf by its statement, read
+// from the model; a leaf the model does not have keeps only its handle.
+func spawnedStatements(ctx *Ctx, st run.State, spawned []RunSpawned) {
+	if len(spawned) == 0 || st.Change == "" {
+		return
+	}
+	cs, err := id.Parse(st.Change)
+	if err != nil {
+		return
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return
+	}
+	m := w.model(cs)
+	for i := range spawned {
+		if spawned[i].Leaf == "" {
+			continue
+		}
+		if n, err := m.Resolve(spawned[i].Leaf); err == nil {
+			spawned[i].Statement = fieldText(n.Fields["statement"])
+		}
+	}
+}
+
 // runRunStatus reports a run from its journal alone.
 func runRunStatus(ctx *Ctx, req any) (any, error) {
 	r := req.(RunStatusRequest)
@@ -1441,6 +1526,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 			info.Waiting = runWaiting(st.Gated, w.changeSets())
 		}
 	}
+	spawnedStatements(ctx, st, info.Spawned)
 	return info, nil
 }
 
@@ -1950,6 +2036,18 @@ func (r *stepRunner) Command(step workflow.Step, env []string) (int, string, err
 	return code, tail.String(), nil
 }
 
+// CommandOutput runs one command of a gate step and returns its exit code
+// and whole combined output, which is also copied to ctx.Stderr. It is
+// run.OutputRunner, so a failing gate command's full output can be kept.
+func (r *stepRunner) CommandOutput(step workflow.Step, env []string) (int, string, error) {
+	var buf bytes.Buffer
+	code, err := r.sh("exec 2>&1\n"+step.Run, env, io.MultiWriter(r.ctx.Stderr, &buf))
+	if err != nil {
+		return 0, "", err
+	}
+	return code, buf.String(), nil
+}
+
 // lastStopLine is the text after the last "stop: " line of out.
 func lastStopLine(out string) string {
 	detail := ""
@@ -2086,9 +2184,10 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	if err != nil {
 		return "", err
 	}
-	req.Prompt = step.RenderPrompt(workflow.PromptVars{
-		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: step.Name,
-	})
+	req.Prompt = step.RenderPrompt(r.promptVars(t, step.Name, run.AgentSessionName()))
+	if err := r.prepareSession(&req, step.Name, run.AgentSessionName()); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -2148,6 +2247,7 @@ func (r *stepRunner) StartArbiter(step workflow.Step, question string, _ []strin
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous
 	req.Prompt = fmt.Sprintf(arbiterPrompt, question)
+	r.prepareKeyed(&req, "arbiter")
 	var err error
 	if req.writes, req.writesRecord, err = r.arbiterWrites(question); err != nil {
 		return "", err
@@ -2180,6 +2280,7 @@ func (r *stepRunner) StartAdvisor(step workflow.Step, asker, text string, _ []st
 	req := agentStepRequest(step, r.mode, r.agent)
 	req.Step, req.Change, req.Run, req.advises = advisorStep, r.change, r.run, asker
 	req.Prompt = fmt.Sprintf(advisorPrompt, text)
+	r.prepareKeyed(&req, "advisor")
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -2436,6 +2537,102 @@ func (r *stepRunner) Deliver(sid, question, decision, statement string) error {
 	}
 	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Asked = nil }); err != nil {
 		return Errorf("clear session %s's asked mark: %v", rec.ID, err)
+	}
+	return nil
+}
+
+// Handback hands the run back to the agent step's session sid: it writes
+// handback.md for cause into the session's directory, then sends the
+// handback text the step's handback template renders, as session.message
+// does to a live session. An ended session is resumed in the same
+// conversation through its adapter, in a new tab, with that text as its
+// prompt; one that cannot be resumed is an error naming the session. A
+// step whose handback template renders empty is an error naming the step:
+// the hand-back writes no text of its own.
+func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.HandbackCause) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if rec.Brief == "" {
+		return fmt.Errorf("session %s has no session directory to hold handback.md", sid)
+	}
+	v := workflow.PromptVars{Change: r.change, Run: r.run, Step: step.Name, Worktree: r.worktree}
+	if t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true); err == nil {
+		v = r.promptVars(t, step.Name, run.AgentSessionName())
+	}
+	v.Brief, v.Slice, v.Handback = filepath.Join(rec.Brief, briefFile), filepath.Join(rec.Brief, sliceFile), filepath.Join(rec.Brief, handbackFile)
+	text := strings.TrimSpace(step.RenderHandback(v))
+	if text == "" {
+		return fmt.Errorf("step %s sets no handback template, so %s has nothing to hand back to session %s", step.Name, cause.Step, sid)
+	}
+	if err := run.WriteHandback(rec.Brief, cause); err != nil {
+		return err
+	}
+	if !rec.Status.Exited() {
+		return r.messageSession(rec, text)
+	}
+	return r.resumeSession(rec, text)
+}
+
+// messageSession sends a live session text as a message from the run's
+// caller (see Deliver).
+func (r *stepRunner) messageSession(rec session.Record, text string) error {
+	if err := messageable(rec); err != nil {
+		return err
+	}
+	from, err := messageSender(r.ctx)
+	if err != nil {
+		return err
+	}
+	dir, rel, err := messageFolder(r.ctx, rec)
+	if err != nil {
+		return err
+	}
+	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
+	if err != nil {
+		return err
+	}
+	if _, err := typePointer(r.ctx, r.sessions, rec.ID, messagePointer(from.Handle, rel+"/"+name), defaultMessageTimeout); err != nil {
+		return withNote(err, "the hand-back is in "+filepath.Join(dir, name))
+	}
+	return nil
+}
+
+// resumeSession continues the ended session rec in its agent's own
+// conversation with text as its prompt: the record's exit and marks are
+// cleared, the text kept for session run, and a tab opened for it.
+func (r *stepRunner) resumeSession(rec session.Record, text string) error {
+	a, ok := adapter.Lookup(rec.Agent)
+	if !ok {
+		return fmt.Errorf("session %s cannot be resumed: it names agent %q, which this rhiza does not know", rec.ID, rec.Agent)
+	}
+	if _, err := readTranscript(r.ctx, a, rec.ID); err != nil {
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	if r.ctx.Self == "" || r.ctx.Exec == nil {
+		return fmt.Errorf("session %s cannot be resumed: this caller starts no programs", rec.ID)
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) {
+		x.Resume = text
+		x.Status = session.Status{}
+	}); err != nil {
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	fail := func(err error) error {
+		msg := fmt.Sprintf("resume failed: %v", err)
+		_, _ = r.sessions.Update(rec.ID, func(x *session.Record) {
+			x.Resume = ""
+			x.Status.Exit = &session.Report{State: session.StateError, Detail: msg, At: r.ctx.Now().UTC()}
+		})
+		return fmt.Errorf("session %s cannot be resumed: %v", rec.ID, err)
+	}
+	tab, _, err := openSessionPane(r.ctx, rec.Tab, session.Tab{}, "", "", rec.Worktree, r.ctx.Self, rec.ID)
+	if err != nil {
+		return fail(err)
+	}
+	if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Tab = tab }); err != nil {
+		return fail(err)
 	}
 	return nil
 }
@@ -2926,6 +3123,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		}
 		info.Sessions = append(info.Sessions, rs)
 	}
+	info.Spawned = runSpawned(st)
 	for _, a := range st.Accepts {
 		info.Accepts = append(info.Accepts, RunAccept{Change: a.Change, Entry: a.LogEntry, Verb: a.Verb, At: rfc3339(a.At)})
 	}
@@ -2985,7 +3183,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		})
 	}
 	for _, c := range st.CodeChecks {
-		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, At: rfc3339(c.At)})
+		info.CodeChecks = append(info.CodeChecks, RunCodeCheck{Step: c.Step, Outcome: c.Outcome, Detail: c.Detail, Lints: runLintHits(c.Lints), At: rfc3339(c.At)})
 	}
 	if c, ok := st.LatestPrePush(); ok {
 		info.PrePush = &RunPrePush{Step: c.Step, Outcome: c.Outcome, Head: c.Commit, Command: c.Command, Output: c.Output, At: rfc3339(c.At)}
@@ -3333,6 +3531,9 @@ func (r RunInfo) Human(w io.Writer) {
 				fmt.Fprintf(w, " (%s)", oneLine(c.Detail))
 			}
 			fmt.Fprintf(w, "\n")
+			for _, h := range c.Lints {
+				fmt.Fprintf(w, "  - lint %s\n", h.line())
+			}
 		}
 	}
 	if len(r.Signoffs) > 0 {
@@ -3414,6 +3615,26 @@ func (r RunInfo) Human(w io.Writer) {
 				note += ", structured"
 			}
 			fmt.Fprintf(w, "- %s %s to %s (step %s%s): %s\n", m.At, m.Actor, m.To, m.Step, note, indentRest(m.Text))
+		}
+	}
+	if len(r.Spawned) > 0 {
+		fmt.Fprintf(w, "\n## Spawned sessions\n\n")
+		for _, sp := range r.Spawned {
+			fmt.Fprintf(w, "- %s, %s", sp.Step, sp.Role)
+			if sp.Leaf != "" {
+				fmt.Fprintf(w, " on %s", sp.Leaf)
+			}
+			if sp.Model != "" {
+				fmt.Fprintf(w, ", model %s", sp.Model)
+			}
+			fmt.Fprintf(w, ", session %s: %s", sp.Session, sp.State)
+			if sp.Outcome != "" {
+				fmt.Fprintf(w, ", %s", sp.Outcome)
+			}
+			if sp.Detail != "" && sp.Outcome == workflow.OutcomeFail {
+				fmt.Fprintf(w, " (%s)", sp.Detail)
+			}
+			fmt.Fprintln(w)
 		}
 	}
 	if len(r.Sessions) > 0 {
@@ -3619,4 +3840,13 @@ func abandonedCleanup(ctx *Ctx, rs *run.Store, common string, j run.Journal, ses
 	if err := e.Cleanup(j.ID); err != nil && ctx.Stderr != nil {
 		fmt.Fprintf(ctx.Stderr, "rhiza: run %s: cleanup: %v\n", j.ID, err)
 	}
+}
+
+// runLintHits is the journal's lint hits as the response form.
+func runLintHits(in []run.LintHit) []RunLintHit {
+	var out []RunLintHit
+	for _, h := range in {
+		out = append(out, RunLintHit{Node: h.Node, Handle: h.Handle, Field: h.Field, Kind: h.Kind, Ref: h.Ref})
+	}
+	return out
 }

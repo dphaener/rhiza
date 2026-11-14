@@ -16,6 +16,7 @@ func buildWorkflow(s Step, fs fileStep, fail func(string, ...any) (Step, error))
 		set bool
 	}{
 		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
 		{"agent", fs.Agent != ""},
 		{"permission_mode", fs.PermissionMode != ""},
 		{"run", fs.Run != ""},
@@ -88,7 +89,7 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 	var target func(t string) (string, error)
 	var entryOf func(n string) (string, error)
 	target = func(t string) (string, error) {
-		if t == TargetDone || t == TargetFailed {
+		if t == TargetDone || t == TargetFailed || strings.HasPrefix(t, HandbackPrefix) {
 			return t, nil
 		}
 		if w, inner, ok := strings.Cut(t, "/"); ok {
@@ -222,6 +223,9 @@ func (in *inlined) outer(t string, target func(string) (string, error)) (string,
 		}
 		return TargetFailed, nil
 	}
+	if h, ok := strings.CutPrefix(t, HandbackPrefix); ok {
+		return HandbackPrefix + in.step.Workflow + "/" + h, nil
+	}
 	return in.step.Workflow + "/" + t, nil
 }
 
@@ -312,7 +316,7 @@ func includeWorkflow(s Step, resolve Resolver, stack []string, includes map[stri
 		}
 		reached[n] = true
 		for _, t := range is.On {
-			visit(t)
+			visit(strings.TrimPrefix(t, HandbackPrefix))
 		}
 	}
 	visit(in.entry)

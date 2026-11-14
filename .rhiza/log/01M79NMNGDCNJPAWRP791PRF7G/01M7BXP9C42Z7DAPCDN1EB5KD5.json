@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BXJHTTNTV4CYR1R8TGKQ1P",
+  "after": [
+    "01M7BVHMPH8S58BS5AB69GBW5G"
+  ],
+  "at": "2026-11-14T02:20:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 5 at ad90ac28f: re-ran the Checks block (go test -trimpath ./internal/web/... exit 0; go test -trimpath ./internal/api/ -run Milestone exit 0; go test -trimpath ./cmd/rhiza -run 'TestScripts/(describe-golden|roadmap.*)$' exit 0) and the acceptance go test -trimpath ./internal/web -run TestRoadmapMilestones (PASS). rhiza check exit 0. Diff read: milestones operation now carries each change set's intent (describe-golden regenerated), the roadmap page uses it for the sub-line with no change.show per row (TestRoadmapReadsNoChangePerRow), and withdrawn change sets always go in the Landed fold (TestRoadmapWithdrawnAlwaysFolds). No stubs or TODOs; changes stay within the leaf."
+        },
+        "handle": "web-roadmap-milestone-page-verified-3",
+        "id": "01M7BXP9ABK0MN3PBC1NYRG0GX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BXP9ABK0MN3PBC1MXAM1NX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BXP9ABK0MN3PBC1MXAM1NX",
+        "id": "01M7BXP9B6MEGQX4B484514NZ5",
+        "link": "01M7BXP9B6MEGQX4B48317X4DN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BXP9C42Z7DAPCDN1EB5KD5",
+  "type": "ops",
+  "v": 1
+}

@@ -9,10 +9,12 @@ package api
 // reader agrees.
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -140,4 +142,24 @@ func (r *stepRunner) retryBlock(rec session.Record) session.Record {
 		return again
 	}
 	return rec
+}
+
+// Child is run.ChildWatcher: where spawned child session sid stands. A
+// record that is gone is reported as such; a child whose SessionEnd mark
+// has no exit past the grace is marked lost first, as a poll of a step's
+// own session does.
+func (r *stepRunner) Child(sid string) (run.ChildState, error) {
+	rec, err := r.sessions.Read(sid)
+	var nf *session.NotFoundError
+	if errors.As(err, &nf) {
+		return run.ChildState{Gone: true, Detail: "session record is gone"}, nil
+	}
+	if err != nil {
+		return run.ChildState{}, err
+	}
+	if rec, err = r.markLostIfEnded(rec, hookEndGrace); err != nil {
+		return run.ChildState{}, err
+	}
+	outcome, detail, done := childOutcome(rec)
+	return run.ChildState{Ended: done, Outcome: outcome, Detail: detail}, nil
 }

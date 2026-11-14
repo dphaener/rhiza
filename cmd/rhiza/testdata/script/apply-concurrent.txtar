@@ -1,0 +1,68 @@
+# apply works on a change set whose fold only warns of concurrent entries,
+# as check does, but still refuses on any other fold problem.
+
+exec rhiza init
+exec rhiza change new Shape
+exec rhiza add capability a
+exec rhiza set a --field acceptance=1
+mv .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json $WORK/hold.json
+env RHIZA_TEST_SEED=2
+exec rhiza set a --field acceptance=2
+env RHIZA_TEST_SEED=1
+mv $WORK/hold.json .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json
+exec rhiza render
+exec rhiza check
+stdout '^warn fold .*concurrent entries'
+! stdout '^fail'
+
+exec rhiza apply --dry-run writes.json
+exec rhiza apply writes.json
+stdout '^Wrote entry '
+exec rhiza change show
+stdout 'node.create'
+stdout 'b'
+exec rhiza render
+exec rhiza check
+stdout '^ok$'
+stdout '^warn fold .*concurrent entries'
+! stdout '^fail'
+
+# Any other fold problem still fails the apply and writes nothing.
+exec rhiza change new Other
+cp $WORK/bad-entry.json .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE/01M5PWGQ00000000000000000A.json
+exec sh -c 'ls .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE | wc -l'
+stdout '^2$'
+! exec rhiza apply --dry-run writes2.json
+stderr 'changeset: illegal revision'
+! exec rhiza apply writes2.json
+stderr 'changeset: illegal revision'
+exec sh -c 'ls .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE | wc -l'
+stdout '^2$'
+-- writes.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"b"},
+  {"op":"set","ref":"a","fields":["acceptance=3"]}
+]}
+-- writes2.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"c"}
+]}
+-- bad-entry.json --
+{
+  "actor": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "after": [
+    "01M5PWGP98GD3JXPKEPMCE92B2"
+  ],
+  "at": "2026-10-24T12:00:09Z",
+  "body": {
+    "drop": [
+      "01M5PWGQ00000000000000000B"
+    ],
+    "ops": []
+  },
+  "change_set": "01M5PWGP98GD3JXPKEPHTS0TQE",
+  "for": "01M5PWGEF85Y185JZ2Z5MPYCA4",
+  "id": "01M5PWGQ00000000000000000A",
+  "type": "ops",
+  "v": 1
+}

@@ -324,3 +324,22 @@ func governorHold(ctx *Ctx, common string) *usageHold {
 	kind, _ := usage.KindOf(usage.Limit{HitAt: h.HitAt, ResetAt: h.ResetAt})
 	return &usageHold{Kind: kind, Reset: h.ResetAt}
 }
+
+// spawnHoldDetail is why a spawn waits now, in words: the daemon's usage
+// hold (its last poll's, or a limit hit's) or its machine load or memory
+// hold, as the inbox reads them from the daemon state. It is empty when
+// none is on. rhiza.daemon.maxRuns never holds a spawn.
+func spawnHoldDetail(ctx *Ctx, common string) string {
+	if st, ok := daemon.ReadState(common); ok {
+		if h := st.UsageHold; h != nil {
+			return "usage hold: " + usageHoldDetail(*h)
+		}
+		if h := st.MachineHold; h != nil {
+			return "machine hold: " + h.Detail
+		}
+	}
+	if h := governorHold(ctx, common); h != nil {
+		return fmt.Sprintf("usage hold: %s window limit hit; resets %s", h.Kind, h.Reset.UTC().Format(time.RFC3339))
+	}
+	return ""
+}

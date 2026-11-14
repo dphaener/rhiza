@@ -19,6 +19,9 @@ The header's list of projects is replaced by a real project picker shared by eve
 ### In
 
 - decided-by [m37-frame](../intent/milestone-37/m37-frame.md)
+- decided-by [web-frame-header](../capability/rhiza/web-monitor/web-frame-header.md)
+- decided-by [web-project-needs-you](../capability/rhiza/web-monitor/web-project-needs-you.md)
+- decided-by [web-picker-sheet](../capability/rhiza/web-monitor/web-picker-sheet.md)
 
 ## History
 

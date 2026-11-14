@@ -25,21 +25,21 @@ exec rhiza add capability one-thing
 exec git add -A
 exec git commit -qm one
 exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\..*//"'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//"'
 cp stdout $WORK/run1
 exec rhiza change new Two --title Two
 exec rhiza add capability two-thing
 exec git add -A
 exec git commit -qm two
 exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json'
-exec sh -c 'ls -t .git/rhiza/runs | sed "s/\..*//" | head -1'
+exec sh -c 'ls -t .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//" | head -1'
 cp stdout $WORK/run2
 exec rhiza change new Three --title Three
 exec rhiza add capability three-thing
 exec git add -A
 exec git commit -qm three
 exec sh -c 'rhiza run start --foreground --workflow review --permission-mode manual --json'
-exec sh -c 'ls -t .git/rhiza/runs | sed "s/\..*//" | head -1'
+exec sh -c 'ls -t .git/rhiza/runs | grep "\.jsonl$" | sed "s/\..*//" | head -1'
 cp stdout $WORK/run3
 
 # A dry run queues and journals nothing.

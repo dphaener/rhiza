@@ -1,0 +1,30 @@
+{
+  "actor": "01M7BJE1MR1X2HWGK2TD2RFD4E",
+  "after": [
+    "01M7BJFSRX5T6D1K57G511SM0D"
+  ],
+  "at": "2026-11-13T23:04:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebPauseFormsCarryCSRFAndAreAbsentWithoutToken|TestWebPausePostsAndRefusesMissingCSRF|TestWebActionsOnly' shows the pause and resume forms carry the CSRF field and are absent when no token is set, pauses and resumes the daemon and a project through POST with the token and the CSRF field, refuses a pause or resume POST missing the CSRF field, and gets 404 or 405 for a POST to any other path, retry, abandon and merge included; go test -trimpath ./internal/api -run TestWebPauseAction shows a POST through WebProjectHandler and WebRootHandler writes rhiza.daemon.paused and the named project's rhiza.project.paused through daemon.set.",
+          "statement": "From the web UI the owner pauses or resumes the daemon or one project (rhiza.daemon.paused, rhiza.project.paused), and no other action exists: every other POST path is refused."
+        },
+        "handle": "web-action-pause",
+        "id": "01M79Q8Q1X2SDBPR5CNAZ07TAC",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BJFW68JWB09XNXQ4GCWR1G",
+  "type": "ops",
+  "v": 1
+}

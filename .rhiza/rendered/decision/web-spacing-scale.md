@@ -19,6 +19,9 @@ Every screen's components share one spacing and type scale, fixed in the approve
 ### In
 
 - decided-by [m37-frame](../intent/milestone-37/m37-frame.md)
+- decided-by [web-spacing-rules](../capability/rhiza/web-monitor/web-spacing-rules.md)
+- decided-by [web-type-scale](../capability/rhiza/web-monitor/web-type-scale.md)
+- decided-by [web-page-head-spacing](../capability/rhiza/web-monitor/web-page-head-spacing.md)
 
 ## History
 

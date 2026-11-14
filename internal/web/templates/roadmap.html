@@ -1,17 +1,36 @@
 {{define "content"}}<div class="rz-pagehead"><div><p class="rz-kicker">Milestones and backlog</p><h1>Roadmap</h1></div></div>
 {{section "roadmap" .Data}}{{end}}
 
-{{define "roadmap-body"}}{{if .Groups}}<p class="rz-meta">{{.Kicker}}</p>
+{{define "roadmap-body"}}{{if or .Groups .Finished}}<p class="rz-meta">{{.Kicker}}</p>
 <div class="rz-stack">
 {{range .Groups}}{{if eq .Kind "backlog"}}<section class="rz-panel rz-panel--flush">
   <div class="rz-panel-head"><div><p class="rz-kicker">Backlog</p><h2>{{.Title}}</h2></div><span class="rz-aside">{{len .Rows}} change sets</span></div>
   {{template "rows" .Rows}}
 </section>
-{{else}}<section class="rz-panel rz-panel--flush">
+{{else if eq .Kind "umbrella"}}<section class="rz-panel rz-panel--flush">
 <div class="rz-ms">
-  <div class="rz-ms-head">{{if eq .Kind "umbrella"}}<p class="rz-kicker">Umbrella</p>{{end}}<h3>{{.Title}}</h3><div class="rz-legend">{{range .Segs}}<span><i style="{{if eq .State "accepted"}}background:var(--teal);opacity:.42{{else}}background:var(--ink-3);opacity:.55{{end}}"></i><b>{{.N}}</b> {{.State}}</span>{{end}}</div></div>
+  <div class="rz-ms-head"><p class="rz-kicker">Umbrella</p><h3>{{.Title}}</h3><div class="rz-legend">{{range .Segs}}<span><i class="rz-seg-{{.State}}"></i><b>{{.N}}</b> {{.State}}</span>{{end}}</div></div>
   <div class="rz-ms-bar"><div class="rz-bar" role="img" aria-label="{{range $i, $s := .Segs}}{{if $i}}, {{end}}{{$s.N}} {{$s.State}}{{end}}">{{range .Segs}}<i class="{{.State}}" style="flex:{{.N}}"></i>{{end}}</div></div>
   {{template "rows" .Rows}}
 </div>
 </section>
-{{end}}{{end}}</div>{{else}}<div class="rz-empty"><p class="rz-empty-title">Nothing is planned</p><p>No change set is proposed or accepted.</p></div>{{end}}{{end}}
+{{else}}<section class="rz-panel rz-panel--flush">
+<div class="rz-ms">
+  <div class="rz-ms-head"><div><p class="rz-kicker">Milestone · {{.State}}</p><h3>{{.Title}}</h3></div><div class="rz-legend">{{range .Segs}}<span><i class="rz-seg-{{.State}}"></i><b>{{.N}}</b> {{.State}}</span>{{end}}</div></div>
+  <div class="rz-ms-bar"><div class="rz-bar" role="img" aria-label="{{range $i, $s := .Segs}}{{if $i}}, {{end}}{{$s.N}} {{$s.State}}{{end}}">{{range .Segs}}<i class="{{.State}}" style="flex:{{.N}}"></i>{{end}}</div></div>
+  {{if .DonePoints}}<details class="rz-fold"><summary>Done points · {{.Met}} of {{len .DonePoints}} met</summary>
+  <ul class="rz-donepoints">{{range .DonePoints}}<li>{{if .Met}}<span class="rz-pill rz-pill--landed">met</span>{{else}}<span class="rz-pill rz-pill--draft">not yet</span>{{end}} {{.Text}}</li>{{end}}</ul></details>{{end}}
+  {{range .RowGroups}}<p class="rz-rows-group">{{.Label}}</p>
+  <ol class="rz-rows rz-rows--titled">{{range .Shown}}
+{{template "row" .}}{{end}}
+  </ol>
+  {{if .More}}<details class="rz-fold"><summary>{{.MoreText}}</summary>
+  <ol class="rz-rows rz-rows--titled">{{range .More}}
+{{template "row" .}}{{end}}
+  </ol></details>{{end}}{{end}}
+</div>
+</section>
+{{end}}{{end}}
+{{if .Finished}}<section class="rz-panel rz-panel--flush"><details class="rz-fold"><summary>{{len .Finished}} finished {{if eq (len .Finished) 1}}milestone{{else}}milestones{{end}}</summary>
+  <ul class="rz-donepoints">{{range .Finished}}<li>{{.Name}}{{if .DonePoints}}<small> · {{len .DonePoints}} done {{if eq (len .DonePoints) 1}}point{{else}}points{{end}}</small>{{end}}</li>{{end}}</ul></details></section>{{end}}
+</div>{{else}}<div class="rz-empty"><p class="rz-empty-title">Nothing is planned</p><p>No change set is proposed or accepted.</p></div>{{end}}{{end}}

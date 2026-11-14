@@ -19,7 +19,7 @@ type MergedInboxSource func() []ProjectInbox
 // mergedInboxRows is every project's items as one list, oldest first (ties
 // by project name, then as the project listed them), each row tagged with
 // its project and linking into that project's pages under /p/<project>/.
-func mergedInboxRows(inboxes []ProjectInbox) []Row {
+func mergedInboxRows(inboxes []ProjectInbox, csrf string) []Row {
 	type item struct {
 		project string
 		row     Row
@@ -27,7 +27,7 @@ func mergedInboxRows(inboxes []ProjectInbox) []Row {
 	var all []item
 	for _, in := range inboxes {
 		prefix := ProjectPrefix + url.PathEscape(in.Name)
-		for _, row := range inboxRows(in.Items) {
+		for _, row := range inboxRows(in.Items, formSpec{CSRF: csrf, Base: prefix}) {
 			row.Project = in.Name
 			row.Href = prefix + row.Href
 			all = append(all, item{in.Name, row})
@@ -51,8 +51,8 @@ func MergedInbox(src MergedInboxSource) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rows []Row
 		if src != nil {
-			rows = mergedInboxRows(src())
+			rows = mergedInboxRows(src(), CSRF(r))
 		}
-		render(w, r, "mergedinbox", page{Title: "Inbox", Nav: "inbox", Inbox: InboxPanel{Rows: rows}})
+		render(w, r, "mergedinbox", page{Title: "Inbox", Nav: "inbox", Root: true, Inbox: InboxPanel{Rows: rows}})
 	})
 }

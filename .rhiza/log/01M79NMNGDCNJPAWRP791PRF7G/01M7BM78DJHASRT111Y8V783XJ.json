@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BM48NG4VQKX8NYXC26R0SF",
+  "after": [
+    "01M7BKHJVC77A2DEZX36R9KRAH"
+  ],
+  "at": "2026-11-13T23:34:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 25461da19 (leaf commits e16e75ca0 and 25461da19) re-ran every Checks command: go test -trimpath ./internal/web -run TestRoadmapMilestones (PASS), go test -trimpath -count=1 ./internal/web (ok), rhiza ship generate and rhiza render (exit 0). Read the diff (internal/web/roadmap.go, roadmap_test.go, roadmap.html, rhiza.css, .rhiza log/rendered only): TestRoadmapMilestones serves a two-project root and asserts no row of the other project, the finished Delta milestone only in the one in-page fold with no link, the open milestone's state word, groups in order (Building now with the run's change set, Accepted waiting, Proposed, Landed, Drafts), title then intent sub-line, bar aria-label and legend 7 landed, 2 accepted, 1 proposed, 1 withdrawn, done points in a closed fold (1 of 2 met), the landed fold '2 more landed, 1 withdrawn', and the backlog then the umbrella after the milestone and before the finished fold, which closes attempt 1's finding. No stubs or TODOs; fakes only."
+        },
+        "handle": "web-roadmap-milestone-page-verified",
+        "id": "01M7BM78B2ZF97P7JG509JVT2T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BM78B2ZF97P7JG4ZWC3HZR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BM78B2ZF97P7JG4ZWC3HZR",
+        "id": "01M7BM78C6JW68G7ESHA0DCSDP",
+        "link": "01M7BM78C6JW68G7ESH72PC3E0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BM78DJHASRT111Y8V783XJ",
+  "type": "ops",
+  "v": 1
+}

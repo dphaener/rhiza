@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7B4Q4Z95H3ZXCC9QVEAWH0E"
+  ],
+  "at": "2026-11-13T19:35:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "head": "6d9f419afcec8ef2f532c44399e665e55d273337",
+          "pr": "https://github.com/dphaener/rhiza/pull/565",
+          "result": "9 checks passed: changes SUCCESS, go-install SUCCESS, model SUCCESS, lint SKIPPED, scripts SKIPPED, api SKIPPED, rest SKIPPED, budgets SKIPPED, check SUCCESS",
+          "statement": "Pull request #565 (https://github.com/dphaener/rhiza/pull/565) passed CI at 6d9f419",
+          "status": "verified"
+        },
+        "handle": "pr-565-every-agent-session-a-run",
+        "id": "01M7B6H84P4PGGV8VW54KP3447",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B6H84P4PGGV8VW534GD7X9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B6H84P4PGGV8VW534GD7X9",
+        "id": "01M7B6H87DP0WEGA67DWV0F72M",
+        "link": "01M7B6H87DP0WEGA67DVZ72MKR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBD9GFZM83ZPXXDRY6FS",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7B6H84P4PGGV8VW534GD7X9",
+        "id": "01M7B6H89DGXQEJ3954S99C0F5",
+        "link": "01M7B6H89DGXQEJ3954Q9E1HJ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7B6H84P4PGGV8VW534GD7X9",
+        "id": "01M7B6H8E0V3PC7XKY92BGWDV2",
+        "link": "01M7B6H8E0V3PC7XKY90NJPJKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBG8Q7PJ9C1S2WCJG4XQ",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7B6H84P4PGGV8VW534GD7X9",
+        "id": "01M7B6H8PGF3FGCNCF732N3YJ4",
+        "link": "01M7B6H8PGF3FGCNCF713C1XKH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHST8TM851DP82HM2RZ85M",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7B6H84P4PGGV8VW534GD7X9",
+        "id": "01M7B6H8V8WZ905CJV7JNX51X3",
+        "link": "01M7B6H8V8WZ905CJV7HC3EZY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AJZ8CQ9MFGF06EWDVC1JAJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B6H98DV0G0GVKSQ1PK5YKN",
+  "type": "ops",
+  "v": 1
+}

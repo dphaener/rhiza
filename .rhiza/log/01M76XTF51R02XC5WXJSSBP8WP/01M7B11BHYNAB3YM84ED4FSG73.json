@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B0ZS9S62G6TMRK60M5TN37",
+  "after": [
+    "01M7B0BE5XCKP1TVYRMAHWT3WT"
+  ],
+  "at": "2026-11-13T17:59:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4acb20acc: re-ran the Checks block (go test -count=1 -trimpath ./internal/modellint/... ok; rhiza ship generate exit 0, 0 changed; rhiza render exit 0, no tracked diff). go vet and gofmt -l clean. Read the diff: only internal/modellint/{refs.go,refs_test.go} plus the builder's actor log entry and its rendering; no git, no internal/check changes, no TODOs. refs_test.go covers each acceptance point: present path/test/script report nothing (TestStaleRefsPresent); missing path, Go test and testscript each report one hit naming node, field and ref (table TestStaleRefsMissing); all-paths-gone capability reported unretired (TestStaleRefsUnretired); an unwritten node with a missing path reports nothing (TestStaleRefsOtherNodesNotRead); and/or and a URL are not references (TestStaleRefsPresent, TestStaleRefsNotReferences)."
+        },
+        "handle": "modellint-stale-refs-verified",
+        "id": "01M7B11BF6PDX1H8JK5DV0SWF0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B11BF6PDX1H8JK5DQQJMV1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B11BF6PDX1H8JK5DQQJMV1",
+        "id": "01M7B11BGPH186A8G1PCWE6GDK",
+        "link": "01M7B11BGPH186A8G1PA22CNXK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AZSB7XH20CA9CJCEATG154",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XTF51R02XC5WXJSSBP8WP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B11BHYNAB3YM84ED4FSG73",
+  "type": "ops",
+  "v": 1
+}

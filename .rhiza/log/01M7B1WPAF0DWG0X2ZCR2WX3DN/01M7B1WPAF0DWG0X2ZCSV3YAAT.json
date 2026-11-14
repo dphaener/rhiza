@@ -1,0 +1,15 @@
+{
+  "actor": "01M7B1T9V5Z63FM9NKHKH6F3ST",
+  "after": [],
+  "at": "2026-11-13T18:14:37Z",
+  "body": {
+    "intent": "Constraint workflow-step-no-session-keys names invoke and handback among the keys a workflow step refuses",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7B1WPAF0DWG0X2ZCR2WX3DN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B1WPAF0DWG0X2ZCSV3YAAT",
+  "type": "open",
+  "v": 1
+}

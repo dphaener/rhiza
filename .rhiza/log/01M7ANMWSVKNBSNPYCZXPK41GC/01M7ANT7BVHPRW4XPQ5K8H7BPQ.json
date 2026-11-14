@@ -1,0 +1,73 @@
+{
+  "actor": "01M7ANP8AFBMRXBXATFCH1MR3J",
+  "after": [
+    "01M7ANSXJGQ69W0J3J9GB57AK9"
+  ],
+  "at": "2026-11-13T14:43:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7ANMWSVKNBSNPYCZXPK41GC",
+        "id": "01M7ANT75FVC6QHWTEG3SSA84Y",
+        "link": "01M7ANT75FVC6QHWTEG2FY0ZX0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M61R4RCY7AE9N46F2YDNX0WD",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "statement": "The inbox raises no accept item for a gated change set whose run journaled its own accept, rather than labelling the item 'accepted on branch, PR #N merging': the run already carries the change set to merge, so the owner has nothing to do, and a label would keep a non-actionable item and need a PR lookup the inbox does not do",
+          "wording": "planner's pick of the two remedies the bug request offers; autonomous plan-bug run, no owner present"
+        },
+        "handle": "run-accepted-no-inbox-item",
+        "id": "01M7ANT76HV7Z963R14SDFKW8D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7ANT76HV7Z963R14R7GWF3E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANT76HV7Z963R14R7GWF3E",
+        "id": "01M7ANT77WYPY1MEFMHQ1R0TMW",
+        "link": "01M7ANT77WYPY1MEFMHMVP86WM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ANSXHE8VTQFW47RR2AVVA8",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new test in internal/api/inbox_run_accepted_test.go feeds inboxItems a plan-run journal with a gated entry for two change sets and an accepted entry for one of them, with changeState reporting both proposed: exactly one InboxAccept item is listed, for the change set the run did not accept; with no accepted entry both are listed. go test -trimpath ./internal/api/ -run 'TestInbox' and go test -trimpath ./cmd/rhiza -run 'TestScripts/(inbox-owner-run-accept|stage-autonomy)' pass. Touches internal/api/inbox.go, internal/api/inbox_run_accepted_test.go",
+          "statement": "rhiza inbox raises no accept item for a change set a plan run gated when that same run journaled an accepted entry for it (st.Accepts, Verb accepted, Change the gated ID), even while main's model still says proposed; a gated change set the run did not accept (rhiza.autonomy.accept owner, or the review did not pass) keeps its 'waiting for acceptance' item with next rhiza accept --rule owner --change <id>"
+        },
+        "handle": "inbox-skips-run-accepted-gated",
+        "id": "01M7ANT7A4WT45GF5PDBYMW0VX",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7ANT7A4WT45GF5PDBXQ0C57",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ANT7A4WT45GF5PDBXQ0C57",
+        "id": "01M7ANT7B6DBE5QNF1AMRWBEZN",
+        "link": "01M7ANT7B6DBE5QNF1AJP0TQY9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ANT76HV7Z963R14R7GWF3E",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7ANMWSVKNBSNPYCZXPK41GC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ANT7BVHPRW4XPQ5K8H7BPQ",
+  "type": "ops",
+  "v": 1
+}

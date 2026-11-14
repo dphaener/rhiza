@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BD91MD85TF2WX09A9HVN1N",
+  "after": [
+    "01M7BB8S69HSTHYG1CYTW790EH"
+  ],
+  "at": "2026-11-13T21:50:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 42739f9a7: acceptance go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList' exit 0; go test -trimpath ./internal/web/... exit 0 (incl. new TestHeaderDaemonPillOnEveryPage: pill on /, /runs, /roadmap, /p/a/*, /projects, /inbox); the new test fails to build on HEAD~1 (no web.WithDaemon), as the Checks block says; go test -trimpath -short -timeout 30m ./internal/api/... exit 0 (incl. TestWebRootHandlerServesEveryProject asserting the pill on root pages); go vet ./internal/web ./internal/api exit 0; rhiza ship generate and rhiza render exit 0 with no diff. The diff only touches the header's daemon pill (web.go render, WithDaemon, WebRootHandler) and its tests; no stubs or TODOs."
+        },
+        "handle": "web-frame-header-verified-5",
+        "id": "01M7BE8W58M4B6TTN3G471Q4VB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BE8W58M4B6TTN3G0QTA3D8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BE8W58M4B6TTN3G0QTA3D8",
+        "id": "01M7BE8W6D3K291PJ1FCTF66QA",
+        "link": "01M7BE8W6D3K291PJ1F9BV6GF8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BE8W7SVVD0MCDBVXSFXG8K",
+  "type": "ops",
+  "v": 1
+}

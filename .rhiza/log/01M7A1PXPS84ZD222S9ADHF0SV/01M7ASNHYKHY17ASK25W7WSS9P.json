@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AQNM3FZV2P3HVTCX4PJJ7N",
+  "after": [
+    "01M7ANMF0FDVTJFM7TMEP72N04"
+  ],
+  "at": "2026-11-13T15:50:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Attempt 2 at 514c416f2: go vet ./internal/api/ exit 0; go test -trimpath ./internal/api/ -run 'TestUncoveredProposals|TestDaemonPlansProposals|TestDaemonHeld|Unjournaled|TestInbox' exit 0; go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon-' exit 0 (daemon-plans-proposals.txtar included); go test -trimpath ./internal/api/... hit the default 10m package timeout twice under host load ~13 (running TestReadBudgetApply, untouched), and with -timeout 40m -v passed every test (ok, 638s; slowest TestReadBudget 141s and TestLinkEndpointKinds 129s, unrelated). The 'before the fix: exit 1' check records the pre-fix state and is not re-runnable at HEAD. Diff read: uncoveredProposals now covers only on live/held, a plan/plan-milestone/plan-review gated entry, or a failed non-abandoned run, matching the statement; daemonHeld keeps unjournaled starts of proposed as well as accepted change sets in daemonPoll1 and daemonDemand; TestUncoveredProposals updated (succeeded plan-review without gate covers nothing) and TestDaemonPlansProposalsPending polls past grace and hold. Only internal/api/daemon.go, daemon_projects.go, proposals.go, proposals_test.go plus .rhiza records changed; no TODOs or stubs; fakes only."
+        },
+        "handle": "daemon-plans-uncovered-proposals-verified-2",
+        "id": "01M7ASNHSSN0A83FRM6W3RR8K1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ASNHSSN0A83FRM6T1JWGCM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ASNHSSN0A83FRM6T1JWGCM",
+        "id": "01M7ASNHWBTYC7K4BSEF5G9PD2",
+        "link": "01M7ASNHWBTYC7K4BSEF06QKGT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7A26C4ZRFSRVS8ND06BE7NJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7A1PXPS84ZD222S9ADHF0SV",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ASNHYKHY17ASK25W7WSS9P",
+  "type": "ops",
+  "v": 1
+}

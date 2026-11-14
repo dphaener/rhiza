@@ -19,6 +19,9 @@ The web UI is redesigned screen by screen, phone-first, around the question 'doe
 ### In
 
 - decided-by [milestone-37](../intent/milestone-37.md)
+- decided-by [web-change-set-detail](../capability/rhiza/web-monitor/web-change-set-detail.md)
+- decided-by [web-roadmap-milestone-data](../capability/rhiza/web-monitor/web-roadmap-milestone-data.md)
+- decided-by [web-roadmap-milestone-page](../capability/rhiza/web-monitor/web-roadmap-milestone-page.md)
 
 ## History
 

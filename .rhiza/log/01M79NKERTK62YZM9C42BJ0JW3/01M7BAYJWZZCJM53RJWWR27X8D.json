@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BAVTJTADM3WMP4BQ8PXCFN",
+  "after": [
+    "01M7B9XGKQ6NYETGRMWXS8WGS8"
+  ],
+  "at": "2026-11-13T20:52:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 51868432f (attempt 2, review cycle 2 fix): re-ran the Checks block. go test -trimpath ./internal/web -run TestHeaderPickerOnRootPages on HEAD~1 with the new test exits 1; go test -trimpath ./internal/web/... exits 0; the acceptance run go test -trimpath ./internal/web -run 'TestLayoutGolden|TestHeaderNoProjectList|TestHeaderPickerOnRootPages' passes (all three PASS); go vet ./internal/web exits 0; rhiza ship generate and rhiza render exit 0 with no tracked change. The diff only adds page.Root, sets it on the root's merged inbox and all-projects home (mounted only in root.go), and shows the picker button labelled All projects there; no TODOs or stubs, no change outside the leaf. Picker count, /picker link, nav aria-current, no other project names and no badge when nothing waits stay covered by the header tests."
+        },
+        "handle": "web-frame-header-verified-2",
+        "id": "01M7BAYJQSHP56C62PT4ZRB82D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BAYJQSHP56C62PT1C3JRTT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BAYJQSHP56C62PT1C3JRTT",
+        "id": "01M7BAYJTY1372N39148V8S5ZC",
+        "link": "01M7BAYJTY1372N39147SWESM9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q90M4F549HKEWB54K9B9P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NKERTK62YZM9C42BJ0JW3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BAYJWZZCJM53RJWWR27X8D",
+  "type": "ops",
+  "v": 1
+}

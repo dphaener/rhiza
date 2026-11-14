@@ -71,3 +71,5 @@ On a retry (`RHIZA_ATTEMPT` > 1), load `/rhiza-build-retry` (`rhiza guide build-
 <!-- shared: session-done -->
 
 A verifier then re-runs your `Checks:` and the acceptance; findings come back as a retry.
+
+<!-- shared: contract-ref -->

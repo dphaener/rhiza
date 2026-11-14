@@ -1,6 +1,8 @@
 package api
 
 import (
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,7 +47,7 @@ func TestInboxListsGateStoppedPlanRun(t *testing.T) {
 	state := func(string) (string, bool) { return "accepted", true }
 	open := func(j run.Journal, live bool) []InboxItem {
 		var out []InboxItem
-		for _, it := range inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, state, nil, nil, nil) {
+		for _, it := range inboxItems([]run.Journal{j}, "h", nil, func(string) bool { return live }, state, nil, nil, nil, nil) {
 			if it.Kind == InboxOpen {
 				out = append(out, it)
 			}
@@ -69,5 +71,39 @@ func TestInboxListsGateStoppedPlanRun(t *testing.T) {
 	qs := inboxGateQuestions(ctx, entries().State())
 	if len(qs) != 1 || qs[0].Handle != "review-r3-f1" || qs[0].Statement != "Should the pages show plain commands?" {
 		t.Fatalf("questions = %+v", qs)
+	}
+}
+
+// A run parked at its handback_cap is an inbox item naming the step and the
+// cause, until a process journals itself after the stop (a resume).
+func TestInboxHandbackParked(t *testing.T) {
+	at := time.Date(2026, 11, 10, 1, 0, 0, 0, time.UTC)
+	stopped := run.HandbackParked + `step "check" went fail after 3 hand-backs to "build": tests red`
+	es := []run.Entry{
+		{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "w", Change: "C1"}},
+		{Type: run.TypeProcess, At: at.Add(time.Second), Process: &run.Process{Host: "h", Pid: 1}},
+		{Type: run.TypeEntered, At: at.Add(2 * time.Second), Step: "check", Visit: 1},
+		{Type: run.TypeStopped, At: at.Add(10 * time.Second), Step: "check", Detail: stopped},
+	}
+	state := func(string) (string, bool) { return "accepted", true }
+	items := func(es []run.Entry, live bool) []InboxItem {
+		var out []InboxItem
+		for _, it := range inboxItems([]run.Journal{{ID: "R1", Entries: es}}, "h", nil, func(string) bool { return live }, state, nil, nil, nil, nil) {
+			if it.Kind == InboxHandback {
+				out = append(out, it)
+			}
+		}
+		return out
+	}
+	got := items(es, false)
+	if len(got) != 1 {
+		t.Fatalf("%d handback items, want 1", len(got))
+	}
+	if got[0].Step != "check" || !strings.Contains(got[0].Detail, "tests red") || !strings.Contains(got[0].Detail, `"build"`) {
+		t.Errorf("item = %+v", got[0])
+	}
+	resumed := append(slices.Clone(es), run.Entry{Type: run.TypeProcess, At: at.Add(time.Minute), Process: &run.Process{Host: "h", Pid: 2}})
+	if got := items(resumed, true); len(got) != 0 {
+		t.Errorf("a run being resumed lists %d handback items", len(got))
 	}
 }

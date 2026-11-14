@@ -64,8 +64,18 @@ type Record struct {
 	// Dir is where the agent runs when that is not Worktree: a verifier's
 	// throwaway checkout of the commit it checks. Root is then the Rhiza
 	// root its rhiza writes go to (its RHIZA_ROOT), in Worktree.
-	Dir            string    `json:"dir,omitempty"`
-	Root           string    `json:"root,omitempty"`
+	Dir  string `json:"dir,omitempty"`
+	Root string `json:"root,omitempty"`
+	// Brief is the directory holding the session's brief.md, slice.json and,
+	// on a hand-back, handback.md, for a session a run started.
+	Brief string `json:"brief,omitempty"`
+	// Parent is the session that spawned this one with rhiza run spawn;
+	// empty for every other session.
+	Parent string `json:"parent,omitempty"`
+	// Resume is the text a hand-back resumes an ended session with: session
+	// run continues the agent's conversation with it as the prompt, then
+	// clears it.
+	Resume         string    `json:"resume,omitempty"`
 	Actor          string    `json:"actor"`
 	For            string    `json:"for"`
 	PermissionMode string    `json:"permission_mode"`

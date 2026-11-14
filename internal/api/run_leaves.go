@@ -105,9 +105,14 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
-	req.Prompt = leafPrompt(*role, spec, workflow.PromptVars{
-		Change: t.cs.String(), Slug: t.slug, Title: t.title, Run: r.run, Step: spec.Step.Name,
-	})
+	name := run.LeafSessionName(spec.Role, spec.Leaf.Handle, spec.Attempt)
+	if spec.Cycle > 0 {
+		name = run.LeafFixSessionName(spec.Role, spec.Leaf.Handle, spec.Cycle, spec.Attempt)
+	}
+	req.Prompt = leafPrompt(*role, spec, r.promptVars(t, spec.Step.Name, name))
+	if err := r.prepareSession(&req, spec.Step.Name, name); err != nil {
+		return "", err
+	}
 	resp, err := runSessionStart(r.ctx, req)
 	if err != nil {
 		return "", err
@@ -180,7 +185,7 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 
 // fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.
 func fixerPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars) string {
-	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Cycle: spec.Cycle})
+	p := role.RenderFixerPrompt(workflow.FixerVars{PromptVars: vars, Leaf: spec.Leaf.Handle, Attempt: spec.Attempt, Cycle: spec.Cycle})
 	head := fmt.Sprintf("Confirmed findings to fix in review cycle %d on leaf %s:", spec.Cycle, spec.Leaf.Handle)
 	if spec.Owner {
 		head = fmt.Sprintf("The owner requested these changes on leaf %s:", spec.Leaf.Handle)

@@ -64,6 +64,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza log`](#rhiza-log)
 - [`rhiza ls`](#rhiza-ls)
 - [`rhiza machine show`](#rhiza-machine-show)
+- [`rhiza milestones`](#rhiza-milestones)
 - [`rhiza model commit-untracked`](#rhiza-model-commit-untracked)
 - [`rhiza mv`](#rhiza-mv)
 - [`rhiza note add`](#rhiza-note-add)
@@ -93,6 +94,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run code-check`](#rhiza-run-code-check)
 - [`rhiza run findings`](#rhiza-run-findings)
 - [`rhiza run gate`](#rhiza-run-gate)
+- [`rhiza run lint-check`](#rhiza-run-lint-check)
 - [`rhiza run log`](#rhiza-run-log)
 - [`rhiza run ls`](#rhiza-run-ls)
 - [`rhiza run milestone-check`](#rhiza-run-milestone-check)
@@ -103,6 +105,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run review-check`](#rhiza-run-review-check)
 - [`rhiza run round-recorded`](#rhiza-run-round-recorded)
 - [`rhiza run send-back`](#rhiza-run-send-back)
+- [`rhiza run spawn`](#rhiza-run-spawn)
 - [`rhiza run start`](#rhiza-run-start)
 - [`rhiza run status`](#rhiza-run-status)
 - [`rhiza run summary`](#rhiza-run-summary)
@@ -519,7 +522,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -1011,6 +1014,24 @@ Output (`--json` fields):
 - `file` (boolean): Whether the machine config file exists; false means trust is daily by default
 - `path` (string): The machine config file, whether or not it exists
 - `trust` (string): The machine's trust: dedicated when its config says so, else daily
+
+## rhiza milestones
+
+Show every milestone with its done points and change sets in every state.
+
+```
+rhiza milestones [--view <view>]
+```
+
+Arguments and flags:
+
+- `--view`: The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set
+
+Output (`--json` fields):
+
+- `finished` (integer): How many of the milestones are finished
+- `milestones` (array of object): Every milestone of the project, in intent-tree order
+- `view` (string): The view read: as-is, to-be or what-if:<ID>
 
 ## rhiza model commit-untracked
 
@@ -1539,6 +1560,7 @@ Output (`--json` fields):
 - `check` (object): rhiza check's report on the run's worktree
 - `dry_run` (boolean): True if nothing was journalled
 - `leaves` (array of object): build-check's leaves of the change set, in leaf order
+- `lints` (array of object): The model lints' hits (stale references, unapplied Decisions, capabilities whose code the branch removed); a hit is never a cause and does not change passed
 - `passed` (boolean): True if rhiza check found no failure and every leaf is OK
 - `run` (string): The run's full ID
 - `step` (string): The step the run is at, which the code-check entry names
@@ -1591,6 +1613,23 @@ Output (`--json` fields):
 - `commit` (string): The commit that renders and commits .rhiza on the run's branch; absent when there was nothing to commit, or in a dry run
 - `dry_run` (boolean): True if nothing was written or journalled
 - `open` (array of object): Every question the plan left with no live answering Decision: the review's questions and each question node created in the plan's change sets, in order; empty when none
+- `run` (string): The run's full ID
+
+Exit code: set by the result, besides the shared codes.
+
+## rhiza run lint-check
+
+Pass when the latest code-check entry of the run RHIZA_RUN names has no model lint hits, else fail listing each hit.
+
+```
+rhiza run lint-check
+```
+
+Output (`--json` fields):
+
+- `change` (string): The run's change set
+- `lints` (array of object): The lint hits of the run's latest code-check entry: node, lint kind and the reference or Decision; empty when it has none
+- `passed` (boolean): True if the latest code-check entry has no lint hits, or the run has none
 - `run` (string): The run's full ID
 
 Exit code: set by the result, besides the shared codes.
@@ -1813,6 +1852,42 @@ Output (`--json` fields):
 
 Exit code: set by the result, besides the shared codes.
 
+## rhiza run spawn
+
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome.
+
+```
+rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>]
+```
+
+Appends to the log.
+
+Arguments and flags:
+
+- `--role`: The child's role, such as builder or verifier: the guide it follows (required)
+- `--leaf`: A leaf of the run's change set the child works on, by handle; default none
+- `--brief`: A file holding the caller's brief for the child: its brief.md holds the contract section, then this file (required)
+- `--model`: The model the child's agent starts on; default the agent's
+- `--check`: The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role
+
+Output (`--json` fields):
+
+- `brief` (string): The child's brief.md, an absolute path
+- `check` (string): The review check it worked on, its RHIZA_CHECK
+- `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
+- `detail` (string): The child's exit, or why it failed
+- `dry_run` (boolean): True if nothing was started or journaled
+- `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
+- `leaf` (string): The leaf it worked on
+- `outcome` (string): pass when the child's agent exited 0, else fail
+- `parent` (string): The calling session
+- `role` (string): The child's role
+- `run` (string): The run's full ID
+- `session` (string): The child's session; absent in a dry run
+- `step` (string): The calling step the child is a child of
+
+Exit code: set by the result, besides the shared codes.
+
 ## rhiza run start
 
 Queue a run of a workflow on a change set for the daemon, which runs its steps in its worktree headless; --foreground drives it in this process.
@@ -1887,6 +1962,7 @@ Output (`--json` fields):
 - `sessions` (array of object): The sessions it launched or read token use for, in order of first appearance, each with its latest reading
 - `signoff_waiting` (boolean): True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise
 - `signoffs` (array of object): The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none
+- `spawned` (array of object): The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none
 - `stalled` (object): A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise
 - `started_at` (string): When it started, RFC 3339 UTC
 - `state` (string): running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run

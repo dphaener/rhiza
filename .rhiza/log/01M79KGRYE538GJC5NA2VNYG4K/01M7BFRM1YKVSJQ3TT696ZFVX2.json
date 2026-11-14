@@ -1,0 +1,155 @@
+{
+  "actor": "01M7BFGQXWYCXDM50HH0RM86R7",
+  "after": [
+    "01M7BFFKJ9XVAYGR3NEZV6JQD0"
+  ],
+  "at": "2026-11-13T22:17:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at e5f3f751e, fresh go build -trimpath ./cmd/rhiza to a scratch path, scratch root and repo, rhiza run start --foreground: the cycle-1 failure is fixed. An included gate (outer kind=workflow -> inner gate ig, commands [echo, seq 1 3000 + stderr + exit 5, pwd > file]) failed with detail 'command 2 `...`: exit 5; full output: <run dir>/gate-inner_ig-1-2.log' (3001 lines, stderr kept), the third command ran in the run's worktree; run resume --retry wrote gate-inner_ig-2-2.log beside visit 1's. A top-level failing gate kept gate-g-1-2.log and ran its later command; an all-green included gate passed ('2 commands passed'). run status --json carries the detail. Underscored step names are refused, so safeName cannot collide. Scoped TestGateStep (workflow, run) pass."
+        },
+        "handle": "gate-step-qa-2",
+        "id": "01M7BFRKC6N5V5NPTH51TPH4ZW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKC6N5V5NPTH4Y2YZ8GW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKC6N5V5NPTH4Y2YZ8GW",
+        "id": "01M7BFRKF6MKA2848YJ7FSBPSK",
+        "link": "01M7BFRKF6MKA2848YJ49S8982",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build, fake rex/claude: included workflow hbi (agent build -> gate check, on.fail = handback:build) under top-level hbo: two gate reds re-entered build (same session ID) and the third pass ended the run done. With handback_cap = 1 on the top-level file the second red parked the run stopped; rhiza inbox showed a handback item naming step hbi/check and the cause with the kept gate log path, and run resume finished green. TestHandbackTarget, TestHandbackRoute, TestInboxHandbackParked pass. Rough edge: handback_cap set only in the included file is accepted by workflow check and ignored."
+        },
+        "handle": "handback-route-qa-2",
+        "id": "01M7BFRKH5E07Q7WBE0X3JF4Q2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKH5E07Q7WBE0VEBREK8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKH5E07Q7WBE0VEBREK8",
+        "id": "01M7BFRKJYY8GD446F54GW2000",
+        "link": "01M7BFRKJYY8GD446F518HMT8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW9B0Y6HMMVGBQ4QX4Z3W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build, fake claude: a red gate step handed back twice; each resume (claude --resume, same session ID) got the handback text 'Fix it, see <session dir>/handback.md', and handback.md named failing step hbi/check, outcome fail and '`gatecheck`: output in <run dir>/gate-hbi_check-<visit>-2.log' for the matching visit. TestHandbackDeliver and TestScripts/run-handback pass."
+        },
+        "handle": "run-handback-qa-2",
+        "id": "01M7BFRKN84WG1KQZY225JHGSP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKN84WG1KQZY220Q0QVH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKN84WG1KQZY220Q0QVH",
+        "id": "01M7BFRKQ0JER9XF1HW8S24ZBR",
+        "link": "01M7BFRKQ0JER9XF1HW6BY635D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCETKJR0AX7B576P4C76",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build, fake rex/claude: an agent step's session ran rhiza run spawn --role builder --brief <file> --model sonnet: the child started in the run's worktree, its spawn/<session>/brief.md ends with the contract section then '## Brief / do the child thing', and spawn printed 'Spawned builder session ... under step cond ...: pass (exit 0)'; a child exiting 1 gave 'fail (exit 1)' and spawn exit 1. A missing --brief exits 2 naming the path; outside a run it refuses naming RHIZA_RUN. TestRunSpawn and TestScripts/run-spawn pass."
+        },
+        "handle": "run-spawn-qa-2",
+        "id": "01M7BFRKRFP72Z59HA7XH6JSHT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKRFP72Z59HA7WPNV1ZG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKRFP72Z59HA7WPNV1ZG",
+        "id": "01M7BFRKSZ63AB4K6CJWW95Q2D",
+        "link": "01M7BFRKSZ63AB4K6CJTFVXZB3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCATRS9TD6XGS3C3KYY6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build: rhiza run status listed '## Spawned sessions - cond, builder, model sonnet, session <id>: ended, pass' (and 'ended, fail (exit 1)' for a failed child); --json has spawned[] with step, parent, role, model, state, outcome, detail and session; rhiza session show accepted the child's session ID. TestRunStatusSpawned, TestSpawnedSessionOpenResume and TestRunDetailSpawned pass."
+        },
+        "handle": "spawn-visible-qa-2",
+        "id": "01M7BFRKVVTBMM8Z88CYWP7KYQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKVVTBMM8Z88CTZA36G4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKVVTBMM8Z88CTZA36G4",
+        "id": "01M7BFRKXH3RSEGTMJ2V5Z5TKR",
+        "link": "01M7BFRKXH3RSEGTMJ2S4C2V1Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: not killed by hand (code unchanged since cycle 1's QA); go test -trimpath -count=1 ./internal/run -run TestSpawnResume passes (driver killed with a live child and a pending hand-back, reattach, recorded once, delivered once)."
+        },
+        "handle": "spawn-durable-qa-2",
+        "id": "01M7BFRKYXA84RWYVPRHM82E84",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BFRKYXA84RWYVPRF9Y0MMQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BFRKYXA84RWYVPRF9Y0MMQ",
+        "id": "01M7BFRM09HB1X4VMDH2DKRXPV",
+        "link": "01M7BFRM09HB1X4VMDH1G80TJN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BFRM1YKVSJQ3TT696ZFVX2",
+  "type": "ops",
+  "v": 1
+}

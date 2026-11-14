@@ -34,7 +34,7 @@ func TestWebInboxViewsOwnerWording(t *testing.T) {
 	stalled := func(st run.State) []RunStalled {
 		return []RunStalled{{Step: "leaves", Session: "SESS42", Since: at.Add(4 * time.Minute).Format(time.RFC3339)}}
 	}
-	items := inboxItems(runs, "h", nil, live, func(string) (string, bool) { return "", false }, stalled, nil, nil)
+	items := inboxItems(runs, "h", nil, live, func(string) (string, bool) { return "", false }, stalled, nil, nil, nil)
 	kinds := map[string]bool{}
 	for i := range items {
 		kinds[items[i].Kind] = true
@@ -99,6 +99,14 @@ func TestWebInboxViewsPermission(t *testing.T) {
 	got := webInboxViews([]InboxItem{{Kind: InboxPermission, Run: "R1", Change: "C1", ChangeTitle: "Retry webhooks",
 		Session: "SESS1", Detail: "Allow rm -rf /home/x?", Next: "rhiza inbox open abc1234"}})
 	if len(got) != 1 || got[0].Kind != InboxPermission || got[0].Title != "Retry webhooks" || got[0].Detail != "a session waits for your permission" {
+		t.Errorf("views = %+v", got)
+	}
+}
+
+func TestWebInboxViewsAPIError(t *testing.T) {
+	got := webInboxViews([]InboxItem{{Kind: InboxAPIError, Run: "R1", Change: "C1", ChangeTitle: "Retry webhooks",
+		Session: "SESS1", Detail: "session SESS1 stopped on an API error: API Error: 403", Next: "rhiza session message SESS1 <text>"}})
+	if len(got) != 1 || got[0].Kind != InboxAPIError || got[0].Title != "Retry webhooks" || got[0].Detail != "a session stopped on an API error" {
 		t.Errorf("views = %+v", got)
 	}
 }

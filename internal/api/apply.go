@@ -310,11 +310,15 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 }
 
 // scratchOps folds change set cs of the scratch workspace; a fold problem
-// means an item could not be applied as built.
+// other than concurrent entries means an item could not be applied as built.
 func scratchOps(s *workspace, cs id.ID) ([]op.Op, error) {
 	c, problems := changeset.Fold(cs, s.entriesOfSet(cs))
-	if len(problems) > 0 {
-		return nil, Errorf("%s", problems[0].Err.Error())
+	for _, p := range problems {
+		// An honest merge leaves concurrent entries; check only warns on them.
+		if errors.Is(p.Err, changeset.ErrConcurrent) {
+			continue
+		}
+		return nil, Errorf("%s", p.Err.Error())
 	}
 	return slices.Clone(c.Ops), nil
 }

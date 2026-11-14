@@ -1,0 +1,29 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7AKTRP98HWCPNVY7AD2RRKT"
+  ],
+  "at": "2026-11-13T14:18:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on spawn-reuses-contract-and-waits-on-holds): The Decision says this change set depends on the contract change set (01M79KGHYF) and calls its writers, and run-spawn and run-handback extend run-brief-files' brief.md/handback.md writer and send agent-invoke-template's handback text, but no depends-on link records it: rhiza change show lists run-spawn with needs [] and run-handback with needs [gate-step, handback-route] only, and neither run-brief-files nor agent-invoke-template is linked. Build order (leaf needs count depends-on in or out of the change set) therefore lets run-spawn and run-handback be built before the writers they extend exist. Add depends-on from run-spawn to run-brief-files and from run-handback to run-brief-files and agent-invoke-template. The critic confirmed it: Verified: the Decision spawn-reuses-contract-and-waits-on-holds says this change set depends on the contract change set 01M79KGHYF and calls its writers, and run-spawn's touches name 'the contract change set's brief.md writer (a spawn mode...)'. Yet rhiza show run-spawn lists no depends-on at all, and run-handback depends only on handback-route and gate-step; neither links run-brief-files or agent-invoke-template, and rhiza check does not report it. Build order can therefore start run-spawn/run-handback before the writers they extend exist. A real contradiction between the Decision and the leaf graph; major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6q9g3ytjk9antmptwxvm-r3-f1",
+        "id": "01M7AMCGDYJ1ATX2XK7BHANS9J",
+        "key": null,
+        "kind": "question",
+        "node": "01M7AMCGDYJ1ATX2XK77ZJ9AN0",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMCGJDD1YDRQTZDPN7EQ6Y",
+  "type": "ops",
+  "v": 1
+}

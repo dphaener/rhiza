@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BDG81DSZS03SH4SC1RFG19",
+  "after": [
+    "01M7BBNMXTG0C1HGY61EJ9RAYX"
+  ],
+  "at": "2026-11-13T21:44:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at e66d8e9d4. Re-ran the Checks block: go test -trimpath ./internal/run -run TestSpawnResume (both subtests PASS: children across a driver restart; a pending hand-back delivered once after a restart), go test -trimpath ./internal/run/... ok, go test -trimpath ./internal/api -run 'TestRun|TestStepRunner|TestHandback|TestSpawn|TestLost|TestSessionRun' ok (incl. new TestStepRunnerChild), TestScripts/run-spawn, run-handback, run-resume, run-resume-agent-session all PASS. Read the diff: the driver is killed (panic) while children run and while a hand-back is being delivered, then restarted; K-live is polled until it ends (reattached), K-ended is recorded once even though its spawn process also records it (Store.AppendSpawnEnded skips an already-ended child, and the fold ignores a second spawn-ended entry), K-gone is recorded fail with 'session record is gone', the journaled hand-back (State.PendingHandback, cleared by the new handback-delivered entry) is delivered exactly once, and the run continues from the same step to Succeeded. The resume path lives in internal/api/run_lost.go (stepRunner.Child) and run_spawn.go rather than run.go; it is in scope. There are no stubs or TODOs, and only fakes are used. make self-check fails only on .rhiza/rendered actor files whose actor log entries the run keeps uncommitted in its root. The base commit HEAD~1 has the same drift, so the leaf's code does not cause it. Note: AppendSpawnEnded checks the journal and then appends without a lock, so a simultaneous driver and spawn process could each write an entry; the fold still records the child's end once."
+        },
+        "handle": "spawn-durable-verified",
+        "id": "01M7BDWBHWT4391GQ3X2V0FWKP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BDWBHWT4391GQ3WZ4GC0E6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BDWBHWT4391GQ3WZ4GC0E6",
+        "id": "01M7BDWBNM43ETCWFZ35D4X495",
+        "link": "01M7BDWBNM43ETCWFZ34RZCRW9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCGPWP3YX3Q5GRCFA0B0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BDWBV4H5AZED0DW61PXGD2",
+  "type": "ops",
+  "v": 1
+}

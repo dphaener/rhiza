@@ -35,7 +35,7 @@ cp $WORK/first.queue $WORK/checks
 stdout '^Run (\S+) failed$'
 stdout '^- Detail: step "landed-green" ended with outcome "fail"$'
 stderr 'not settled'
-exec sh -c 'ls .git/rhiza/runs | sed "s/\.jsonl$//" > $WORK/runid'
+exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 exec rhiza run status
 stdout '^- wait-landed \(visit 1\): pass, then landed-green'
 stdout '^- landed-green \(visit 1\): fail, then end'

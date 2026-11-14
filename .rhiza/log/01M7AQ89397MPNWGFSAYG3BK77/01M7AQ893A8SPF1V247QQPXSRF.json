@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T15:08:42Z",
+  "body": {
+    "intent": "Fix watchdog unmerged PR at step rebase: run 01M7AH6RHKMZRAHGJKJFM4VTNT; log: PR green at 6ce8f26 and unmerged after step rebase failed: step \"rebase\" went over max_visits 3",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M7AQ89397MPNWGFSAYG3BK77",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQ893A8SPF1V247QQPXSRF",
+  "type": "open",
+  "v": 4
+}

@@ -8,6 +8,7 @@ A workflow is a TOML file of named steps. Each step ends with an outcome, and it
 
 - `name`: The workflow's name; unset takes the file's base name
 - `start`: The step the run enters first; unset takes the first step in the file
+- `handback_cap`: How many times a run may hand back through an on.<outcome> = "handback:<agent step>" before the next red parks it stopped with an inbox item; a whole number of at least 1, unset takes 3. A hand-back gives every step its full max_visits again
 - `autonomous`: true or false: set every autonomy stage to auto or owner at once; not with [autonomy]
 - `autonomy`: A table giving a mode, auto or owner, to any of the stages plan, accept, ship and signoff; a stage left out follows rhiza.autonomy.<stage>
 - `cleanup`: A [[cleanup]] table, repeated: a command run once when a run of the workflow ends done, failed or abandoned, in the run's worktree with the run's environment, in file order; its keys are run (the shell command, required) and name (lowercase words joined by hyphens; unset takes cleanup-<n>). A failing cleanup step is journalled and logged and never changes the run's result
@@ -16,8 +17,8 @@ A workflow is a TOML file of named steps. Each step ends with an outcome, and it
 
 ## Keys every step may set
 
-- `kind` (required): The step kind: agent, command, wait, leaves, checks, signoff, workflow or arbiter
-- `on.<outcome>`: The step to go to for an outcome, or done or failed to end the run
+- `kind` (required): The step kind: agent, command, wait, leaves, checks, signoff, workflow, gate or arbiter
+- `on.<outcome>`: The step to go to for an outcome, or done or failed to end the run, or handback:<agent step> to hand the run back to an agent step of the workflow with the cause; the run may hand back handback_cap times, then the next red parks it stopped and an inbox item names the step and the cause
 - `max_visits`: How often a run may enter the step; 0 or unset means once
 - `stall`: How long the watchdog lets the step go without progress before it acts, such as "20m"; unset takes the watchdog's default for the kind
 
@@ -32,6 +33,7 @@ A kind refuses the keys that are not listed in its section.
 - [`checks`](#checks-step)
 - [`signoff`](#signoff-step)
 - [`workflow`](#workflow-step)
+- [`gate`](#gate-step)
 - [`arbiter`](#arbiter-step)
 
 ## agent step
@@ -40,7 +42,8 @@ Runs one agent session with a prompt. It passes when the session says it is done
 
 Keys:
 
-- `prompt` (required): The agent's first prompt, a template over {change}, {slug}, {title}, {run} and {step}
+- `invoke` (required): The text the agent's session starts with, a template over {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf} and {attempt}; prompt is an alias, and a step sets only one of them
+- `handback`: The text a hand-back sends the agent's session, a template over the same placeholders
 - `agent`: The agent adapter's name; unset takes the run's, else the default
 - `permission_mode`: The agent's permission mode; unset takes the run's
 - `models`: Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default
@@ -128,6 +131,16 @@ Keys:
 
 Outcomes: `pass`, `fail`.
 
+## gate step
+
+Runs its commands, ones the daemon owns and never an agent, in order in the run's worktree. It passes only when every command exits 0 and fails otherwise; every command runs, and each failing command's full output is kept in a file in the run directory, named in the step's detail.
+
+Keys:
+
+- `commands` (required): The shell commands, run in order; at least one
+
+Outcomes: `pass`, `fail`.
+
 ## arbiter step
 
 Not a state of the machine: no step goes to it. In an autonomous run the engine calls it to decide a question an agent step raised, and its outcome goes back to the step that asked. A file declares at most one, only to set its agent, permission mode and interval; its prompt is fixed. Without one a built-in arbiter is used.
@@ -144,7 +157,8 @@ Outcomes: `pass`, `fail`.
 
 A role (a builder, verifier, critic or fixer table, or one check) takes:
 
-- `prompt` (required): The role's first prompt to its agent
+- `invoke` (required): The text the role's session starts with, a template over the placeholders below; prompt is an alias, and a table sets only one of them
+- `handback`: The text a hand-back sends the role's session, a template over the same placeholders
 - `agent`: The agent adapter's name; unset takes the run's, else the default
 - `permission_mode`: The agent's permission mode; unset takes the run's
 - `models`: Models in order of the attempt, visit or cycle; the last stays for every later one; unset takes the agent's default
@@ -155,7 +169,7 @@ A role (a builder, verifier, critic or fixer table, or one check) takes:
 
 A prompt may use only these names in braces, such as `{change}`:
 
-- agent step prompt: {change}, {slug}, {title}, {run}, {step}
-- leaves builder and verifier, checks verifier: {change}, {slug}, {title}, {run}, {step}, {leaf}, {attempt}
-- checks check and critic: {change}, {slug}, {title}, {run}, {step}, {check}, {cycle}
-- checks fixer: {change}, {slug}, {title}, {run}, {step}, {leaf}, {cycle}
+- agent step prompt: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
+- leaves builder and verifier, checks verifier: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}
+- checks check and critic: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {check}, {cycle}
+- checks fixer: {change}, {slug}, {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf}, {attempt}, {cycle}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AQM8AY5EQDX6WTVPA5QTB8",
+  "after": [
+    "01M7ANT2WXRYD0GMPXTH79XJB3"
+  ],
+  "at": "2026-11-13T15:16:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e61a2366e re-ran the Checks block: go test -trimpath ./cmd/rhiza -run 'TestScripts/(apply-concurrent|apply|check)$' exit 0; go test -trimpath ./internal/api -run TestApply exit 0; rhiza ship generate exit 0; rhiza render exit 0. Diff: scratchOps in internal/api/apply.go skips problems wrapping changeset.ErrConcurrent and returns any other fold problem, covering both the start ops and each appended item. New apply-concurrent.txtar builds concurrent entries as check.txtar does, shows the check warn with no fail, runs apply --dry-run and apply (add b, set a), change show lists node.create, render+check prints ok and only the warn; then a hand-written ops entry dropping an unwritten op makes apply --dry-run and apply fail with 'changeset: illegal revision' and the log entry count stays 2. In a scratch worktree with the old apply.go the new script fails at apply --dry-run, so it exercises the fix. No stubs or TODOs; only the leaf's files plus actor records changed."
+        },
+        "handle": "apply-tolerates-concurrent-entries-verified",
+        "id": "01M7AQPQKZJ5BZT1R6F7S6R6Y4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AQPQKZJ5BZT1R6F4Z8QJ22",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AQPQKZJ5BZT1R6F4Z8QJ22",
+        "id": "01M7AQPQNGBJ1DXNXFJBZVA351",
+        "link": "01M7AQPQNGBJ1DXNXFJ8QV0V85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AN6YYW3GR94680716HY50V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7AN1DTS8RCJ60YD93BADX4C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AQPQRHNPF1AX787JQ6T8ZX",
+  "type": "ops",
+  "v": 1
+}

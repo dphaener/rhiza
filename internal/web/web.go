@@ -77,6 +77,7 @@ var templateFS embed.FS
 // pages holds each page's template set: the shared layout plus the page's
 // own "content". They are parsed once, from the binary.
 var pages = map[string]*template.Template{
+	"action":   template.Must(template.New("").ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/action.html")),
 	"overview": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/overview.html", "templates/daemon.html", "templates/live-runs.html", "templates/inbox.html", "templates/milestones.html")),
 	"run":      template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/run.html")),
 	"runs":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/runs.html")),
@@ -89,6 +90,8 @@ var pages = map[string]*template.Template{
 		"Empty":   func(t, x string) Empty { return Empty{t, x} },
 	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/projects.html")),
 	"mergedinbox": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/inbox.html", "templates/mergedinbox.html")),
+	"node":        template.Must(template.New("").Funcs(template.FuncMap{"Glyph": func(k string) Glyph { return Glyph{Kind: k} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/node.html")),
+	"nodemissing": template.Must(template.New("").Funcs(template.FuncMap{"Empty": func(t, x string) Empty { return Empty{t, x} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/nodemissing.html")),
 	"roadmap":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
@@ -97,6 +100,8 @@ type page struct {
 	Title, Nav string
 	// Daemon is the header's daemon pill; empty Text leaves it out.
 	Daemon Pill
+	// NoDaemon leaves the header's daemon pill out without reading the daemon.
+	NoDaemon bool
 	// DaemonView is the Overview's daemon panel.
 	DaemonView DaemonView
 	// Runs is the Overview's live runs panel.
@@ -107,16 +112,30 @@ type page struct {
 	Milestones MilestonesPanel
 	// Base is the project prefix the page is served under, empty at the root.
 	Base string
-	// Switcher is the header's project switcher; nil leaves it out.
-	Switcher *Switcher
+	// Project is the project the page is served for, empty at the root.
+	Project string
+	// Root marks one of the root's own pages (the all-projects home, the
+	// merged inbox): unscoped, yet served beside /picker, so the header
+	// still carries the picker button, naming all projects.
+	Root bool
+	// NeedsYou is the project's needs-you count in the header's picker
+	// button; zero shows no badge.
+	NeedsYou int
 	// Data is what the page's own content renders.
 	Data any
 }
 
 func render(w http.ResponseWriter, r *http.Request, name string, p page) {
+	renderStatus(w, r, http.StatusOK, name, p)
+}
+
+func renderStatus(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if sc := scopeOf(r); sc != nil {
-		p.Base = sc.Prefix
-		p.Switcher = sc.Switcher()
+		p.Base, p.Project = sc.Prefix, sc.Name
+	}
+	p.NeedsYou = needsYouOf(r)
+	if p.Daemon.Text == "" && !p.NoDaemon {
+		p.Daemon = daemonOf(r).Pill()
 	}
 	var buf bytes.Buffer
 	if err := pages[name].ExecuteTemplate(&buf, "layout", p); err != nil {
@@ -124,6 +143,7 @@ func render(w http.ResponseWriter, r *http.Request, name string, p page) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
 	w.Write(scopeOf(r).rewrite(buf.Bytes()))
 }
 
@@ -155,6 +175,25 @@ func HandlerWithInbox(daemon DaemonSource, runs RunsSource, inbox InboxSource, a
 // HandlerWithMilestones is HandlerWithInbox with the source of the open
 // milestones the Overview shows the progress of; nil shows none.
 func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, api http.Handler, events ...http.Handler) http.Handler {
+	return HandlerWithNeedsYou(daemon, runs, inbox, milestones, nil, api, events...)
+}
+
+// NeedsYouSource reads how many things wait on the owner in the project.
+type NeedsYouSource func() int
+
+type needsYouKey struct{}
+
+func needsYouOf(r *http.Request) int {
+	if src, _ := r.Context().Value(needsYouKey{}).(NeedsYouSource); src != nil {
+		return src()
+	}
+	return 0
+}
+
+// HandlerWithNeedsYou is HandlerWithMilestones with the source of the
+// project's needs-you count, which the header's picker button shows; nil
+// shows no count.
+func HandlerWithNeedsYou(daemon DaemonSource, runs RunsSource, inbox InboxSource, milestones MilestonesSource, needs NeedsYouSource, api http.Handler, events ...http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	for _, e := range events {
 		if e != nil {
@@ -164,8 +203,12 @@ func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSour
 	if api != nil {
 		mux.Handle("/api/", api)
 	}
+	mux.HandleFunc("POST "+AnswerPath, serveAnswer)
+	mux.HandleFunc("POST "+ApprovePath, serveApprove)
+	mux.HandleFunc("POST "+PausePath, servePause)
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
 	mux.HandleFunc("GET /changes/{id}", serveChange)
+	mux.HandleFunc("GET /nodes/{ref}", serveNode)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /runs/{id}", servRun)
 	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {
@@ -194,6 +237,9 @@ func HandlerWithMilestones(daemon DaemonSource, runs RunsSource, inbox InboxSour
 		}
 		if milestones != nil {
 			r = r.WithContext(context.WithValue(r.Context(), milestonesKey{}, milestones))
+		}
+		if needs != nil {
+			r = r.WithContext(context.WithValue(r.Context(), needsYouKey{}, needs))
 		}
 		mux.ServeHTTP(w, withAPI(r, api))
 	})

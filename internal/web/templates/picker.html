@@ -1,0 +1,11 @@
+{{define "picker"}}<div class="rz-picker-scrim" data-rz-picker-close></div>
+<section class="rz-picker" role="dialog" aria-label="Choose a project">
+  <span class="rz-picker-grip" aria-hidden="true"></span>
+  <h2 class="rz-picker-title">Projects</h2>
+{{if .Search}}  <label class="rz-sr" for="rz-picker-search">Find a project</label>
+  <input id="rz-picker-search" class="rz-picker-search" type="search" placeholder="Find a project" data-rz-picker-search>
+{{end}}  <div class="rz-picker-list">
+{{range .Items}}    <a class="rz-picker-row" href="{{.Href}}" data-name="{{.Name}}"{{if .Current}} aria-current="true"{{end}}><span class="rz-picker-main"><span class="rz-picker-name">{{.Name}}</span><span class="rz-picker-state{{if .Live}} is-live{{end}}">{{if .Live}}<span class="rz-live-dot" aria-hidden="true"></span>{{end}}{{.State}}</span></span><span class="rz-count{{if .NeedsYou}} is-due{{end}}" aria-label="{{if .NeedsYou}}{{.NeedsYou}} need you{{else}}nothing needs you{{end}}">{{.NeedsYou}}</span></a>
+{{end}}    <a class="rz-picker-row rz-picker-all" href="{{.AllHref}}"><span class="rz-picker-main"><span class="rz-picker-name">All projects</span><span class="rz-picker-state">Everything that needs you, across the root</span></span><span class="rz-count{{if .AllCount}} is-due{{end}}">{{.AllCount}}</span></a>
+  </div>
+</section>{{end}}

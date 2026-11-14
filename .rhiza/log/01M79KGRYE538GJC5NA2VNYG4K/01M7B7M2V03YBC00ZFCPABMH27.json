@@ -1,0 +1,40 @@
+{
+  "actor": "01M7B79D20M0YJJRZ8BRY2YQCD",
+  "after": [
+    "01M7AMGNTAEAQSSDF5YFMHXPYD"
+  ],
+  "at": "2026-11-13T19:54:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At cda545b70 re-ran every Checks: command, each exit 0: go test -trimpath ./internal/workflow -run TestGateStep (parses commands; Validate, which rhiza workflow check uses, refuses no/empty/blank commands and prompt, agent, models, run keys); go test -trimpath ./internal/run -run TestGateStep (pass; a failing middle command with all 3 commands run, full output kept in <run dir>/gate-gate-1-2.log and named in the step detail with the command and exit code; runner error fails the run); go test ./internal/workflow/... ./internal/run/...; the docs-reference-workflow, docs-reference-cli and describe-golden scripts; rhiza ship generate and rhiza render (no diff); make self-check (passed twice here and once in a clean detached worktree; one earlier run exited 2 with its error line cut off by tail and did not happen again). Read the diff: the gate kind runs through stepRunner.sh in the run's worktree dir, CommandOutput keeps the whole combined output, the step detail goes into the journal state. Nothing outside the leaf changed, and there are no stubs or TODOs."
+        },
+        "handle": "gate-step-verified",
+        "id": "01M7B7M2N1G45FKDMC4H5X1N8W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7B7M2N1G45FKDMC4H0PGPB5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7B7M2N1G45FKDMC4H0PGPB5",
+        "id": "01M7B7M2QJ91Q6WA2Y1MN6DC6J",
+        "link": "01M7B7M2QJ91Q6WA2Y1MJ5K2R0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCDGXDFMJJ3WEZ2G4H51",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7B7M2V03YBC00ZFCPABMH27",
+  "type": "ops",
+  "v": 1
+}

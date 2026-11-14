@@ -1,0 +1,40 @@
+{
+  "actor": "01M7AVZGP11KCRE380VFJXXS8C",
+  "after": [
+    "01M7AVQ7Y2RHQTH0S248ARTT3Y"
+  ],
+  "at": "2026-11-13T16:32:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 843b0e128 (attempt 2, over 1e0cc2dcf) re-ran the Checks block and acceptance: go test -trimpath ./internal/workflow/... ok; ./internal/workflow -run TestInvokeTemplate PASS (incl. unknown invoke/handback placeholder, prompt+invoke both set, agent-step {leaf}/{attempt} rendering empty); ./internal/api -run TestInvokePrompt PASS (builder attempt 2 = rendered invoke then attempt line; leaf and change set fixers = rendered invoke then confirmed findings and answer lines); ./cmd/rhiza TestScripts/(workflow-invoke|workflow-check|workflow-describe|docs-reference-workflow|describe-golden) ok, workflow-invoke shows '/myskill:conduct --prompt <brief.md path>'. Scratch-built rhiza workflow check: agent step invoke/handback 'do {leaf} {attempt}' valid (exit 0), resolving attempt-1 finding f1; {bogus} and {check} refused naming the placeholder (exit 1); prompt+invoke refused (exit 1). rhiza ship generate exit 0 (0 changed), rhiza render exit 0, tree clean. Diff read: render calls in run.go/run_leaves.go/run_checks.go use session file paths via promptVars; no hand-back sending, no TODOs or stubs."
+        },
+        "handle": "agent-invoke-template-verified",
+        "id": "01M7AW29B7SE2DVYMSD4FGXS50",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7AW29B7SE2DVYMSD4E39CF3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7AW29B7SE2DVYMSD4E39CF3",
+        "id": "01M7AW29DZH0WQ5NE13025SC27",
+        "link": "01M7AW29DZH0WQ5NE12X4R7RK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPBF6JT17PFXC2KD2DW6F",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AW29HA7PDFJ76G8SXFBV5Y",
+  "type": "ops",
+  "v": 1
+}

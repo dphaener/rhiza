@@ -1843,7 +1843,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -3247,7 +3247,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message",
+                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on",
                   "type": "string"
                 },
                 "handle": {
@@ -3259,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {
@@ -3337,7 +3337,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped",
                   "type": "string"
                 },
                 "step": {
@@ -3933,6 +3933,48 @@ cmp stdout describe.golden.json
                     "detail": {
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
+                    },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "outcome": {
                       "description": "pass or fail",
@@ -4742,6 +4784,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -5767,6 +5873,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -6575,6 +6723,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -7484,6 +7696,174 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Show the machine's trust and the machine config file it came from, daily with no machine config; writes nothing",
+      "write": false
+    },
+    {
+      "name": "milestones",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "view": {
+            "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "finished": {
+            "description": "How many of the milestones are finished",
+            "type": "integer"
+          },
+          "milestones": {
+            "description": "Every milestone of the project, in intent-tree order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_sets": {
+                  "description": "Every change set serving the milestone or one of its intents, in every state, by ID",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "description": "The change set's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "intent": {
+                        "description": "The change set's intent",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's short title",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "intent",
+                      "state",
+                      "title"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "done_points": {
+                  "description": "Its child intents, in tree order",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "change_sets": {
+                        "description": "Every change set serving the done point or one of its child intents, in every state, by ID",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "description": "The change set's ID",
+                              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                              "type": "string"
+                            },
+                            "intent": {
+                              "description": "The change set's intent",
+                              "type": "string"
+                            },
+                            "state": {
+                              "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
+                              "type": "string"
+                            },
+                            "title": {
+                              "description": "The change set's short title",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "intent",
+                            "state",
+                            "title"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "handle": {
+                        "description": "The done point intent's handle",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The done point intent's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "met": {
+                        "description": "True when at least one change set serves it and every one that is not dropped is landed",
+                        "type": "boolean"
+                      },
+                      "statement": {
+                        "description": "The done point intent's statement",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "change_sets",
+                      "id",
+                      "met",
+                      "statement"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "handle": {
+                  "description": "The milestone intent's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The milestone intent's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "finished when it has done points and all are met; else building when it has an accepted or a landed change set; else planned when it has a proposed one; else designing",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The milestone intent's statement",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change_sets",
+                "done_points",
+                "id",
+                "state",
+                "statement"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "view": {
+            "description": "The view read: as-is, to-be or what-if:<ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "finished",
+          "milestones",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Show every milestone with its done points and change sets in every state",
       "write": false
     },
     {
@@ -8790,6 +9170,10 @@ cmp stdout describe.golden.json
                       "state": {
                         "description": "proposed or accepted",
                         "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's display title: its set title, else the intent's first clause",
+                        "type": "string"
                       }
                     },
                     "required": [
@@ -8799,7 +9183,8 @@ cmp stdout describe.golden.json
                       "kind",
                       "ready",
                       "serves",
-                      "state"
+                      "state",
+                      "title"
                     ],
                     "type": "object"
                   },
@@ -9500,6 +9885,48 @@ cmp stdout describe.golden.json
                     "detail": {
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
+                    },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "outcome": {
                       "description": "pass or fail",
@@ -10309,6 +10736,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -11170,6 +11661,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -11983,6 +12516,70 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "stalled": {
                 "additionalProperties": false,
                 "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
@@ -12570,6 +13167,48 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "lints": {
+            "description": "The model lints' hits (stale references, unapplied Decisions, capabilities whose code the branch removed); a hit is never a cause and does not change passed",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "description": "The field the hit is in: statement or acceptance",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                  "enum": [
+                    "path",
+                    "test",
+                    "script",
+                    "unretired-capability",
+                    "unapplied-decision",
+                    "removed-code-capability"
+                  ],
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node's full ID",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The missing or removed reference, as written",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "passed": {
             "description": "True if rhiza check found no failure and every leaf is OK",
             "type": "boolean"
@@ -12588,6 +13227,7 @@ cmp stdout describe.golden.json
           "change",
           "check",
           "leaves",
+          "lints",
           "passed",
           "run"
         ],
@@ -12905,6 +13545,83 @@ cmp stdout describe.golden.json
       },
       "summary": "End the plan of the run RHIZA_RUN names: propose each draft among its change sets; an autonomous run whose review passed accepts each under rule autonomous",
       "write": true
+    },
+    {
+      "name": "run.lint-check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "description": "The run's change set",
+            "type": "string"
+          },
+          "lints": {
+            "description": "The lint hits of the run's latest code-check entry: node, lint kind and the reference or Decision; empty when it has none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "description": "The field the hit is in: statement or acceptance",
+                  "type": "string"
+                },
+                "handle": {
+                  "description": "The node's handle",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                  "enum": [
+                    "path",
+                    "test",
+                    "script",
+                    "unretired-capability",
+                    "unapplied-decision",
+                    "removed-code-capability"
+                  ],
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node's full ID",
+                  "type": "string"
+                },
+                "ref": {
+                  "description": "The missing or removed reference, as written",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "passed": {
+            "description": "True if the latest code-check entry has no lint hits, or the run has none",
+            "type": "boolean"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "lints",
+          "passed",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Pass when the latest code-check entry of the run RHIZA_RUN names has no model lint hits, else fail listing each hit",
+      "write": false
     },
     {
       "name": "run.log",
@@ -13803,6 +14520,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -14611,6 +15370,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -15516,6 +16339,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -16324,6 +17189,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -17299,6 +18228,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -18112,6 +19083,70 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "stalled": {
                 "additionalProperties": false,
                 "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
@@ -18460,6 +19495,108 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Send a run waiting at a signoff step back to a fixer with a note: the note is journalled as the next review round's one finding (the owner's, naming the first check of the checks step the sign-off goes back to), the run returns to that step's fixer instead of signing off, and the continuation is queued for the daemon (--foreground continues it in this process). Exit 2 on a run not waiting at a sign-off step; nothing changes",
+      "write": true
+    },
+    {
+      "name": "run.spawn",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "description": "A file holding the caller's brief for the child: its brief.md holds the contract section, then this file",
+            "type": "string"
+          },
+          "check": {
+            "description": "The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role",
+            "type": "string"
+          },
+          "leaf": {
+            "description": "A leaf of the run's change set the child works on, by handle; default none",
+            "type": "string"
+          },
+          "model": {
+            "description": "The model the child's agent starts on; default the agent's",
+            "type": "string"
+          },
+          "role": {
+            "description": "The child's role, such as builder or verifier: the guide it follows",
+            "type": "string"
+          }
+        },
+        "required": [
+          "brief",
+          "role"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "description": "The child's brief.md, an absolute path",
+            "type": "string"
+          },
+          "check": {
+            "description": "The review check it worked on, its RHIZA_CHECK",
+            "type": "string"
+          },
+          "cycle": {
+            "description": "Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges",
+            "type": "integer"
+          },
+          "detail": {
+            "description": "The child's exit, or why it failed",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was started or journaled",
+            "type": "boolean"
+          },
+          "held": {
+            "description": "True if the spawn waited on a usage or machine hold before it started the child",
+            "type": "boolean"
+          },
+          "leaf": {
+            "description": "The leaf it worked on",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "pass when the child's agent exited 0, else fail",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "type": "string"
+          },
+          "parent": {
+            "description": "The calling session",
+            "type": "string"
+          },
+          "role": {
+            "description": "The child's role",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "session": {
+            "description": "The child's session; absent in a dry run",
+            "type": "string"
+          },
+          "step": {
+            "description": "The calling step the child is a child of",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "run",
+          "step"
+        ],
+        "type": "object"
+      },
+      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome",
       "write": true
     },
     {
@@ -19046,6 +20183,48 @@ cmp stdout describe.golden.json
                       "description": "A fail's causes, separated by semicolons",
                       "type": "string"
                     },
+                    "lints": {
+                      "description": "The model lints' hits; they never make a fail",
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "description": "The field the hit is in: statement or acceptance",
+                            "type": "string"
+                          },
+                          "handle": {
+                            "description": "The node's handle",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                            "enum": [
+                              "path",
+                              "test",
+                              "script",
+                              "unretired-capability",
+                              "unapplied-decision",
+                              "removed-code-capability"
+                            ],
+                            "type": "string"
+                          },
+                          "node": {
+                            "description": "The node's full ID",
+                            "type": "string"
+                          },
+                          "ref": {
+                            "description": "The missing or removed reference, as written",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "node"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "outcome": {
                       "description": "pass or fail",
                       "enum": [
@@ -19854,6 +21033,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -20603,6 +21846,48 @@ cmp stdout describe.golden.json
                 "detail": {
                   "description": "A fail's causes, separated by semicolons",
                   "type": "string"
+                },
+                "lints": {
+                  "description": "The model lints' hits; they never make a fail",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "field": {
+                        "description": "The field the hit is in: statement or acceptance",
+                        "type": "string"
+                      },
+                      "handle": {
+                        "description": "The node's handle",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "What is wrong: a path, Go test or testscript the head tree lacks, a capability all of whose paths are gone, a Decision never applied, a capability whose code the branch removed",
+                        "enum": [
+                          "path",
+                          "test",
+                          "script",
+                          "unretired-capability",
+                          "unapplied-decision",
+                          "removed-code-capability"
+                        ],
+                        "type": "string"
+                      },
+                      "node": {
+                        "description": "The node's full ID",
+                        "type": "string"
+                      },
+                      "ref": {
+                        "description": "The missing or removed reference, as written",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "node"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "outcome": {
                   "description": "pass or fail",
@@ -21412,6 +22697,70 @@ cmp stdout describe.golden.json
                 "rule",
                 "step",
                 "visit"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "spawned": {
+            "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "A failed child's reason: its exit, or why it ended",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf's handle it works on; absent for none",
+                  "type": "string"
+                },
+                "model": {
+                  "description": "The model it runs; empty for the agent's default",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "pass or fail once it ended; empty while it runs",
+                  "enum": [
+                    "pass",
+                    "fail"
+                  ],
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "The session that spawned it",
+                  "type": "string"
+                },
+                "role": {
+                  "description": "The child's role, such as builder or verifier",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "running or ended",
+                  "enum": [
+                    "running",
+                    "ended"
+                  ],
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "That leaf's statement, when the model has it",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step whose session spawned it",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "session",
+                "state",
+                "step"
               ],
               "type": "object"
             },

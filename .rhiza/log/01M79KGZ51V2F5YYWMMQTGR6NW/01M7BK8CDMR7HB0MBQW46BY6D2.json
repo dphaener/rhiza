@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BJRZ7XEP0B7SPSX7WMZJDS",
+  "after": [
+    "01M7BJ989TGJ6H95HEMTJZG3KE"
+  ],
+  "at": "2026-11-13T23:18:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d004463c7 re-ran every Checks: command and the acceptance commands, all exit 0: go test -trimpath ./internal/api -run 'TestPickNoLeaves|TestDaemonPicks|TestConductorWorkflow' (TestPickNoLeaves: conducted leafless milestone change set is a candidate, classic and backlog leafless ones skip no-leaves, the dependent umbrella-style one skips not-ready); go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-needs-leaves (command-step ship-change refuses a leafless change set with 'has no leaves' and next 'rhiza run start --workflow plan'; a ship-change whose first step is an agent step declaring checks reaches 'would start' on the same leafless change set, fake rex/claude only); go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-picks|run-ship)'; rhiza ship generate (0 changed); rhiza render (only this verifier's own actor rendered). Read the diff: conductorWorkflow/changeConducts in daemon.go, the Conducts hook in daemonCandidates wired from daemon_fold.go, and run.go gating checkShipLeaves on !conductorWorkflow; backlog short-circuits before Conducts, not-ready is checked first; no stubs or TODOs, nothing outside the leaf beyond the required daemon_fold.go wiring and the commit's log/rendered files."
+        },
+        "handle": "conduct-plans-leaves-verified",
+        "id": "01M7BK8C42MF4B33TVQNDE1YHV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BK8C42MF4B33TVQJ2H77K6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BK8C42MF4B33TVQJ2H77K6",
+        "id": "01M7BK8C9CJFDG9ZF57S2JRXHS",
+        "link": "01M7BK8C9CJFDG9ZF57PXWDV7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BK8CDMR7HB0MBQW46BY6D2",
+  "type": "ops",
+  "v": 1
+}

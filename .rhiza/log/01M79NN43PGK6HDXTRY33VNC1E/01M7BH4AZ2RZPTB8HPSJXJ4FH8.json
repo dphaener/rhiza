@@ -1,0 +1,63 @@
+{
+  "actor": "01M7BGFXDV8NE9Y96VR7WKF9R3",
+  "after": [
+    "01M7BGAAPG200DSQHWWTNG4SHP"
+  ],
+  "at": "2026-11-13T22:40:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 236ec084e: built the branch with go build -trimpath and served the real api.WebProjectHandler and api.WebRootHandler (a scratch root registering this checkout) on 127.0.0.1 over this repo's own model, with no daemon. GET /nodes/<ref> and /p/rhiza/nodes/<ref>, by handle and by full ID, gave 200 for a capability (web-node-pages, the root rhiza), a constraint, a decision with an owner quote (cli-rules: 'In your words' with where), a decision with wording and question (web-model-pages-designed: 'Picked by you', 'Answering: ...'), a question and a source (title plus summary). Each showed kind, statement, grouped links (Decided by, What it decided, Constrains, Evidence), Where it came from (sources, change sets) and History, with no handle or ID in the page text (IDs only inside hrefs). Unknown refs (no-such-thing, a change set ID, a short ID, an upper-case handle, a%2Fb, %20, an escaped script tag) answered 404 with 'Nothing found for <ref>', HTML-escaped. Unscoped /nodes/x redirected 302 to /p/rhiza/nodes/x, Roadmap nav was marked current and the 404 crumb was scoped."
+        },
+        "handle": "web-node-pages-qa-1",
+        "id": "01M7BH4AHXGZQC7WKN08A5QMWR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BH4AHXGZQC7WKN05533QAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BH4AHXGZQC7WKN05533QAK",
+        "id": "01M7BH4AN9R9F5952ZASA8K1CQ",
+        "link": "01M7BH4AN9R9F5952ZARZFPF8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8NR43ZG57MNBDSN6KVJS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 236ec084e: with the branch's root web handler over a scratch root registering this checkout, a breadth-first crawl from /p/rhiza/, /p/rhiza/roadmap and four node pages followed every href, src and data-rz-fragment for 120 pages: all 200, none left /p/rhiza/. An unscoped crawl of the project handler (213 pages: home, roadmap, runs, change sets, run fragments, node pages) gave no 404; its only failures were the harness's own timeout, and each such URL re-fetched 200. go test -trimpath ./internal/web -run 'TestLinksResolve|TestNodePages' -count=1 ok."
+        },
+        "handle": "web-links-resolve-qa-1",
+        "id": "01M7BH4AQSMPDS81CFE373KM99",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BH4AQSMPDS81CFE1PFWGDY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BH4AQSMPDS81CFE1PFWGDY",
+        "id": "01M7BH4ATJCSQYCQ56M6ZTXNK2",
+        "link": "01M7BH4ATJCSQYCQ56M6NC2036",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8NS7D874K7TVBX23DXGA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NN43PGK6HDXTRY33VNC1E",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BH4AZ2RZPTB8HPSJXJ4FH8",
+  "type": "ops",
+  "v": 1
+}

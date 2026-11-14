@@ -49,6 +49,10 @@ const (
 	// expanded when the file is parsed: the definition holds the inner
 	// workflow's steps, named <workflow>/<step>, and no workflow step.
 	KindWorkflow = "workflow"
+	// KindGate runs its commands, ones the daemon owns and never an agent,
+	// in order in the run's worktree. It passes only when every one exits
+	// 0; a failing one's full output is kept in the run directory.
+	KindGate = "gate"
 )
 
 // Leaves step roles: the sub-tables of a leaves step. A checks step has a
@@ -82,6 +86,14 @@ const (
 	TargetDone   = "done"
 	TargetFailed = "failed"
 )
+
+// HandbackPrefix starts an `on.<outcome>` target that hands the run back to
+// an agent step of the same workflow: `handback:<agent step>`.
+const HandbackPrefix = "handback:"
+
+// DefaultHandbackCap is how many times a run may hand back when the file
+// sets no handback_cap.
+const DefaultHandbackCap = 3
 
 // Outcomes the step kinds produce.
 const (
@@ -120,19 +132,24 @@ var (
 	placeholderPattern = regexp.MustCompile(`\{([A-Za-z0-9_]+)\}`)
 )
 
-// Placeholders an agent step's prompt may use.
-var placeholders = []string{"change", "slug", "title", "run", "step"}
+// Placeholders every prompt may use.
+var placeholders = []string{"change", "slug", "title", "run", "step", "brief", "slice", "handback", "worktree"}
+
+// Placeholders an agent step's prompt may use; {leaf} and {attempt} render
+// empty, since an agent step builds no leaf.
+var agentPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
 
 // Placeholders a leaves step's builder or verifier prompt may use, and a
 // checks step's verifier.
 var leafPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt")
 
-// Placeholders a checks step's check or critic prompt may use.
-var checkPlaceholders = append(slices.Clone(placeholders), "check", "cycle")
+// Placeholders a checks step's check or critic prompt may use; {leaf} and
+// {attempt} render empty, since a check or critic builds no leaf.
+var checkPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt", "check", "cycle")
 
 // Placeholders a checks step's fixer prompt may use; {leaf} is empty for
 // the fixer of findings that name no leaf.
-var fixerPlaceholders = append(slices.Clone(placeholders), "leaf", "cycle")
+var fixerPlaceholders = append(slices.Clone(placeholders), "leaf", "attempt", "cycle")
 
 // kindOutcomes lists the outcomes each step kind can produce.
 var kindOutcomes = map[string][]string{
@@ -146,6 +163,7 @@ var kindOutcomes = map[string][]string{
 	// A workflow step passes when the inner workflow ends done and fails
 	// when it ends failed.
 	KindWorkflow: {OutcomePass, OutcomeFail},
+	KindGate:     {OutcomePass, OutcomeFail},
 }
 
 // Definition is a loaded, validated workflow.
@@ -181,6 +199,11 @@ type Definition struct {
 	// the run's steps start. {run_tmp} in a value is the run's own temp
 	// folder; see EnvPairs. Only the file's own.
 	Env map[string]string
+
+	// HandbackCap is the file's handback_cap: how many times a run may
+	// hand back to an agent step before the next red parks it. It is
+	// DefaultHandbackCap when the file sets none. Only the file's own.
+	HandbackCap int
 }
 
 // RunTmpToken stands for the run's own temp folder in an [env] value.
@@ -329,6 +352,8 @@ type Step struct {
 	Kind string
 	// Run is a command step's shell command.
 	Run string
+	// Commands is a gate step's shell commands, run in order.
+	Commands []string
 	// Until is a wait step's condition, a shell command; exit 0 means it
 	// holds. On an agent step it is optional: the step also passes when
 	// its session is idle at its prompt and the condition holds, leaving
@@ -360,9 +385,14 @@ type Step struct {
 	// PermissionMode is an agent or arbiter step's permission mode; empty
 	// means the run's.
 	PermissionMode string
-	// Prompt is an agent step's first prompt to its agent, a template over
-	// {change}, {slug}, {title}, {run} and {step}.
+	// Prompt is an agent step's first prompt to its agent (the file's invoke,
+	// of which prompt is an alias), a template over {change}, {slug},
+	// {title}, {run}, {step}, {brief}, {slice}, {handback}, {worktree},
+	// {leaf} and {attempt}.
 	Prompt string
+	// Handback is the template of the text a hand-back sends the step's
+	// session, over the same placeholders; empty when the file sets none.
+	Handback string
 	// Models is an agent step's model list; empty means the agent's
 	// default.
 	Models []string
@@ -390,9 +420,14 @@ type Step struct {
 
 // Role is one session kind of a leaves step: its builder or its verifier.
 type Role struct {
-	// Prompt is the role's first prompt to its agent, a template over
-	// {change}, {slug}, {title}, {run}, {step}, {leaf} and {attempt}.
+	// Prompt is the role's first prompt to its agent (the file's invoke, of
+	// which prompt is an alias), a template over {change}, {slug}, {title},
+	// {run}, {step}, {brief}, {slice}, {handback}, {worktree}, {leaf} and
+	// {attempt}, and for a check or fixer {check} or {cycle}.
 	Prompt string
+	// Handback is the template of the text a hand-back sends the role's
+	// session, over the same placeholders; empty when the file sets none.
+	Handback string
 	// Agent is the role's adapter name; empty means the run's.
 	Agent string
 	// PermissionMode is the role's permission mode; empty means the run's.
@@ -441,10 +476,17 @@ type LeafVars struct {
 // RenderPrompt fills the role's prompt placeholders from v. Validation has
 // already refused an unknown placeholder.
 func (r Role) RenderPrompt(v LeafVars) string {
-	return renderPlaceholders(r.Prompt, map[string]string{
-		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
-		"leaf": v.Leaf, "attempt": fmt.Sprint(v.Attempt),
-	})
+	return renderPlaceholders(r.Prompt, v.values(v.leafValues()))
+}
+
+// RenderHandback fills the role's handback placeholders from v, as
+// RenderPrompt does its prompt's.
+func (r Role) RenderHandback(v LeafVars) string {
+	return renderPlaceholders(r.Handback, v.values(v.leafValues()))
+}
+
+func (v LeafVars) leafValues() map[string]string {
+	return map[string]string{"leaf": v.Leaf, "attempt": fmt.Sprint(v.Attempt)}
 }
 
 // CheckVars are the values a checks step's check or critic prompt
@@ -458,28 +500,46 @@ type CheckVars struct {
 // RenderCheckPrompt fills a check's or critic's prompt placeholders from
 // v. Validation has already refused an unknown placeholder.
 func (r Role) RenderCheckPrompt(v CheckVars) string {
-	return renderPlaceholders(r.Prompt, map[string]string{
-		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
-		"check": v.Check, "cycle": fmt.Sprint(v.Cycle),
-	})
+	return renderPlaceholders(r.Prompt, v.values(v.checkValues()))
+}
+
+// RenderCheckHandback fills a check's or critic's handback placeholders
+// from v.
+func (r Role) RenderCheckHandback(v CheckVars) string {
+	return renderPlaceholders(r.Handback, v.values(v.checkValues()))
+}
+
+func (v CheckVars) checkValues() map[string]string {
+	return map[string]string{"leaf": "", "attempt": "", "check": v.Check, "cycle": fmt.Sprint(v.Cycle)}
 }
 
 // FixerVars are the values a checks step's fixer prompt placeholders
-// take: a step's, plus the leaf's handle ("" for findings naming no leaf)
-// and the cycle.
+// take: a step's, plus the leaf's handle ("" for findings naming no leaf),
+// the fixer's attempt (rendered empty when 0) and the cycle.
 type FixerVars struct {
 	PromptVars
-	Leaf  string
-	Cycle int
+	Leaf    string
+	Attempt int
+	Cycle   int
 }
 
 // RenderFixerPrompt fills a fixer's prompt placeholders from v.
 // Validation has already refused an unknown placeholder.
 func (r Role) RenderFixerPrompt(v FixerVars) string {
-	return renderPlaceholders(r.Prompt, map[string]string{
-		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
-		"leaf": v.Leaf, "cycle": fmt.Sprint(v.Cycle),
-	})
+	return renderPlaceholders(r.Prompt, v.values(v.fixerValues()))
+}
+
+// RenderFixerHandback fills a fixer's handback placeholders from v.
+func (r Role) RenderFixerHandback(v FixerVars) string {
+	return renderPlaceholders(r.Handback, v.values(v.fixerValues()))
+}
+
+func (v FixerVars) fixerValues() map[string]string {
+	attempt := ""
+	if v.Attempt > 0 {
+		attempt = fmt.Sprint(v.Attempt)
+	}
+	return map[string]string{"leaf": v.Leaf, "attempt": attempt, "cycle": fmt.Sprint(v.Cycle)}
 }
 
 // Role is a leaves step's builder or verifier, or a checks step's critic,
@@ -533,17 +593,38 @@ func (d *Definition) Arbiter() Step {
 // agent has said done (or exited 0), never on idle alone.
 func (s Step) WaitsForDone() bool { return s.UntilWhen == UntilWhenDone }
 
-// PromptVars are the values an agent step's prompt placeholders take.
+// PromptVars are the values an agent step's prompt placeholders take:
+// Brief, Slice and Handback are the session's file paths and Worktree its
+// run's worktree.
 type PromptVars struct {
 	Change, Slug, Title, Run, Step string
+	Brief, Slice, Handback         string
+	Worktree                       string
+}
+
+// values are the placeholders every prompt and handback takes, with extra
+// on top; {leaf} and {attempt} are empty unless extra names them.
+func (v PromptVars) values(extra map[string]string) map[string]string {
+	m := map[string]string{
+		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
+		"brief": v.Brief, "slice": v.Slice, "handback": v.Handback, "worktree": v.Worktree,
+		"leaf": "", "attempt": "",
+	}
+	for k, val := range extra {
+		m[k] = val
+	}
+	return m
 }
 
 // RenderPrompt fills the step's prompt placeholders from v. Validation has
 // already refused an unknown placeholder.
 func (s Step) RenderPrompt(v PromptVars) string {
-	return renderPlaceholders(s.Prompt, map[string]string{
-		"change": v.Change, "slug": v.Slug, "title": v.Title, "run": v.Run, "step": v.Step,
-	})
+	return renderPlaceholders(s.Prompt, v.values(nil))
+}
+
+// RenderHandback fills the step's handback placeholders from v.
+func (s Step) RenderHandback(v PromptVars) string {
+	return renderPlaceholders(s.Handback, v.values(nil))
 }
 
 // renderPlaceholders replaces each {name} in prompt that values has, and
@@ -580,8 +661,23 @@ func (e End) String() string {
 	}
 }
 
+// HandbackTarget is the agent step an `on.<outcome>` entry of step hands
+// the run back to (`handback:<agent step>`), and whether it does.
+func (d *Definition) HandbackTarget(step, outcome string) (string, bool) {
+	s, ok := d.Steps[step]
+	if !ok {
+		return "", false
+	}
+	t, ok := s.On[outcome]
+	if !ok {
+		return "", false
+	}
+	return strings.CutPrefix(t, HandbackPrefix)
+}
+
 // Next decides where a run goes after step ends with outcome. An
-// `on.<outcome>` entry wins: a step name continues there, done ends the run
+// `on.<outcome>` entry wins: a step name continues there (for
+// `handback:<agent step>`, that agent step), done ends the run
 // succeeded, failed ends it failed. With no entry, `pass` ends the run
 // succeeded and any other outcome ends it failed. A step the definition does
 // not have ends the run failed.
@@ -603,6 +699,7 @@ func (d *Definition) Next(step, outcome string) (next string, end End) {
 	case TargetFailed:
 		return "", EndFailed
 	}
+	target = strings.TrimPrefix(target, HandbackPrefix)
 	return target, EndNone
 }
 
@@ -619,6 +716,9 @@ type fileDef struct {
 	Cleanup []fileCleanup `toml:"cleanup"`
 	// Env is the [env] table.
 	Env map[string]string `toml:"env"`
+	// HandbackCap is decoded loosely so a bad value is refused with a
+	// message naming the key.
+	HandbackCap any `toml:"handback_cap"`
 }
 
 type fileCleanup struct {
@@ -654,6 +754,7 @@ func buildCleanup(in []fileCleanup) ([]Cleanup, error) {
 type fileStep struct {
 	Kind           string            `toml:"kind"`
 	Run            string            `toml:"run"`
+	Commands       []string          `toml:"commands"`
 	Until          string            `toml:"until"`
 	UntilWhen      string            `toml:"until_when"`
 	Timeout        string            `toml:"timeout"`
@@ -663,6 +764,8 @@ type fileStep struct {
 	Agent          string            `toml:"agent"`
 	PermissionMode string            `toml:"permission_mode"`
 	Prompt         string            `toml:"prompt"`
+	Invoke         string            `toml:"invoke"`
+	Handback       string            `toml:"handback"`
 	MaxVisits      int               `toml:"max_visits"`
 	Models         []string          `toml:"models"`
 	LowRiskModels  []string          `toml:"low_risk_models"`
@@ -683,6 +786,8 @@ type fileStep struct {
 type fileCheck struct {
 	Name           string   `toml:"name"`
 	Prompt         string   `toml:"prompt"`
+	Invoke         string   `toml:"invoke"`
+	Handback       string   `toml:"handback"`
 	Agent          string   `toml:"agent"`
 	PermissionMode string   `toml:"permission_mode"`
 	Models         []string `toml:"models"`
@@ -691,6 +796,8 @@ type fileCheck struct {
 // fileRole is the TOML shape of a leaves step's builder or verifier.
 type fileRole struct {
 	Prompt         string   `toml:"prompt"`
+	Invoke         string   `toml:"invoke"`
+	Handback       string   `toml:"handback"`
 	Agent          string   `toml:"agent"`
 	PermissionMode string   `toml:"permission_mode"`
 	Models         []string `toml:"models"`
@@ -763,7 +870,11 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	if err != nil {
 		return nil, err
 	}
-	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env}
+	hcap, err := parseHandbackCap(f.HandbackCap)
+	if err != nil {
+		return nil, err
+	}
+	d := &Definition{Name: name, Steps: make(map[string]Step, len(f.Step)), autonomy: aut, Cleanup: cleanup, Env: env, HandbackCap: hcap}
 	d.Order = stepOrder(md.Keys(), f.Step)
 	arbiter := ""
 	for _, n := range d.Order {
@@ -801,6 +912,22 @@ func parse(name string, data []byte, resolve Resolver, stack []string, includes 
 	return d, nil
 }
 
+// parseHandbackCap reads the file's handback_cap: a whole number of at least
+// 1, DefaultHandbackCap when the file sets none.
+func parseHandbackCap(v any) (int, error) {
+	if v == nil {
+		return DefaultHandbackCap, nil
+	}
+	n, ok := v.(int64)
+	if !ok {
+		return 0, fmt.Errorf("handback_cap is %v; want a whole number of at least 1", v)
+	}
+	if n < 1 {
+		return 0, fmt.Errorf("handback_cap is %d; want a whole number of at least 1", n)
+	}
+	return int(n), nil
+}
+
 // undecoded is md.Undecoded without the keys under [autonomy], which
 // parseAutonomy reads and checks itself.
 func undecoded(md toml.MetaData) []toml.Key {
@@ -816,13 +943,13 @@ func undecoded(md toml.MetaData) []toml.Key {
 // unknownKey names a key the format does not know, by step when it is in one.
 func unknownKey(k toml.Key) error {
 	if len(k) >= 4 && k[0] == "step" && (k[2] == RoleBuilder || k[2] == RoleVerifier || k[2] == RoleCritic || k[2] == RoleFixer) {
-		return fmt.Errorf("step %q: %s: unknown key %q; want prompt, agent, permission_mode or models (a verifier also low_risk_models and risky_paths)", k[1], k[2], toml.Key(k[3:]).String())
+		return fmt.Errorf("step %q: %s: unknown key %q; want invoke (or prompt), handback, agent, permission_mode or models (a verifier also low_risk_models and risky_paths)", k[1], k[2], toml.Key(k[3:]).String())
 	}
 	if len(k) == 4 && k[0] == "step" && k[2] == RoleCheck && (k[3] == "low_risk_models" || k[3] == "risky_paths") {
 		return fmt.Errorf("step %q: check: low_risk_models and risky_paths are only for the verifier role; a check cannot have them, set them under [step.%s.verifier]", k[1], k[1])
 	}
 	if len(k) >= 4 && k[0] == "step" && k[2] == RoleCheck {
-		return fmt.Errorf("step %q: check: unknown key %q; want name, prompt, agent, permission_mode or models", k[1], toml.Key(k[3:]).String())
+		return fmt.Errorf("step %q: check: unknown key %q; want name, invoke (or prompt), handback, agent, permission_mode or models", k[1], toml.Key(k[3:]).String())
 	}
 	if len(k) >= 3 && k[0] == "step" {
 		return fmt.Errorf("step %q: unknown key %q", k[1], toml.Key(k[2:]).String())
@@ -865,6 +992,48 @@ func checkName(what, n string) error {
 	return nil
 }
 
+// mergeInvoke folds invoke into prompt, its alias, in the step and each of
+// its roles and checks, and refuses a table that sets both.
+func (fs *fileStep) mergeInvoke() error {
+	var err error
+	if fs.Prompt, err = invokeOf("", fs.Prompt, fs.Invoke); err != nil {
+		return err
+	}
+	for _, r := range []struct {
+		name string
+		fr   **fileRole
+	}{{RoleBuilder, &fs.Builder}, {RoleVerifier, &fs.Verifier}, {RoleCritic, &fs.Critic}, {RoleFixer, &fs.Fixer}} {
+		if *r.fr == nil {
+			continue
+		}
+		c := **r.fr
+		if c.Prompt, err = invokeOf(r.name+": ", c.Prompt, c.Invoke); err != nil {
+			return err
+		}
+		*r.fr = &c
+	}
+	checks := slices.Clone(fs.Check)
+	for i := range checks {
+		if checks[i].Prompt, err = invokeOf(fmt.Sprintf("check %q: ", checks[i].Name), checks[i].Prompt, checks[i].Invoke); err != nil {
+			return err
+		}
+	}
+	fs.Check = checks
+	return nil
+}
+
+// invokeOf is the invoke template a table gives: its invoke, or its
+// prompt, the alias; both set is refused, naming the table by where.
+func invokeOf(where, prompt, invoke string) (string, error) {
+	if prompt != "" && invoke != "" {
+		return "", fmt.Errorf("%sprompt is an alias of invoke: set one of them, not both", where)
+	}
+	if invoke != "" {
+		return invoke, nil
+	}
+	return prompt, nil
+}
+
 func buildStep(name string, fs fileStep) (Step, error) {
 	fail := func(format string, args ...any) (Step, error) {
 		return Step{}, fmt.Errorf("step %q: %s", name, fmt.Sprintf(format, args...))
@@ -878,16 +1047,21 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	if name == TargetDone || name == TargetFailed {
 		return fail("%q is a reserved target; rename the step", name)
 	}
+	if err := fs.mergeInvoke(); err != nil {
+		return fail("%v", err)
+	}
 
 	s := Step{
 		Name:           name,
 		Kind:           fs.Kind,
 		Run:            fs.Run,
+		Commands:       fs.Commands,
 		Until:          fs.Until,
 		UntilWhen:      fs.UntilWhen,
 		Agent:          fs.Agent,
 		PermissionMode: fs.PermissionMode,
 		Prompt:         fs.Prompt,
+		Handback:       fs.Handback,
 		MaxVisits:      fs.MaxVisits,
 		Models:         fs.Models,
 		On:             fs.On,
@@ -897,11 +1071,11 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	}
 
 	switch fs.Kind {
-	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow:
+	case KindAgent, KindWait, KindCommand, KindArbiter, KindLeaves, KindChecks, KindSignoff, KindWorkflow, KindGate:
 	case "":
-		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff or workflow")
+		return fail("no kind: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate")
 	default:
-		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff or workflow", fs.Kind)
+		return fail("unknown kind %q: want agent, wait, command, arbiter, leaves, checks, signoff, workflow or gate", fs.Kind)
 	}
 	if fs.Kind != KindWorkflow {
 		if fs.Workflow != "" {
@@ -911,7 +1085,13 @@ func buildStep(name string, fs fileStep) (Step, error) {
 			return fail("skip is only for workflow steps; %s step cannot have it", article(fs.Kind))
 		}
 	}
+	if fs.Commands != nil && fs.Kind != KindGate {
+		return fail("commands is only for gate steps; %s step cannot have it", article(fs.Kind))
+	}
 	if fs.Models != nil && fs.Kind != KindAgent {
+		if fs.Kind == KindGate {
+			return fail("a gate step cannot have models: it runs commands the daemon owns, never an agent; remove it")
+		}
 		if fs.Kind == KindChecks {
 			return fail("a checks step cannot have models: each check and role has its own; set it under [[step.%s.check]] or the role's table", name)
 		}
@@ -946,7 +1126,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		for _, r := range []struct {
 			role string
 			set  bool
-		}{{RoleCheck, fs.Check != nil}, {RoleCritic, fs.Critic != nil}, {RoleFixer, fs.Fixer != nil}} {
+		}{{RoleCheck, fs.Check != nil && fs.Kind != KindAgent}, {RoleCritic, fs.Critic != nil}, {RoleFixer, fs.Fixer != nil}} {
 			if r.set {
 				return fail("%s is only for checks steps; %s step cannot have it", r.role, article(fs.Kind))
 			}
@@ -973,6 +1153,8 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		return buildSignoff(s, fs, fail)
 	case KindWorkflow:
 		return buildWorkflow(s, fs, fail)
+	case KindGate:
+		return buildGate(s, fs, fail)
 	}
 
 	if fs.Run != "" && fs.Kind != KindCommand {
@@ -1010,18 +1192,26 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	if fs.Prompt != "" && fs.Kind != KindAgent {
 		return fail("prompt is only for agent steps; a %s step cannot have it", fs.Kind)
 	}
+	if fs.Handback != "" && fs.Kind != KindAgent {
+		return fail("handback is only for agent steps; a %s step cannot have it", fs.Kind)
+	}
 	if fs.MaxVisits < 0 {
 		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
 	}
 
 	switch fs.Kind {
 	case KindAgent:
-		if strings.TrimSpace(fs.Prompt) == "" {
-			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(placeholders, "}, {"))
+		if err := buildAgentChecks(&s, fs.Check); err != nil {
+			return fail("%v", err)
 		}
-		for _, m := range placeholderPattern.FindAllStringSubmatch(fs.Prompt, -1) {
-			if !slices.Contains(placeholders, m[1]) {
-				return fail("prompt uses unknown placeholder {%s}; want one of {%s}", m[1], strings.Join(placeholders, "}, {"))
+		if strings.TrimSpace(fs.Prompt) == "" {
+			return fail("an agent step needs prompt = \"<what the agent should do>\"; it may use {%s}", strings.Join(agentPlaceholders, "}, {"))
+		}
+		for _, t := range []struct{ key, text string }{{"prompt", fs.Prompt}, {"handback", fs.Handback}} {
+			for _, m := range placeholderPattern.FindAllStringSubmatch(t.text, -1) {
+				if !slices.Contains(agentPlaceholders, m[1]) {
+					return fail("%s uses unknown placeholder {%s}; want one of {%s}", t.key, m[1], strings.Join(agentPlaceholders, "}, {"))
+				}
 			}
 		}
 	case KindCommand:
@@ -1067,6 +1257,29 @@ func buildStep(name string, fs fileStep) (Step, error) {
 	return s, nil
 }
 
+// buildAgentChecks reads an agent step's declared review checks: names
+// only, each valid and unique, for the run in the step to name with
+// rhiza run findings --check. The agent itself is the session of every
+// check, so a check has no prompt, handback, agent or models of its own.
+func buildAgentChecks(s *Step, checks []fileCheck) error {
+	for i, fc := range checks {
+		if fc.Name == "" {
+			return fmt.Errorf("check %d has no name: set name = \"...\"", i+1)
+		}
+		if err := checkName("check", fc.Name); err != nil {
+			return err
+		}
+		if _, dup := s.Check(fc.Name); dup {
+			return fmt.Errorf("check %q is declared twice; give each check its own name", fc.Name)
+		}
+		if fc.Prompt != "" || fc.Invoke != "" || fc.Handback != "" || fc.Agent != "" || fc.PermissionMode != "" || fc.Models != nil {
+			return fmt.Errorf("check %q: an agent step's check is only a name; its prompt, handback, agent, permission_mode and models belong to the step", fc.Name)
+		}
+		s.Checks = append(s.Checks, Check{Name: fc.Name})
+	}
+	return nil
+}
+
 // buildLeaves finishes a leaves step: it needs a builder and a verifier,
 // each with a prompt, takes split (SplitAuto when unset), interval
 // (DefaultInterval when unset) and max_visits, and refuses the session keys
@@ -1079,6 +1292,7 @@ func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		why string
 	}{
 		{"prompt", fs.Prompt != "", perRole},
+		{"handback", fs.Handback != "", perRole},
 		{"agent", fs.Agent != "", perRole},
 		{"permission_mode", fs.PermissionMode != "", perRole},
 		{"run", fs.Run != "", "it runs agents, not a command"},
@@ -1108,9 +1322,11 @@ func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		if strings.TrimSpace(r.fr.Prompt) == "" {
 			return fail("%s needs prompt = \"<what the %s should do>\"; it may use {%s}", r.name, r.name, strings.Join(leafPlaceholders, "}, {"))
 		}
-		for _, m := range placeholderPattern.FindAllStringSubmatch(r.fr.Prompt, -1) {
-			if !slices.Contains(leafPlaceholders, m[1]) {
-				return fail("%s: prompt uses unknown placeholder {%s}; want one of {%s}", r.name, m[1], strings.Join(leafPlaceholders, "}, {"))
+		for _, t := range []struct{ key, text string }{{"prompt", r.fr.Prompt}, {"handback", r.fr.Handback}} {
+			for _, m := range placeholderPattern.FindAllStringSubmatch(t.text, -1) {
+				if !slices.Contains(leafPlaceholders, m[1]) {
+					return fail("%s: %s uses unknown placeholder {%s}; want one of {%s}", r.name, t.key, m[1], strings.Join(leafPlaceholders, "}, {"))
+				}
 			}
 		}
 		if err := checkModels(r.fr.Models); err != nil {
@@ -1119,7 +1335,7 @@ func buildLeaves(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		if err := checkTier(r.name, *r.fr); err != nil {
 			return fail("%v", err)
 		}
-		*r.dst = &Role{Prompt: r.fr.Prompt, Agent: r.fr.Agent, PermissionMode: r.fr.PermissionMode, Models: r.fr.Models, LowRiskModels: r.fr.LowRiskModels, RiskyPaths: r.fr.RiskyPaths}
+		*r.dst = &Role{Prompt: r.fr.Prompt, Handback: r.fr.Handback, Agent: r.fr.Agent, PermissionMode: r.fr.PermissionMode, Models: r.fr.Models, LowRiskModels: r.fr.LowRiskModels, RiskyPaths: r.fr.RiskyPaths}
 	}
 	s.Interval = DefaultInterval
 	if fs.Interval != "" {
@@ -1146,6 +1362,7 @@ func buildChecks(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		why string
 	}{
 		{"prompt", fs.Prompt != "", own},
+		{"handback", fs.Handback != "", own},
 		{"agent", fs.Agent != "", own},
 		{"permission_mode", fs.PermissionMode != "", own},
 		{"run", fs.Run != "", "it runs agents, not a command"},
@@ -1182,7 +1399,7 @@ func buildChecks(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (
 		if _, dup := s.Check(fc.Name); dup {
 			return fail("check %q is declared twice; give each check its own name", fc.Name)
 		}
-		r, err := buildRole(fmt.Sprintf("check %q", fc.Name), "check", fileRole{Prompt: fc.Prompt, Agent: fc.Agent, PermissionMode: fc.PermissionMode, Models: fc.Models}, checkPlaceholders)
+		r, err := buildRole(fmt.Sprintf("check %q", fc.Name), "check", fileRole{Prompt: fc.Prompt, Handback: fc.Handback, Agent: fc.Agent, PermissionMode: fc.PermissionMode, Models: fc.Models}, checkPlaceholders)
 		if err != nil {
 			return fail("%v", err)
 		}
@@ -1228,6 +1445,7 @@ func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 		set bool
 	}{
 		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
 		{"agent", fs.Agent != ""},
 		{"permission_mode", fs.PermissionMode != ""},
 		{"run", fs.Run != ""},
@@ -1247,6 +1465,44 @@ func buildSignoff(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 	return s, nil
 }
 
+// buildGate finishes a gate step: it needs commands, none of them empty, and
+// refuses every key that belongs to an agent or another kind of step.
+func buildGate(s Step, fs fileStep, fail func(string, ...any) (Step, error)) (Step, error) {
+	runs := "it runs commands the daemon owns, never an agent"
+	refused := []struct {
+		key string
+		set bool
+	}{
+		{"prompt", fs.Prompt != ""},
+		{"handback", fs.Handback != ""},
+		{"agent", fs.Agent != ""},
+		{"permission_mode", fs.PermissionMode != ""},
+		{"run", fs.Run != ""},
+		{"until", fs.Until != ""},
+		{"until_when", fs.UntilWhen != ""},
+		{"timeout", fs.Timeout != ""},
+		{"interval", fs.Interval != ""},
+		{"max_interval", fs.MaxInterval != ""},
+	}
+	for _, r := range refused {
+		if r.set {
+			return fail("a gate step cannot have %s: %s; remove it", r.key, runs)
+		}
+	}
+	if len(fs.Commands) == 0 {
+		return fail("a gate step needs commands = [\"<shell command>\", ...]")
+	}
+	for i, c := range fs.Commands {
+		if strings.TrimSpace(c) == "" {
+			return fail("commands[%d] is empty; each is a shell command", i)
+		}
+	}
+	if fs.MaxVisits < 0 {
+		return fail("max_visits is %d; want 0 or more (0 means 1)", fs.MaxVisits)
+	}
+	return s, nil
+}
+
 // buildRole checks one session role of a checks step, named what in its
 // errors: a prompt using only names among its placeholders, and models.
 // does is what the prompt is asked to say the role should do.
@@ -1254,9 +1510,11 @@ func buildRole(what, does string, fr fileRole, names []string) (Role, error) {
 	if strings.TrimSpace(fr.Prompt) == "" {
 		return Role{}, fmt.Errorf("%s needs prompt = \"<what the %s should do>\"; it may use {%s}", what, does, strings.Join(names, "}, {"))
 	}
-	for _, m := range placeholderPattern.FindAllStringSubmatch(fr.Prompt, -1) {
-		if !slices.Contains(names, m[1]) {
-			return Role{}, fmt.Errorf("%s: prompt uses unknown placeholder {%s}; want one of {%s}", what, m[1], strings.Join(names, "}, {"))
+	for _, t := range []struct{ key, text string }{{"prompt", fr.Prompt}, {"handback", fr.Handback}} {
+		for _, m := range placeholderPattern.FindAllStringSubmatch(t.text, -1) {
+			if !slices.Contains(names, m[1]) {
+				return Role{}, fmt.Errorf("%s: %s uses unknown placeholder {%s}; want one of {%s}", what, t.key, m[1], strings.Join(names, "}, {"))
+			}
 		}
 	}
 	if err := checkModels(fr.Models); err != nil {
@@ -1265,7 +1523,7 @@ func buildRole(what, does string, fr fileRole, names []string) (Role, error) {
 	if err := checkTier(does, fr); err != nil {
 		return Role{}, fmt.Errorf("%s: %v", what, err)
 	}
-	return Role{Prompt: fr.Prompt, Agent: fr.Agent, PermissionMode: fr.PermissionMode, Models: fr.Models, LowRiskModels: fr.LowRiskModels, RiskyPaths: fr.RiskyPaths}, nil
+	return Role{Prompt: fr.Prompt, Handback: fr.Handback, Agent: fr.Agent, PermissionMode: fr.PermissionMode, Models: fr.Models, LowRiskModels: fr.LowRiskModels, RiskyPaths: fr.RiskyPaths}, nil
 }
 
 // checkTier checks a role's tiering fields: only the verifier role takes
@@ -1310,6 +1568,7 @@ func buildArbiter(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 		why string
 	}{
 		{"prompt", fs.Prompt != "", "its prompt is fixed: it names only the question and rhiza guide arbiter"},
+		{"handback", fs.Handback != "", "its prompt is fixed: it names only the question and rhiza guide arbiter"},
 		{"run", fs.Run != "", "it runs an agent, not a command"},
 		{"until", fs.Until != "", "it ends when its agent says done or exits"},
 		{"until_when", fs.UntilWhen != "", "it ends when its agent says done or exits"},
@@ -1369,6 +1628,16 @@ func checkTargets(s Step, steps map[string]Step) error {
 		}
 		t := s.On[o]
 		if t == TargetDone || t == TargetFailed {
+			continue
+		}
+		if h, ok := strings.CutPrefix(t, HandbackPrefix); ok {
+			ts, ok := steps[h]
+			if !ok {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is not a step of this workflow; want handback:<agent step>", s.Name, o, h)
+			}
+			if ts.Kind != KindAgent {
+				return fmt.Errorf("step %q: on.%s hands back to %q, which is %s step; want handback:<agent step>", s.Name, o, h, article(ts.Kind))
+			}
 			continue
 		}
 		if w, _, ok := strings.Cut(t, "/"); ok {

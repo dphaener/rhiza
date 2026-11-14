@@ -1,0 +1,30 @@
+{
+  "actor": "01M7BKD0S5SFBG5C7Z84RNJCJA",
+  "after": [
+    "01M7BK8CDMR7HB0MBQW46BY6D2"
+  ],
+  "at": "2026-11-13T23:21:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run '^(TestCheckPlanText|TestCheckPlanNamesNoRepoCommand|TestCheckCodeText|TestCheckCodeNamesNoRepoCommand|TestReviewIsAnIndex|TestBuildReviewCommandBudget)$' shows check-plan holding the compliance and model rules, check-code holding the quality rules, both with the role sections and shared blocks and under the size cap, and the review topic naming check-plan, check-code and check-qa for a conductor run and the old four for the classic workflows; go test -trimpath ./internal/api -run TestGuideInstallRoleSkills shows skills/rhiza-check-plan/SKILL.md and skills/rhiza-check-code/SKILL.md installed beside the old role skills. Touches internal/guide/text/check-plan.md, internal/guide/text/check-code.md, internal/guide/text/review.md, internal/guide/guide.go, internal/guide/check_plan_test.go, internal/guide/check_code_test.go, internal/guide/review_test.go, internal/guide/budget_test.go, internal/api/guide_install.go, internal/api/guide_install_test.go.",
+          "statement": "Rhiza ships two review role topics and skills: check-plan (the compliance and model checks' rules merged: each leaf's acceptance met as written, under-built, scope creep, unaccounted files, and code that contradicts the slice) and check-code (the quality check's rules under the new name); check-compliance, check-model and check-quality stay unchanged for the classic ship-change, review and docs-review, and the review index topic names which runs load which topics."
+        },
+        "handle": "check-plan-code-topics",
+        "id": "01M7AHW2WHSC1M6D5AFT7Y6YFR",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BKEKRZB8233ZRGQS9Z9JBB",
+  "type": "ops",
+  "v": 1
+}

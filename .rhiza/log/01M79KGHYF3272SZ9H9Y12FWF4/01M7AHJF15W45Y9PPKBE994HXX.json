@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AHA0MW1ZW012AH23W81C0Q",
+  "after": [
+    "01M79NXXF4ST56KRCX5JYTMPC3"
+  ],
+  "at": "2026-11-13T13:29:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "e520f785-7bad-4af3-ae27-01a1d514808d",
+          "statement": "Change set 'Every agent session a run' and its sibling 'The daemon offers spawn, gate and hand-back primitives' (leaf run-handback) both say they write handback.md, and nothing hands back yet. Who owns handback.md? / The milestone-36 interview left brief.md's exact format open. What goes in a session's brief.md? / Where do a session's brief.md, slice.json and handback.md live? There is no per-run directory today: only the journal <commondir>/rhiza/runs/<id>.jsonl and the run's temp folder, which is removed when the run ends. / Where does the new 'invoke' key apply in a workflow file?"
+        },
+        "handle": "question-e520f785-1",
+        "id": "01M7AHJAA6T4TC41CBJ62N8EQC",
+        "key": null,
+        "kind": "question",
+        "node": "01M7AHJAA6T4TC41CBJ52D8V2N",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KGHYF3272SZ9H9Y12FWF4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHJF15W45Y9PPKBE994HXX",
+  "type": "ops",
+  "v": 1
+}
