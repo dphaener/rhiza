@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C15Q6FAN3NE3CFYJAW080N",
+  "after": [
+    "01M7C16805HTDA1WA4W4MB9492"
+  ],
+  "at": "2026-11-14T03:22:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 748636e58. Re-ran the Checks block: go test -trimpath ./internal/workflow -run TestIncludeHandbackTarget (PASS, exit 0), go test -trimpath ./internal/run -run TestHandbackIncluded (PASS, exit 0), rhiza ship generate (exit 0, 0 files changed), rhiza render (no diff). Diff read: TestIncludeHandbackTarget checks that an included gate's on.fail handback:conduct parses as handback:inner/conduct, that inner/conduct is a flat step, that handback:nosuch is refused with an error naming nosuch and \"inner\", and that done/failed still map to the including step's on.pass/on.fail. TestHandbackIncluded runs an including workflow whose included gate fails once and checks it hands back to inner/conduct (one Handback, target inner/conduct) and succeeds. The mapping was already in internal/workflow/include.go (inlined.outer cuts HandbackPrefix and returns handback:<workflow>/<step>), so the commit adds only tests, the builder's actor record and its rendered files; nothing outside the leaf changed, and there are no stubs or TODOs."
+        },
+        "handle": "handback-target-survives-include-verified",
+        "id": "01M7C18GNVJHN85W3XTTA726J1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C18GNT3XSYA7P47H05KHKC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C18GNT3XSYA7P47H05KHKC",
+        "id": "01M7C18GV6BAZ4Q6STZG4DFK1Q",
+        "link": "01M7C18GV6BAZ4Q6STZG04AEX5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BYHZXGY011H2GCS1CZXX49",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C18GZ9EM9F2RCT4JWQXRQG",
+  "type": "ops",
+  "v": 1
+}
