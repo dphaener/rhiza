@@ -1,0 +1,29 @@
+{
+  "actor": "01M7C89DEZTHAAHZHCXZDVV4J3",
+  "after": [
+    "01M7C8BGJ10B62JXWEMZF6B2Q4"
+  ],
+  "at": "2026-11-14T05:26:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 6 left finding f5 (contradiction on builtin-conductor-default): Main's CI is one step running rhiza ship check --main. If the merge commit's tree differs from the tested head (main moved between ship merge's check and GitHub's merge), ship check --main dispatches CI on the merge commit and has to wait for it to settle (internal/api/ship_main.go shipCheckMainDispatch). Classic does this with a wait step, wait-main (until = rhiza ship check --main --settled), before main-green. A single command step checks once and goes red while the dispatched CI is still pending, which the plan treats as main being red. The critic confirmed it: Verified: origin/main shipCheckMainDispatch (internal/api/ship_main.go lines 101-106) returns Passed=false while CI is not settled, and ShipCheckResponse.ExitCode (ship.go:320-328) maps that to exit 1. Classic waits with step wait-main (kind wait, until = rhiza ship check --main --settled, builtin/ship-change.toml:468-471) before main-green. The leaf's single main-CI step with no on.fail route would stop the run as 'main is red' while dispatched CI is still pending. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7ah6rayrzax6z6r63q0m2qk-r6-f5",
+        "id": "01M7BZ7ENTZ4H1WGF0YYDWBYXC",
+        "key": null,
+        "kind": "question",
+        "node": "01M7BZ7ENTZ4H1WGF0YX6DE5P1",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C8BJD2S37ZWCT8AAVB1KT0",
+  "type": "ops",
+  "v": 1
+}
