@@ -125,7 +125,45 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 		out.Warnings = exposureWarnings(ctx, name)
 	}
 	out.Warnings = append(out.Warnings, placeholderWarnings(name, data, ctx)...)
+	out.Warnings = append(out.Warnings, invokeWarnings(name, data, ctx)...)
+	out.Warnings = append(out.Warnings, loopWarnings(name, data, ctx)...)
+	out.Warnings = append(out.Warnings, mergeGateWarnings(name, data, ctx)...)
 	return out, nil
+}
+
+// mergeGateWarnings warns for each merge step (workflow.IsMergeStep) the
+// run can reach from its start step without entering a gate step
+// (workflow.UngatedMerges), naming the step and one such path. It never
+// makes the workflow invalid.
+func mergeGateWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, m := range def.UngatedMerges() {
+		out = append(out, fmt.Sprintf("step %s merges with no gate step before it: the run can reach it along %s; route every path to it through a gate step",
+			m.Step, strings.Join(m.Path, " -> ")))
+	}
+	return out
+}
+
+// loopWarnings warns for each plain red loop (workflow.PlainRedLoops): a
+// red outcome naming by plain step name a step that leads back through an
+// agent step, which handback_cap does not count. It names the step, the
+// outcome and its target and suggests handback:<agent step>. It never
+// makes the workflow invalid.
+func loopWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, l := range def.PlainRedLoops() {
+		out = append(out, fmt.Sprintf("step %s: on.%s = %q loops back through agent step %s uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.%s = \"%s%s\"",
+			l.Step, l.Outcome, l.Target, l.Agent, l.Outcome, workflow.HandbackPrefix, l.Agent))
+	}
+	return out
 }
 
 // placeholderWarnings warns for each command step still running the
@@ -143,6 +181,74 @@ func placeholderWarnings(name string, data []byte, ctx *Ctx) []string {
 		}
 	}
 	return out
+}
+
+// invokeWarnings warns for each agent step and role whose invoke starts
+// with a slash command that its agent's adapter (the default for none)
+// finds installed neither in the agent's config folder nor in the repo,
+// naming the step, the role and the command, and for a Rhiza skill the
+// rhiza guide install command that installs it; when Rhiza's own skills
+// cannot be listed it warns so and names no install command. It never makes the
+// workflow invalid; an agent no adapter knows is agentProblems' to report.
+func invokeWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	files, err := pluginFiles(ctx.Version)
+	if err != nil {
+		// Without them no warning can tell a Rhiza skill apart, so none
+		// names the install command.
+		out = append(out, fmt.Sprintf("cannot list Rhiza's skills (%v): no invoke warning names rhiza guide install", err))
+	}
+	warn := func(step, role, agent, prompt string) {
+		a := adapter.Default()
+		if agent != "" {
+			var ok bool
+			if a, ok = adapter.Lookup(agent); !ok {
+				return
+			}
+		}
+		skill, guideAgent, missing := missingStartSkill(ctx, a, strings.TrimSpace(prompt), ctx.Root)
+		if !missing {
+			return
+		}
+		msg := fmt.Sprintf("step %s: the %s's invoke starts with /%s, which %s has not installed", step, role, skill, guideAgent)
+		if isRhizaSkill(files, skill) {
+			msg += "; run rhiza guide install --agent " + guideAgent
+		}
+		out = append(out, msg)
+	}
+	for _, n := range def.Order {
+		s := def.Steps[n]
+		switch s.Kind {
+		case workflow.KindAgent:
+			warn(s.Name, "agent step", s.Agent, s.Prompt)
+		case workflow.KindArbiter:
+			warn(s.Name, "arbiter step", s.Agent, s.Prompt)
+		}
+		for _, r := range []string{workflow.RoleBuilder, workflow.RoleVerifier, workflow.RoleCritic, workflow.RoleFixer} {
+			if role := s.Role(r); role != nil {
+				warn(s.Name, r, role.Agent, role.Prompt)
+			}
+		}
+		for _, c := range s.Checks {
+			warn(s.Name, "check "+c.Name, c.Agent, c.Prompt)
+		}
+	}
+	return out
+}
+
+// isRhizaSkill says the slash command name is one of the skills rhiza
+// guide install installs, plugin-qualified ("rhiza:<skill>") or not.
+func isRhizaSkill(files map[string][]byte, name string) bool {
+	name = strings.TrimPrefix(name, pluginName+":")
+	if name == pluginName {
+		return true
+	}
+	_, ok := files["skills/"+name+"/SKILL.md"]
+	return ok
 }
 
 // exposureWarnings is the warning for the workflow called name when the

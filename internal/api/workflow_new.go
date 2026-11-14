@@ -78,9 +78,12 @@ prompt = "Build change set {change} ({title}) in step {step} of run {run}"
 on.pass = "test"
 
 # A command step runs a shell command in the run's worktree. on.pass and
-# on.fail name the next step, or done or failed. max_visits bounds a loop:
-# the run fails on the visit after the last one, so build and test cannot
-# go back and forth all night.
+# on.fail name the next step, or done or failed. on.fail = "handback:build"
+# hands the run back to the build step with the failure as its cause; the
+# run may hand back handback_cap times (3 unless set), then the next red
+# parks it stopped with an inbox item, so build and test cannot go back
+# and forth all night. max_visits bounds how often a run enters the step
+# between hand-backs: the run fails on the visit after the last one.
 #
 # The run below is a PLACEHOLDER: it fails on purpose. Replace it with your
 # project's own test command, ideally one scoped to what a change touches.
@@ -98,7 +101,7 @@ kind = "command"
 run = "echo 'replace this ` + placeholderMarker + ` with your test command' >&2; exit 1"
 max_visits = 3
 on.pass = "done"
-on.fail = "build"
+on.fail = "handback:build"
 
 # A cleanup step is a command run once when a run of this workflow ends,
 # whether it finished done, failed or was abandoned. It runs in the run's

@@ -1,0 +1,56 @@
+# workflow check warns, never fails, for each agent step and role whose
+# invoke starts with a slash command its agent has not installed, in its
+# config folder or the repo: the warning names the step, the role and the
+# command, and for a Rhiza skill the rhiza guide install command.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/invoke.toml .rhiza/workflows/invoke.toml
+
+# the guide's stubs cover rhiza-builder; my-tidy is the user's own and missing
+exec rhiza workflow check invoke
+stdout '^workflow invoke is valid'
+stdout '^  warning: step tidy: the agent step''s invoke starts with /my-tidy, which claude has not installed$'
+! stdout 'rhiza-builder'
+
+# with no guide installed both warn, and the Rhiza skill names the install
+exec rm -r $HOME/.claude/commands
+exec rhiza workflow check invoke
+stdout '^workflow invoke is valid'
+stdout '^  warning: step build: the builder''s invoke starts with /rhiza-builder, which claude has not installed; run rhiza guide install --agent claude$'
+stdout '^  warning: step tidy: the agent step''s invoke starts with /my-tidy, which claude has not installed$'
+exec rhiza workflow check invoke --json
+stdout '"valid": true'
+stdout '"step build: the builder''s invoke starts with /rhiza-builder, which claude has not installed; run rhiza guide install --agent claude"'
+stdout '"step tidy: the agent step''s invoke starts with /my-tidy, which claude has not installed"'
+
+# installed in the agent's config folder and in the repo: no warning
+exec rhiza guide install --agent claude
+mkdir .claude/skills/my-tidy
+cp $WORK/SKILL.md .claude/skills/my-tidy/SKILL.md
+exec rhiza workflow check invoke
+stdout '^workflow invoke is valid'
+! stdout 'warning'
+
+-- SKILL.md --
+# my-tidy
+-- invoke.toml --
+name = "invoke"
+
+[step.build]
+kind = "leaves"
+on.pass = "tidy"
+
+[step.build.builder]
+prompt = "/rhiza-builder Build {leaf}"
+
+[step.build.verifier]
+prompt = "Verify {leaf}"
+
+[step.tidy]
+kind = "agent"
+prompt = "/my-tidy Tidy {change}"
+on.pass = "done"

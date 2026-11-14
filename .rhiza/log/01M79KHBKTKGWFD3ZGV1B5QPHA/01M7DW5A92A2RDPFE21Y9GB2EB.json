@@ -1,0 +1,245 @@
+{
+  "actor": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "after": [
+    "01M7DW3G6DPY4HN3E1V6DZ70A1"
+  ],
+  "at": "2026-11-14T20:32:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "Change set 01M79KHB: rhiza workflow check should warn about an 'uncapped hand-back loop', but every handback:<step> route is already capped by handback_cap (at least 1, default 3). What should count as uncapped?",
+          "reasoning": "Every handback:<step> route is already capped by handback_cap; a plain red loop is the only loop it does not count, and it delivers no handback.md.",
+          "statement": "An uncapped hand-back loop is a red outcome (any on.<outcome> but pass) that names, by plain step name rather than handback:<agent step>, a step leading back to the routing step through an agent step: handback_cap does not count it, no handback.md is delivered and no inbox item parks it.",
+          "wording": "Plain red loop (assumed, would have escalated)"
+        },
+        "handle": "uncapped-loop-is-plain-red-loop",
+        "id": "01M7DW59KBAFVF5QZQSVRFXCYF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7DW59KBAFVF5QZQSTS1B26N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59KBAFVF5QZQSTS1B26N",
+        "id": "01M7DW59M9BKV0R8AT09R765PQ",
+        "link": "01M7DW59M9BKV0R8AT08HS6M8V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW3G5E24NZVATBZGT5YQBQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Change set 01M79KHB: how should rhiza skill check run a skill against a fixture change set?",
+          "reasoning": "The intent says a skill passes rhiza skill check before it runs for real, so the check must not touch the user's repo.",
+          "statement": "rhiza skill check <invoke> --role builder|verifier|check [--agent] builds a scratch repo outside every git repository with a one-leaf fixture change set, runs the invoke as that role's session through a one-step workflow in the foreground, and reports each contract gate as pass or fail, exiting 1 on any fail, with --json giving the same report.",
+          "wording": "Scratch repo, one role (assumed, would have escalated)"
+        },
+        "handle": "skill-check-scratch-one-role",
+        "id": "01M7DW59N7VRS3Z9CKNAP4FZ5Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7DW59N7VRS3Z9CKN703EPCJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59N7VRS3Z9CKN703EPCJ",
+        "id": "01M7DW59P857GNGGWD762K2NBY",
+        "link": "01M7DW59P857GNGGWD72CG303W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW3G5E24NZVATBZGT5YQBQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Skill check is built in two leaves (the builder role and the report first, then the verifier and check roles); a merge step is a command step whose run calls rhiza ship merge or gh pr merge; the warnings of rhiza workflow check never change valid or the exit code, and the workflow new skeleton routes its test step's failure with handback:build so a new workflow raises no loop warning.",
+          "wording": "derived from the model and the code by the conductor of an autonomous ship run"
+        },
+        "handle": "skill-check-plan-shape",
+        "id": "01M7DW59QM55F14S2SD2CZ6EEF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7DW59QM55F14S2SD1QY3D31",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59QM55F14S2SD1QY3D31",
+        "id": "01M7DW59RSWPFQE14B2RYY4NTZ",
+        "link": "01M7DW59RSWPFQE14B2RFS6MYF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW3G5E24NZVATBZGT5YQBQ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/skill-check shows, with a fake claude and a fake rex: a builder skill that commits with the three trailers and ends with rhiza session done passes every gate and exits 0; a skill that commits without trailers fails the trailer gate by name and exits 1; a skill that never runs rhiza session done fails the session-done gate by name and exits 1; --json prints the same gates with pass or fail each; an invoke whose skill is not installed is refused naming rhiza guide install --agent claude; the current repo's git status and .rhiza/log are unchanged after every case; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it. go test -trimpath ./internal/api -run TestSkillCheck covers the gate report. Touches internal/api/skill_check.go, internal/api/skill_check_test.go, cmd/rhiza/testdata/script/skill-check.txtar and cmd/rhiza/testdata/script/describe-golden.txtar.",
+          "statement": "rhiza skill check <invoke> --role builder [--agent <name>] builds a scratch repo outside every git repository with a one-leaf fixture change set, runs the invoke as the builder's session through a one-step workflow in the foreground, and reports each contract gate (session done, a commit carrying Change:, Actor: and Leaf: trailers, rhiza check clean) as pass or fail, exiting 1 on any fail; --json prints the same report and the current repo is never touched."
+        },
+        "handle": "skill-check-builder",
+        "id": "01M7DW59SVX2HFDCSYGPFFVQSM",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "id": "01M7DW59TZR63NA0BYC56YFQ12",
+        "link": "01M7DW59TZR63NA0BYC3MDXHN9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59N7VRS3Z9CKN703EPCJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "id": "01M7DW59WM1XVEG45W9N44MG2T",
+        "link": "01M7DW59WM1XVEG45W9M7JSKWZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59QM55F14S2SD1QY3D31",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/skill-check-roles shows, with a fake claude and a fake rex: a verifier skill that writes Evidence and ends with rhiza session done passes every gate; one that writes no Evidence fails the Evidence gate by name and exits 1; a check skill that records a round with rhiza run findings passes; one that records none fails the findings gate by name and exits 1; an unknown --role is refused naming builder, verifier and check; the current repo is unchanged. go test -trimpath ./internal/api -run TestSkillCheckRoles covers the fixture and the gates. Touches internal/api/skill_check.go, internal/api/skill_check_test.go and cmd/rhiza/testdata/script/skill-check-roles.txtar.",
+          "statement": "rhiza skill check --role verifier and --role check run the invoke against a fixture whose leaf already has a builder commit: the verifier's gates are session done, Evidence on the leaf written by the verifier, and rhiza check clean; the check's gates are session done, a round recorded with rhiza run findings for its check, and rhiza check clean."
+        },
+        "handle": "skill-check-verifier-check",
+        "id": "01M7DW59XN8KSH58BTB275FV7N",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "id": "01M7DW59YQWZFYR3CM8AE9BB8P",
+        "link": "01M7DW59YQWZFYR3CM86GAYYYR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59N7VRS3Z9CKN703EPCJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "id": "01M7DW5A01BS72XYJND6HRH3XY",
+        "link": "01M7DW5A01BS72XYJND63X098A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59QM55F14S2SD1QY3D31",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "id": "01M7DW5A106D2K8XTWD97WBSFV",
+        "link": "01M7DW5A106D2K8XTWD5HBKZQQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestWorkflowCheckUnresolvedInvoke covers a builder role and an agent step whose skill is missing (one warning each, naming the step, role and command, valid stays true) and the same workflow with the skills installed (no warning); go test -trimpath ./cmd/rhiza -run TestScripts/workflow-check-invoke shows the warning in text and --json and exit 0. Touches internal/api/workflow_check.go, internal/api/session.go (sharing checkStartSkill's lookup), internal/api/workflow_check_invoke_test.go and cmd/rhiza/testdata/script/workflow-check-invoke.txtar.",
+          "statement": "rhiza workflow check warns, for each agent step and role whose invoke starts with a slash command that its agent's adapter finds installed neither in the agent's config folder nor in the repo, naming the step, the role and the command, and for a Rhiza skill the rhiza guide install --agent <agent> command; it never changes valid or the exit code."
+        },
+        "handle": "workflow-check-unresolved-invoke",
+        "id": "01M7DW5A21WH33SFE7PYZMYCHX",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7DW5A21WH33SFE7PWYMAJMV",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW5A21WH33SFE7PWYMAJMV",
+        "id": "01M7DW5A2XNZ0SWJ0DTMAPTRWB",
+        "link": "01M7DW5A2XNZ0SWJ0DTJ9QDZWC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59QM55F14S2SD1QY3D31",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestPlainRedLoops covers a command step whose on.fail names the agent step before it (one loop), the same with handback:<agent step> (none), and a red route to a later step (none); go test -trimpath ./cmd/rhiza -run TestScripts/workflow-check-loop shows the warning in text and --json with exit 0, no such warning for ship-change, and none for a workflow from rhiza workflow new; go test -trimpath ./cmd/rhiza -run TestScripts/workflow-new passes. Touches internal/workflow/loops.go, internal/workflow/loops_test.go, internal/api/workflow_check.go, internal/api/workflow_new.go and cmd/rhiza/testdata/script/workflow-check-loop.txtar.",
+          "statement": "rhiza workflow check warns for each plain red loop: a step's on.<outcome> other than pass naming by plain step name a step that leads back to it through an agent step, naming the step, the outcome and its target and suggesting handback:<agent step>, which handback_cap counts; the workflow new skeleton routes its test failure with handback:build, and the warning never changes valid or the exit code."
+        },
+        "handle": "workflow-check-uncapped-loop",
+        "id": "01M7DW5A3T5VC7PKSB05J5AZX5",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7DW5A3T5VC7PKSB03JP67BA",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW5A3T5VC7PKSB03JP67BA",
+        "id": "01M7DW5A4VZ9K1FM48GC66TEPX",
+        "link": "01M7DW5A4VZ9K1FM48G8BTH6XW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59KBAFVF5QZQSTS1B26N",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW5A3T5VC7PKSB03JP67BA",
+        "id": "01M7DW5A5XTE967WXZKVP57EFR",
+        "link": "01M7DW5A5XTE967WXZKR868KNF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59QM55F14S2SD1QY3D31",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestMergeWithoutGate covers a merge reached only through a gate step (no warning), a merge reachable around the gate (warning naming the step and the path) and a workflow with no merge (none); go test -trimpath ./cmd/rhiza -run TestScripts/workflow-check-merge shows the warning in text and --json with exit 0 and no such warning for ship-change. Touches internal/workflow/merge_gate.go, internal/workflow/merge_gate_test.go, internal/api/workflow_check.go and cmd/rhiza/testdata/script/workflow-check-merge.txtar.",
+          "statement": "rhiza workflow check warns when a merge step (a command step whose run calls rhiza ship merge or gh pr merge) can be reached from the start step along a path that enters no gate step, naming the merge step and one such path; it never changes valid or the exit code."
+        },
+        "handle": "workflow-check-merge-no-gate",
+        "id": "01M7DW5A714DZXJS2M56TMW0F5",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7DW5A714DZXJS2M54B08WPY",
+        "op": "node.create",
+        "parent": "01M5SWT9JXJVYF0CXW2QWBP2JY"
+      },
+      {
+        "decision": null,
+        "from": "01M7DW5A714DZXJS2M54B08WPY",
+        "id": "01M7DW5A7ZRY3CERSF33VSJR2G",
+        "link": "01M7DW5A7ZRY3CERSF30D051NR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59QM55F14S2SD1QY3D31",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7DW5A92A2RDPFE21Y9GB2EB",
+  "type": "ops",
+  "v": 1
+}

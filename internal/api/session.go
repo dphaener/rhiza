@@ -1286,20 +1286,32 @@ func reportLine(r SessionReport) string {
 // session's: no record is written, so no attempt is used up. An adapter
 // that reads no slash commands, or a prompt without one, passes.
 func checkStartSkill(ctx *Ctx, a adapter.Adapter, prompt, worktree string) error {
-	sc, ok := a.(adapter.SkillChecker)
-	if !ok {
+	name, agent, missing := missingStartSkill(ctx, a, prompt, worktree)
+	if !missing {
 		return nil
 	}
-	name, ok := sc.StartSkill(prompt)
+	cmd := "rhiza guide install --agent " + agent
+	return Errorf("start command /%s unknown to %s: skill not installed; run %s", name, agent, cmd).WithNext(cmd)
+}
+
+// missingStartSkill is the slash command prompt starts with when a's agent
+// has its skill installed neither in its config folder nor in worktree's,
+// with the agent's name as rhiza guide install --agent takes it, and true;
+// false for an adapter that reads no slash commands, a prompt without one,
+// or an installed skill.
+func missingStartSkill(ctx *Ctx, a adapter.Adapter, prompt, worktree string) (name, agent string, missing bool) {
+	sc, ok := a.(adapter.SkillChecker)
 	if !ok {
-		return nil
+		return "", "", false
+	}
+	name, ok = sc.StartSkill(prompt)
+	if !ok {
+		return "", "", false
 	}
 	for _, g := range sc.SkillGlobs(name, ctxGetenv(ctx), worktree) {
 		if m, err := filepath.Glob(g); err == nil && len(m) > 0 {
-			return nil
+			return "", "", false
 		}
 	}
-	agent := sc.GuideAgent()
-	cmd := "rhiza guide install --agent " + agent
-	return Errorf("start command /%s unknown to %s: skill not installed; run %s", name, agent, cmd).WithNext(cmd)
+	return name, sc.GuideAgent(), true
 }

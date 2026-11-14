@@ -1,0 +1,153 @@
+# rhiza skill check --role verifier and --role check run the invoke
+# against a fixture whose leaf already has a builder commit, in a scratch
+# repo outside every git repository. A verifier's gates are session-done,
+# evidence (Evidence on the leaf written by the verifier) and check; a
+# check's are session-done, findings (a round recorded with rhiza run
+# findings for its check) and check. Any failed gate exits 1. An unknown
+# role is refused naming the three. The current repo never changes, and
+# no fixture role but the one checked starts a session.
+#
+# The fake rex runs each tab's command synchronously. The fake claude
+# acts its role and picks its behaviour from its prompt: as a verifier,
+# good writes Evidence on the leaf and says done, bare records a finding
+# on the leaf instead and says done; as a check, good records an empty
+# round for its check and says done, bare says done with no round. Any
+# other role logs itself and fails.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza guide install --agent claude
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cp stdout $WORK/before
+
+# A verifier that writes Evidence and says done passes every gate, on the
+# fixture's builder commit: no builder session ever starts.
+exec rhiza skill check '/rhiza-verifier good {leaf}' --role verifier --permission-mode manual
+stdout '^skill check /rhiza-verifier good \{leaf\} as verifier passes: 3 of 3 gates pass$'
+stdout '^  pass session-done +the verifier ran rhiza session done$'
+stdout '^  pass evidence +Evidence the verifier wrote verifies greeting-file$'
+stdout '^  pass check +rhiza check is clean in the run''s worktree after the verifier$'
+exec cat $WORK/claude.log
+stdout '^verifier greeting-file good 1 greeting=hello$'
+! stdout '^builder'
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+
+# --json prints the same gates.
+exec rhiza skill check '/rhiza-verifier good {leaf}' --role verifier --permission-mode manual --json
+stdout '"role": "verifier"'
+stdout '"passed": true'
+stdout '"name": "session-done",\s+"result": "pass"'
+stdout '"name": "evidence",\s+"result": "pass"'
+stdout '"name": "check",\s+"result": "pass"'
+
+# A verifier that writes no Evidence (a finding instead) fails the
+# evidence gate by name, and no builder starts for a second attempt.
+exec rm $WORK/claude.log
+! exec rhiza skill check '/rhiza-verifier bare {leaf}' --role verifier --permission-mode manual
+stdout 'as verifier fails: 2 of 3 gates pass$'
+stdout '^  fail evidence +no Evidence verifies greeting-file: the verifier wrote none$'
+stdout '^  pass session-done'
+exec cat $WORK/claude.log
+stdout -count=1 '^verifier'
+! stdout '^builder'
+! exec rhiza skill check '/rhiza-verifier bare {leaf}' --role verifier --permission-mode manual --json
+stdout '"passed": false'
+stdout '"name": "evidence",\s+"result": "fail"'
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+
+# A check that records a round passes every gate, on the fixture's
+# builder commit.
+exec rm $WORK/claude.log
+exec rhiza skill check '/rhiza-check-plan good {check}' --role check --permission-mode manual
+stdout '^skill check /rhiza-check-plan good \{check\} as check passes: 3 of 3 gates pass$'
+stdout '^  pass session-done +the check ran rhiza session done$'
+stdout '^  pass findings +the check recorded round 1 with 0 finding\(s\) for check fixture$'
+stdout '^  pass check +rhiza check is clean in the run''s worktree after the check$'
+exec cat $WORK/claude.log
+stdout '^check fixture good 1 greeting=hello$'
+! stdout '^builder'
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+
+# A check that records no round fails the findings gate by name; its
+# rhiza session done is refused too, as a check's is until it records a
+# round.
+exec rm $WORK/claude.log
+! exec rhiza skill check '/rhiza-check-plan bare {check}' --role check --permission-mode manual
+stdout 'as check fails: 1 of 3 gates pass$'
+stdout '^  fail findings +the check recorded no round with rhiza run findings --check fixture in cycle 1$'
+stdout '^  fail session-done +the check never ran rhiza session done before it exited$'
+stdout '^  run: failed: .*skill check runs its check once: cycle 2 is not started$'
+# Only the check runs, once: its review's further cycles are not
+# started, and no critic, fixer, builder or advisor session starts.
+exec cat $WORK/claude.log
+stdout -count=1 '^check fixture bare 1 greeting=hello$'
+exec sh -c 'wc -l < $WORK/claude.log'
+stdout '^1$'
+! exec rhiza skill check '/rhiza-check-plan bare {check}' --role check --permission-mode manual --json
+stdout '"name": "findings",\s+"result": "fail"'
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+
+# An unknown role is refused naming the three.
+! exec rhiza skill check 'Build {leaf}' --role planner --permission-mode manual
+stderr 'unknown role "planner": want builder, verifier or check'
+
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+fold-ok
+
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+case "$*" in
+*good*) mode=good ;;
+*bare*) mode=bare ;;
+*) mode=other ;;
+esac
+case "$RHIZA_ROLE" in
+verifier)
+	echo "verifier $RHIZA_LEAF $mode $RHIZA_ATTEMPT greeting=$(cat GREETING)" >> "$WORK/claude.log"
+	if [ "$mode" = good ]; then
+		rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+		rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" >&2 || exit 1
+	else
+		echo '{"findings":[{"reason":"GREETING is not checked"}]}' | rhiza run findings --leaf "$RHIZA_LEAF" - >&2 || exit 1
+	fi
+	;;
+check)
+	echo "check $RHIZA_CHECK $mode $RHIZA_CYCLE greeting=$(cat GREETING)" >> "$WORK/claude.log"
+	if [ "$mode" = good ]; then
+		echo '{"findings":[]}' | rhiza run findings --check "$RHIZA_CHECK" - >&2 || exit 1
+	fi
+	;;
+*)
+	echo "$RHIZA_ROLE $RHIZA_LEAF $mode $*" >> "$WORK/claude.log"
+	exit 1
+	;;
+esac
+rhiza session done >&2
+exit 0

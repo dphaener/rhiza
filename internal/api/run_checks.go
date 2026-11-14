@@ -34,7 +34,12 @@ var _ run.OutputRunner = (*stepRunner)(nil)
 // and the model spec names. It works in the run's worktree unless spec
 // names a Dir, where it then runs with RHIZA_ROOT set to the worktree's
 // Rhiza root. The session opens its own tab.
+// Under skill check's check fixture (envSkillCheckOnce set) a check past
+// its first cycle is refused, so the agent launches once.
 func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
+	if spec.Role == workflow.RoleCheck && spec.Cycle > 1 && ctxGetenv(r.ctx)(envSkillCheckOnce) != "" {
+		return "", fmt.Errorf("skill check runs its check once: cycle %d is not started", spec.Cycle)
+	}
 	role := spec.Check.Role
 	if spec.Role != workflow.RoleCheck {
 		rp := spec.Step.Role(spec.Role)

@@ -1,0 +1,33 @@
+{
+  "actor": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "after": [
+    "01M79KHBKVQ20ZSMG4GJM40XTE"
+  ],
+  "at": "2026-11-14T20:31:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d24fec6cd3ef4ccfa0faf6662699e0233e6e2cc571c0aed7b920c7b9e7f72c31",
+          "session": "61c60493-d643-4ab8-b81d-01a1dbbdfd32",
+          "summary": "Autonomous plan of change set 01M79KHB in run 01M7DVV7GNJAWG29QZC5F2JWC3 (ship-rhiza, no owner). Research: rhiza workflow check (internal/api/workflow_check.go) reports problems and warnings (exposure, placeholder); every handback:<agent step> route is already capped by handback_cap (internal/run/engine.go), so the only loop it does not count is a red outcome naming an earlier step by plain name; session start already refuses a start command whose skill is not installed (checkStartSkill in internal/api/session.go, adapter.SkillChecker's StartSkill and SkillGlobs); the built-in ship-change merges with rhiza ship merge after a gate step. Two questions went to the orchestrator as arbiter: what counts as an uncapped hand-back loop (ruled: a plain red loop, the only loop handback_cap does not count, and it delivers no handback.md) and how skill check runs a skill (ruled: a scratch repo outside every git repository with a one-leaf fixture change set and one role, because the intent says the skill passes rhiza skill check before it runs for real, so it must not touch the user's repo). The orchestrator also set machine rules for every child: capped systemd-run scopes, scoped go test -p 2, one test command at a time.",
+          "title": "Plan of rhiza skill check and workflow check warnings"
+        },
+        "handle": "plan-skill-check",
+        "id": "01M7DW3G5E24NZVATBZJE1CS5M",
+        "key": null,
+        "kind": "source",
+        "node": "01M7DW3G5E24NZVATBZGT5YQBQ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7DW3G6DPY4HN3E1V6DZ70A1",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,50 @@
+# workflow check warns, never fails, for each plain red loop: a red
+# outcome naming by plain step name a step that leads back to it through an
+# agent step, which handback_cap does not count. The warning names the
+# step, the outcome and its target and suggests handback:<agent step>.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/loop.toml .rhiza/workflows/loop.toml
+
+exec rhiza workflow check loop
+stdout '^workflow loop is valid'
+stdout '^  warning: step test: on.fail = "build" loops back through agent step build uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.fail = "handback:build"$'
+exec rhiza workflow check loop --json
+stdout '"valid": true'
+stdout '"step test: on.fail = \\"build\\" loops back through agent step build uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.fail = \\"handback:build\\""'
+
+# handback:build is counted by handback_cap: no warning
+exec sed -i 's/^on.fail = "build"$/on.fail = "handback:build"/' .rhiza/workflows/loop.toml
+exec rhiza workflow check loop
+stdout '^workflow loop is valid'
+! stdout 'loops back'
+
+# ship-change has no plain red loop
+exec rhiza workflow check ship-change
+! stdout 'loops back'
+
+# nor does a skeleton from workflow new
+exec rhiza workflow new skel
+grep '^on.fail = "handback:build"$' .rhiza/workflows/skel.toml
+exec rhiza workflow check skel
+stdout '^workflow skel is valid'
+! stdout 'loops back'
+
+-- loop.toml --
+name = "loop"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change}"
+on.pass = "test"
+
+[step.test]
+kind = "command"
+run = "go test ./..."
+max_visits = 3
+on.pass = "done"
+on.fail = "build"

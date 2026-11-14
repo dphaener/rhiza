@@ -26634,6 +26634,106 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "skill.check",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent adapter to launch; default the built-in default adapter",
+            "type": "string"
+          },
+          "invoke": {
+            "description": "The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as \"/my-builder Build {leaf}\"",
+            "type": "string"
+          },
+          "keep": {
+            "description": "Keep the scratch repo instead of removing it, and name it in the report",
+            "type": "boolean"
+          },
+          "permission_mode": {
+            "description": "The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused",
+            "type": "string"
+          },
+          "role": {
+            "description": "The role the invoke plays: builder, verifier or check; default builder",
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoke",
+          "permission_mode"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "agent": {
+            "description": "The agent adapter that ran it",
+            "type": "string"
+          },
+          "gates": {
+            "description": "Each gate of the role's contract, in order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "What the gate wants and what the session did",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "The gate: session-done, then the role's own (a builder's trailers, a verifier's evidence, a check's findings), then check",
+                  "type": "string"
+                },
+                "result": {
+                  "description": "pass or fail",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "detail",
+                "name",
+                "result"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "invoke": {
+            "description": "The invoke checked",
+            "type": "string"
+          },
+          "passed": {
+            "description": "True when every gate passes",
+            "type": "boolean"
+          },
+          "role": {
+            "description": "The role it played",
+            "type": "string"
+          },
+          "run": {
+            "description": "How the scratch run ended: its result and detail",
+            "type": "string"
+          },
+          "scratch": {
+            "description": "The scratch repo, with --keep; empty once it is removed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "agent",
+          "gates",
+          "invoke",
+          "passed",
+          "role",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Run an invoke as a role's session against a one-leaf fixture change set in a scratch repo outside every git repository, and report each gate of the role's contract as pass or fail; exits 1 on any fail and never touches the current repo",
+      "write": false
+    },
+    {
       "name": "slice",
       "request": {
         "additionalProperties": false,

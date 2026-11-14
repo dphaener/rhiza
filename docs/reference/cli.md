@@ -135,6 +135,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza ship open-pr`](#rhiza-ship-open-pr)
 - [`rhiza ship rebase`](#rhiza-ship-rebase)
 - [`rhiza show`](#rhiza-show)
+- [`rhiza skill check`](#rhiza-skill-check)
 - [`rhiza slice`](#rhiza-slice)
 - [`rhiza source add`](#rhiza-source-add)
 - [`rhiza status`](#rhiza-status)
@@ -2603,6 +2604,34 @@ Output (`--json` fields):
 - `link` (object): The link, when kind is link
 - `node` (object): The node, when kind is node
 - `view` (string): The view it was read in: as-is, to-be or what-if:<change set ID>
+
+## rhiza skill check
+
+Run an invoke as a role's session against a one-leaf fixture change set in a scratch repo outside every git repository, and report each gate of the role's contract as pass or fail; exits 1 on any fail and never touches the current repo.
+
+```
+rhiza skill check <invoke> --permission-mode <permission-mode> [--role <role>] [--agent <agent>] [--keep]
+```
+
+Arguments and flags:
+
+- `<invoke>`: The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as "/my-builder Build {leaf}" (required)
+- `--role`: The role the invoke plays: builder, verifier or check; default builder
+- `--agent`: The agent adapter to launch; default the built-in default adapter
+- `--permission-mode`: The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused (required)
+- `--keep`: Keep the scratch repo instead of removing it, and name it in the report
+
+Output (`--json` fields):
+
+- `agent` (string): The agent adapter that ran it
+- `gates` (array of object): Each gate of the role's contract, in order
+- `invoke` (string): The invoke checked
+- `passed` (boolean): True when every gate passes
+- `role` (string): The role it played
+- `run` (string): How the scratch run ended: its result and detail
+- `scratch` (string): The scratch repo, with --keep; empty once it is removed
+
+Exit code: set by the result, besides the shared codes.
 
 ## rhiza slice
 
