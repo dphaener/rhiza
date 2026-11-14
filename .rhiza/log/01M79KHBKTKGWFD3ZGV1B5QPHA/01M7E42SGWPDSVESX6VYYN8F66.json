@@ -1,0 +1,132 @@
+{
+  "actor": "01M7E3Y1513KCCV06EX8CMWVME",
+  "after": [
+    "01M7E3FR50JDTTKV78ZTP2KA2Q"
+  ],
+  "at": "2026-11-14T22:50:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3 at c696d215f: fresh go build -trimpath outside PATH, fake claude and fake rex, isolated HOME and TMPDIR, session env cleared. rhiza skill check '/rhiza-builder <mode> {leaf}' --permission-mode manual: good 3 of 3 exit 0 with run line 'stopped by skill check after the builder' (no install advice, earlier qa f2 fixed); bare fails trailers, quiet and fail (exit 1) fail session-done, each exit 1; every case launched the builder once and no verifier. --role planner, empty invoke, uninstalled /rhiza-nosuch (names rhiza guide install --agent claude), bypassPermissions and an unknown agent refused. User repo git status and .rhiza/log unchanged; scratch removed. TestScripts skill-check passes."
+        },
+        "handle": "skill-check-builder-qa-3",
+        "id": "01M7E42S1HPSH03RKCS26BPGY9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E42S1HPSH03RKCRZFAZY0N",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E42S1HPSH03RKCRZFAZY0N",
+        "id": "01M7E42S3C9X1J7NKNT364K57Y",
+        "link": "01M7E42S3C9X1J7NKNT0T2R4KW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: --role check good 3 of 3 exit 0; bare, fail (exit 3) and quiet (round but no session done) fail by name, exit 1, and each launched the check exactly once (claude.log one line, cycle 1; earlier qa f1 fixed). --role verifier good 3 of 3 exit 0; bare fails evidence, fail fails evidence and session-done, exit 1, one verifier launch and no builder. User repo unchanged. TestScripts skill-check-roles passes."
+        },
+        "handle": "skill-check-verifier-check-qa-3",
+        "id": "01M7E42S4P0RZ3KFHZ6PNW05P0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E42S4P0RZ3KFHZ6KRC70KT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E42S4P0RZ3KFHZ6KRC70KT",
+        "id": "01M7E42S5SSE9NFNEC24YP84F7",
+        "link": "01M7E42S5SSE9NFNEC22ATPB7N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: no built-in (plan, plan-milestone, plan-review, ship-change-classic, ship-change) warns of an ungated merge; build -> gate(echo rhiza ship gate) -> merge now warns naming the path (earlier qa f4 fixed); a multi-line 'cd . &&\\n rhiza run gate' gates; rhiza ship gate --failed does not gate; all exit 0, valid true. TestScripts workflow-check-merge passes."
+        },
+        "handle": "workflow-check-merge-no-gate-qa-3",
+        "id": "01M7E42S7F4NEQ5X9YQD4G4AVD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E42S7F4NEQ5X9YQAVWJGCM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E42S7F4NEQ5X9YQAVWJGCM",
+        "id": "01M7E42S91NAFECJ45N05Y0GV7",
+        "link": "01M7E42S91NAFECJ45MWYZEJ6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A714DZXJS2M54B08WPY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: test on.fail = build back to agent build warns in text and --json naming handback:build, exit 0, valid true; merge on.fail = gate where gate hands back with handback:build: no warning; a rhiza workflow new skeleton: only the placeholder warning. Built-ins still raise loop warnings on max_visits-capped loops (known minor from round 2, unchanged). TestScripts workflow-check-loop passes."
+        },
+        "handle": "workflow-check-uncapped-loop-qa-3",
+        "id": "01M7E42SAX44R529KS1PSFV17R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E42SAX44R529KS1KR3NDTH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E42SAX44R529KS1KR3NDTH",
+        "id": "01M7E42SC84GD6SYMFCQW0VFG1",
+        "link": "01M7E42SC84GD6SYMFCPFCGSVJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A3T5VC7PKSB03JP67BA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 3: with ~/.claude removed, rhiza workflow check ship-change warns that step conduct's /rhiza-conduct is not installed with rhiza guide install --agent claude, in text and --json, exit 0; with the skills reinstalled, no warning. TestScripts workflow-check-invoke passes."
+        },
+        "handle": "workflow-check-unresolved-invoke-qa-3",
+        "id": "01M7E42SDK4FQ82W340MPJYPQ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E42SDK4FQ82W340KQAX2H3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E42SDK4FQ82W340KQAX2H3",
+        "id": "01M7E42SF345WDJPHNQXGFW27G",
+        "link": "01M7E42SF345WDJPHNQX2WBY1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A21WH33SFE7PWYMAJMV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "id": "01M7E42SGWPDSVESX6VYYN8F66",
+  "type": "ops",
+  "v": 1
+}
