@@ -1,0 +1,132 @@
+{
+  "actor": "01M7E1WYM9X8BXR82VTQS49AEY",
+  "after": [
+    "01M7DZZGRGYPS45986H4CNFWJA"
+  ],
+  "at": "2026-11-14T22:16:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch build of the branch (go build -trimpath, outside PATH) with a fake claude and fake rex in an isolated HOME. rhiza skill check \"/rhiza-builder good {leaf}\" --permission-mode manual: 3 of 3 gates pass, exit 0; bare (no trailers): fail trailers by name, exit 1; quiet (no session done): fail session-done, exit 1; crashing builder: 0 of 3, exit 1; --json equals rhiza api call skill.check output; uninstalled /rhiza-nosuch refused naming rhiza guide install --agent claude; empty invoke, --role planner, --dry-run, missing --permission-mode, bypassPermissions and an unknown agent refused; TMPDIR inside a git repo refused; leaked RHIZA_ROOT/RHIZA_CHANGE/RHIZA_ACTOR ignored; user repo git status and .rhiza/log unchanged, scratch removed unless --keep. Defect: a failing builder is retried up to 3 attempts, and a fixture verifier session launches after each attempt; only attempt 1 is graded (finding recorded)."
+        },
+        "handle": "skill-check-builder-qa-1",
+        "id": "01M7E24TMCZ9S7N7PPDP1HAMRF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E24TMCZ9S7N7PPDJQHTAVM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E24TMCZ9S7N7PPDJQHTAVM",
+        "id": "01M7E24TNE356775TYTRXC6ARK",
+        "link": "01M7E24TNE356775TYTRSQ95BX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59SVX2HFDCSYGMFDV37X",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch build with fakes. --role verifier: good passes 3 of 3, exit 0, no builder session launched; one writing no Evidence fails evidence (and session-done) by name, exit 1; crashing verifier fails, exit 1. --role check: good records a round and passes 3 of 3; bare and crashing checks fail findings by name, exit 1 (re-run for 3 cycles, as designed). --keep names a scratch repo outside the current repo; the user repo is unchanged after every case. TestScripts skill-check-roles passes."
+        },
+        "handle": "skill-check-verifier-check-qa-1",
+        "id": "01M7E24TPZ417QRQ1XYR5HC1BH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E24TPZ417QRQ1XYMVWE1EB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E24TPZ417QRQ1XYMVWE1EB",
+        "id": "01M7E24TRK086V809NZVV02GHZ",
+        "link": "01M7E24TRK086V809NZRCAM2NF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW59XN8KSH58BTAYJHPEX6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: rhiza workflow check on a hand-written build -> test -> merge (rhiza ship merge) warns naming merge and the path build -> test -> merge, in text and --json, exit 0 and valid true; a merge (multi-line run with gh pr merge) reached only via a kind=gate step: no warning; echo \"rhiza ship merged\" is not taken for a merge; ship-change: none. Defect: built-in plan, plan-milestone, plan-review and ship-change-classic, whose merge follows a command step running rhiza run gate or rhiza ship gate, get the warning (finding recorded)."
+        },
+        "handle": "workflow-check-merge-no-gate-qa-1",
+        "id": "01M7E24TT2D99X1YQSZ3C6SACQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E24TT2D99X1YQSZ1BMDKW1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E24TT2D99X1YQSZ1BMDKW1",
+        "id": "01M7E24TVSXDX0495V6MV5WRM5",
+        "link": "01M7E24TVSXDX0495V6HRZNAQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A714DZXJS2M54B08WPY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: test on.fail = \"build\" back to agent step build warns naming step, outcome, target and handback:build, in text and --json, exit 0; on.fail = \"handback:build\": no warning; ship-change and a fresh rhiza workflow new: no loop warning (only the placeholder one). Rough edge: merge on.fail = \"test\" where test routes on.fail = \"handback:build\" still warns although the hand-back is counted (minor finding)."
+        },
+        "handle": "workflow-check-uncapped-loop-qa-1",
+        "id": "01M7E24TXX0RJYKFZZYB271JC2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E24TXX0RJYKFZZY9Y4D533",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E24TXX0RJYKFZZY9Y4D533",
+        "id": "01M7E24TZDG0VBB05D7A0EPE25",
+        "link": "01M7E24TZDG0VBB05D76Y0NR1F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A3T5VC7PKSB03JP67BA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: rhiza workflow check on a workflow with an agent step /nosuch-skill and a leaves builder /rhiza-nosuchbuilder warns for each, naming step, role and command, exit 0, valid true; with HOME skills removed, the /rhiza-verifier role also warns and adds run rhiza guide install --agent claude; a repo-local .claude/skills/nosuch-skill clears its warning; installed skills give none."
+        },
+        "handle": "workflow-check-unresolved-invoke-qa-1",
+        "id": "01M7E24V0HQPVFKFWS6HBW0GDD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E24V0HQPVFKFWS6DRT1GGD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E24V0HQPVFKFWS6DRT1GGD",
+        "id": "01M7E24V1R6ZNWNXYEKV0YCBYE",
+        "link": "01M7E24V1R6ZNWNXYEKQG4P3AZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW5A21WH33SFE7PWYMAJMV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHBKTKGWFD3ZGV1B5QPHA",
+  "for": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "id": "01M7E24V2T21Z50F1KHNCTSV7C",
+  "type": "ops",
+  "v": 1
+}
