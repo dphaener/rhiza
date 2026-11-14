@@ -33,9 +33,10 @@ Run these phases in order.
   then `rhiza run spawn --role verifier --leaf <leaf> --brief <file>`. A leaf that fails
   verification gets a builder retry with the findings in its brief.
 - Check: spawn `--role check-plan`, `--role check-code` and `--role check-qa`, each with
-  `--brief <file>`; each loads its own topic and records a round with `rhiza run findings --check`.
-- Critic: spawn `--role critic` only for a check whose latest round has a blocker or
-  major finding; a clean or minor-only round needs none.
+  `--brief <file>`; the spawn sets each child's `RHIZA_CHECK` (plan, code or qa, from its
+  role) and `RHIZA_CYCLE`, and it records a round with `rhiza run findings --check "$RHIZA_CHECK"`.
+- Critic: spawn `--role critic --check <check>` only for a check whose latest round has a
+  blocker or major finding; a clean or minor-only round needs none.
 - Fix: spawn `--role fixer` for the confirmed findings, then run the checks again.
 - Gate: `rhiza run review-check` must pass before you land; it is the run's gate, never yours to waive.
 - Land: on the branch, `rhiza land`, then `rhiza render`, and commit what they change.

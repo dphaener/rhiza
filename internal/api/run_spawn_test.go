@@ -231,3 +231,77 @@ func TestRunSpawn(t *testing.T) {
 		}
 	})
 }
+
+// In a conductor run's conduct step (declaring checks plan, code and qa) a
+// check-plan child gets check plan and a cycle, so its RHIZA_CHECK and
+// RHIZA_CYCLE are set; a critic names its check with --check; a --check
+// the step does not declare is refused.
+func TestRunSpawnCheck(t *testing.T) {
+	conductor := func(t *testing.T) *spawnFixture {
+		s := newSpawnFixture(t)
+		def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+			"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"
+		if err := s.store.Create("R2", run.Entry{
+			Type: run.TypeStarted, Step: "conduct", At: s.f.ctx.Now(),
+			Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", PermissionMode: "manual", Agent: "claude-code"},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		if err := s.store.Append("R2", run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1, At: s.f.ctx.Now()}); err != nil {
+			t.Fatal(err)
+		}
+		get := s.f.ctx.Getenv
+		s.f.ctx.Getenv = func(k string) string {
+			if k == envRun {
+				return "R2"
+			}
+			return get(k)
+		}
+		return s
+	}
+	t.Run("CheckRole", func(t *testing.T) {
+		s := conductor(t)
+		resp, err := s.sp.spawn(RunSpawnRequest{Role: "check-plan", Brief: s.brief})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r := s.reqs[0]; r.check != "plan" || r.cycle != 1 {
+			t.Errorf("start request check %q cycle %d", r.check, r.cycle)
+		}
+		if resp.Check != "plan" || resp.Cycle != 1 {
+			t.Errorf("response %+v", resp)
+		}
+	})
+	t.Run("Critic", func(t *testing.T) {
+		s := conductor(t)
+		if err := s.store.Append("R2", run.Entry{Type: run.TypeFindings, Step: "conduct", Check: "qa", At: s.f.ctx.Now(),
+			Findings: []run.Finding{{ID: "f1", Check: "qa", Severity: "blocker", Place: "a.go:1", Reason: "r"}}}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := s.sp.spawn(RunSpawnRequest{Role: "critic", Check: "qa", Brief: s.brief}); err != nil {
+			t.Fatal(err)
+		}
+		if r := s.reqs[0]; r.check != "qa" || r.cycle != 1 {
+			t.Errorf("start request check %q cycle %d", r.check, r.cycle)
+		}
+	})
+	t.Run("UnknownCheck", func(t *testing.T) {
+		s := conductor(t)
+		_, err := s.sp.spawn(RunSpawnRequest{Role: "critic", Check: "scope", Brief: s.brief})
+		if e := AsError(err); e == nil || e.Code != CodeUsage || !strings.Contains(e.Message, "plan, code, qa") {
+			t.Fatalf("err %v", err)
+		}
+		if len(s.reqs) != 0 {
+			t.Error("a child started")
+		}
+	})
+	t.Run("NoChecksStep", func(t *testing.T) {
+		s := newSpawnFixture(t)
+		if _, err := s.sp.spawn(RunSpawnRequest{Role: "verifier", Leaf: "run-spawn", Brief: s.brief}); err != nil {
+			t.Fatal(err)
+		}
+		if r := s.reqs[0]; r.check != "" || r.cycle != 0 {
+			t.Errorf("start request check %q cycle %d", r.check, r.cycle)
+		}
+	})
+}

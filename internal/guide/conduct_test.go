@@ -51,9 +51,9 @@ func TestConduct(t *testing.T) {
 		last = i
 	}
 	checkPhrases(t, "conduct", map[string][]string{
-		"findings":  {"`rhiza run findings --check`"},
+		"findings":  {"`rhiza run findings --check \"$RHIZA_CHECK\"`", "sets each child's `RHIZA_CHECK`", "`RHIZA_CYCLE`"},
 		"arbiter":   {"a question goes to the arbiter"},
-		"critic":    {"only for a check whose latest round has a blocker or\n  major finding"},
+		"critic":    {"`--role critic --check <check>`", "only for a check whose latest round has a\n  blocker or major finding"},
 		"never":     {"Merge or push", "Edit `.rhiza/log`", "Pass your own gate"},
 		"contract":  {"rhiza guide contract"},
 		"spawn-tag": {"--brief <file>"},
