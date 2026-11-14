@@ -293,8 +293,9 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 
 // A run in an agent step declaring checks plan, code and qa journals
 // findings and verdicts under --check plan as that check's rounds, and
-// refuses --check scope with a message naming the declared checks.
-func TestRunFindingsCheckNames(t *testing.T) {
+// refuses --check scope with a message naming the declared checks. An
+// agent step that declares no checks refuses --check.
+func TestRunFindingsAgentStepChecks(t *testing.T) {
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -337,6 +338,29 @@ func TestRunFindingsCheckNames(t *testing.T) {
 		e := AsError(err)
 		if e == nil || !strings.Contains(e.Message, "plan, code, qa") {
 			t.Errorf("%s --check scope: %v", op, err)
+		}
+	}
+	// An agent step that declares no checks refuses --check.
+	if err := store.Create("R12b", run.Entry{
+		Type: run.TypeStarted, Step: "plain", At: t0,
+		Started: &run.Started{Workflow: "plain", Definition: "[step.plain]\nkind = \"agent\"\nprompt = \"go\"\n", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plain"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Append("R12b", run.Entry{Type: run.TypeEntered, Step: "plain", Visit: 1, At: t0}); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R12b"
+		}
+		return ""
+	}
+	for op, body := range map[string]string{"run.findings": `{"findings":[]}`, "run.verdict": `{"verdicts":[]}`} {
+		f.ctx.Stdin = strings.NewReader(body)
+		_, err = callOp(t, f.ctx, op, `{"check":"plan","file":"-"}`)
+		if e := AsError(err); e == nil || !strings.Contains(e.Message, "not in a checks step") {
+			t.Errorf("%s --check at an agent step with no checks: %v", op, err)
 		}
 	}
 }
