@@ -1838,7 +1838,7 @@ Exit code: set by the result, besides the shared codes.
 Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome.
 
 ```
-rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>]
+rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>]
 ```
 
 Appends to the log.
@@ -1849,10 +1849,13 @@ Arguments and flags:
 - `--leaf`: A leaf of the run's change set the child works on, by handle; default none
 - `--brief`: A file holding the caller's brief for the child: its brief.md holds the contract section, then this file (required)
 - `--model`: The model the child's agent starts on; default the agent's
+- `--check`: The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role
 
 Output (`--json` fields):
 
 - `brief` (string): The child's brief.md, an absolute path
+- `check` (string): The review check it worked on, its RHIZA_CHECK
+- `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
 - `detail` (string): The child's exit, or why it failed
 - `dry_run` (boolean): True if nothing was started or journaled
 - `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child

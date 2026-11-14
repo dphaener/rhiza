@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"reflect"
 	"slices"
@@ -189,8 +190,9 @@ func openRun(ctx *Ctx, cmd, next string, finished bool) (reviewRun, error) {
 	return reviewRun{store: rs, id: j.ID, state: st, change: cs}, nil
 }
 
-// reviewStep is the checks step the run is in, if it is in one: then it
-// is a review run, and its findings and verdicts belong to a check.
+// reviewStep is the step the run is in, if it is a checks step or an agent
+// step declaring checks: then it is a review run, and its findings and
+// verdicts belong to one of the step's checks.
 func (r reviewRun) reviewStep() (workflow.Step, bool, error) {
 	if r.state.Current == "" {
 		return workflow.Step{}, false, nil
@@ -200,7 +202,7 @@ func (r reviewRun) reviewStep() (workflow.Step, bool, error) {
 		return workflow.Step{}, false, Errorf("run %s: its workflow no longer parses: %v", r.id, err)
 	}
 	s, ok := def.Steps[r.state.Current]
-	if !ok || s.Kind != workflow.KindChecks {
+	if !ok || (s.Kind != workflow.KindChecks && !(s.Kind == workflow.KindAgent && len(s.Checks) > 0)) {
 		return workflow.Step{}, false, nil
 	}
 	return s, true, nil
@@ -221,7 +223,7 @@ func (r reviewRun) reviewCheck(cmd, check, next string) (step workflow.Step, rev
 	case !review:
 		return workflow.Step{}, false, nil
 	case check == "":
-		return workflow.Step{}, false, Usagef("%s works in a review run with --check: run %s is in checks step %s, so name one of its checks: %s",
+		return workflow.Step{}, false, Usagef("%s works in a review run with --check: run %s is in step %s, so name one of its checks: %s",
 			cmd, r.id, step.Name, strings.Join(checkNames(step), ", ")).WithNext(next)
 	}
 	if _, ok := step.Check(check); !ok {
@@ -1051,6 +1053,11 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if step, ok, err := rr.checksDeclaringStep(); err != nil {
+		return nil, err
+	} else if ok {
+		return conductorReviewCheck(ctx, rr, step, req.(RunReviewCheckRequest))
+	}
 	if rr.state.RoundStale() {
 		return nil, Conflictf("%s: run %s's latest review round, round %d, predates the latest revise and the review recorded no round since: the review must journal a round with rhiza run findings", cmd, rr.id, len(rr.state.Rounds)).
 			WithNext("rhiza describe run.findings")
@@ -1188,6 +1195,80 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		if err := rr.journal(ctx, "question "+q.Handle, e); err != nil {
 			return nil, err
 		}
+	}
+	resp.Passed = true
+	return resp, nil
+}
+
+// checksDeclaringStep is the run workflow's step that declares checks (a
+// checks step, or an agent step with checks), whatever step the run is in:
+// a conductor run's review-check reads that step's rounds from the gate
+// step after it too. ok is false when no step declares any.
+func (r reviewRun) checksDeclaringStep() (workflow.Step, bool, error) {
+	if r.state.Current == "" {
+		return workflow.Step{}, false, nil
+	}
+	def, err := r.state.ParseDefinition()
+	if err != nil {
+		// A run with no parsable workflow, such as a bare plan review, has
+		// no checks step: review-check takes the plan-review path.
+		return workflow.Step{}, false, nil
+	}
+	if s, ok := def.Steps[r.state.Current]; ok && len(s.Checks) > 0 {
+		return s, true, nil
+	}
+	for _, name := range slices.Sorted(maps.Keys(def.Steps)) {
+		if s := def.Steps[name]; len(s.Checks) > 0 {
+			return s, true, nil
+		}
+	}
+	return workflow.Step{}, false, nil
+}
+
+// conductorReviewCheck is run.review-check in a run whose workflow has a
+// step declaring checks: for each declared check it counts the blocker and
+// major findings of its latest round, journalled under step, that no
+// critic verdict downgraded below major or dropped, and fails listing them
+// while any is open. A declared check with no round fails it too, so the
+// conductor cannot skip a check and still pass its gate. It reads only the journal and never the plan-review
+// rounds, and writes nothing.
+func conductorReviewCheck(ctx *Ctx, rr reviewRun, step workflow.Step, req RunReviewCheckRequest) (any, error) {
+	const cmd = "run review-check"
+	resp := RunReviewCheckResponse{Run: rr.id, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}
+	var open, missing []string
+	sawFinding := false
+	for _, c := range step.Checks {
+		cs, _ := rr.state.Check(step.Name, c.Name)
+		rd, ok := cs.LatestRound()
+		if !ok {
+			missing = append(missing, c.Name)
+			continue
+		}
+		resp.Round = max(resp.Round, rd.Number)
+		sawFinding = sawFinding || len(rd.Findings) > 0
+		for _, f := range rd.Standing() {
+			rf := runFinding(f, rd)
+			resp.Confirmed = append(resp.Confirmed, rf)
+			open = append(open, fmt.Sprintf("- %s: %s", c.Name, findingLine(rf)))
+		}
+	}
+	switch {
+	case req.Fresh:
+		resp.Passed = true
+		return resp, nil
+	case req.Findings:
+		if !sawFinding {
+			return nil, Conflictf("%s: run %s's checks hold no finding, so they need no critic", cmd, rr.id).
+				WithNext("rhiza run status " + rr.id)
+		}
+		resp.Passed, resp.Confirmed = true, []RunFinding{}
+		return resp, nil
+	case len(missing) > 0:
+		return nil, Errorf("%s: step %s of run %s declares check(s) that recorded no round: %s; each check must record a round with rhiza run findings --check",
+			cmd, step.Name, rr.id, strings.Join(missing, ", ")).WithNext("rhiza run status " + rr.id)
+	case len(open) > 0:
+		return nil, Errorf("%s: step %s of run %s has %d open blocker or major finding(s); fix them and review again:\n%s",
+			cmd, step.Name, rr.id, len(open), strings.Join(open, "\n")).WithNext("rhiza run status " + rr.id)
 	}
 	resp.Passed = true
 	return resp, nil

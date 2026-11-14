@@ -760,7 +760,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
-	if def.Name == shipChangeWorkflow {
+	if def.Name == shipChangeWorkflow && !conductorWorkflow(def) {
 		if err := checkShipLeaves(t); err != nil {
 			return nil, err
 		}

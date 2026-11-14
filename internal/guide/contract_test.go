@@ -9,7 +9,7 @@ import (
 // roleTopics are the topics an agent loads for its role in a run.
 var roleTopics = []string{
 	"advisor", "arbiter", "builder", "verifier",
-	"check-compliance", "check-model", "check-qa", "check-quality",
+	"check-code", "check-compliance", "check-model", "check-plan", "check-qa", "check-quality",
 	"critic", "fixer", "ci-fix", "gate-fix", "conflict-fix",
 	"plan-critic", "plan-reviewer", "plan-reviser", "planner",
 }

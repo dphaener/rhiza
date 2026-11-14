@@ -22,10 +22,12 @@ An agent session in a run starts a child session with rhiza run spawn --role <ro
 
 - depends-on [spawn-visible](spawn-visible.md)
 - depends-on [spawn-durable](../../orchestration/daemon/spawn-durable.md)
+- depends-on [conduct-skill](../../guide/agent-guide/conduct-skill.md)
 - verifies [run-spawn-verified](../../../../evidence/run-spawn-verified.md)
 - verifies [run-spawn-qa-1](../../../../evidence/run-spawn-qa-1.md)
 - verifies [run-spawn-qa-2](../../../../evidence/run-spawn-qa-2.md)
 - verifies [pr-572-the-daemon-offers-spawn](../../../../evidence/pr-572-the-daemon-offers-spawn.md)
+- verifies [run-spawn-conduct-qa-2](../../../../evidence/run-spawn-conduct-qa-2.md)
 
 ## History
 
