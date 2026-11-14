@@ -666,6 +666,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return msg
 	case InboxAccept:
 		return what + ": a plan waits for your acceptance"
+	case InboxHandback:
+		return what + ": a run stopped after handing back too often"
 	case InboxStalled:
 		return what + ": a session stalled"
 	case InboxAPIError:

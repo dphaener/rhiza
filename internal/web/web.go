@@ -90,6 +90,8 @@ var pages = map[string]*template.Template{
 		"Empty":   func(t, x string) Empty { return Empty{t, x} },
 	}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/projects.html")),
 	"mergedinbox": template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/inbox.html", "templates/mergedinbox.html")),
+	"node":        template.Must(template.New("").Funcs(template.FuncMap{"Glyph": func(k string) Glyph { return Glyph{Kind: k} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/node.html")),
+	"nodemissing": template.Must(template.New("").Funcs(template.FuncMap{"Empty": func(t, x string) Empty { return Empty{t, x} }}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/nodemissing.html")),
 	"roadmap":     template.Must(template.New("").Funcs(template.FuncMap{"section": section}).ParseFS(templateFS, "templates/layout.html", "templates/partials.html", "templates/roadmap.html")),
 }
 
@@ -206,6 +208,7 @@ func HandlerWithNeedsYou(daemon DaemonSource, runs RunsSource, inbox InboxSource
 	mux.HandleFunc("POST "+PausePath, servePause)
 	mux.HandleFunc("GET /roadmap", serveRoadmap)
 	mux.HandleFunc("GET /changes/{id}", serveChange)
+	mux.HandleFunc("GET /nodes/{ref}", serveNode)
 	mux.HandleFunc("GET "+FragmentPrefix+"{name}", serveFragment)
 	mux.HandleFunc("GET /runs/{id}", servRun)
 	mux.HandleFunc("GET /runs", func(w http.ResponseWriter, r *http.Request) {

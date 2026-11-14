@@ -33,7 +33,7 @@ func pageKind(tail string) string {
 	switch first {
 	case "runs", "roadmap":
 		return "/" + first
-	case "changes":
+	case "changes", "nodes":
 		return "/roadmap"
 	}
 	return "/"

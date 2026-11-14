@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BDR250KHPRKCDTB4H1SH9E",
+  "after": [
+    "01M7BDWBV4H5AZED0DW61PXGD2"
+  ],
+  "at": "2026-11-13T21:44:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 123416aea (leaf commits 7655ff31c and fix 123416aea) re-ran every Checks: and acceptance command, all exit 0: go test -trimpath ./internal/api -run TestRunStatusSpawned (two children of step build with role, leaf, statement, model, state, outcome and session ID in the response and human text, the running child marked running, the failed child with 'exit 3', and session.show accepting the child's ID); ./internal/api -run TestSpawnedSessionOpenResume (fake Rex: session.pane reads the child's pane, session.message reaches it, and after it ends stepRunner.Handback resumes the same session ID); ./internal/web -run TestRunDetailSpawned (children under their step, leaf by statement, no session ID or handle on the page); ./internal/run/... (TestDeriveStatusSpawned); TestScripts/describe-golden with no drift. make self-check exits 0 in a clean detached worktree with env -i, which resolves attempt 1's finding. The diff touches internal/api/run.go (RunInfo.Spawned, RunSpawned, human output), internal/run/status.go, internal/web/rundetail.go, docs/reference/cli.md and the golden. The web page reuses the existing Session component, so no template change was needed. No stubs or TODOs."
+        },
+        "handle": "spawn-visible-verified",
+        "id": "01M7BDWFXD1MDKZKT7TTJE7PCQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BDWFX9KXY40V3G5MY93CDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BDWFX9KXY40V3G5MY93CDQ",
+        "id": "01M7BDWG3JH6E4AGXC0E5ZGCTZ",
+        "link": "01M7BDWG3JH6E4AGXC0BHEVJ02",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPCC9NH1M9F5EFKVGJW69",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGRYE538GJC5NA2VNYG4K",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BDWG79EJEAWD2CYYAWTYKJ",
+  "type": "ops",
+  "v": 1
+}

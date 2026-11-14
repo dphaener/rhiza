@@ -104,6 +104,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run review-check`](#rhiza-run-review-check)
 - [`rhiza run round-recorded`](#rhiza-run-round-recorded)
 - [`rhiza run send-back`](#rhiza-run-send-back)
+- [`rhiza run spawn`](#rhiza-run-spawn)
 - [`rhiza run start`](#rhiza-run-start)
 - [`rhiza run status`](#rhiza-run-status)
 - [`rhiza run summary`](#rhiza-run-summary)
@@ -1832,6 +1833,39 @@ Output (`--json` fields):
 
 Exit code: set by the result, besides the shared codes.
 
+## rhiza run spawn
+
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome.
+
+```
+rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>]
+```
+
+Appends to the log.
+
+Arguments and flags:
+
+- `--role`: The child's role, such as builder or verifier: the guide it follows (required)
+- `--leaf`: A leaf of the run's change set the child works on, by handle; default none
+- `--brief`: A file holding the caller's brief for the child: its brief.md holds the contract section, then this file (required)
+- `--model`: The model the child's agent starts on; default the agent's
+
+Output (`--json` fields):
+
+- `brief` (string): The child's brief.md, an absolute path
+- `detail` (string): The child's exit, or why it failed
+- `dry_run` (boolean): True if nothing was started or journaled
+- `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
+- `leaf` (string): The leaf it worked on
+- `outcome` (string): pass when the child's agent exited 0, else fail
+- `parent` (string): The calling session
+- `role` (string): The child's role
+- `run` (string): The run's full ID
+- `session` (string): The child's session; absent in a dry run
+- `step` (string): The calling step the child is a child of
+
+Exit code: set by the result, besides the shared codes.
+
 ## rhiza run start
 
 Queue a run of a workflow on a change set for the daemon, which runs its steps in its worktree headless; --foreground drives it in this process.
@@ -1906,6 +1940,7 @@ Output (`--json` fields):
 - `sessions` (array of object): The sessions it launched or read token use for, in order of first appearance, each with its latest reading
 - `signoff_waiting` (boolean): True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise
 - `signoffs` (array of object): The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none
+- `spawned` (array of object): The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none
 - `stalled` (object): A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise
 - `started_at` (string): When it started, RFC 3339 UTC
 - `state` (string): running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run

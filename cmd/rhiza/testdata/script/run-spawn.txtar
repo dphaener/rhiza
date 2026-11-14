@@ -1,0 +1,85 @@
+# An agent step's session spawns a child with rhiza run spawn: the child is
+# a session of the run under the same step, its brief.md holds the contract
+# section then the caller's brief, and the outcome comes back as JSON (exit
+# 0 for pass, 1 for a failed child). The fake agent spawns once, as the
+# step's session, and exits as the child does when it is the spawned one.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza change new 'Spawn' --title 'Spawn' --json
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp $WORK/spawns.toml .rhiza/workflows/spawns.toml
+
+# Outside a run the command names RHIZA_RUN; a missing brief names its path.
+! exec rhiza run spawn --role verifier --brief $WORK/brief.md
+stderr 'RHIZA_RUN'
+
+# The child passes: the step's session prints its outcome and the run ends.
+exec sh -c 'rhiza run start --foreground --workflow spawns --permission-mode manual --json; echo exit=$?'
+stdout '"state": "succeeded"'
+stdout '^exit=0$'
+exec cat $WORK/spawn.out
+stdout '"outcome": "pass"'
+stdout '"role": "verifier"'
+stdout '"step": "build"'
+stdout '"detail": "exit 0"'
+
+# The sessions and the journal name the child under the calling step.
+exec rhiza session ls --json
+stdout -count=2 '"step": "build"'
+exec sh -c 'cat .git/rhiza/runs/*.jsonl'
+stdout '"type":"spawn","at":"[^"]*","step":"build"'
+stdout '"type":"spawn-ended".*"outcome":"pass"'
+
+# A missing brief file is refused naming the path.
+cp $WORK/missing.toml .rhiza/workflows/missing.toml
+exec sh -c 'rhiza run start --foreground --workflow missing --permission-mode manual --json; echo exit=$?'
+exec cat $WORK/spawn.err
+stdout 'nope\.md'
+
+-- brief.md --
+Verify leaf spawn.
+-- spawns.toml --
+name = "spawns"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change} in step {step} of run {run}"
+on.pass = "done"
+-- missing.toml --
+name = "missing"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change} in step {step} of run {run} missing"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+case "$last" in
+*spawned*) exit 0 ;;
+*missing*) rhiza run spawn --role verifier --brief "$WORK/nope.md" 2> "$WORK/spawn.err"; exit 0 ;;
+*) rhiza run spawn --role verifier --leaf spawn --brief "$WORK/brief.md" --json > "$WORK/spawn.out" 2> "$WORK/spawn.err"; echo "rc=$?" >> "$WORK/spawn.err"; exit 0 ;;
+esac

@@ -128,3 +128,23 @@ func TestRunPageNoLog(t *testing.T) {
 		}
 	}
 }
+
+const fixtureSpawnedRun = `{"title":"Spawn thing","workflow":"conductor","state":"running","current":"conduct","started_at":"2026-10-24T10:00:00Z",
+"steps":[],
+"spawned":[
+{"step":"conduct","session":"01CHILDRUN","role":"builder","leaf":"spawn-visible","statement":"Show spawned sessions","model":"sonnet","state":"running"},
+{"step":"conduct","session":"01CHILDBAD","role":"verifier","leaf":"spawn-visible","statement":"Show spawned sessions","state":"ended","outcome":"fail","detail":"exit 1"}],
+"sessions":[{"step":"conduct","session":"01CHILDRUN","no_tokens":"still running"}]}`
+
+// The run page lists spawned sessions under their step, the leaf named by
+// its statement, and shows no session or leaf ID.
+func TestRunDetailSpawned(t *testing.T) {
+	h := Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(fixtureSpawnedRun))
+	}))
+	body := get(h, "/runs/SPAWN").Body.String()
+	inOrder(t, body, ">conduct<", "Builder · Show spawned sessions", "sonnet", `<span class="rz-num">running<`, "Verifier · Show spawned sessions", "failed · exit 1")
+	if strings.Contains(body, "01CHILD") || strings.Contains(body, "spawn-visible") || strings.Contains(body, "Session 1") {
+		t.Errorf("shows an ID, a handle or a duplicate session:\n%s", body)
+	}
+}

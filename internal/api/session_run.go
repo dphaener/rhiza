@@ -181,9 +181,17 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		Prompt:            rec.Prompt,
 		Model:             rec.Model,
 	}
+	if rec.Resume != "" {
+		launch.Resume, launch.Prompt = true, rec.Resume
+	}
 	argv, err := a.Command(launch)
 	if err != nil {
 		return nil, Errorf("session %s: %v", rec.ID, err).WithNext(sessionStartNext)
+	}
+	if rec.Resume != "" && !ctx.DryRun {
+		if _, err := st.Update(rec.ID, func(x *session.Record) { x.Resume = "" }); err != nil {
+			return nil, Errorf("clear the resume text of session %s: %v", rec.ID, err)
+		}
 	}
 	env, unset := launchEnv(rec)
 	if rec.Run != "" && !ctx.DryRun {
@@ -559,7 +567,7 @@ func launchEnv(rec session.Record) (set, unset []string) {
 	default:
 		unset = append(unset, envCheck, envCycle)
 	}
-	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 {
+	if rec.Leaf != "" || rec.Check != "" || rec.Cycle > 0 || rec.Parent != "" {
 		set = append(set, envRole+"="+rec.Role)
 	} else {
 		unset = append(unset, envRole)

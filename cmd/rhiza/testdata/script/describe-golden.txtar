@@ -3259,7 +3259,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {
@@ -4784,6 +4784,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -6659,6 +6723,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -10445,6 +10573,70 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "stalled": {
                 "additionalProperties": false,
                 "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
@@ -12151,6 +12343,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -14951,6 +15207,70 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "stalled": {
                 "additionalProperties": false,
                 "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
@@ -16701,6 +17021,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -18531,6 +18915,70 @@ cmp stdout describe.golden.json
                 },
                 "type": "array"
               },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "stalled": {
                 "additionalProperties": false,
                 "description": "A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise",
@@ -18879,6 +19327,96 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "Send a run waiting at a signoff step back to a fixer with a note: the note is journalled as the next review round's one finding (the owner's, naming the first check of the checks step the sign-off goes back to), the run returns to that step's fixer instead of signing off, and the continuation is queued for the daemon (--foreground continues it in this process). Exit 2 on a run not waiting at a sign-off step; nothing changes",
+      "write": true
+    },
+    {
+      "name": "run.spawn",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "description": "A file holding the caller's brief for the child: its brief.md holds the contract section, then this file",
+            "type": "string"
+          },
+          "leaf": {
+            "description": "A leaf of the run's change set the child works on, by handle; default none",
+            "type": "string"
+          },
+          "model": {
+            "description": "The model the child's agent starts on; default the agent's",
+            "type": "string"
+          },
+          "role": {
+            "description": "The child's role, such as builder or verifier: the guide it follows",
+            "type": "string"
+          }
+        },
+        "required": [
+          "brief",
+          "role"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "description": "The child's brief.md, an absolute path",
+            "type": "string"
+          },
+          "detail": {
+            "description": "The child's exit, or why it failed",
+            "type": "string"
+          },
+          "dry_run": {
+            "description": "True if nothing was started or journaled",
+            "type": "boolean"
+          },
+          "held": {
+            "description": "True if the spawn waited on a usage or machine hold before it started the child",
+            "type": "boolean"
+          },
+          "leaf": {
+            "description": "The leaf it worked on",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "pass when the child's agent exited 0, else fail",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "type": "string"
+          },
+          "parent": {
+            "description": "The calling session",
+            "type": "string"
+          },
+          "role": {
+            "description": "The child's role",
+            "type": "string"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          },
+          "session": {
+            "description": "The child's session; absent in a dry run",
+            "type": "string"
+          },
+          "step": {
+            "description": "The calling step the child is a child of",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "run",
+          "step"
+        ],
+        "type": "object"
+      },
+      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome",
       "write": true
     },
     {
@@ -20315,6 +20853,70 @@ cmp stdout describe.golden.json
                     "rule",
                     "step",
                     "visit"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "spawned": {
+                "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detail": {
+                      "description": "A failed child's reason: its exit, or why it ended",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf's handle it works on; absent for none",
+                      "type": "string"
+                    },
+                    "model": {
+                      "description": "The model it runs; empty for the agent's default",
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "description": "pass or fail once it ended; empty while it runs",
+                      "enum": [
+                        "pass",
+                        "fail"
+                      ],
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "The session that spawned it",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The child's role, such as builder or verifier",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                      "type": "string"
+                    },
+                    "state": {
+                      "description": "running or ended",
+                      "enum": [
+                        "running",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "statement": {
+                      "description": "That leaf's statement, when the model has it",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step whose session spawned it",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "session",
+                    "state",
+                    "step"
                   ],
                   "type": "object"
                 },
@@ -21915,6 +22517,70 @@ cmp stdout describe.golden.json
                 "rule",
                 "step",
                 "visit"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "spawned": {
+            "description": "The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "detail": {
+                  "description": "A failed child's reason: its exit, or why it ended",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf's handle it works on; absent for none",
+                  "type": "string"
+                },
+                "model": {
+                  "description": "The model it runs; empty for the agent's default",
+                  "type": "string"
+                },
+                "outcome": {
+                  "description": "pass or fail once it ended; empty while it runs",
+                  "enum": [
+                    "pass",
+                    "fail"
+                  ],
+                  "type": "string"
+                },
+                "parent": {
+                  "description": "The session that spawned it",
+                  "type": "string"
+                },
+                "role": {
+                  "description": "The child's role, such as builder or verifier",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The child's session ID: rhiza session show, pane and message take it, and a resume continues the same conversation",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "running or ended",
+                  "enum": [
+                    "running",
+                    "ended"
+                  ],
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "That leaf's statement, when the model has it",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step whose session spawned it",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "session",
+                "state",
+                "step"
               ],
               "type": "object"
             },

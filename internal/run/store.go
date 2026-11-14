@@ -63,6 +63,10 @@ func NewStore(dir string) *Store { return &Store{dir: dir} }
 // TmpDir is TmpDir for a run of this store.
 func (s *Store) TmpDir(id string) string { return TmpDir(id) }
 
+// RunDir is the directory a run keeps its files in, such as a gate's failing
+// output: <store>/<id>. It is not created.
+func (s *Store) RunDir(id string) string { return filepath.Join(s.dir, id) }
+
 func (s *Store) path(id string) string { return filepath.Join(s.dir, id+".jsonl") }
 
 func validID(id string) error {
@@ -131,6 +135,24 @@ func (s *Store) Append(id string, e Entry) error {
 		err = cerr
 	}
 	return err
+}
+
+// AppendSpawnEnded adds a spawn-ended entry unless the run's journal already
+// records that child's end, and reports whether it added one. The spawn
+// process and a restarted driver both record a child's end; whichever comes
+// second finds it recorded.
+func (s *Store) AppendSpawnEnded(id string, e Entry) (bool, error) {
+	j, err := s.Read(id)
+	if err != nil {
+		return false, err
+	}
+	for _, sp := range j.State().Spawns {
+		if sp.Session == e.Session && sp.Ended {
+			return false, nil
+		}
+	}
+	e.Type = TypeSpawnEnded
+	return true, s.Append(id, e)
 }
 
 // Read returns the run with the full ID, or the unique one that starts with

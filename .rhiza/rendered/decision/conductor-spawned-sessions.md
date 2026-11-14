@@ -36,6 +36,8 @@ All spawned sessions (Recommended), picked by the owner
 ### In
 
 - decided-by [m36-visible](../intent/milestone-36/m36-visible.md)
+- decided-by [run-spawn](../capability/rhiza/workflows/workflow-runs/run-spawn.md)
+- decided-by [spawn-visible](../capability/rhiza/workflows/workflow-runs/spawn-visible.md)
 
 ## History
 

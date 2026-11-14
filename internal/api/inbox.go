@@ -76,6 +76,7 @@ const (
 	InboxSignoff      = "signoff"
 	InboxFailed       = "failed"
 	InboxGaveUp       = "gave-up"
+	InboxHandback     = "handback"
 	InboxSkipped      = "skipped"
 	InboxBlocker      = "blocker"
 	InboxOverlap      = "overlap"
@@ -103,7 +104,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -383,6 +384,12 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 			// questions wait on the owner all the same. A process that
 			// journalled itself after the stop is a resume under way.
 			add(InboxOpen, st.Stopped, st.StoppedAt, InboxItem{
+				Step: st.Current, Detail: st.Stopped, Next: "rhiza run resume " + j.ID,
+			})
+		case strings.HasPrefix(st.Stopped, run.HandbackParked) && (!live || !st.ProcessAt.After(st.StoppedAt)):
+			// The run handed back handback_cap times and its step went red
+			// again: it waits, stopped, for the owner.
+			add(InboxHandback, st.Current, st.StoppedAt, InboxItem{
 				Step: st.Current, Detail: st.Stopped, Next: "rhiza run resume " + j.ID,
 			})
 		case !live && st.Stopped == run.SignoffWait && st.CurrentVisit > 0 && !hasSignoff(st):

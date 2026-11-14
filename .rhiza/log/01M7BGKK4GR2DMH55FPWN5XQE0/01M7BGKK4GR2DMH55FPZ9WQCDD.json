@@ -1,0 +1,15 @@
+{
+  "actor": "01M7BGHGN8XAWA72WC61YJJRHG",
+  "after": [],
+  "at": "2026-11-13T22:31:48Z",
+  "body": {
+    "intent": "Web pages link model nodes to their node pages: the change set page's Serves links (and other capability, decision and source mentions) open /p/<project>/nodes/<ref> instead of the roadmap",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7BGKK4GR2DMH55FPWN5XQE0",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BGKK4GR2DMH55FPZ9WQCDD",
+  "type": "open",
+  "v": 1
+}
