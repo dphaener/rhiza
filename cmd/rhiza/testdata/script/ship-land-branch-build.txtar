@@ -178,6 +178,48 @@ exec rhiza ls --kind evidence --json
 exec rhiza change show
 stdout '^- State: accepted'
 
+# SHIP_HEAD_RHIZA names a binary that is not there yet and SHIP_HEAD_BUILD
+# is set: ship land builds it itself (once, in the worktree), logs to
+# head.log and lands.
+cd $WORK
+rm head.log
+rm build.log
+rm head/rhiza
+exec git init -q --bare ondemand.git
+env ORIGIN=$WORK/ondemand.git
+mkdir ondemand
+cd ondemand
+exec git init -q
+exec git remote add origin $WORK/ondemand.git
+env RHIZA_TEST_RENDER_STALE=
+exec rhiza init
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+exec rhiza add capability shipping --field 'statement=Ships a change set'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec git checkout -q -b cs/ship-it
+cp $WORK/feature.txt feature.txt
+exec git add feature.txt
+exec git commit -qm 'Build the feature'
+exec git push -q -u origin cs/ship-it
+exec rhiza ship check
+stdout 'passed'
+env SHIP_HEAD_RHIZA=$WORK/head/rhiza
+env SHIP_HEAD_BUILD=buildhead
+! exists $WORK/head/rhiza
+exec rhiza ship land
+stdout '^Landed change set '
+exec cat $WORK/build.log
+stdout '^ondemand '
+exec cat $WORK/head.log
+stdout '^ondemand land --change '
+stdout '^ondemand render --json$'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+
 -- feature.txt --
 built
 -- head/rhiza --

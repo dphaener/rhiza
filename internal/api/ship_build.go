@@ -44,10 +44,58 @@ func shipRebuildHead(ctx *Ctx) error {
 	if ctx.Exec == nil {
 		return Errorf("ship: %s cannot be run here: no programs can be run", envShipBuild)
 	}
-	if _, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
-		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v", envShipBuild, cmd, err)
+	if out, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
+		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v%s", envShipBuild, cmd, err, shipBuildOutput(out))
 	}
+	shipStampBuild(ctx)
 	return nil
+}
+
+// shipBuildOutput is the tail of a failed build's output, set off on its
+// own lines, or "" when it printed none.
+func shipBuildOutput(out []byte) string {
+	tail := strings.TrimSpace(string(out))
+	if len(tail) > shipGateTail {
+		tail = "...\n" + tail[len(tail)-shipGateTail:]
+	}
+	if tail == "" {
+		return ""
+	}
+	return "\n" + tail
+}
+
+// shipBuiltAtSuffix names, beside SHIP_HEAD_RHIZA, the file that records
+// the worktree commit ship built the binary at.
+const shipBuiltAtSuffix = ".built-at"
+
+// shipStampBuild records the worktree's HEAD beside the head build, when
+// the build is named and HEAD can be read. It is best effort: a binary
+// with no record is trusted as a step's own build.
+func shipStampBuild(ctx *Ctx) {
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" {
+		return
+	}
+	head, err := ctx.Git("rev-parse", "HEAD")
+	if err != nil || strings.TrimSpace(head) == "" {
+		return
+	}
+	_ = os.WriteFile(bin+shipBuiltAtSuffix, []byte(strings.TrimSpace(head)+"\n"), 0o644)
+}
+
+// shipBuildStale reports whether the build at bin was built, by ship, at a
+// commit other than the worktree's current HEAD. A binary ship has no
+// record for (a workflow step built it) is not stale.
+func shipBuildStale(ctx *Ctx, bin string) bool {
+	built, err := os.ReadFile(bin + shipBuiltAtSuffix)
+	if err != nil {
+		return false
+	}
+	head, err := ctx.Git("rev-parse", "HEAD")
+	if err != nil || strings.TrimSpace(head) == "" {
+		return false
+	}
+	return strings.TrimSpace(string(built)) != strings.TrimSpace(head)
 }
 
 // shipRunEnv is ctx seeing the [env] of st's workflow ({run_tmp} being
@@ -86,7 +134,21 @@ func shipHeadBuild(ctx *Ctx, _ shipTarget) (string, error) {
 	if ctx.Exec == nil {
 		return "", Errorf("ship: the PR head's build %s cannot be run here: no programs can be run", bin)
 	}
-	if fi, err := os.Stat(bin); err != nil || fi.IsDir() {
+	// With a build command named, ship builds the head itself when the
+	// binary is missing or was built at an earlier commit.
+	fi, err := os.Stat(bin)
+	missing := err != nil || fi.IsDir()
+	if strings.TrimSpace(ctxGetenv(ctx)(envShipBuild)) != "" && (missing || shipBuildStale(ctx, bin)) {
+		if missing {
+			_ = os.Remove(bin + shipBuiltAtSuffix)
+		}
+		if err := shipRebuildHead(ctx); err != nil {
+			return "", err
+		}
+		fi, err = os.Stat(bin)
+		missing = err != nil || fi.IsDir()
+	}
+	if missing {
 		return "", Errorf("ship: %s names %s, which is not a built rhiza: build it in a step before this one, so nothing was landed, rendered or pushed", envShipRhiza, bin)
 	}
 	return bin, nil
