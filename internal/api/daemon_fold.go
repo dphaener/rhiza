@@ -206,6 +206,10 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	} else {
 		sched.Backlog = pol.Backlog
 	}
+	sched.Conducts = func(cs id.ID) bool {
+		c, ok := f.sets[cs]
+		return ok && changeConducts(ctx.Root, c.Open)
+	}
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
 		return ok && len(changeLeaves(newModelSets(list, cs), c.Ops)) > 0

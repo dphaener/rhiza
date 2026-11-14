@@ -1,0 +1,109 @@
+{
+  "actor": "01M7BJMQGVAQ92ZASZDEC9QG7B",
+  "after": [
+    "01M7BJFW68JWB09XNXQ4GCWR1G"
+  ],
+  "at": "2026-11-13T23:14:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: built the branch to a scratch path and ran it as a scratch root daemon with the web UI on a local port. rhiza daemon set rhiza.web.token refused 'short' and a value with spaces (exit 2) and accepted a 26-character token, replying value 'set'; daemon settings (human and --json), daemon status --json, GET /api/daemon.settings, GET /api/daemon.status (root and /p/proj/) and the daemon state file never held the value, only 'set'. Without the token every POST got 401 (wrong or missing bearer/cookie); GET ?token=<token> set an HttpOnly SameSite=Strict cookie and 303-redirected without the token; a wrong ?token= set nothing. Pages showed no action forms without the cookie. With the token removed from rhiza.toml, every POST (bearer, cookie, none) got 403 'actions are off' and pages showed no forms; pages stayed readable. After rotating the token the old cookie got 401 and lost its forms."
+        },
+        "handle": "web-token-qa-1",
+        "id": "01M7BK29SC4388S7B1Z7CCG63Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BK29SC4388S7B1Z3WRV0SA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BK29SC4388S7B1Z3WRV0SA",
+        "id": "01M7BK29XER5BATYZ3KQX6V7NK",
+        "link": "01M7BK29XER5BATYZ3KPRPD03P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PX68N5R6XWD5MHV6FKJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the built binary as a scratch root daemon: pages fetched with the token cookie carry a csrf hidden field in every pause, answer and approve form, never the token. Cookie POSTs to /p/proj/actions/pause, /actions/approve and /actions/answer with no csrf, a wrong csrf or the csrf only in the query string got 403 'a valid csrf field is required' and changed nothing; the same POSTs with the page's csrf value acted. A bearer-header POST needed no csrf."
+        },
+        "handle": "web-csrf-qa-1",
+        "id": "01M7BK2A31J62PRJT02TDBRH7V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BK2A31J62PRJT02SZ7AYRD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BK2A31J62PRJT02SZ7AYRD",
+        "id": "01M7BK2A6Y3RGZMJVHS8XKN8W0",
+        "link": "01M7BK2A6Y3RGZMJVHS7KXD2WC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B49JW37Q5ECBXE03TZF2EQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1 with the built binary as a scratch root daemon: with the cookie and csrf, POST /p/proj/actions/pause scope=project/daemon paused=true answered 'This project is paused.' / 'The daemon is paused.' and wrote rhiza.project.paused=true (project git config) and rhiza.daemon.paused=true (root rhiza.toml); bearer POSTs with paused=false resumed both. The panel's buttons flip to Resume once the daemon polls. scope=world and paused=yes got 'Nothing to pause' / 'Say whether to pause or resume.' Bearer POSTs to /retry, /abandon, /merge, /actions/{retry,abandon,merge}, /p/proj/actions/{retry,merge,abandon}, /p/proj/runs/X/retry, /inbox were 404; /api/daemon.set, /p/proj/api/{daemon.set,run.resume,run.abandon,question.answer} 405; PUT/DELETE/GET on the pause path 405."
+        },
+        "handle": "web-action-pause-qa-1",
+        "id": "01M7BK2AA7H7225R8JV8WM96FZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BK2AA7H7225R8JV85GQKVA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BK2AA7H7225R8JV85GQKVA",
+        "id": "01M7BK2ADR6JJBJ330TYGS6MMH",
+        "link": "01M7BK2ADR6JJBJ330TWH35D68",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1 with the built binary as a scratch root daemon: a real run stopped at a sign-off showed an Approve form in the root merged inbox posting to /p/proj/actions/approve; approving there journalled one signoff and queued the continuation ('Approved. The run continues.'), a second approve and an unknown run got 'Nothing to do', an empty run 'Nothing to approve', no csrf 403. A real rhiza run gate stop on two open questions showed answer forms (statements HTML-escaped, handles only in hidden fields); answering wrote the answering Decision in the run's worktree and a blank answer was refused. But the run never continued after both were answered: it stayed stopped at its gate, the questions and their forms stayed in both inboxes, and a repeat answer wrote a second Decision (finding f1)."
+        },
+        "handle": "web-action-answer-qa-1",
+        "id": "01M7BK2AKZ8W4BA00ASQT9WCMZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BK2AKZ8W4BA00ASQ50VG79",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BK2AKZ8W4BA00ASQ50VG79",
+        "id": "01M7BK2AQZ2AJR533R9BDDTJ1M",
+        "link": "01M7BK2AQZ2AJR533R98NVMD1A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BK2AVF5T2RHVS610JC31HW",
+  "type": "ops",
+  "v": 1
+}

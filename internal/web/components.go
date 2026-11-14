@@ -39,6 +39,15 @@ type Row struct {
 	Step           string
 	Live           bool
 	Time, Datetime string
+	// Forms are the row's action forms, present only when the request
+	// carried the web token.
+	Forms []RowForm
+}
+
+// RowForm is one action form of a row: Kind is answer or approve, Action
+// the path it posts to. Run and Question ride in hidden fields, never shown.
+type RowForm struct {
+	Kind, Action, Run, Question, CSRF string
 }
 
 // Step is one step of a run's timeline. State is done, running, waiting,

@@ -14,9 +14,17 @@ import (
 // copied, as the poll goes on changing the ctx it came from.
 func WebProjectHandler(base *Ctx) http.Handler {
 	snap := *base
+	return web.WithToken(func() string { return webTokenOf(&snap) }, webProjectHandler(&snap))
+}
+
+// webProjectHandler is WebProjectHandler without its token gate, for a
+// caller that has gated the request already (the root's).
+func webProjectHandler(base *Ctx) http.Handler {
+	snap := *base
 	health := NewWebHealth(&snap)
 	needs := func() int { return len(WebNeedsYou(&snap, time.Now())) }
-	return web.HandlerWithNeedsYou(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), needs, ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
+	h := web.HandlerWithNeedsYou(WebDaemonSource(&snap, health), WebRunsSource(&snap), WebInboxSource(&snap), WebMilestonesSource(&snap), needs, ReadOnlyHandler(&snap), web.Events(WebEventSources(&snap, health), web.PollEvery))
+	return web.WithActions(WebActions(&snap), h)
 }
 
 // WebRootHandler is the one web UI of the root daemon: the all-projects
@@ -40,7 +48,7 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 	// The root's own pages (the projects home, the merged inbox) carry the
 	// daemon pill too; it reads no health, so its health never refreshes.
 	pill := WebDaemonSource(ctx, newWebHealth(func() []web.HealthPill { return nil }, healthRefreshEvery, time.Now))
-	return web.WithDaemon(pill, web.RootWithInbox(home, homeName, func(name string) http.Handler {
+	return web.WithToken(func() string { return webTokenOf(ctx) }, web.WithDaemon(pill, web.RootWithInbox(home, homeName, func(name string) http.Handler {
 		reg, err := rootcfg.Load(root)
 		if err != nil {
 			return nil
@@ -60,10 +68,10 @@ func WebRootHandler(ctx *Ctx, root, homeName string, home http.Handler) http.Han
 		if b, ok := cache[name]; ok && b.dir == dir {
 			return b.h
 		}
-		h := WebProjectHandler(projectCtx(ctx, dir))
+		h := webProjectHandler(projectCtx(ctx, dir))
 		cache[name] = built{dir, h}
 		return h
-	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root)))
+	}, WebProjectsSource(ctx, root, homeName), WebMergedInboxSource(ctx, root))))
 }
 
 // WebProjectsSource reads every project registered in the root for the web

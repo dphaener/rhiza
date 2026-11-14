@@ -1,0 +1,30 @@
+{
+  "actor": "01M7BJE1MR1X2HWGK2TD2RFD4E",
+  "after": [
+    "01M7BJFQQYQ4YTHH44W4HG9ZV3"
+  ],
+  "at": "2026-11-13T23:04:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/web -run 'TestWebAnswerFormsCarryCSRFAndAreAbsentWithoutToken|TestWebAnswerPostConfirms|TestWebApproveRefusesMissingCSRF|TestWebAnswerMergedInboxFormsPostIntoTheProject' shows the answer and approve forms carry the CSRF field and are absent when no token is set, answers a question and approves a sign-off through POST with the token and the CSRF field, shows the confirmation, and refuses an answer or approve POST missing the CSRF field; go test -trimpath ./internal/api -run 'TestWebAnswerAction|TestWebApproveAction' shows a POST through WebProjectHandler, and through WebRootHandler's merged inbox at the root, runs the real question.answer and inbox.approve or run.approve on the project's log.",
+          "statement": "From the web UI the owner answers an open question (question.answer) and approves a sign-off (inbox.approve or run.approve), and the page then says what happened ('Answered. The run continues.')."
+        },
+        "handle": "web-action-answer",
+        "id": "01M79Q8PZE56YE4MSC7SZA7AP2",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M79Q8PZE56YE4MSC7P9GS5RT",
+        "op": "node.create",
+        "parent": "01M6PFEKF6584S58PGZP17YAF2"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BJFSRX5T6D1K57G511SM0D",
+  "type": "ops",
+  "v": 1
+}

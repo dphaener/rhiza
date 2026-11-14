@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BHP9246V8061WX6MDPZ65B",
+  "after": [
+    "01M7B6GBMQDSEH9F5QC77CDQR4"
+  ],
+  "at": "2026-11-13T22:52:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a64eb85cc (leaf commits 9d24c14ff, a64eb85cc) re-ran the Checks block: go test -trimpath ./internal/guide -run 'TestCheckPlan|TestCheckCode|TestReviewIsAnIndex|TestBuildReviewCommandBudget' exit 0 (TestCheckPlanText, TestCheckPlanNamesNoRepoCommand, TestCheckCodeText, TestCheckCodeNamesNoRepoCommand, TestReviewIsAnIndex, TestBuildReviewCommandBudget PASS); go test -trimpath ./internal/api -run TestGuideInstallRoleSkills exit 0; go test -trimpath ./internal/guide exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (no tracked changes). Also ran go test -trimpath ./internal/api -run TestGuideInstall and TestScripts/guide and guide-install: ok. Diff read: check-plan.md merges the compliance criteria (under-built, scope creep, unaccounted files) with the model rules (code contradicts a node, missing constraint), with the role sections and shared blocks, tested under TopicCap; check-code.md is check-quality.md renamed (only title, task verb and plan-check reference differ); check-compliance, check-model and check-quality texts unchanged; review.md names check-plan, check-code, check-qa for a conductor run and the older four for ship-change, review and docs-review; guide_install.go installs skills/rhiza-check-plan and skills/rhiza-check-code beside the old role skills, checked by TestGuideInstallRoleSkills. Other touched files (guide.txtar, guide-install.txtar, contract_test.go, guide_test.go) are count/list updates the new topics require. No stubs or TODOs added; fakes only."
+        },
+        "handle": "check-plan-code-topics-verified",
+        "id": "01M7BHT7AVCT3DTKYHZRBKTBAE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BHT7AVCT3DTKYHZRAW5MGQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BHT7AVCT3DTKYHZRAW5MGQ",
+        "id": "01M7BHT7D3A7E0936FQ3EXD35K",
+        "link": "01M7BHT7D3A7E0936FQ33T28KK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BHT7GF3ECNAK1YC4SSX53P",
+  "type": "ops",
+  "v": 1
+}

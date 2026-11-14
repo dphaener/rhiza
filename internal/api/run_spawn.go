@@ -43,6 +43,7 @@ type RunSpawnRequest struct {
 	Leaf  string `json:"leaf,omitempty" flag:"leaf" desc:"A leaf of the run's change set the child works on, by handle; default none"`
 	Brief string `json:"brief" flag:"brief" desc:"A file holding the caller's brief for the child: its brief.md holds the contract section, then this file"`
 	Model string `json:"model,omitempty" flag:"model" desc:"The model the child's agent starts on; default the agent's"`
+	Check string `json:"check,omitempty" flag:"check" desc:"The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role"`
 }
 
 // RunSpawnResponse is the child's outcome.
@@ -53,6 +54,8 @@ type RunSpawnResponse struct {
 	Session string `json:"session,omitempty" desc:"The child's session; absent in a dry run"`
 	Role    string `json:"role" desc:"The child's role"`
 	Leaf    string `json:"leaf,omitempty" desc:"The leaf it worked on"`
+	Check   string `json:"check,omitempty" desc:"The review check it worked on, its RHIZA_CHECK"`
+	Cycle   int    `json:"cycle,omitempty" desc:"Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges"`
 	Brief   string `json:"brief,omitempty" desc:"The child's brief.md, an absolute path"`
 	Held    bool   `json:"held,omitempty" desc:"True if the spawn waited on a usage or machine hold before it started the child"`
 	Outcome string `json:"outcome,omitempty" enum:"pass,fail" desc:"pass when the child's agent exited 0, else fail"`
@@ -139,6 +142,9 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		step = rr.state.Current
 	}
 	resp := RunSpawnResponse{Run: rr.id, Step: step, Parent: parent, Role: role, Leaf: strings.TrimSpace(r.Leaf)}
+	if resp.Check, resp.Cycle, err = spawnCheck(rr, role, r.Check); err != nil {
+		return RunSpawnResponse{}, err
+	}
 	if ctx.DryRun {
 		resp.DryRun = true
 		return resp, nil
@@ -164,6 +170,7 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		Change: rr.state.Change, PermissionMode: rr.state.PermissionMode, Agent: rr.state.Agent, Step: step, Run: rr.id,
 		autonomous: rr.state.Autonomous, landedOK: true,
 		role: role, leaf: resp.Leaf, model: strings.TrimSpace(r.Model), parent: parent,
+		check: resp.Check, cycle: resp.Cycle,
 	}
 	if resp.Leaf != "" {
 		req.attempt = 1
@@ -197,6 +204,49 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		return resp, Errorf("journal the end of child session %s in run %s: %v", sid, rr.id, err)
 	}
 	return resp, nil
+}
+
+// spawnCheck is the review check a child works on and its cycle, which
+// its agent gets as RHIZA_CHECK and RHIZA_CYCLE: the check --check names,
+// else the <check> of a check-<check> role, when the run is in a step
+// declaring checks. A --check the step does not declare is usage; a
+// check-<check> role naming none, or a run in no such step, has no check.
+// The cycle is the step's latest, else the check's round the child records
+// (its check-<check> role) or judges (any other role, such as critic).
+func spawnCheck(rr reviewRun, role, flag string) (string, int, error) {
+	name := strings.TrimSpace(flag)
+	explicit := name != ""
+	if !explicit {
+		name = strings.TrimPrefix(role, "check-")
+		if name == role {
+			return "", 0, nil
+		}
+	}
+	step, review, err := rr.reviewStep()
+	if err != nil {
+		return "", 0, err
+	}
+	if !review {
+		if explicit {
+			return "", 0, Usagef("run spawn --check: run %s is not in a step declaring checks", rr.id).WithNext(runSpawnNext)
+		}
+		return "", 0, nil
+	}
+	if _, ok := step.Check(name); !ok {
+		if explicit {
+			return "", 0, Usagef("run spawn --check %s: run %s is in step %s, so name one of its checks: %s",
+				name, rr.id, step.Name, strings.Join(checkNames(step), ", ")).WithNext(runSpawnNext)
+		}
+		return "", 0, nil
+	}
+	if cy, ok := rr.state.LatestCycle(step.Name); ok && cy.Cycle > 0 {
+		return name, cy.Cycle, nil
+	}
+	cs, _ := rr.state.Check(step.Name, name)
+	if role == "check-"+name {
+		return name, len(cs.Rounds) + 1, nil
+	}
+	return name, max(len(cs.Rounds), 1), nil
 }
 
 // spawnSleep waits one poll.

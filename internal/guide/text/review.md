@@ -1,14 +1,19 @@
 # Review
 
 A review run checks a built change set: fresh check sessions, a critic per check, fixers.
-This topic is an index; the guidance lives in nine role topics. Load the one that is yours,
-as a skill or with `rhiza guide <topic>`:
+This topic is an index of eleven role topics. Load yours, as a skill or with
+`rhiza guide <topic>`:
 
-- Compliance check: `/rhiza-check-compliance` (`rhiza guide check-compliance`). A check
-  named `scope` loads this one too: it judges under-built, scope creep and unaccounted files.
-- Quality check: `/rhiza-check-quality` (`rhiza guide check-quality`).
+A conductor run's three checks are check-plan, check-code and check-qa. The classic workflows (ship-change, review, docs-review) keep the older four.
+
+- Plan check (conductor): `/rhiza-check-plan` (`rhiza guide check-plan`). A check named `scope`
+  loads this one too.
+- Code check (conductor): `/rhiza-check-code` (`rhiza guide check-code`).
+- Compliance check (classic): `/rhiza-check-compliance` (`rhiza guide check-compliance`). A check
+  named `scope` loads this one too.
+- Quality check (classic): `/rhiza-check-quality` (`rhiza guide check-quality`).
 - QA check: `/rhiza-check-qa` (`rhiza guide check-qa`).
-- Model check: `/rhiza-check-model` (`rhiza guide check-model`).
+- Model check (classic): `/rhiza-check-model` (`rhiza guide check-model`).
 - Critic: `/rhiza-critic` (`rhiza guide critic`).
 - Fixer: `/rhiza-fixer` (`rhiza guide fixer`).
 - CI fixer of a ship run: `/rhiza-ci-fix` (`rhiza guide ci-fix`).

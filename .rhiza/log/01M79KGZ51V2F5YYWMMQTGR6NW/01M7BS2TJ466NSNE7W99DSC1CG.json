@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BRF4KPBD72RWB8VPNYYE4F",
+  "after": [
+    "01M7BKZ0JKRZ5KK6HTT6JPXMCQ"
+  ],
+  "at": "2026-11-14T00:59:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1c7e620ee (attempt 2, fix for qa f2): go test -trimpath ./internal/api -run 'TestRunSpawn|TestRunFindings|TestReviewCheck|TestSession|TestDescribe|TestRunReview|TestGuideInstall' exit 0; go test -trimpath ./internal/guide/... exit 0 and -run TestConduct PASS; go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-spawn|describe-golden)$' exit 0; rhiza ship generate (0 files changed) and rhiza render leave the tree clean. The whole go test ./internal/api/... timed out at the 10m package limit (TestDaemonAutoUpdateLatest 4s in), matching the Checks block's recorded timeout and unrelated to the diff. The diff adds run spawn --check and spawnCheck (check from a check-<check> role or --check, refused when the step does not declare it), wired through session.go into RHIZA_CHECK/RHIZA_CYCLE (session_run.go:561), tested by TestRunSpawnCheck (check role, critic, unknown check, no-checks step); conduct.md and TestConduct name --check and RHIZA_CHECK; describe-golden and cli.md are regenerated. No stubs or TODOs, and nothing outside the leaf's slice besides the generated docs and rendered files."
+        },
+        "handle": "conduct-skill-verified-2",
+        "id": "01M7BS2TDGV007PE4NTBQ47WYG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BS2TDGV007PE4NT8FNXRDR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BS2TDGV007PE4NT8FNXRDR",
+        "id": "01M7BS2TFKF7QE33NGGHY47V9E",
+        "link": "01M7BS2TFKF7QE33NGGFN2S6XX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BS2TJ466NSNE7W99DSC1CG",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,132 @@
+{
+  "actor": "01M7BKPGRZQJXKRZ0Y46V1A5HN",
+  "after": [
+    "01M7BKEKRZB8233ZRGQS9Z9JBB"
+  ],
+  "at": "2026-11-13T23:30:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built rhiza with go build -trimpath to a scratch path; rhiza guide check-plan, check-code and review print the merged plan rules, the code rules and an index naming check-plan, check-code, check-qa for a conductor run and the older four for the classic workflows; rhiza guide install --agent claude into a scratch HOME wrote skills/rhiza-check-plan/SKILL.md and skills/rhiza-check-code/SKILL.md beside check-compliance, check-quality and check-model (26 files), and a repeat install reported 26 unchanged; the acceptance tests pass."
+        },
+        "handle": "check-plan-code-topics-qa-1",
+        "id": "01M7BKYZSE0J408ACH3180D872",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKYZSD4NWQ0AT053QFNJHK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKYZSD4NWQ0AT053QFNJHK",
+        "id": "01M7BKYZVVA3R69N4PH4H3K2BP",
+        "link": "01M7BKYZVVA3R69N4PH2DRM08J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHW2WHSC1M6D5AFSGEJRFR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary in a scratch repo: rhiza workflow check refuses an agent step's check with no name, a duplicate name, a bad name, or a prompt, and still refuses check on a command step and critic on an agent step; in a live run with a fake claude in an agent step declaring plan, code and qa, rhiza run findings --check plan/code/qa recorded each check's round, and --check scope exited 2 naming plan, code, qa."
+        },
+        "handle": "review-three-checks-qa-1",
+        "id": "01M7BKYZYWE18GAFN1N96R0CCE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKYZYWE18GAFN1N7M6RCVM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKYZYWE18GAFN1N7M6RCVM",
+        "id": "01M7BKZ00GGP4F1XMKMB0HG3TB",
+        "link": "01M7BKZ00GGP4F1XMKM9K6MQJJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With the built binary: rhiza run start --workflow ship-change --dry-run on a leafless change set is refused ('has no leaves', next run start --workflow plan) under a command-step ship-change and under one whose agent step with checks is not first, and would start under the conductor ship-change; rhiza daemon --once picks nothing under the builtin ship-change, but under the conductor ship-change it starts the leafless milestone-serving change set and skips a leafless one serving a non-milestone intent."
+        },
+        "handle": "conduct-plans-leaves-qa-1",
+        "id": "01M7BKZ02HXCYSNMGM3YP96MGT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKZ02HXCYSNMGM3Y9KMZJ4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKZ02HXCYSNMGM3Y9KMZJ4",
+        "id": "01M7BKZ07W8HXCMFSF799JFBFD",
+        "link": "01M7BKZ07W8HXCMFSF75DDP7KS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPD9T4QSDZCWH4NQ577EA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "In live runs with a fake conductor, rhiza run review-check from the later gate step failed naming an unjudged blocker and a confirmed major, passed after a downgrade and a clean latest round, and refused a verdict on an unknown finding. But a run whose checks recorded no round passed the gate and succeeded (QA finding f1)."
+        },
+        "handle": "critic-on-major-qa-1",
+        "id": "01M7BKZ0AFC3S7025DJE3JRHVR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKZ0AFC3S7025DJDYQ2CQ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKZ0AFC3S7025DJDYQ2CQ2",
+        "id": "01M7BKZ0CE4YYBCPHW81DV0WE5",
+        "link": "01M7BKZ0CE4YYBCPHW80GCTT09",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDBW0RMPYBW73RTEBNX3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "rhiza guide conduct and the installed skills/rhiza-conduct/SKILL.md name every phase and command. Following it with a fake agent, rhiza run spawn --role check-plan started the child, but the child had no RHIZA_CHECK or RHIZA_CYCLE, so its rhiza run findings --check \"$RHIZA_CHECK\" exited 2 (QA finding f2)."
+        },
+        "handle": "conduct-skill-qa-1",
+        "id": "01M7BKZ0EZNNB4YT92QM6BA2TY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BKZ0EZNNB4YT92QJ1DND5R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BKZ0EZNNB4YT92QJ1DND5R",
+        "id": "01M7BKZ0GF59CWNSPJHW8TYAW8",
+        "link": "01M7BKZ0GF59CWNSPJHRG8WKSS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPD8SQX6BBRG3N6WRDD29",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BKZ0JKRZ5KK6HTT6JPXMCQ",
+  "type": "ops",
+  "v": 1
+}

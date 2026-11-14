@@ -102,6 +102,13 @@ The port the web UI is served on, or off to serve none.
 - Type: port or off
 - Default: `7787`
 
+### `rhiza.web.token`
+
+The token that turns the web UI's actions on: a browser presents it once with ?token= and keeps it in a cookie, a script sends it as a bearer header; unset means no actions, and its value is never shown, only whether it is set.
+
+- Type: secret
+- Default: unset
+
 ### `rhiza.daemon.watchdog.enabled`
 
 Run the watchdog, which nudges and retries stalled agents and commands.

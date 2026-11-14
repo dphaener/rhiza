@@ -18,10 +18,12 @@ rhiza guide contract prints the agent contract on one page: what any agent in a 
 
 ### In
 
+- depends-on [conduct-skill](conduct-skill.md)
 - verifies [guide-contract-verified](../../../../evidence/guide-contract-verified.md)
 - verifies [guide-contract-qa-1](../../../../evidence/guide-contract-qa-1.md)
 - verifies [guide-contract-qa-2](../../../../evidence/guide-contract-qa-2.md)
 - verifies [pr-565-every-agent-session-a-run](../../../../evidence/pr-565-every-agent-session-a-run.md)
+- verifies [guide-contract-conduct-qa-2](../../../../evidence/guide-contract-conduct-qa-2.md)
 
 ## History
 

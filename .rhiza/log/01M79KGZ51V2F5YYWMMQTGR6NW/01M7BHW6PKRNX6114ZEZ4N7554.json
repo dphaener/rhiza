@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BHG2E82YA3922RDQCZKKG7",
+  "after": [
+    "01M7BHT7GF3ECNAK1YC4SSX53P"
+  ],
+  "at": "2026-11-13T22:53:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 2bf858f08 re-ran the Checks: block: go test -trimpath ./internal/workflow -run TestAgentStepChecks (PASS: plan,code,qa parsed on an agent step; no-name, duplicate and prompt-bearing checks refused), go test -trimpath ./internal/workflow (ok), go test -trimpath ./internal/api -run TestRunFindingsCheckNames (PASS: findings and verdict with --check plan recorded as round 1 of plan in an agent step declaring plan, code, qa; --check scope refused for both ops with a message naming plan, code, qa), go test -trimpath ./cmd/rhiza -run 'TestScripts/(review|workflow)' (ok), make self-check (exit 0, only pre-existing unclaimed warnings), rhiza ship generate and rhiza render (exit 0, tree clean). Diff read: only the four named Go files plus the builder's actor log and rendered files; reviewStep accepts agent steps with declared checks via step.Checks, no hard-coded check names, no stubs or TODOs."
+        },
+        "handle": "review-three-checks-verified",
+        "id": "01M7BHW6KD5SKTBE3NCPYKE1MX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BHW6KD5SKTBE3NCKA84VA5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BHW6KD5SKTBE3NCKA84VA5",
+        "id": "01M7BHW6MX4Y4WB1FWQC8MD84R",
+        "link": "01M7BHW6MX4Y4WB1FWQAY1HMZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPDAWDKT4JQK1KDNR5K0W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KGZ51V2F5YYWMMQTGR6NW",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BHW6PKRNX6114ZEZ4N7554",
+  "type": "ops",
+  "v": 1
+}
