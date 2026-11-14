@@ -378,3 +378,15 @@ func TestShipOpenPRBodyRef(t *testing.T) {
 		t.Errorf("body for a change set without a ref has a ref line:\n%s", g.body)
 	}
 }
+
+// A conductor's checks record rounds of findings and no outcome: ship
+// open-pr takes them as the review having run.
+func TestReviewJournaledConductorRounds(t *testing.T) {
+	if reviewJournaled(run.State{}) {
+		t.Fatal("an empty run counts as reviewed")
+	}
+	st := run.State{Checks: []run.CheckState{{Rounds: []run.Round{{Number: 1}}}}}
+	if !reviewJournaled(st) {
+		t.Fatal("a check's recorded round does not count as reviewed")
+	}
+}

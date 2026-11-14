@@ -21,6 +21,7 @@ kind = "agent"
 prompt = """/rhiza-conduct Conduct change set {change} in run {run}: follow rhiza guide conduct.
 
 When the hand-back is rhiza ship merge's main-moved output (origin/main moved past the tested head), bring main into the branch with rhiza ship rebase --no-push: it merges origin/main, settles rendered-only conflicts by rendering again, and pushes nothing. Never run plain rhiza ship rebase. If it leaves a code conflict in progress, have the conflict fixer resolve and commit it (never by hand), then finish: the gate, sign-off, push and a second CI wait on the new head follow."""
+handback = """The run handed change set {change} back to you in run {run}: read {handback} for what failed and why, fix it the way rhiza guide conduct says (spawn the role, never fix it yourself), land and render again on the branch, then finish with rhiza session done."""
 until = "true"
 until_when = "done"
 on.pass = "gate"

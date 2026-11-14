@@ -1,0 +1,230 @@
+# On the conductor default the change set lands on the branch before the
+# first push, so a run whose PR is green and whose main has not moved waits
+# on CI once and pushes once; a second CI round happens only when the merge
+# finds main has moved. No step lands after the merge: the change set is
+# landed on main once the merge is in.
+#
+# The repo runs the built-in ship-change (the conductor default). Its
+# conductor is the fake bin/claude: it records an empty round for the
+# plan, code and qa checks, builds the one leaf with a builder's commit,
+# writes the leaf's Evidence as the conductor's own actor (not the
+# commit's), lands the change set on the branch, renders and commits. On a
+# hand-back it only brings main in with rhiza ship rebase --no-push. origin
+# is a bare repo in $WORK whose pre-receive hook logs each push to the PR
+# branch. The fake gh is run-ship-change.txtar's, and the fake rex runs the
+# tab's command synchronously.
+
+mkdir $HOME/.claude/projects/p
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+chmod 755 origin.git/hooks/pre-receive
+env PATH=$WORK/bin:$PATH
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/ship.sh .rhiza/workflows/ship.sh
+
+# An accepted change set of one leaf, committed on main and pushed.
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+cd $WORK/repo.ship-it
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+cd $WORK/repo
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+
+# One CI wait, one push of the PR branch (the delete at close-out is not
+# logged), one merge, and no land step.
+exec rhiza run status
+stdout '^- conduct \(visit 1\): pass, then gate'
+stdout '^- push \(visit 1\): pass, then wait-ci'
+stdout '^- wait-ci \(visit 1\): pass, then merge'
+stdout '^- merge \(visit 1\): pass, then main-ci'
+! stdout 'wait-ci \(visit 2\)'
+! stdout 'handback'
+! stdout '^- land'
+exec sh -c 'grep -c "^cs/ship-it" $WORK/push.log'
+stdout '^1$'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+exec sh -c 'git show main:.rhiza/rendered/index.md | grep -c first'
+stdout '^[1-9]'
+fold-ok
+
+# When main moves between the CI check and the merge, ship merge merges
+# nothing and the run hands back to conduct, which brings main in without
+# pushing; the gate, the sign-off, the push and a second CI wait on the new
+# head follow, then the merge. Nothing lands on the branch again.
+cd $WORK
+rm push.log
+rm gh.log
+rm pr.created
+rm built
+rm claude.log
+exec git init -q --bare origin2.git
+cp origin.git/hooks/pre-receive origin2.git/hooks/pre-receive
+env ORIGIN=$WORK/origin2.git
+mkdir repo2
+cd repo2
+exec git init -q
+exec git remote add origin $WORK/origin2.git
+exec rhiza init
+exec rhiza project add $WORK/repo2
+mkdir .rhiza/workflows
+cp $WORK/ship.sh .rhiza/workflows/ship.sh
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+cd $WORK/repo2.ship-it
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '"signoff_waiting": true|stopped'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+cd $WORK/repo2
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+exec rhiza run status
+stdout '^- merge \(visit 1\): fail'
+stdout '^- conduct \(visit 2\)'
+stdout '^- wait-ci \(visit 2\): pass, then merge'
+stdout '^- merge \(visit 2\): pass, then main-ci'
+exec sh -c 'grep -c "^cs/ship-it" $WORK/push.log'
+stdout '^2$'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+exec sh -c 'grep -c "^handback" $WORK/claude.log'
+stdout '^1$'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+-- origin.git/hooks/pre-receive --
+#!/bin/sh
+while read old new ref; do
+	case "$ref" in
+	refs/heads/cs/*) [ "$new" = 0000000000000000000000000000000000000000 ] || echo "${ref#refs/heads/}" >> "$WORK/push.log" ;;
+	esac
+done
+-- bin/claude --
+#!/bin/sh
+echo "conduct" >> "$WORK/claude.log"
+echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+if [ -e "$WORK/built" ]; then
+	echo handback >> "$WORK/claude.log"
+	rhiza ship rebase --no-push >&2 || exit 1
+	exit 0
+fi
+touch "$WORK/built"
+for c in plan code qa; do
+	echo '{"findings":[]}' > "$WORK/empty-round.json"
+	RHIZA_CHECK=$c rhiza run findings --check $c "$WORK/empty-round.json" >&2 || exit 1
+done
+echo first > first.txt
+git add first.txt
+git commit -q -m "build first" -m "Change: $RHIZA_CHANGE
+Actor: builder-actor
+Leaf: first" -- first.txt || exit 1
+rhiza add evidence first-verified --field 'statement=first works' --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza link first-verified verifies first --change "$RHIZA_CHANGE" >&2 || exit 1
+rhiza land >&2 || exit 1
+rhiza render >&2 || exit 1
+git add -A -- .rhiza
+git commit -q -m 'Land and render' -m "Change: $RHIZA_CHANGE" || exit 1
+exit 0
+-- bin/rex --
+#!/bin/sh
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="${ORIGIN:-$WORK/origin.git}"
+case "$1 $2" in
+"pr view")
+	if [ "$RHIZA_STEP" = merge ] && [ ! -e "$WORK/moved" ] && [ -n "$ORIGIN" ]; then
+		sha=$(git -C "$o" commit-tree "refs/heads/main^{tree}" -p refs/heads/main -m 'Another change set')
+		git -C "$o" update-ref refs/heads/main "$sha"
+		echo "$sha" > "$WORK/other.sha"
+		touch "$WORK/moved"
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	echo "$head" > "$WORK/landed.sha"
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"lint","state":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/ship-it)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Ship it (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
+-- ship.sh --
+#!/bin/sh
+echo shipped >> "$WORK/ship.log"
+echo shipped >> "$WORK/order.log"
