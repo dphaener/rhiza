@@ -266,3 +266,60 @@ func shipRender(ctx *Ctx, t shipTarget) ([]string, error) {
 	}
 	return shipRenderWith(ctx, bin)
 }
+
+// headIsSelf reports whether bin is the running rhiza (ctx.Self), by path
+// or as the same file.
+func headIsSelf(ctx *Ctx, bin string) bool {
+	if ctx.Self == "" {
+		return false
+	}
+	if ctx.Self == bin {
+		return true
+	}
+	a, err := os.Stat(ctx.Self)
+	if err != nil {
+		return false
+	}
+	b, err := os.Stat(bin)
+	if err != nil {
+		return false
+	}
+	return os.SameFile(a, b)
+}
+
+// runViaHead runs the operation op (land or render) with the head build the
+// run's environment names (SHIP_HEAD_RHIZA), as the same command in the
+// same working directory, when it names one that is not the running
+// binary: a conductor's land and render on a branch then use the branch's
+// own rhiza. It reports false, with nothing run, when the environment
+// names none or the running binary is it, and the caller works in-process.
+// A missing or unbuildable head is an error: nothing was run.
+func runViaHead(ctx *Ctx, op string) ([]byte, bool, error) {
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" || headIsSelf(ctx, bin) {
+		return nil, false, nil
+	}
+	bin, err := shipHeadBuild(ctx, shipTarget{})
+	if err != nil {
+		return nil, false, err
+	}
+	if headIsSelf(ctx, bin) {
+		return nil, false, nil
+	}
+	args := []string{op}
+	switch {
+	case !ctx.ChangeSet.IsZero():
+		args = append(args, "--change", ctx.ChangeSet.String())
+	case ctx.ChangeRef != "":
+		args = append(args, "--change", ctx.ChangeRef)
+	}
+	if ctx.DryRun {
+		args = append(args, "--dry-run")
+	}
+	args = append(args, "--json")
+	out, err := shipRunHead(ctx, bin, args...)
+	if err != nil {
+		return nil, false, err
+	}
+	return out, true, nil
+}

@@ -7,6 +7,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -72,6 +73,15 @@ func openStore(root string) (*store.Store, error) {
 // writes each file whose bytes differ from the disk's, atomically. Render
 // writes no log entry, so --dry-run is a usage error, as for init.
 func runRender(ctx *Ctx, _ any) (any, error) {
+	if out, ok, err := runViaHead(ctx, "render"); err != nil {
+		return nil, err
+	} else if ok {
+		var rr RenderResponse
+		if err := json.Unmarshal(out, &rr); err != nil {
+			return nil, Errorf("render: read the output of the head build: %v", err)
+		}
+		return rr, nil
+	}
 	if ctx.DryRun {
 		return nil, Usagef("render does not take --dry-run: it writes no log entry").WithNext("rhiza render")
 	}
