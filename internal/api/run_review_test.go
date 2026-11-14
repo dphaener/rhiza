@@ -343,7 +343,7 @@ func TestRunFindingsCheckNames(t *testing.T) {
 
 // In a conductor run (conduct declares plan, code and qa) review-check,
 // run from the later gate step, counts each check's latest round under
-// conduct: minor rounds pass, a blocker with no verdict or a confirmed
+// conduct: a declared check with no round fails, minor rounds pass, a blocker with no verdict or a confirmed
 // major fails, a downgraded blocker or dropped major passes.
 func TestReviewCheckConductor(t *testing.T) {
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
@@ -401,8 +401,11 @@ func TestReviewCheckConductor(t *testing.T) {
 			}
 		}
 	}
+	// A declared check with no round fails: the conductor cannot skip one.
+	fail("no rounds", "plan", "code", "qa")
 	findings("plan", fd("f1", "minor"), fd("f2", "nit"))
 	findings("code")
+	fail("qa has no round", "qa")
 	findings("qa", fd("f1", "minor"))
 	pass("minor rounds")
 	findings("code", fd("f1", "blocker"))

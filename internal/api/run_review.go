@@ -1229,17 +1229,19 @@ func (r reviewRun) checksDeclaringStep() (workflow.Step, bool, error) {
 // step declaring checks: for each declared check it counts the blocker and
 // major findings of its latest round, journalled under step, that no
 // critic verdict downgraded below major or dropped, and fails listing them
-// while any is open. It reads only the journal and never the plan-review
+// while any is open. A declared check with no round fails it too, so the
+// conductor cannot skip a check and still pass its gate. It reads only the journal and never the plan-review
 // rounds, and writes nothing.
 func conductorReviewCheck(ctx *Ctx, rr reviewRun, step workflow.Step, req RunReviewCheckRequest) (any, error) {
 	const cmd = "run review-check"
 	resp := RunReviewCheckResponse{Run: rr.id, Confirmed: []RunFinding{}, DryRun: ctx.DryRun}
-	var open []string
+	var open, missing []string
 	sawFinding := false
 	for _, c := range step.Checks {
 		cs, _ := rr.state.Check(step.Name, c.Name)
 		rd, ok := cs.LatestRound()
 		if !ok {
+			missing = append(missing, c.Name)
 			continue
 		}
 		resp.Round = max(resp.Round, rd.Number)
@@ -1261,6 +1263,9 @@ func conductorReviewCheck(ctx *Ctx, rr reviewRun, step workflow.Step, req RunRev
 		}
 		resp.Passed, resp.Confirmed = true, []RunFinding{}
 		return resp, nil
+	case len(missing) > 0:
+		return nil, Errorf("%s: step %s of run %s declares check(s) that recorded no round: %s; each check must record a round with rhiza run findings --check",
+			cmd, step.Name, rr.id, strings.Join(missing, ", ")).WithNext("rhiza run status " + rr.id)
 	case len(open) > 0:
 		return nil, Errorf("%s: step %s of run %s has %d open blocker or major finding(s); fix them and review again:\n%s",
 			cmd, step.Name, rr.id, len(open), strings.Join(open, "\n")).WithNext("rhiza run status " + rr.id)
