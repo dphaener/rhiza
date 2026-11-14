@@ -1,481 +1,106 @@
 name = "ship-change"
 
-# Ship a change set through Rhiza's own build and review: the build
-# workflow's leaves and its render of what the sessions wrote, the review
-# workflow's code check and checks with its sign-off skipped, the pull
-# request opened with the review's summary, CI, and then the owner's
-# sign-off here. rhiza run request-changes goes back into
-# review's checks step (review/review); render-pr then renders again,
-# ship open-pr pushes and replaces the PR body, and the run waits for CI
-# and signs off again.
+# Ship a change set with a conductor: one agent session plans the leaves
+# when there are none, builds and verifies each, runs the plan, code and
+# qa checks, and lands the change set on the branch. The daemon owns the
+# rest: the gate (build-check, review-check, rhiza check and the local
+# gate), the owner's sign-off, the push and the PR, CI at that head, the
+# merge of the tested head, main's CI, close-out, the ship command and the
+# deploy check.
 #
-# A code conflict with main goes to a fixer, never to the owner: ship
-# rebase (and a ship check --settled that finds the PR conflicting) merges
-# origin/main into the branch and leaves a conflict in code as a merge in
-# progress, recorded in the ship state. A triage step, rhiza ship check
-# --conflicts, tells that from any other failure and passes only for a
-# recorded unresolved conflict with fewer than 3 fixes made in the run
-# (merge commits on the branch with the run's Review: trailer, counted run-wide).
-# conflict-fix then resolves and commits the merge (or, on a real design
-# clash, asks one blocking question in its session; its until fails a fixer
-# that ends with the merge still in progress), and the run pushes it
-# plainly through render-pr, local-gate and open-pr, or through
-# gate-rebase-merge and rebase-merge after land, and goes on. Every other failure of those steps ends the run as before.
-[step.build]
-kind = "workflow"
-workflow = "build"
-on.pass = "review"
+# Every red result up to and including the merge hands back to conduct
+# (handback:conduct), at most handback_cap times, then the run parks
+# stopped with an inbox item. The steps after the merge have no on.fail
+# route and no hand-back: nothing on the branch can fix a merged change
+# set, so a red main CI, a failed close-out, ship or deploy-check stops
+# the run.
+handback_cap = 3
 
-[step.review]
-kind = "workflow"
-workflow = "review"
-skip = ["signoff"]
-on.pass = "render-pr"
+[step.conduct]
+kind = "agent"
+prompt = """/rhiza-conduct Conduct change set {change} in run {run}: follow rhiza guide conduct.
 
-# Render again right before every push: review's fixers and verifiers,
-# and its checks, write records too, here and after each
-# request-changes, so the pushed branch still passes rhiza check.
-[step.render-pr]
-kind = "command"
-run = """
-rhiza render &&
-git add -A -- .rhiza/rendered .rhiza/log &&
-{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
-  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
-"""
-max_visits = 10
-on.pass = "local-gate"
+When the hand-back is rhiza ship merge's main-moved output (origin/main moved past the tested head), bring main into the branch with rhiza ship rebase --no-push: it merges origin/main, settles rendered-only conflicts by rendering again, and pushes nothing. Never run plain rhiza ship rebase. If it leaves a code conflict in progress, have the conflict fixer resolve and commit it (never by hand), then finish: the gate, sign-off, push and a second CI wait on the new head follow."""
+handback = """The run handed change set {change} back to you in run {run}: read {handback} for what failed and why, fix it the way rhiza guide conduct says (spawn the role, never fix it yourself), land and render again on the branch, then finish with rhiza session done."""
+until = "true"
+until_when = "done"
+on.pass = "gate"
 
-# While CI is unstable (rhiza health shows why) and the project sets a
-# local gate (rhiza.ship.localGate), the gate runs here, on the run
-# worktree, before the push: open-pr pushes only once it exits 0. A failing
-# gate goes to one fixer, then back through render-pr and the gate. With CI
-# stable, or no gate set, the step passes at once. The same gate runs
-# before every other push too (gate-rebase, gate-land, gate-rebase-merge),
-# and ship rebase runs it again on a head it merged, before pushing that;
-# a head the gate already passed on passes at once. When the gate fails on
-# the merged head, ship rebase pushes nothing and leaves main merged into
-# the branch, unpushed, and fails through rebase-triage and
-# rebase-gate-failed (or, from a wait that found the PR conflicting,
-# through pr-green, conflict-triage and gate-triage) to gate-fix: the
-# fixer's ship gate fails on that merge, and the fix pushes through
-# open-pr without forcing. After land, gate-rebase-merge and rebase-merge
-# fail to their own loop instead (gate-fix-merge, below), which never
-# reaches land again. A running gate writes no progress and may take
-# up to its own hour (it can queue behind other worktrees' suites), so
-# every step that runs it sets a stall above that, or the watchdog's
-# command limit would stop and retry it mid-run.
-[step.local-gate]
-kind = "command"
-run = "rhiza ship gate"
+[[step.conduct.check]]
+name = "plan"
+
+[[step.conduct.check]]
+name = "code"
+
+[[step.conduct.check]]
+name = "qa"
+
+# build-check fails unless every leaf has live Evidence by a verifier who
+# wrote none of its commits; review-check fails on any open blocker or major
+# finding of a declared check; ship gate is the local gate while CI is
+# unstable (the pre-push check runs inside the push step's ship open-pr).
+[step.gate]
+kind = "gate"
+commands = [
+  "rhiza run build-check",
+  "rhiza run review-check",
+  "rhiza check",
+  "rhiza ship gate",
+]
 stall = "70m"
-max_visits = 10
-on.pass = "open-pr"
-on.fail = "gate-fix"
-
-[step.gate-fix]
-kind = "agent"
-prompt = "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix."
-until = "true"
-until_when = "done"
-max_visits = 2
-on.pass = "render-pr"
-
-[step.open-pr]
-kind = "command"
-run = "rhiza ship open-pr"
-max_visits = 10
-on.pass = "wait-pr"
-on.fail = "open-pr-triage"
-
-# open-pr fails on the pre-push check (nothing pushed, the head recorded), a
-# gh, network or git error. Only a head the pre-push check failed on passes
-# here, to gate-fix; anything else ends the run as before.
-[step.open-pr-triage]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 3
-on.pass = "gate-fix"
-
-[step.wait-pr]
-kind = "wait"
-until = "rhiza ship check --settled"
-timeout = "2h"
-interval = "30s"
-max_interval = "2m"
-max_visits = 10
-on.pass = "pr-green"
-
-[step.pr-green]
-kind = "command"
-run = "rhiza ship check"
-max_visits = 10
 on.pass = "signoff"
-on.fail = "conflict-triage"
-
-# The PR's merge with main conflicts in code and waits for a fixer: only
-# then does this pass. Anything else goes on to gate-triage.
-[step.conflict-triage]
-kind = "command"
-run = "rhiza ship check --conflicts"
-max_visits = 8
-on.pass = "conflict-fix"
-on.fail = "gate-triage"
-
-# A ship check --settled that found the PR conflicting merged main into the
-# branch cleanly, but the local gate failed on that merge: it is left
-# unpushed, and ship check fails on it. Only that passes here, to gate-fix;
-# anything else (red CI, an infra failure, a fourth conflict) goes on to
-# ci-triage as a failed check always did.
-[step.gate-triage]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 8
-on.pass = "gate-fix"
-on.fail = "ci-triage"
-
-# One fixer on the run worktree, with the merge of origin/main into the
-# branch left in progress. It commits the merge and never pushes: render-pr
-# and open-pr push it plainly, and the run waits for CI again.
-[step.conflict-fix]
-kind = "agent"
-prompt = "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: follow rhiza guide conflict-fix."
-until = "! git rev-parse --verify --quiet MERGE_HEAD"
-until_when = "done"
-max_visits = 3
-on.pass = "render-pr"
-
-# A red PR whose CI logs named failing tests goes to one fixer on the run
-# worktree, then back through render-pr, the push and CI. ci-triage passes
-# only when the head's latest ship check recorded a failing test; an infra
-# or unparsable failure (no failing test) goes to wait-ci-rerun instead of
-# ending the run. ci-fix runs at most twice, so a third red head with
-# failing tests fails the run, and ci-triage's output names the failing
-# tests.
-[step.ci-triage]
-kind = "command"
-run = "rhiza ship check --test-failures"
-max_visits = 3
-on.pass = "ci-fix"
-on.fail = "wait-ci-rerun"
-
-# The failing ship check recorded the red head and its check runs (red_head,
-# red_checks). With --rerun-infra the wait reruns the red head's failed jobs
-# itself, with backoff (5m, 10m, 20m, then every 30m), and passes once CI
-# moved past the red head (another head, or a check run with a new ID or
-# attempt) and has finished, then pr-green checks the head again, and
-# signoff follows (after a rebase, the rebased-green path). A failing test
-# in a rerun settles it too, and pr-green sends that to ci-fix. While it
-# waits, its output names the infra failure and the next rerun's time; on
-# the 6h timeout the run ends with that line in its detail.
-[step.wait-ci-rerun]
-kind = "wait"
-until = "rhiza ship check --settled --changed --rerun-infra"
-timeout = "6h"
-interval = "30s"
-max_interval = "2m"
-max_visits = 3
-on.pass = "pr-green"
-
-[step.ci-fix]
-kind = "agent"
-prompt = "/rhiza-ci-fix Fix the CI findings of change set {change} in run {run}: follow rhiza guide ci-fix."
-until = "true"
-until_when = "done"
-max_visits = 2
-on.pass = "render-pr"
+on.fail = "handback:conduct"
 
 [step.signoff]
 kind = "signoff"
-max_visits = 8
-on.pass = "gate-rebase"
-on.changes = "review/review"
+on.pass = "push"
+on.changes = "handback:conduct"
 
-[step.gate-rebase]
-kind = "command"
-run = "rhiza ship gate"
-stall = "70m"
-max_visits = 6
-on.pass = "rebase"
-on.fail = "gate-fix"
-
-[step.rebase]
-kind = "command"
-run = "rhiza ship rebase"
-stall = "70m"
-max_visits = 6
-on.pass = "wait-rebased"
-on.fail = "rebase-triage"
-
-# ship rebase fails on a conflict in code (the merge of main is left in
-# progress), on a gate failing on the merged head, or on a fetch, push, hook
-# or refusal. A conflict goes to the conflict fixer; a failing gate passes
-# rebase-gate-failed (the branch is at the unpushed merge ship rebase left)
-# and goes to gate-fix; anything else ends the run there.
-[step.rebase-triage]
-kind = "command"
-run = "rhiza ship check --conflicts"
-max_visits = 6
-on.pass = "conflict-fix"
-on.fail = "rebase-gate-failed"
-
-[step.rebase-gate-failed]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 3
-on.pass = "gate-fix"
-
-[step.wait-rebased]
-kind = "wait"
-until = "rhiza ship check --settled"
-timeout = "2h"
-interval = "30s"
-max_interval = "2m"
-max_visits = 6
-on.pass = "rebased-green"
-
-[step.rebased-green]
-kind = "command"
-run = "rhiza ship check"
-max_visits = 6
-on.pass = "gate-land"
-on.fail = "conflict-triage"
-
-[step.gate-land]
-kind = "command"
-run = "rhiza ship gate"
-stall = "70m"
-max_visits = 9
-on.pass = "land"
-on.fail = "gate-fix"
-
-[step.land]
-kind = "command"
-run = "rhiza ship land"
-max_visits = 4
-on.pass = "wait-landed"
-on.fail = "land-triage"
-
-# land fails on the pre-push check of its push (the change set is landed,
-# the head recorded), on a model conflict (rhiza land refused it because
-# another change set wrote the same node field first, recorded in the ship
-# state) or on gh, network or git. A failed pre-push check passes to
-# gate-fix-merge; anything else goes to land-conflict-triage, which passes
-# only for a recorded model conflict, so a gh, git or network failure still
-# ends the run.
-[step.land-triage]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 4
-on.pass = "gate-fix-merge"
-on.fail = "land-conflict-triage"
-
-# Passes only for a model conflict recorded at the current head with fewer
-# than 3 model-conflict fixes made: a 4th conflict ends the run here, on
-# ship check's "3 fixes made" reason, not on a cap.
-[step.land-conflict-triage]
-kind = "command"
-run = "rhiza ship check --model-conflict"
-max_visits = 4
-on.pass = "model-conflict-fix"
-on.fail = "land-main-conflict-triage"
-
-# ship land fails when the PR head's rhiza refuses to land (exit 3) because a
-# node the change set edits changed on main: it merges origin/main into the
-# branch and records a conflict in code, left as a merge in progress. Only
-# that passes here, to conflict-fix (not conflict-fix-landed: nothing landed),
-# which resolves the merge; the run then pushes it through render-pr and
-# lands again. Any other land failure ends the run here, as it always did.
-[step.land-main-conflict-triage]
-kind = "command"
-run = "rhiza ship check --conflicts"
-max_visits = 4
-on.pass = "conflict-fix"
-
-# One fixer on the run worktree: it moves each stale update onto the node's
-# landed version and commits, never pushing. The run goes back through
-# gate-land, which pushes the fix once and lands again.
-[step.model-conflict-fix]
-kind = "agent"
-prompt = "/rhiza-conflict-fix Fix the model conflict that refused the land of change set {change} in run {run}: follow rhiza guide conflict-fix."
-until = "true"
-until_when = "done"
-max_visits = 3
-on.pass = "gate-land"
-
-[step.wait-landed]
-kind = "wait"
-until = "rhiza ship check --settled"
-timeout = "2h"
-interval = "30s"
-max_interval = "2m"
-on.pass = "landed-green"
-
-# landed-green is entered once from wait-landed and once more from each of
-# landed-infra-wait's returns (max_visits 3).
-[step.landed-green]
-kind = "command"
-run = "rhiza ship check"
-max_visits = 4
-on.pass = "gate-rebase-merge"
-on.fail = "conflict-triage-landed"
-
-[step.gate-rebase-merge]
-kind = "command"
-run = "rhiza ship gate"
-stall = "70m"
-max_visits = 6
-on.pass = "rebase-merge"
-on.fail = "gate-fix-merge"
-
-# After land the same fixer resolves a conflict, and the merge goes through
-# gate-rebase-merge and is pushed by rebase-merge, so nothing lands twice. A failure that is no conflict passes on to rebase-merge-gate-failed,
-# which passes only for a gate that failed on the head ship rebase merged
-# (below); a red CI or any other failure still ends the run there, and so
-# does a fourth conflict.
-[step.conflict-triage-landed]
-kind = "command"
-run = "rhiza ship check --conflicts"
-max_visits = 6
-on.pass = "conflict-fix-landed"
-on.fail = "rebase-merge-gate-failed"
-
-[step.conflict-fix-landed]
-kind = "agent"
-prompt = "/rhiza-conflict-fix Resolve the merge conflicts of change set {change} in run {run}: it landed, and origin/main was merged into the branch: follow rhiza guide conflict-fix."
-until = "! git rev-parse --verify --quiet MERGE_HEAD"
-until_when = "done"
-max_visits = 3
-on.pass = "gate-rebase-merge"
-
-[step.rebase-merge]
-kind = "command"
-run = "rhiza ship rebase"
-stall = "70m"
-max_visits = 6
-on.pass = "wait-rebased-merge"
-on.fail = "conflict-triage-landed"
-
-# After land a failing gate has its own fix loop, which never goes back
-# through the pre-land path, the sign-off or land (land runs once: the
-# change set is landed). A gate failing on the merged head passes
-# rebase-merge-gate-failed, and either failure goes to gate-fix-merge, then
-# render-merge, the gate and push-merge. The push is ship open-pr, not ship
-# rebase: the branch already holds origin/main, and the fix descends from
-# the pushed head or the kept merge, so it pushes without forcing. Every
-# step here sets max_visits: a third failing gate fails the run at
-# gate-fix-merge's cap, with the gate's output, and no sign-off follows.
-[step.rebase-merge-gate-failed]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 3
-on.pass = "gate-fix-merge"
-on.fail = "landed-infra-triage"
-
-# After land, a red landed head (landed-green, rebased-merge-green) that is
-# no conflict and no failing gate comes here: a red with no failing test is
-# a CI infra outage, so the run waits for it to clear, rerunning the failed
-# jobs with backoff, then checks the head again at landed-green (which goes
-# on through gate-rebase-merge and rebase-merge to the merge). A red with a
-# failing test, or any other failure, fails the triage and ends the run as
-# before. The wait's timeout ends the run with the infra failure in its
-# detail.
-[step.landed-infra-triage]
-kind = "command"
-run = "rhiza ship check --infra"
-max_visits = 3
-on.pass = "landed-infra-wait"
-
-[step.landed-infra-wait]
-kind = "wait"
-until = "rhiza ship check --settled --changed --rerun-infra"
-timeout = "6h"
-interval = "30s"
-max_interval = "2m"
-max_visits = 3
-on.pass = "landed-green"
-
-[step.gate-fix-merge]
-kind = "agent"
-prompt = "/rhiza-gate-fix Fix the failing local gate of change set {change} in run {run}: follow rhiza guide gate-fix."
-until = "true"
-until_when = "done"
-max_visits = 2
-on.pass = "render-merge"
-
-[step.render-merge]
-kind = "command"
-run = """
-rhiza render &&
-git add -A -- .rhiza/rendered .rhiza/log &&
-{ git diff --cached --quiet -- .rhiza/rendered .rhiza/log ||
-  git commit -q -m 'Render after the review' -m "Change: $RHIZA_CHANGE" -- .rhiza/rendered .rhiza/log; }
-"""
-max_visits = 3
-on.pass = "gate-push-merge"
-
-[step.gate-push-merge]
-kind = "command"
-run = "rhiza ship gate"
-stall = "70m"
-max_visits = 3
-on.pass = "push-merge"
-on.fail = "gate-fix-merge"
-
-[step.push-merge]
+[step.push]
 kind = "command"
 run = "rhiza ship open-pr"
-max_visits = 3
-on.pass = "wait-rebased-merge"
-on.fail = "push-merge-triage"
+on.pass = "wait-ci"
+on.fail = "handback:conduct"
 
-[step.push-merge-triage]
-kind = "command"
-run = "rhiza ship gate --failed"
-max_visits = 3
-on.pass = "gate-fix-merge"
-
-[step.wait-rebased-merge]
+# Waits for CI at the pushed head to settle, green or red, so a red CI
+# ends the wait as soon as it finishes rather than at the timeout. A PR
+# GitHub reports conflicting has no CI: --no-rebase settles the wait with
+# nothing merged or pushed, so the merge step's ship check fails on the
+# conflict and hands back to conduct, which brings main in with ship
+# rebase --no-push and goes through gate, signoff and push again. A
+# timeout hands back.
+[step.wait-ci]
 kind = "wait"
-until = "rhiza ship check --settled"
+until = "rhiza ship check --settled --no-rebase"
 timeout = "2h"
 interval = "30s"
 max_interval = "2m"
-max_visits = 6
-on.pass = "rebased-merge-green"
-
-[step.rebased-merge-green]
-kind = "command"
-run = "rhiza ship check"
-max_visits = 6
 on.pass = "merge"
-on.fail = "conflict-triage-landed"
+on.timeout = "handback:conduct"
 
-# Merges nothing when origin/main moved after the head's checks passed:
-# the step fails and the run gates, rebases and waits on the new head again.
+# Only pass and fail. Ship check first: it passes only when every check is
+# green and records the head the merge tests against, so a settled red CI
+# (or a PR GitHub reports conflicting, which --no-rebase fails on without
+# merging main) fails here and hands back to conduct with its output. A draft or a merge GitHub refused stops the run
+# (the stop exit); main having moved past the tested head, or a gh, fetch
+# or git error, hands back to conduct with ship merge's output.
 [step.merge]
 kind = "command"
-run = "rhiza ship merge"
-max_visits = 6
-on.pass = "wait-main"
-on.fail = "gate-rebase-merge"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "main-ci"
+on.fail = "handback:conduct"
 
-# Main is confirmed locally with git, not by waiting for CI on it, when the
-# merge commit's tree equals the tested head's: the wait passes at its first
-# check. When main moved between the checks and the merge the trees differ,
-# and the wait dispatches CI on the merge commit (once) and waits for it;
-# main-green then stops, with a stop: line, if it failed after a rerun.
-[step.wait-main]
+# Main's CI is one step. When the merge commit's tree equals the tested
+# head's, the check passes at its first run; when main moved between the
+# check and the merge it dispatches CI on the merge commit and the wait
+# polls until that settles. A red main stops the run (the stop exit says
+# CI failed on main after this change set's merge), and so does a timeout.
+[step.main-ci]
 kind = "wait"
-until = "rhiza ship check --main --settled"
+until = "rhiza ship check --main"
 timeout = "1h"
 interval = "30s"
 max_interval = "2m"
-on.pass = "main-green"
-
-[step.main-green]
-kind = "command"
-run = "rhiza ship check --main"
 on.pass = "close-out"
 
 [step.close-out]
@@ -490,8 +115,7 @@ on.pass = "deploy-check"
 
 # After the ship command: polls the repo's deploy health URL (daemon
 # setting rhiza.ship.deployUrl) until it answers 200 or rhiza.ship.deployTimeout
-# passes, and fails the run with the last status it saw. With no URL set the
-# step passes at once.
+# passes. With no URL set the step passes at once.
 [step.deploy-check]
 kind = "command"
 run = "rhiza ship deploy"

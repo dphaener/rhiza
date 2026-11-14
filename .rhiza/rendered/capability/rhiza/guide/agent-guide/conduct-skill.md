@@ -23,6 +23,7 @@ Rhiza ships a conduct guide topic and rhiza-conduct skill for the conductor of a
 
 ### In
 
+- depends-on [builtin-conductor-default](../../workflows/built-in-workflows/builtin-conductor-default.md)
 - verifies [conduct-skill-verified](../../../../evidence/conduct-skill-verified.md)
 - verifies [conduct-skill-qa-1](../../../../evidence/conduct-skill-qa-1.md)
 - verifies [conduct-skill-verified-2](../../../../evidence/conduct-skill-verified-2.md)

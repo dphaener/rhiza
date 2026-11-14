@@ -43,27 +43,38 @@ func TestResumableOnlyAcceptedOrLandedPastLand(t *testing.T) {
 	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
 	states := map[string]string{}
 	var runs []run.Journal
-	add := func(cs, state, workflow string, land bool) {
+	add := func(cs, state, workflow string, land bool, steps ...string) {
 		states[cs] = state
 		es := []run.Entry{{Type: run.TypeStarted, At: now.Add(-time.Hour), Started: &run.Started{Change: cs, Workflow: workflow}}, proc}
 		if land {
 			es = append(es, run.Entry{Type: run.TypeEntered, Step: "land"})
 		}
+		for _, s := range steps {
+			es = append(es, run.Entry{Type: run.TypeEntered, Step: s})
+		}
 		runs = append(runs, run.Journal{ID: "run-" + cs, Entries: es})
 	}
 	add("accepted", "accepted", "ship-change", false)
-	add("landed-past", "landed", "ship-change", true)
+	// The classic workflow lands in a land step; the conductor default
+	// (ship-change) has none, so its merge is its landing.
+	add("landed-past", "landed", "ship-change-classic", true)
 	add("landed-never", "landed", "ship-change", false)
+	add("landed-merge", "landed", "ship-change", false, "merge")
+	add("landed-incl", "landed", "ship-change", false, "ship-change/merge")
+	add("landed-check", "landed", "ship-change", false, "ship-change/merge-check", "premerge")
+	add("landed-closeout", "landed", "ship-change", false, "merge", "main-ci", "close-out")
+	add("landed-gate", "landed", "ship-change", false, "conduct", "gate", "push")
 	add("landed-plan", "landed", "plan", false)
 	add("withdrawn-plan", "withdrawn", "plan", false)
 	add("rejected-plan", "rejected", "plan", false)
 	add("superseded-plan", "superseded", "plan", false)
 	for _, s := range []string{"rejected", "withdrawn", "proposed", "draft"} {
-		add(s, s, "ship-change", true)
+		add(s, s, "ship-change-classic", true)
 	}
 	got := Resumable(runs, "h", dead, func(string) bool { return false }, func(cs string) string { return states[cs] }, now)
-	if len(got) != 3 || got[0] != "run-accepted" || got[1] != "run-landed-past" || got[2] != "run-landed-plan" {
-		t.Fatalf("Resumable = %v, want [run-accepted run-landed-past run-landed-plan]", got)
+	want := []string{"run-accepted", "run-landed-past", "run-landed-merge", "run-landed-incl", "run-landed-closeout", "run-landed-plan"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Resumable = %v, want %v", got, want)
 	}
 }
 

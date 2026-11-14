@@ -375,11 +375,11 @@ func builtinResolver(name string) ([]byte, error) {
 }
 
 func TestShipChangeBuiltin(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -433,7 +433,7 @@ func TestShipChangeBuiltin(t *testing.T) {
 			t.Errorf("%s = %+v; want a command running ship check --conflicts, pass %q, fail %q", n, st, want.pass, want.fail)
 		}
 	}
-	checkShipChangePrePushFix(t, "ship-change", def)
+	checkShipChangePrePushFix(t, "ship-change-classic", def)
 	// Both fixers' merges reach their push through its local gate.
 	for n, next := range map[string]string{"conflict-fix": "render-pr", "conflict-fix-landed": "gate-rebase-merge"} {
 		fx := def.Steps[n]
@@ -1894,7 +1894,7 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 			}
 		}
 	}
-	ship := load("ship-change")
+	ship := load("ship-change-classic")
 	checks := 0
 	for name, s := range ship.Steps {
 		cmd := s.Run + s.Until
@@ -1918,11 +1918,11 @@ func TestPlanRerunsCIFlakes(t *testing.T) {
 // land it is gate-fix-merge, whose loop never reaches land or a pre-land
 // step again.
 func TestShipChangeLocalGate(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2144,11 +2144,11 @@ func TestKindDocsCoverKinds(t *testing.T) {
 // passes only for a recorded conflict, to a fixer that returns through
 // gate-land.
 func TestShipChangeModelConflictFix(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2176,11 +2176,11 @@ func TestShipChangeModelConflictFix(t *testing.T) {
 }
 
 func TestShipChangeLandedInfraWaitScript(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	builtin, err := ParseWith("ship-change", data, builtinResolver)
+	builtin, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2368,11 +2368,11 @@ func TestBuiltinPromptsDoneOwnCommand(t *testing.T) {
 // topic, with no session-done, Checks: or trailer text left in it, and
 // Rhiza's own ship-change and docs workflows use the same lines.
 func TestShipFixPromptsOneLine(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2408,7 +2408,7 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 	if agents != len(want) {
 		t.Errorf("builtin ship-change has %d agent steps; want %d", agents, len(want))
 	}
-	for _, file := range []string{"ship-change", "docs"} {
+	for _, file := range []string{"ship-rhiza", "docs"} {
 		src, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", file+".toml"))
 		if err != nil {
 			t.Fatal(err)
@@ -2434,11 +2434,11 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 // on.fail, taken only for a merge behind main or conflicting, is the one
 // way back to gate-rebase-merge.
 func TestShipChangeMergeRefusedStops(t *testing.T) {
-	data, ok := Builtin("ship-change")
+	data, ok := Builtin("ship-change-classic")
 	if !ok {
 		t.Fatal("no ship-change built-in")
 	}
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2472,8 +2472,8 @@ func TestWaitMaxInterval(t *testing.T) {
 }
 
 func TestMaxIntervalShipChangeCIWaits(t *testing.T) {
-	data, _ := Builtin("ship-change")
-	def, err := ParseWith("ship-change", data, builtinResolver)
+	data, _ := Builtin("ship-change-classic")
+	def, err := ParseWith("ship-change-classic", data, builtinResolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2833,5 +2833,146 @@ func TestAgentStepChecks(t *testing.T) {
 				t.Errorf("error %v; want %q", err, tt.want)
 			}
 		})
+	}
+}
+
+// TestBuiltinClassicUnchanged pins ship-change-classic to today's
+// ship-change (a golden copy from before milestone 36), apart from its name.
+func TestBuiltinClassicUnchanged(t *testing.T) {
+	golden, err := os.ReadFile(filepath.Join("testdata", "ship-change-pre-m36.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := Builtin("ship-change-classic")
+	if !ok {
+		t.Fatal("no built-in ship-change-classic")
+	}
+	rest := func(b []byte) string {
+		_, after, _ := strings.Cut(string(b), "\n")
+		return after
+	}
+	if !strings.HasPrefix(string(got), "name = \"ship-change-classic\"\n") {
+		t.Errorf("ship-change-classic starts %q; want its name line", strings.SplitN(string(got), "\n", 2)[0])
+	}
+	if !strings.HasPrefix(string(golden), "name = \"ship-change\"\n") {
+		t.Errorf("golden starts %q; want the ship-change name line", strings.SplitN(string(golden), "\n", 2)[0])
+	}
+	if rest(got) != rest(golden) {
+		t.Error("ship-change-classic.toml differs from testdata/ship-change-pre-m36.toml beyond the name line")
+	}
+	if !slices.Contains(BuiltinNames(), "ship-change-classic") {
+		t.Fatalf("BuiltinNames = %v; want it to list ship-change-classic", BuiltinNames())
+	}
+	if _, err := ParseWith("ship-change-classic", got, builtinResolver); err != nil {
+		t.Errorf("ship-change-classic does not parse: %v", err)
+	}
+}
+
+// The builtin ship-change is the conductor default: ten steps, the conduct
+// step declaring plan, code and qa, a gate step, every red up to the merge
+// handing back to conduct, and nothing after the merge able to.
+func TestBuiltinShipChange(t *testing.T) {
+	data, ok := Builtin("ship-change")
+	if !ok {
+		t.Fatal("no ship-change built-in")
+	}
+	def, err := ParseWith("ship-change", data, builtinResolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"conduct", "gate", "signoff", "push", "wait-ci", "merge", "main-ci", "close-out", "ship", "deploy-check"}
+	if got := def.Order; strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("steps = %v; want %v", got, want)
+	}
+	for _, s := range def.Steps {
+		if s.Kind == KindLeaves || s.Kind == KindChecks {
+			t.Errorf("step %s is a %s step", s.Name, s.Kind)
+		}
+	}
+	conduct := def.Steps["conduct"]
+	var checks []string
+	for _, c := range conduct.Checks {
+		checks = append(checks, c.Name)
+	}
+	if strings.Join(checks, ",") != "plan,code,qa" {
+		t.Errorf("conduct checks = %v", checks)
+	}
+	if !strings.Contains(conduct.Prompt, "rhiza ship rebase --no-push") {
+		t.Errorf("conduct prompt does not tell the conductor to run rhiza ship rebase --no-push: %q", conduct.Prompt)
+	}
+	gate := def.Steps["gate"]
+	if gate.Kind != KindGate {
+		t.Errorf("gate kind = %s", gate.Kind)
+	}
+	wantCmds := []string{"rhiza run build-check", "rhiza run review-check", "rhiza check", "rhiza ship gate"}
+	if strings.Join(gate.Commands, "|") != strings.Join(wantCmds, "|") {
+		t.Errorf("gate commands = %v", gate.Commands)
+	}
+	back := HandbackPrefix + "conduct"
+	for _, name := range want[:6] {
+		s := def.Steps[name]
+		for o, target := range s.On {
+			if o == OutcomePass {
+				continue
+			}
+			if target != back {
+				t.Errorf("step %s on.%s = %q; want %q", name, o, target, back)
+			}
+		}
+		if len(s.On) < 2 && name != "conduct" {
+			t.Errorf("step %s has no failure route", name)
+		}
+	}
+	if got := def.Steps["merge"].On; len(got) != 2 || got[OutcomePass] != "main-ci" || got[OutcomeFail] != back {
+		t.Errorf("merge routes = %v; want only pass and fail", got)
+	}
+	// A settled red CI ends the wait at once, not at the timeout: wait-ci
+	// waits only for CI to settle, and the merge step's ship check fails on
+	// a red and hands back before anything is merged. A conflicting PR
+	// settles the wait with nothing merged or pushed (--no-rebase), and the
+	// merge step's ship check fails on it, so conduct brings main in and
+	// the new head goes through gate, signoff and push.
+	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled --no-rebase" || s.On[OutcomeTimeout] != back {
+		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on rhiza ship check --settled --no-rebase timing out to %s", s.Kind, s.Until, s.On, back)
+	}
+	if s := def.Steps["merge"]; s.Run != "rhiza ship check --no-rebase && rhiza ship merge" {
+		t.Errorf("merge runs %q; want rhiza ship check --no-rebase && rhiza ship merge, so a settled red or a conflict hands back", s.Run)
+	}
+	// Classic still merges main into the branch from its wait.
+	if data, ok := Builtin("ship-change-classic"); !ok {
+		t.Error("no builtin ship-change-classic")
+	} else if classic, err := ParseWith("ship-change-classic", data, builtinResolver); err != nil {
+		t.Error(err)
+	} else {
+		for name, s := range classic.Steps {
+			if strings.Contains(s.Until+s.Run, "--no-rebase") {
+				t.Errorf("ship-change-classic step %s runs %q%q; classic rebases from its wait", name, s.Until, s.Run)
+			}
+		}
+		if s := classic.Steps["wait-pr"]; s.Until != "rhiza ship check --settled" {
+			t.Errorf("ship-change-classic wait-pr until %q; want rhiza ship check --settled", s.Until)
+		}
+	}
+	if def.Steps["push"].On[OutcomePass] != "wait-ci" {
+		t.Errorf("push passes to %q", def.Steps["push"].On[OutcomePass])
+	}
+	if s := def.Steps["main-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --main" {
+		t.Errorf("main-ci = kind %s until %q", s.Kind, s.Until)
+	}
+	for _, name := range want[6:] {
+		s := def.Steps[name]
+		for o, target := range s.On {
+			if o != OutcomePass || strings.HasPrefix(target, HandbackPrefix) {
+				t.Errorf("step %s has route on.%s = %q after the merge", name, o, target)
+			}
+		}
+	}
+	for name, cmd := range map[string]string{"close-out": "rhiza ship close-out", "ship": "rhiza ship command", "deploy-check": "rhiza ship deploy"} {
+		if def.Steps[name].Run != cmd {
+			t.Errorf("step %s runs %q; want %q", name, def.Steps[name].Run, cmd)
+		}
+	}
+	if def.HandbackCap != 3 {
+		t.Errorf("handback_cap = %d; want 3", def.HandbackCap)
 	}
 }

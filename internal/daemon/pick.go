@@ -206,7 +206,7 @@ func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked
 		switch state(st.Change) {
 		case "accepted":
 		case "landed":
-			if !st.IsPlanRun() && st.Visits["land"] == 0 {
+			if !st.IsPlanRun() && !st.PastLanding() {
 				continue
 			}
 		default:

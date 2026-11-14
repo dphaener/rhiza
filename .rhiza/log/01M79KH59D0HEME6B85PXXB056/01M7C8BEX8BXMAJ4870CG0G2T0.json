@@ -1,0 +1,30 @@
+{
+  "actor": "01M7C89DEZTHAAHZHCXZDVV4J3",
+  "after": [
+    "01M7C870MBGA69ZR12416TN0R2"
+  ],
+  "at": "2026-11-14T05:26:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestIncludeHandbackTarget passes: a workflow including one whose step has on.fail = \"handback:conduct\" parses with that included step's on.fail = \"handback:<workflow>/conduct\", and the included conduct step present as <workflow>/conduct; an included handback:nosuch is refused with an error naming nosuch and the included workflow; done and failed targets still map as today. go test -trimpath ./internal/run -run TestHandbackIncluded passes: a run on such an including workflow whose included step fails hands back to <workflow>/conduct and continues from it. Touches internal/workflow/include.go, internal/workflow/include_test.go and internal/run/include_test.go.",
+          "statement": "A handback:<step> route inside an included workflow keeps pointing at the included step: when a workflow step includes another, include.go's inlined.outer maps handback:<step> to handback:<workflow>/<step> (as it prefixes a plain step target), instead of prefixing the whole target into <workflow>/handback:<step>; a handback naming a step the included workflow does not have is refused at parse, naming the step and the workflow."
+        },
+        "handle": "handback-target-survives-include",
+        "id": "01M7BYHZXGY011H2GCS1TEZKWW",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7BYHZXGY011H2GCS1CZXX49",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C8BEX8BXMAJ4870CG0G2T0",
+  "type": "ops",
+  "v": 1
+}

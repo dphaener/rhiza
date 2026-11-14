@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C366TT1HMVJ29DRT88C3B7",
+  "after": [
+    "01M7C375DTFYMCDH29V6601VWJ"
+  ],
+  "at": "2026-11-14T03:58:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f2ea977fa re-ran the Checks block and acceptance: go test -trimpath ./internal/run -run TestPastLanding, ./internal/daemon -run TestResumableOnlyAcceptedOrLandedPastLand, ./internal/api -run 'TestRunResume|TestInbox' and -run TestRunResumeLandedPastMerge (PASS), ./cmd/rhiza -run TestScripts/inbox-landed-resumable all exit 0; rhiza ship generate and rhiza render exit 0. Diff adds State.PastLanding (land/merge by name or last segment after /), used by run resume, daemon Resumable and inbox gone; tests cover merge, ship-change/merge, ship-change/land picked/resumed/not skipped and ship-change/merge-check, premerge, landing refused. The api test sits in dispatch_request_test.go beside the other TestRunResume tests rather than run_test.go. No stubs or TODOs, nothing outside the leaf."
+        },
+        "handle": "landed-run-resumable-past-merge-verified",
+        "id": "01M7C39G1QZFEB64HYCAJDSM38",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C39G1QZFEB64HYC9BFPERB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C39G1QZFEB64HYC9BFPERB",
+        "id": "01M7C39G60NBGNT0Q0G847W5DT",
+        "link": "01M7C39G60NBGNT0Q0G63XHP7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AP37F8KV6E7D4SWA7XTBW2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C39G8G8PPMG7DG5S015D4G",
+  "type": "ops",
+  "v": 1
+}

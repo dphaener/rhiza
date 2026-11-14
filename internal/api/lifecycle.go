@@ -24,6 +24,7 @@ package api
 // too. Both refusals exit 3, before anything is written.
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -178,6 +179,18 @@ func legalNext(c changeset.ChangeSet) string {
 
 // run checks the move and writes its entry.
 func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
+	if v.name == "land" {
+		if out, ok, err := runViaHead(ctx, "land"); err != nil {
+			return nil, err
+		} else if ok {
+			var resp LifecycleResponse
+			if err := json.Unmarshal(out, &resp); err != nil {
+				return nil, Errorf("land: read the output of the head build: %v", err)
+			}
+			resp.Verb = v.done
+			return resp, nil
+		}
+	}
 	var rule, reason, base string
 	switch r := req.(type) {
 	case DecisionRequest:

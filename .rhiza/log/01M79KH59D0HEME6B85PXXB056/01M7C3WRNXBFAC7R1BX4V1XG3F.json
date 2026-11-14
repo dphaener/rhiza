@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C3R572YXMGMWXXDAPMEXCM",
+  "after": [
+    "01M7C39G8G8PPMG7DG5S015D4G"
+  ],
+  "at": "2026-11-14T04:08:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At eebc7598d re-ran the commit's Checks: go test -trimpath ./internal/api -run TestLandRenderHeadBuild (exit 0, all 5 subtests pass: named head binary execs 'render --json' and 'land --json' in ctx.Root with nothing rendered or landed in-process; SHIP_HEAD_RHIZA unset and running binary == head both stay in-process; missing binary with SHIP_HEAD_BUILD runs the build first; missing with empty SHIP_HEAD_BUILD fails render and land with 'not a built rhiza' and no exec or write), go test -trimpath ./internal/api -run 'TestShip|Lifecycle|TestRender|Land' (exit 0), rhiza ship generate (exit 0), rhiza render (exit 0). Read the diff: runViaHead in internal/api/ship_build.go resolves the head through shipHeadBuild and runs it via shipRunHead before any in-process work in runRender (render.go) and lifecycleVerb.run for land (lifecycle.go); headIsSelf compares by path and os.SameFile, so the child (Self == SHIP_HEAD_RHIZA) runs in-process with no recursion. Code changes touch only the four named files plus the builder's actor log/rendered record; no TODOs or stubs; tests use a fake Exec only."
+        },
+        "handle": "conductor-land-render-head-build-verified",
+        "id": "01M7C3WRB6C4BMQNPDRG7RVJY2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C3WRB6C4BMQNPDREQ1FDNA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C3WRB6C4BMQNPDREQ1FDNA",
+        "id": "01M7C3WRG7XR0DP954932JCBF2",
+        "link": "01M7C3WRG7XR0DP954923SRB35",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7APRTE58PCDAC5VEJWK8Z59",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C3WRNXBFAC7R1BX4V1XG3F",
+  "type": "ops",
+  "v": 1
+}

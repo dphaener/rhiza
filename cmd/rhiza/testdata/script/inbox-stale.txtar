@@ -72,13 +72,13 @@ for s in accepted landed withdrawn rejected superseded; do
   S=$(echo $s | tr a-z A-Z)
   c=$(cat id.f$s)
   cat > .git/rhiza/runs/F-$S.jsonl <<J
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"$c"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
 J
   c=$(cat id.g$s)
   cat > .git/rhiza/runs/G-$S.jsonl <<J
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"$c"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"$host","pid":999999}}
 {"type":"daemon-resumed","at":"2026-01-01T04:00:00Z","detail":"resumed by the daemon"}
@@ -86,18 +86,18 @@ J
 J
 done
 cat > .git/rhiza/runs/F-UNKNOWN.jsonl <<J
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"CSUNKNOWN"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"CSUNKNOWN"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"finished","at":"2026-01-01T03:00:00Z","step":"build","end":"failed","detail":"boom"}
 J
 c=$(cat id.flanded)
 cat > .git/rhiza/runs/Q-LANDED.jsonl <<J
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"$c"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
 {"type":"blocked","at":"2026-01-01T01:00:00Z","step":"build","session":"S1","block":{"kind":"question","question":"Which store?","tab_title":"leaf one","tab_block":"block:b1"}}
 J
 cat > .git/rhiza/runs/S-LANDED.jsonl <<J
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change","definition":"","change":"$c"}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"signoff","started":{"workflow":"ship-change-classic","definition":"","change":"$c"}}
 {"type":"entered","at":"2026-01-01T00:00:01Z","step":"signoff","visit":1}
 {"type":"stopped","at":"2026-01-01T02:00:00Z","step":"signoff","detail":"waiting for the owner's sign-off: rhiza run approve | rhiza run request-changes <file>; rhiza run summary"}
 J

@@ -44,7 +44,8 @@ rhiza workflow ls
 - `plan` turns a request into a draft change set with leaves, and has it reviewed.
 - `build` builds each leaf with a builder and has a verifier check it.
 - `review` runs the review checks on what was built and fixes what they find.
-- `ship-change` is `build` and then `review`, then opens the pull request, waits for CI, merges, and cleans up.
+- `ship-change` is the conductor default: one conduct session plans, builds, verifies and checks the change set, then ten steps (`conduct`, `gate`, `signoff`, `push`, `wait-ci`, `merge`, `main-ci`, `close-out`, `ship`, `deploy-check`) gate it, wait for your sign-off, open the pull request, wait for CI, merge, and clean up. Every red result up to the merge, and a sign-off with changes, hands back to `conduct` (at most `handback_cap` times, then the run parks stopped); a red after the merge stops the run.
+- `ship-change-classic` is the old flow: `build` and then `review`, then the pull request, CI, merge and clean-up. A project pins it with `feature = "ship-change-classic"` (or `bug`) in the `[ready]` table of `.rhiza/dispatch.toml`.
 
 To start one on an accepted change set:
 
@@ -52,7 +53,7 @@ To start one on an accepted change set:
 rhiza run start <change> --workflow ship-change --permission-mode acceptEdits
 ```
 
-That queues the run and returns. `--permission-mode` is the Claude Code permission mode the run's agent steps get when the workflow doesn't set one. The built-in workflows' builders set none, so without it `run start` stops and asks for one. A mode that bypasses permission checks, such as `bypassPermissions`, is refused unless the machine's `machine.toml` sets `trust = "dedicated"`. The daemon, below, picks it up. Leave the workflow off and you get `ship-change`. `--foreground` drives the run in your own terminal instead, which is handy once, to see how it behaves.
+That queues the run and returns. `--permission-mode` is the Claude Code permission mode the run's agent steps get when the workflow doesn't set one. The built-in workflows' builders set none, so without it `run start` stops and asks for one. A mode that bypasses permission checks, such as `bypassPermissions`, is refused unless the machine's `machine.toml` sets `trust = "dedicated"`. The daemon, below, picks it up. Leave the workflow off and you get `ship-change`, the conductor default. `--foreground` drives the run in your own terminal instead, which is handy once, to see how it behaves.
 
 Each agent step runs in its own Rex tab, inside a git worktree of its own, so runs on different change sets never touch each other or your checkout. While one is going:
 

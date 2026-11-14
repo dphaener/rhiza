@@ -44,10 +44,58 @@ func shipRebuildHead(ctx *Ctx) error {
 	if ctx.Exec == nil {
 		return Errorf("ship: %s cannot be run here: no programs can be run", envShipBuild)
 	}
-	if _, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
-		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v", envShipBuild, cmd, err)
+	if out, err := ctx.Exec("sh", []string{"-c", cmd}, ctx.Root, nil); err != nil {
+		return Errorf("ship: could not build rhiza from the merged head with %s (%s), so nothing was rendered or pushed: %v%s", envShipBuild, cmd, err, shipBuildOutput(out))
 	}
+	shipStampBuild(ctx)
 	return nil
+}
+
+// shipBuildOutput is the tail of a failed build's output, set off on its
+// own lines, or "" when it printed none.
+func shipBuildOutput(out []byte) string {
+	tail := strings.TrimSpace(string(out))
+	if len(tail) > shipGateTail {
+		tail = "...\n" + tail[len(tail)-shipGateTail:]
+	}
+	if tail == "" {
+		return ""
+	}
+	return "\n" + tail
+}
+
+// shipBuiltAtSuffix names, beside SHIP_HEAD_RHIZA, the file that records
+// the worktree commit ship built the binary at.
+const shipBuiltAtSuffix = ".built-at"
+
+// shipStampBuild records the worktree's HEAD beside the head build, when
+// the build is named and HEAD can be read. It is best effort: a binary
+// with no record is trusted as a step's own build.
+func shipStampBuild(ctx *Ctx) {
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" {
+		return
+	}
+	head, err := ctx.Git("rev-parse", "HEAD")
+	if err != nil || strings.TrimSpace(head) == "" {
+		return
+	}
+	_ = os.WriteFile(bin+shipBuiltAtSuffix, []byte(strings.TrimSpace(head)+"\n"), 0o644)
+}
+
+// shipBuildStale reports whether the build at bin was built, by ship, at a
+// commit other than the worktree's current HEAD. A binary ship has no
+// record for (a workflow step built it) is not stale.
+func shipBuildStale(ctx *Ctx, bin string) bool {
+	built, err := os.ReadFile(bin + shipBuiltAtSuffix)
+	if err != nil {
+		return false
+	}
+	head, err := ctx.Git("rev-parse", "HEAD")
+	if err != nil || strings.TrimSpace(head) == "" {
+		return false
+	}
+	return strings.TrimSpace(string(built)) != strings.TrimSpace(head)
 }
 
 // shipRunEnv is ctx seeing the [env] of st's workflow ({run_tmp} being
@@ -86,7 +134,21 @@ func shipHeadBuild(ctx *Ctx, _ shipTarget) (string, error) {
 	if ctx.Exec == nil {
 		return "", Errorf("ship: the PR head's build %s cannot be run here: no programs can be run", bin)
 	}
-	if fi, err := os.Stat(bin); err != nil || fi.IsDir() {
+	// With a build command named, ship builds the head itself when the
+	// binary is missing or was built at an earlier commit.
+	fi, err := os.Stat(bin)
+	missing := err != nil || fi.IsDir()
+	if strings.TrimSpace(ctxGetenv(ctx)(envShipBuild)) != "" && (missing || shipBuildStale(ctx, bin)) {
+		if missing {
+			_ = os.Remove(bin + shipBuiltAtSuffix)
+		}
+		if err := shipRebuildHead(ctx); err != nil {
+			return "", err
+		}
+		fi, err = os.Stat(bin)
+		missing = err != nil || fi.IsDir()
+	}
+	if missing {
 		return "", Errorf("ship: %s names %s, which is not a built rhiza: build it in a step before this one, so nothing was landed, rendered or pushed", envShipRhiza, bin)
 	}
 	return bin, nil
@@ -114,15 +176,32 @@ func shipActorFlags(ctx *Ctx) []string {
 }
 
 // shipRunHead runs the head build bin with args (and the actor flags) in
-// ctx.Root, and returns its standard output.
+// ctx.Root, and returns its standard output. The child gets this process's
+// environment without SHIP_HEAD_RHIZA (headChildEnv), so it does the work
+// in-process and never execs a head build itself.
 func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
-	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, nil)
+	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, headChildEnv())
 	if err != nil {
 		e := Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
 		e.Conflict = headConflict(out)
 		return nil, e
 	}
 	return out, nil
+}
+
+// headChildEnv is the environment a head build runs with: this process's,
+// less SHIP_HEAD_RHIZA. It is the recursion guard of runViaHead: a head
+// that is not the running binary as a file (a wrapper script that execs
+// another rhiza) would otherwise see SHIP_HEAD_RHIZA, not be itself, and
+// exec the head again without end.
+func headChildEnv() []string {
+	env := []string{}
+	for _, kv := range os.Environ() {
+		if k, _, _ := strings.Cut(kv, "="); k != envShipRhiza {
+			env = append(env, kv)
+		}
+	}
+	return env
 }
 
 // headConflict is the model conflict the child's --json error body carries
@@ -203,4 +282,61 @@ func shipRender(ctx *Ctx, t shipTarget) ([]string, error) {
 		return nil, err
 	}
 	return shipRenderWith(ctx, bin)
+}
+
+// headIsSelf reports whether bin is the running rhiza (ctx.Self), by path
+// or as the same file.
+func headIsSelf(ctx *Ctx, bin string) bool {
+	if ctx.Self == "" {
+		return false
+	}
+	if ctx.Self == bin {
+		return true
+	}
+	a, err := os.Stat(ctx.Self)
+	if err != nil {
+		return false
+	}
+	b, err := os.Stat(bin)
+	if err != nil {
+		return false
+	}
+	return os.SameFile(a, b)
+}
+
+// runViaHead runs the operation op (land or render) with the head build the
+// run's environment names (SHIP_HEAD_RHIZA), as the same command in the
+// same working directory, when it names one that is not the running
+// binary: a conductor's land and render on a branch then use the branch's
+// own rhiza. It reports false, with nothing run, when the environment
+// names none or the running binary is it, and the caller works in-process.
+// A missing or unbuildable head is an error: nothing was run.
+func runViaHead(ctx *Ctx, op string) ([]byte, bool, error) {
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" || headIsSelf(ctx, bin) {
+		return nil, false, nil
+	}
+	bin, err := shipHeadBuild(ctx, shipTarget{})
+	if err != nil {
+		return nil, false, err
+	}
+	if headIsSelf(ctx, bin) {
+		return nil, false, nil
+	}
+	args := []string{op}
+	switch {
+	case !ctx.ChangeSet.IsZero():
+		args = append(args, "--change", ctx.ChangeSet.String())
+	case ctx.ChangeRef != "":
+		args = append(args, "--change", ctx.ChangeRef)
+	}
+	if ctx.DryRun {
+		args = append(args, "--dry-run")
+	}
+	args = append(args, "--json")
+	out, err := shipRunHead(ctx, bin, args...)
+	if err != nil {
+		return nil, false, err
+	}
+	return out, true, nil
 }

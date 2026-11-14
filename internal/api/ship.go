@@ -68,7 +68,10 @@ const shipDir = "rhiza/ship"
 type ShipCheckRequest struct {
 	Settled bool `json:"settled,omitempty" flag:"settled" desc:"Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail, and so is a clean merge the local gate failed on, left unpushed"`
 	Main    bool `json:"main,omitempty" flag:"main" desc:"Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line"`
-	PROpen  bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
+	// NoRebase keeps a conflicting PR from being merged with main here,
+	// for a workflow whose agent step brings main in.
+	NoRebase bool `json:"no_rebase,omitempty" flag:"no-rebase" desc:"Never merge main into the branch when GitHub reports the pull request CONFLICTING: with --settled the conflict settles the wait (exit 0) with nothing merged or pushed, and without it the check fails naming the conflict (for a workflow whose agent step brings main in with rhiza ship rebase --no-push)"`
+	PROpen   bool `json:"pr_open,omitempty" flag:"pr-open" desc:"Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)"`
 	// TestFailures asks only whether the head's latest check recorded
 	// failing tests; it reads the state file and runs no gh.
 	TestFailures bool `json:"test_failures,omitempty" flag:"test-failures" desc:"Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)"`
@@ -826,6 +829,9 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 		}
 		return runShipTestFailures(ctx)
 	}
+	if r.NoRebase && (r.Main || r.PROpen) {
+		return nil, Usagef("--no-rebase is for a pull request's check: it takes neither --main nor --pr-open").WithNext(shipCheckNext)
+	}
 	if r.PROpen && (r.Main || r.Settled) {
 		return nil, Usagef("--pr-open asks only whether the pull request is open; it takes neither --main nor --settled")
 	}
@@ -876,7 +882,15 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 			resp.Stop = shipDraftStop(v.Number)
 			return resp, nil
 		}
-		if r.Settled && strings.EqualFold(v.Mergeable, "CONFLICTING") {
+		conflicting := strings.EqualFold(v.Mergeable, "CONFLICTING")
+		if r.Settled && conflicting && r.NoRebase {
+			// The agent step brings main in: the wait ends with nothing
+			// merged or pushed, and the check after it fails.
+			resp.Settled, resp.Passed = true, true
+			resp.Detail = fmt.Sprintf("settled: GitHub reports pull request #%d conflicting with origin/%s; nothing merged or pushed", v.Number, shipMain)
+			return resp, nil
+		}
+		if r.Settled && conflicting {
 			return shipSettleConflict(ctx, resp)
 		}
 		if !r.Settled && shipConflictUnresolved(ctx, t, st.MergeConflict) {
@@ -901,6 +915,10 @@ func runShipCheck(ctx *Ctx, req any) (any, error) {
 				resp.Detail = fmt.Sprintf("failed: the pre-push check failed on %s, left unpushed on %s for the step's fixer", shortSHA(st.PrePushFailed), t.branch)
 				return resp, nil
 			}
+		}
+		if r.NoRebase && conflicting {
+			resp.Detail = fmt.Sprintf("failed: GitHub reports pull request #%d conflicting with origin/%s: bring main in with rhiza ship rebase --no-push", v.Number, shipMain)
+			return resp, nil
 		}
 		if st.Pushed != "" && v.Head != st.Pushed {
 			// Someone else may have pushed on top of the run's head:

@@ -1657,9 +1657,13 @@ func checkTargets(s Step, steps map[string]Step) error {
 	if s.Kind == KindSignoff {
 		t, ok := s.On[OutcomeChanges]
 		if !ok {
-			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\": the checks step that fixes what the owner asks for", s.Name)
+			return fmt.Errorf("step %q: a signoff step needs on.changes = \"<checks step>\" (or handback:<agent step>): the step that fixes what the owner asks for", s.Name)
 		}
 		if w, _, cut := strings.Cut(t, "/"); cut && steps[w].Kind == KindWorkflow {
+			return nil
+		}
+		if strings.HasPrefix(t, HandbackPrefix) {
+			// Validated above: it names an agent step of this workflow.
 			return nil
 		}
 		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {

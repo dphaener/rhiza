@@ -34,7 +34,7 @@ exec git push -q -u origin main
 exec rhiza daemon set rhiza.ship.deployUrl $HEALTH_URL
 exec rhiza daemon set rhiza.ship.deployTimeout 1m
 
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
 stdout '^Run \S+ succeeded$'
 stdout '^exit=0$'
 stderr '^deploy check 1: HTTP 503$'
@@ -43,7 +43,7 @@ stderr '^Deploy healthy: http://127\.0\.0\.1:[0-9]+/health answered 200 after 3 
 
 # The deploy check ran last, after the ship command, and passed.
 exec rhiza run status --json
-stdout '"workflow": "ship-change"'
+stdout '"workflow": "ship-change-classic"'
 stdout '"state": "succeeded"'
 exec rhiza run status
 stdout '^- ship \(visit 1\): pass, then deploy-check: exit 0$'

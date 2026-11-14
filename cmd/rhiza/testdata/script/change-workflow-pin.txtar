@@ -44,9 +44,9 @@ stdout '"previous": "docs"'
 ! stdout '"workflow": "docs",'
 exec rhiza change show --json
 ! stdout '"workflow"'
-! exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs)'
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs) --permission-mode manual'
 ! stdout '^- Workflow: docs$'
-stderr 'leaves step'
+stdout '^- Workflow: ship-change$'
 fold-ok
 
 exec rhiza change workflow docs

@@ -9,6 +9,7 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
 exec rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
@@ -44,7 +45,7 @@ exec sh -c 'for i in $(seq 1 100); do rhiza run ls --json | grep -q "\"live\": t
 # started by the daemon, logs to its own run's file: neither run's log shows
 # the other's lines.
 exec sh -c 'rhiza run abandon $(cat $WORK/run1)'
-exec rhiza run start 01M5PWGMARA1WR6BD0MEF4Y76P --permission-mode manual
+exec rhiza run start --workflow ship-change-classic 01M5PWGMARA1WR6BD0MEF4Y76P --permission-mode manual
 exec rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
 exec sh -c 'for i in $(seq 1 100); do [ $(ls .git/rhiza/runs/*.jsonl | wc -l) -ge 2 ] && break; sleep 0.1; done; ls .git/rhiza/runs/*.jsonl | xargs -n1 basename | sed "s/.jsonl$//" | grep -v $(cat $WORK/run1) | tr -d "\n" > $WORK/run2'
@@ -60,6 +61,9 @@ exec sh -c 'kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" .git/rhiza/runs/$(cat 
 rm .git/rhiza/logs
 exec sh -c 'rhiza run log 2>/dev/null; echo exit $?'
 stdout 'exit 2'
+-- dispatch.toml --
+[ready]
+feature = "ship-change-classic"
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

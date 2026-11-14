@@ -2332,7 +2332,7 @@ Output (`--json` fields):
 Check that a change set's pull request has every CI check passed, or that main after its merge has the tested head's tree; with --settled, rebase a pull request GitHub reports conflicting.
 
 ```
-rhiza ship check [--settled] [--main] [--pr-open] [--test-failures] [--conflicts] [--model-conflict] [--reruns <reruns>] [--infra] [--rerun-infra] [--changed]
+rhiza ship check [--settled] [--main] [--no-rebase] [--pr-open] [--test-failures] [--conflicts] [--model-conflict] [--reruns <reruns>] [--infra] [--rerun-infra] [--changed]
 ```
 
 Appends to the log.
@@ -2341,6 +2341,7 @@ Arguments and flags:
 
 - `--settled`: Exit 0 once every check has finished, passed or not, instead of only when all passed; for a wait step; when GitHub reports the pull request CONFLICTING it merges main into the branch as ship rebase does: a clean merge is pushed and reported not settled, a conflict in code is left in progress and reported settled (exit 0) with the conflict in its detail, and so is a clean merge the local gate failed on, left unpushed
 - `--main`: Check that the merge commit rhiza ship merge recorded has the tree of the head whose checks passed, locally with git and no wait on CI, instead of checking the pull request; a differing tree dispatches CI on the merge commit (once) and checks its runs as it does a pull request's, and a stop that cannot be waited out exits 75 with a stop: line
+- `--no-rebase`: Never merge main into the branch when GitHub reports the pull request CONFLICTING: with --settled the conflict settles the wait (exit 0) with nothing merged or pushed, and without it the check fails naming the conflict (for a workflow whose agent step brings main in with rhiza ship rebase --no-push)
 - `--pr-open`: Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)
 - `--test-failures`: Exit 0 only if the head's latest ship check recorded at least one failing test or recognised cause (a rhiza check or self-check 'fail ...' line, a gofmt listing, a go vet or compiler diagnostic, a make target error) read from a CI log, else exit 1 (an infra or unparsable failure); reads the state file only and records nothing (for a step that routes a red PR to a fixer)
 - `--conflicts`: Exit 0 only if the ship state records a merge of main left unresolved by a conflict in code (the merge still in progress, or HEAD lacking the origin/main commit it names), else exit 1, also once a resolving merge is committed or once the run has made 3 conflict fixes (merge commits on the branch with its Review: trailer); reads the state file and git only and records nothing (for a step that routes a conflict to a fixer)
@@ -2554,10 +2555,14 @@ Exit code: set by the result, besides the shared codes.
 Merge origin's main into a change set's branch when main has moved past it, settling rendered-only conflicts by rendering again, and push it plainly; a conflict in code is left as a merge in progress.
 
 ```
-rhiza ship rebase
+rhiza ship rebase [--no-push]
 ```
 
 Appends to the log.
+
+Arguments and flags:
+
+- `--no-push`: Merge origin's main into the branch, settling rendered-only conflicts, and stop: run no local gate and no pre-push check, push nothing and record no pushed head; a conflict in code is left in progress as usual (for a conductor bringing main in before the gate and push steps)
 
 Output (`--json` fields):
 
@@ -2820,6 +2825,7 @@ Output (`--json` fields):
 
 - `autonomy` (array of object): The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none
 - `cleanup` (array of object): The cleanup steps, in order: commands run once when a run ends done, failed or abandoned; empty when it declares none
+- `env` (array of object): The file's own [env] variables, in name order, set for every process the run's steps start; {run_tmp} stands for the run's temp folder; empty when it declares none
 - `includes` (array of string): The workflows it includes, directly or through another, sorted
 - `layer` (string): personal, repo, builtin or file
 - `name` (string): The workflow's name

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C83197KYDX4GNVP4HFJKTJ",
+  "after": [
+    "01M7C62HS1MYM3Q2R3Z4YK9MF3"
+  ],
+  "at": "2026-11-14T05:24:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier attempt 2 at 0383f0256, with a scratch build of this commit and RHIZA_ROOT set to the checkout. rhiza workflow describe ship-change resolves to builtin:ship-change (exit 0). describe ship-rhiza (repo) shows env GOTMPDIR, SHIP_HEAD_RHIZA and SHIP_HEAD_BUILD, cleanup go-cleanup: sh .rhiza/workflows/go-cleanup.sh, the builtin's 10 steps and every hand-back route as handback:ship-change/conduct. describe bugfix shows the same go-cleanup and the same handback:ship-change/conduct routes. rhiza workflow check ship-rhiza, bugfix and plan-bug: exit 0, with only the autonomous or ready-change-set bypass warnings that AGENTS.md documents. .rhiza/workflows/ship-change.toml is gone and dispatch.toml has [ready] feature=ship-rhiza and bug=bugfix. In a clean detached worktree: rhiza check exit 0, make self-check exit 0. go test -trimpath ./internal/workflow/... ok; TestShipFixPromptsOneLine and TestIncludeSignoffHandback PASS; TestScripts/(workflow-describe|describe-golden) ok; internal/api TestWorkflow* ok. TestRequestExposedWorkflows also fails at HEAD~2, before this leaf, so it is not caused here. The extra files (include.go signoff hand-back, describe [env], AGENTS.md, docs) answer attempt 1's findings and are tested. The diff has no TODOs or stubs."
+        },
+        "handle": "rhiza-repo-conductor-default-verified",
+        "id": "01M7C870H3SHQXBFVJWGFP26V8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C870H3SHQXBFVJWD9VPE9D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C870H3SHQXBFVJWD9VPE9D",
+        "id": "01M7C870JNMH3HYPBCX3SGX1ZX",
+        "link": "01M7C870JNMH3HYPBCX2MAMHX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C870MBGA69ZR12416TN0R2",
+  "type": "ops",
+  "v": 1
+}

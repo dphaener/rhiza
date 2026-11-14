@@ -1,0 +1,25 @@
+# conduct-main-moved-merge-no-push
+
+decision · `01M7BZH7GVNV67V0HKHY2RSD5P`
+
+## reasoning
+
+Read the question, builtin-conductor-default, decision builtin-ship-change-open-points, internal/api/ship_rebase.go and the conduct topic. ship.rebase merges origin/main, runs the local gate and the pre-push check, pushes and records Pushed (ship_rebase.go:6-16, :61, :236-243), while the conduct topic lists 'Merge or push: the ship run does both' under Must not do; and the leaf routes the merged head through gate, signoff and push, which the push inside ship rebase would bypass and duplicate. Allowing the conductor to push would break the conduct contract and make the gate step's run of ship gate redundant; a raw git merge would drop ship.rebase's rendered-conflict settling and the merge-conflict context the conflict fixer reads. A no-push mode keeps both: the merge logic is reused, the gate and pre-push check run once in their own steps, and the push step is the only push. Spawning the conflict fixer for a code conflict follows the topic's 'Build, check or fix yourself: spawn the role'.
+
+## statement
+
+On a main-moved hand-back the conductor brings origin/main into the branch without pushing: the conduct step's prompt tells it to run rhiza ship rebase --no-push, a mode of ship.rebase that merges origin/main, settles rendered-only conflicts by rendering again and leaves a code conflict in progress exactly as today, but runs no local gate, no pre-push check and no push and records no pushed head. The conductor has a code conflict resolved (spawning the conflict fixer role, not by hand) and committed, then finishes; the gate step runs rhiza ship gate on the merged head, and the push step pushes it as a new head (it differs from the pushed one, so the never-re-push-an-unchanged-head rule holds). The conductor never runs plain rhiza ship rebase, and the conduct topic's 'Merge or push: the ship run does both' stays as written. builtin-conductor-default's acceptance reads 'the conduct step's prompt telling the conductor to run rhiza ship rebase --no-push when the hand-back is rhiza ship merge's main-moved output', and the leaf gains a check that ship rebase --no-push leaves origin's branch unchanged.
+
+## wording
+
+(assumed, would have escalated)
+
+## Links
+
+### Out
+
+- answers [review-01m7ah6rayrzax6z6r63q0m2qk-r6-f4](../question/review-01m7ah6rayrzax6z6r63q0m2qk-r6-f4.md)
+
+## History
+
+- `01M79KH59D0HEME6B85PXXB056` The builtin ship-change becomes the conductor default (conduct, gate, signoff, push, CI, merge, main CI, close-out; every red hands back to conduct) and the old one stays as ship-change-classic

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C0BQJSWBS1BKS036WN77PV",
+  "after": [
+    "01M7BZMVPD2H8GGPX9TXR29GFA"
+  ],
+  "at": "2026-11-14T03:08:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6bce0d26e re-ran the Checks block: go test -trimpath ./internal/workflow -run TestAgentStepChecks exit 0 (agent step checks parse in file order plan,code,qa; no-name and duplicate names refused); go test -trimpath ./internal/api -run TestRunFindingsAgentStepChecks exit 0 (run.findings and run.verdict --check plan record round 1 at the conduct agent step, --check scope refused naming plan, code, qa, --check at an agent step with no checks refused as not in a checks step); rhiza ship generate exit 0 with 0 files changed; rhiza render exit 0, tree clean. The behaviour itself is on main from #575 (run_review.go reviewStep/reviewCheck, workflow.go check parsing) in main's [[step.<name>.check]] name syntax per Decision agent-step-checks-already-built; this commit only renames the api test to the acceptance and adds the no-checks refusal case, plus the builder's actor record. No stubs or TODOs; nothing outside the leaf changed."
+        },
+        "handle": "agent-step-checks-verified",
+        "id": "01M7C0EE3ECA1XQKXRV39HXBST",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C0EE3ECA1XQKXRV2YB6Q47",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C0EE3ECA1XQKXRV2YB6Q47",
+        "id": "01M7C0EEB0FFPTVP4YT1888YN1",
+        "link": "01M7C0EEB0FFPTVP4YSXKXGV8X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AMS2SDWJ2NYPKKVW4HXB7G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C0EEP4Z7JS546D9YWZE5KN",
+  "type": "ops",
+  "v": 1
+}

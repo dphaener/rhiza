@@ -60,10 +60,11 @@ func (r ShipOpenPRResponse) ExitCode() int {
 }
 
 // reviewJournaled reports whether st holds the outcome of some review
-// check: the review ran.
+// check, or a round of findings a conductor's check recorded: the review
+// ran.
 func reviewJournaled(st run.State) bool {
 	for _, c := range st.Checks {
-		if len(c.Outcomes) > 0 {
+		if len(c.Outcomes) > 0 || len(c.Rounds) > 0 {
 			return true
 		}
 	}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-14T18:45:54Z",
+  "body": {
+    "intent": "Record agent actor claude-code-d265f12a for session d265f12a-3406-483e-b3c7-01a1db61383c",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7DP2PBQK9A4W9F2KSFYDD9Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7DP2PBQK9A4W9F2KSJCS9RW",
+  "type": "open",
+  "v": 1
+}

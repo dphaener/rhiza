@@ -21,6 +21,7 @@ An agent step may declare its review checks in the workflow definition the way a
 
 - depends-on [critic-on-major](critic-on-major.md)
 - depends-on [conduct-plans-leaves](../../orchestration/daemon/conduct-plans-leaves.md)
+- depends-on [builtin-conductor-default](builtin-conductor-default.md)
 - verifies [review-three-checks-verified](../../../../evidence/review-three-checks-verified.md)
 - verifies [review-three-checks-qa-1](../../../../evidence/review-three-checks-qa-1.md)
 - verifies [review-three-checks-qa-2](../../../../evidence/review-three-checks-qa-2.md)

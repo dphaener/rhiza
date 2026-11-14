@@ -29,10 +29,10 @@ exec sh -c 'rhiza change show $(cat $WORK/bug)'
 stdout '- Request kind: bug'
 ! stdout '- Workflow:'
 
-# No dispatch file: the default ship-change, which builds leaves this change
-# set lacks.
-! exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --permission-mode manual'
-stderr 'ship-change builds and reviews its leaves'
+# No dispatch file: the default ship-change, the conductor, which plans the
+# leaves itself, so a leafless change set starts.
+exec sh -c 'rhiza run start --dry-run $(cat $WORK/bug) --permission-mode manual'
+stdout '^- Workflow: ship-change$'
 
 # [ready] bug names the repo workflow bugfix.
 cp $WORK/dispatch.toml .rhiza/dispatch.toml

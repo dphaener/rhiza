@@ -2170,3 +2170,23 @@ const PlanMilestoneWorkflow = "plan-milestone"
 func (s State) IsPlanRun() bool {
 	return s.Plan || s.Workflow == PlanWorkflow || s.Workflow == PlanMilestoneWorkflow
 }
+
+// PastLanding reports whether the run entered a land step or a merge step: a
+// step named land or merge, or whose last segment after the final "/" is (an
+// included step such as ship-change/merge). A conductor-default run lands on
+// the branch and has no land step, so its merge counts as its landing; what
+// follows (main's CI, close-out) happens after it.
+func (s State) PastLanding() bool {
+	for step, n := range s.Visits {
+		if n <= 0 {
+			continue
+		}
+		if i := strings.LastIndex(step, "/"); i >= 0 {
+			step = step[i+1:]
+		}
+		if step == "land" || step == "merge" {
+			return true
+		}
+	}
+	return false
+}

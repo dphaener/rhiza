@@ -1,19 +1,4 @@
-name = "ship-change"
-
-[env]
-GOTMPDIR = "{run_tmp}"
-SHIP_HEAD_RHIZA = "{run_tmp}/rhiza-head"
-SHIP_HEAD_BUILD = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
-
-# Rhiza's own ship: the branch may change how the model renders, and the
-# rhiza that runs ship (often an installed one, older than the branch)
-# would land and render with its own rendering, leaving stale rendered
-# files. So head-build* steps build rhiza from the PR head to
-# SHIP_HEAD_RHIZA (with the SHIP_HEAD_BUILD command) right before each
-# step that lands or renders, and ship runs its land and render with that
-# binary. Ship rebase merges main first, so it runs SHIP_HEAD_BUILD again
-# on the merged head before rendering it. A repo that sets no
-# SHIP_HEAD_RHIZA lands and renders in-process.
+name = "ship-change-classic"
 
 # Ship a change set through Rhiza's own build and review: the build
 # workflow's leaves and its render of what the sessions wrote, the review
@@ -211,7 +196,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 6
-on.pass = "head-build-rebase"
+on.pass = "rebase"
 on.fail = "gate-fix"
 
 [step.rebase]
@@ -261,7 +246,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 9
-on.pass = "head-build-land"
+on.pass = "land"
 on.fail = "gate-fix"
 
 [step.land]
@@ -340,7 +325,7 @@ kind = "command"
 run = "rhiza ship gate"
 stall = "70m"
 max_visits = 6
-on.pass = "head-build-rebase-merge"
+on.pass = "rebase-merge"
 on.fail = "gate-fix-merge"
 
 # After land the same fixer resolves a conflict, and the merge goes through
@@ -510,25 +495,3 @@ on.pass = "deploy-check"
 [step.deploy-check]
 kind = "command"
 run = "rhiza ship deploy"
-
-[step.head-build-rebase]
-kind = "command"
-run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
-max_visits = 8
-on.pass = "rebase"
-
-[step.head-build-land]
-kind = "command"
-run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
-max_visits = 8
-on.pass = "land"
-
-[step.head-build-rebase-merge]
-kind = "command"
-run = 'sh -c "${SHIP_HEAD_BUILD:?is not set: name the head build command in the workflow [env]}"'
-max_visits = 8
-on.pass = "rebase-merge"
-
-[[cleanup]]
-name = "go-cleanup"
-run = "sh .rhiza/workflows/go-cleanup.sh"

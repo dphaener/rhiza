@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C48BN7VM2B41W1E2PWV45A",
+  "after": [
+    "01M7C3WRNXBFAC7R1BX4V1XG3F"
+  ],
+  "at": "2026-11-14T04:17:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 124c2bbf1 re-ran the Checks: block: go test -trimpath ./internal/workflow, ./internal/api -run 'TestBuildCheck|TestShipRebase|TestDescribe', ./internal/run ./internal/daemon, ./cmd/rhiza -run TestScripts/describe-golden, rhiza ship generate (0 files changed) and rhiza render (no diff), all exit 0. Acceptance: go test -trimpath ./internal/workflow -run TestBuiltinShipChange PASS (asserts the 10 steps in order, conduct checks plan,code,qa, gate kind gate with build-check/review-check/rhiza check/ship gate, every non-pass route of conduct..merge = handback:conduct, merge only pass->main-ci and fail, main-ci until rhiza ship check --main, no non-pass or hand-back route after the merge, close-out/ship/deploy-check commands, handback_cap 3, prompt naming rhiza ship rebase --no-push, no leaves or checks step); go test -trimpath ./internal/api -run TestBuildCheck PASS (fails a leaf with no Evidence); a scratch build's rhiza workflow describe ship-change in a fresh repo (no repo override) lists conduct, gate, signoff, push, wait-ci, merge, main-ci, close-out, ship, deploy-check with those routes (this repo's own .rhiza/workflows/ship-change.toml still shadows it, which is the rhiza-repo-conductor-default leaf). Diff read: ship-change.toml rewrite, workflow.go accepts signoff on.changes = handback:<agent step>, ship rebase --no-push with TestShipRebaseNoPush, regenerated cli.md and describe-golden; no TODOs or stubs."
+        },
+        "handle": "builtin-conductor-default-verified",
+        "id": "01M7C4C5N35ARQCKM5DKJ19KFY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C4C5N35ARQCKM5DJTDK7XS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C4C5N35ARQCKM5DJTDK7XS",
+        "id": "01M7C4C5PQM4Z7HXXPTYSEKTQW",
+        "link": "01M7C4C5PQM4Z7HXXPTWPZH78G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C4C5RDNVD1GTF3VKSD38EK",
+  "type": "ops",
+  "v": 1
+}

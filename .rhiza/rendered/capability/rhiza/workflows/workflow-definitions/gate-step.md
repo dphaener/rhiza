@@ -19,6 +19,7 @@ A workflow step of kind gate runs its commands list, commands the daemon owns an
 ### In
 
 - depends-on [run-handback](../workflow-runs/run-handback.md)
+- depends-on [builtin-conductor-default](../built-in-workflows/builtin-conductor-default.md)
 - verifies [gate-step-verified](../../../../evidence/gate-step-verified.md)
 - verifies [gate-step-qa-1](../../../../evidence/gate-step-qa-1.md)
 - verifies [gate-step-verified-2](../../../../evidence/gate-step-verified-2.md)

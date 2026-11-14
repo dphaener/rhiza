@@ -25,9 +25,11 @@ Rhiza's runs move from a daemon-driven workflow of about 56 steps to a conductor
 - decided-by [gate-step](../capability/rhiza/workflows/workflow-definitions/gate-step.md)
 - decided-by [run-handback](../capability/rhiza/workflows/workflow-runs/run-handback.md)
 - decided-by [spawn-durable](../capability/rhiza/orchestration/daemon/spawn-durable.md)
+- decided-by [ship-one-ci-round](../capability/rhiza/orchestration/shipping/ship-one-ci-round.md)
 - decided-by [session-brief-wiring](../capability/rhiza/workflows/workflow-runs/session-brief-wiring.md)
 - decided-by [handback-route](../capability/rhiza/workflows/workflow-runs/handback-route.md)
 - decided-by [arbiter-advisor-brief](../capability/rhiza/workflows/workflow-runs/arbiter-advisor-brief.md)
+- decided-by [landed-run-resumable-past-merge](../capability/rhiza/orchestration/shipping/landed-run-resumable-past-merge.md)
 
 ## History
 

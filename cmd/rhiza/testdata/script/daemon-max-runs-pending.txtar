@@ -78,7 +78,7 @@ kind = "agent"
 prompt = "Plan {change}"
 on.pass = "done"
 -- live.jsonl --
-{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":""}}
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":""}}
 {"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
 -- bin/rex --
 #!/bin/sh

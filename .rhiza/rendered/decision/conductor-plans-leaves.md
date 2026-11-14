@@ -34,6 +34,7 @@ Inside the conductor (Recommended), picked by the owner
 - decided-by [m36-conductor](../intent/milestone-36/m36-conductor.md)
 - decided-by [conduct-plans-leaves](../capability/rhiza/orchestration/daemon/conduct-plans-leaves.md)
 - decided-by [conduct-skill](../capability/rhiza/guide/agent-guide/conduct-skill.md)
+- decided-by [leafless-refusal-by-leaves-step](../capability/rhiza/workflows/built-in-workflows/leafless-refusal-by-leaves-step.md)
 
 ## History
 

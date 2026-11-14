@@ -11,7 +11,7 @@ rhiza workflow new bugfix
 rhiza workflow check bugfix
 ```
 
-`workflow new` writes `.rhiza/workflows/bugfix.toml` and never overwrites a file that's there. Add `--from ship-change` to fork a built-in instead of starting empty, which is the better move when you only want to tweak one. A skeleton already passes `check`, so you can run it after every edit and see what you broke.
+`workflow new` writes `.rhiza/workflows/bugfix.toml` and never overwrites a file that's there. Add `--from ship-change` (or `--from ship-change-classic` for the build-then-review flow) to fork a built-in instead of starting empty, which is the better move when you only want to tweak one. A skeleton already passes `check`, so you can run it after every edit and see what you broke.
 
 The skeleton is commented on every item and its test command is a placeholder that fails on purpose, with a line to uncomment for Go, Ruby, JavaScript/TypeScript, Python and Rust. `check` warns, without failing, until you replace it.
 
@@ -122,7 +122,7 @@ bug = "bugfix"
 EOF
 ```
 
-Now a change set that came in as a bug (`rhiza request "Totals are wrong on the invoice page" --kind bug`) gets built by `bugfix` once you've accepted its plan. Features still get `ship-change`. The `[request]` table in the same file does the same for the planning run, if you want a different workflow on that side too. Both default to the built-ins, and a name that doesn't resolve is never swapped for a default: `rhiza daemon status` shows the run as skipped.
+Now a change set that came in as a bug (`rhiza request "Totals are wrong on the invoice page" --kind bug`) gets built by `bugfix` once you've accepted its plan. Features still get `ship-change`, the conductor default (one conduct session, then the gate, sign-off, push, CI, merge and close-out, every red handing back to conduct). To keep the old build-then-review flow, name `ship-change-classic` in `[ready]` the same way. The `[request]` table in the same file does the same for the planning run, if you want a different workflow on that side too. Both default to the built-ins, and a name that doesn't resolve is never swapped for a default: `rhiza daemon status` shows the run as skipped.
 
 ## Pin one change set to it
 

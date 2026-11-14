@@ -27,7 +27,7 @@ env SHIP_HEAD_RHIZA=$WORK/bin/headrhiza
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
 stdout '^exit=0$'
@@ -57,7 +57,7 @@ exec sh -c 'echo other > $WORK/refuse-message'
 cd $WORK
 exec sh $WORK/setup.sh
 cd repo
-exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
 stdout '"signoff_waiting": true'
 exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
 stdout '^Run \S+ failed$'

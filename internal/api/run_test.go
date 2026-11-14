@@ -110,7 +110,7 @@ func TestRunStartWorkflowRefusals(t *testing.T) {
 			if c.body != "" {
 				writeWorkflow(t, f.ctx.Root, c.workflow, c.body)
 			}
-			_, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"`+c.workflow+`"}`)
+			_, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"permission_mode":"manual","workflow":"`+c.workflow+`"}`)
 			wantExit(t, err, 2)
 			if e := AsError(err); !strings.Contains(e.Message, c.message) || e.Next != runStartNext {
 				t.Errorf("error %q next %q; want %q and %q", e.Message, e.Next, c.message, runStartNext)
@@ -1082,5 +1082,43 @@ func TestQueuedCheckModeStandsInDaemonMode(t *testing.T) {
 		if err != nil || got != c.want {
 			t.Errorf("%s: mode %q, %v; want %q", c.name, got, err, c.want)
 		}
+	}
+}
+
+// TestCheckShipLeaves: a leafless change set is refused for any workflow
+// whose expanded steps include a leaves step (the built-in
+// ship-change-classic, or a repo workflow including build), and accepted for
+// a workflow with no leaves step.
+func TestCheckShipLeaves(t *testing.T) {
+	const leavesStep = "[step.build]\nkind = \"leaves\"\non.pass = \"done\"\n\n[step.build.builder]\nprompt = \"b\"\n\n[step.build.verifier]\nprompt = \"v\"\n"
+	const includesBuild = "[step.build]\nkind = \"workflow\"\nworkflow = \"build\"\non.pass = \"done\"\n"
+	cases := []struct {
+		name, workflow, body string
+		refused              bool
+	}{
+		{"Classic", "ship-change-classic", "", true},
+		{"LeavesStep", "withleaves", leavesStep, true},
+		{"IncludesBuild", "withbuild", includesBuild, true},
+		{"NoLeavesStep", "plain", twoCommands, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			f := newSessionFixture(t, "x")
+			newChange(t, f.ctx, `{"intent":"X"}`)
+			if c.body != "" {
+				writeWorkflow(t, f.ctx.Root, c.workflow, c.body)
+			}
+			_, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"permission_mode":"manual","workflow":"`+c.workflow+`"}`)
+			if c.refused {
+				wantExit(t, err, 3)
+				if e := AsError(err); !strings.Contains(e.Message, "has no leaves") || !strings.Contains(e.Message, c.workflow) {
+					t.Errorf("error %q; want a no-leaves refusal naming %s", e.Message, c.workflow)
+				}
+				return
+			}
+			if err != nil && strings.Contains(err.Error(), "has no leaves") {
+				t.Errorf("workflow without a leaves step refused: %v", err)
+			}
+		})
 	}
 }

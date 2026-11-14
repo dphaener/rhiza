@@ -1,0 +1,40 @@
+{
+  "actor": "01M7C5HGY0E77B0F30QYQSJ1GD",
+  "after": [
+    "01M7C4HDQW0NBK1F8DQV6YVJ1M"
+  ],
+  "at": "2026-11-14T04:40:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7f1701a77 re-ran the Checks block: go test -trimpath ./cmd/rhiza -run TestScripts/ship-change-one-ci (exit 0, the acceptance command), go test -trimpath ./internal/api -run 'TestReviewJournaled|TestShipOpenPR' (exit 0), go test -trimpath ./internal/workflow (exit 0), rhiza ship generate and rhiza render with a scratch build of this commit (exit 0, tree clean); go vet and gofmt clean. Read the diff: the script uses a fake gh, a fake rex and a fake conductor that lands and renders on the branch. On the happy path it asserts one wait-ci visit, one push of cs/ship-it in the origin's pre-receive log, one pr merge, no land step and the change set landed with main's rendered index. When main moves at merge it asserts merge visit 1 fails, conduct visit 2 runs, wait-ci visit 2 passes, two pushes, one merge, one hand-back and the change set landed. Beyond the txtar: ship_openpr.go reviewJournaled now counts a conductor check's rounds (unit-tested by TestReviewJournaledConductorRounds); this is allowed under internal/api/ship*.go. The builtin ship-change.toml conduct step gains a handback template, which the commit explains and which is required: stepRunner.Handback errors when a step has no handback template, and the main-moved path exercises it. No stubs or TODOs."
+        },
+        "handle": "ship-one-ci-round-verified",
+        "id": "01M7C5P7RXBZ5DYKWCRAQPA1J0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7C5P7RXBZ5DYKWCRAEM8143",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7C5P7RXBZ5DYKWCRAEM8143",
+        "id": "01M7C5P81HXGF5DK8731QAQGDK",
+        "link": "01M7C5P81HXGF5DK87302BR87P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7C5P86H56S00H9QW7BE9FX3",
+  "type": "ops",
+  "v": 1
+}

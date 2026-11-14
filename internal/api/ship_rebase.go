@@ -43,8 +43,10 @@ const shipMain = "main"
 // a merge, when that changed anything.
 const shipRebaseMessage = "Render again after merging main"
 
-// ShipRebaseRequest takes nothing: the branch is the change set's.
-type ShipRebaseRequest struct{}
+// ShipRebaseRequest names nothing: the branch is the change set's.
+type ShipRebaseRequest struct {
+	NoPush bool `json:"no_push,omitempty" flag:"no-push" desc:"Merge origin's main into the branch, settling rendered-only conflicts, and stop: run no local gate and no pre-push check, push nothing and record no pushed head; a conflict in code is left in progress as usual (for a conductor bringing main in before the gate and push steps)"`
+}
 
 // ShipRebaseResponse is what ship.rebase found and did.
 type ShipRebaseResponse struct {
@@ -127,7 +129,8 @@ func topPath(p string) string {
 // and records the pushed head. It never rebases, never forces a push, never
 // pushes to main and never settles a conflict outside the rendered files:
 // that merge is left in progress for a fixer.
-func runShipRebase(ctx *Ctx, _ any) (any, error) {
+func runShipRebase(ctx *Ctx, req any) (any, error) {
+	noPush := req.(ShipRebaseRequest).NoPush
 	if err := refuseShipDryRun(ctx, "ship.rebase"); err != nil {
 		return nil, err
 	}
@@ -196,7 +199,7 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	if _, err := ctx.Git("merge-base", "--is-ancestor", resp.Onto, "HEAD"); err == nil {
 		// HEAD holds main. A merge committed on top of origin's branch (a
 		// fixer's) still has to be rendered, pushed and recorded.
-		if lease == "" || lease == orig {
+		if noPush || lease == "" || lease == orig {
 			return resp, nil
 		}
 		merges, err := ctx.Git("rev-list", "--merges", "--count", lease+"..HEAD")
@@ -221,7 +224,7 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 	// branch goes back to where it was, so a retried step merges again
 	// rather than finding an unpushed head; only a failing gate or pre-push
 	// check keeps the merged head, unpushed, for the step's fixer.
-	if err := shipFinishRebase(ctx, t, rendered, &resp); err != nil {
+	if err := shipFinishRebase(ctx, t, rendered, noPush, &resp); err != nil {
 		if errors.Is(err, errShipGateFailed) {
 			return shipKeepGateFailure(ctx, t, resp)
 		}
@@ -232,6 +235,9 @@ func runShipRebase(ctx *Ctx, _ any) (any, error) {
 			return nil, Errorf("%v; and could not put %s back at %s: %v", err, t.branch, shortSHA(orig), rerr)
 		}
 		return nil, err
+	}
+	if noPush {
+		return resp, nil
 	}
 	if resp.Pushed, err = gitHead(ctx); err != nil {
 		return nil, err
@@ -341,7 +347,7 @@ func shipLeaveConflict(ctx *Ctx, t shipTarget, rendered string, conflicts []stri
 // fails), and pushes it to the change set's branch on origin with a plain
 // push: never forced, so it fails rather than drop a head it has not seen,
 // and never to main.
-func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseResponse) error {
+func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, noPush bool, resp *ShipRebaseResponse) error {
 	// The head now holds main: build it again before rendering with it.
 	if err := shipRebuildHead(ctx); err != nil {
 		return err
@@ -352,6 +358,9 @@ func shipFinishRebase(ctx *Ctx, t shipTarget, rendered string, resp *ShipRebaseR
 	}
 	if resp.Commit, err = shipCommitRendered(ctx, t, rendered, shipRebaseMessage); err != nil {
 		return err
+	}
+	if noPush {
+		return nil
 	}
 	gate, err := shipLocalGate(ctx, &t)
 	if err != nil {
@@ -496,6 +505,10 @@ func (r ShipRebaseResponse) Human(w io.Writer) {
 	}
 	if r.Gate != nil {
 		fmt.Fprintf(w, "Local gate passed on it (%s).\n", r.Gate.Command)
+	}
+	if r.Pushed == "" {
+		fmt.Fprintln(w, "Pushed nothing (--no-push).")
+		return
 	}
 	fmt.Fprintf(w, "Pushed %s.\n", shortSHA(r.Pushed))
 }

@@ -28,12 +28,14 @@ exec rhiza propose
 exec rhiza accept --reason ok
 
 # Three more accepted change sets the daemon will not start: one serving no
-# milestone, one with no leaves and one depending on an unlanded change set.
+# milestone, one with no leaves (pinned to ship-change-classic, which builds
+# only planned leaves; the conductor default would plan it) and one
+# depending on an unlanded change set.
 exec rhiza change new Orphan --title Orphan
 exec rhiza add capability orphan-leaf
 exec rhiza propose
 exec rhiza accept --reason ok
-exec rhiza change new Leafless --title Leafless
+exec rhiza change new Leafless --title Leafless --workflow ship-change-classic
 exec rhiza link 01M5PWGX40FB1RBRN9YHMNJW07 serves m
 exec rhiza propose
 exec rhiza accept --reason ok

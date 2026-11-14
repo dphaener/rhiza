@@ -12,6 +12,7 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
 exec rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
@@ -49,6 +50,9 @@ stdout '^rhiza: step build/build: entered'
 
 # Stop the child through the pid its journal names.
 exec sh -c 'kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" .git/rhiza/runs/*.jsonl | head -1)'
+-- dispatch.toml --
+[ready]
+feature = "ship-change-classic"
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

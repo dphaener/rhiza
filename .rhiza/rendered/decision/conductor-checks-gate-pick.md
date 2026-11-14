@@ -28,6 +28,7 @@ Read the question, the change set's slice (leaves review-three-checks, critic-on
 - decided-by [review-three-checks](../capability/rhiza/workflows/built-in-workflows/review-three-checks.md)
 - decided-by [critic-on-major](../capability/rhiza/workflows/built-in-workflows/critic-on-major.md)
 - decided-by [conduct-plans-leaves](../capability/rhiza/orchestration/daemon/conduct-plans-leaves.md)
+- decided-by [builtin-conductor-default](../capability/rhiza/workflows/built-in-workflows/builtin-conductor-default.md)
 
 ## History
 
