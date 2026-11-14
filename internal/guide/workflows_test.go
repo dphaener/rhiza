@@ -28,6 +28,7 @@ func TestWorkflowsText(t *testing.T) {
 		"dispatch": {
 			".rhiza/dispatch.toml", "[request]", "[ready]", "rhiza request --workflow",
 			"feature", "bug", "milestone", "ship-change", "workflow-unresolved",
+			"ship-change-classic", "conductor default", "handing back to `conduct`",
 		},
 		"loop": {
 			"rhiza workflow ls", "rhiza workflow new mine --from ship-change",
