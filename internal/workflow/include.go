@@ -177,6 +177,12 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 		if s.Kind != KindSignoff {
 			continue
 		}
+		if h, ok := strings.CutPrefix(s.On[OutcomeChanges], HandbackPrefix); ok {
+			if ts, ok := steps[h]; !ok || ts.Kind != KindAgent {
+				return fmt.Errorf("step %q: on.changes names %q, which is not an agent step to hand back to", n, s.On[OutcomeChanges])
+			}
+			continue
+		}
 		if ts, ok := steps[s.On[OutcomeChanges]]; !ok || ts.Kind != KindChecks {
 			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", n, s.On[OutcomeChanges])
 		}

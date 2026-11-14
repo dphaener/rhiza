@@ -7,4 +7,5 @@
 bug = "plan-bug"
 
 [ready]
+feature = "ship-rhiza"
 bug = "bugfix"

@@ -1,0 +1,24 @@
+name = "ship-rhiza"
+
+# Rhiza's own ship: the built-in ship-change (a conductor plans, builds and
+# verifies the leaves; the daemon gates, signs off, pushes, waits for CI,
+# merges and closes out), with this repo's [env] and go-cleanup.
+#
+# The branch may change how the model renders, and the rhiza that runs ship
+# (often an installed one, older than the branch) would land and render with
+# its own rendering. So the conductor builds rhiza from the PR head to
+# SHIP_HEAD_RHIZA (with the SHIP_HEAD_BUILD command) when it lands and
+# renders. Only this file's [env] applies, not the included workflow's.
+[env]
+GOTMPDIR = "{run_tmp}"
+SHIP_HEAD_RHIZA = "{run_tmp}/rhiza-head"
+SHIP_HEAD_BUILD = 'go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza'
+
+[step.ship]
+kind = "workflow"
+workflow = "ship-change"
+on.pass = "done"
+
+[[cleanup]]
+name = "go-cleanup"
+run = "sh .rhiza/workflows/go-cleanup.sh"

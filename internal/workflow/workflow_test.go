@@ -2408,7 +2408,7 @@ func TestShipFixPromptsOneLine(t *testing.T) {
 	if agents != len(want) {
 		t.Errorf("builtin ship-change has %d agent steps; want %d", agents, len(want))
 	}
-	for _, file := range []string{"ship-change", "docs"} {
+	for _, file := range []string{"ship-rhiza", "docs"} {
 		src, err := os.ReadFile(filepath.Join("..", "..", ".rhiza", "workflows", file+".toml"))
 		if err != nil {
 			t.Fatal(err)
