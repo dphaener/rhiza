@@ -193,7 +193,17 @@ func milestoneProject(t *testing.T, seed int64, prefix string) (http.Handler, *a
 	}
 	callJSON(t, ctx, "land", `{}`)
 	mk := func(title, serves string, steps ...string) string {
-		cs := newChange(t, ctx, prefix+title, "intention")
+		req := `{"intent":` + quote(prefix+title) + `,"kind":"intention"}`
+		if title == "A landed 1" {
+			// A landed change set whose title is not cut from its intent.
+			req = `{"intent":` + quote(prefix+"Land the first of seven, then more") + `,"kind":"intention","title":` + quote(prefix+title) + `}`
+		}
+		b, _ := json.Marshal(callJSON(t, ctx, "change.new", req))
+		var v struct {
+			CS string `json:"change_set"`
+		}
+		json.Unmarshal(b, &v)
+		cs := v.CS
 		if serves != "" {
 			callJSON(t, ctx, "link", `{"from":"`+cs+`","type":"serves","to":"`+serves+`"}`)
 		}
@@ -297,6 +307,10 @@ func TestRoadmapMilestones(t *testing.T) {
 	// Title from the title field, the intent as the clamped sub-line.
 	if !strings.Contains(body, `>A building<small>A building</small></a>`) {
 		t.Error("row is not title then intent")
+	}
+	// A landed change set's title field, not its intent cut short.
+	if !strings.Contains(body, `>A landed 1<small>Land the first of seven, then more</small></a>`) {
+		t.Errorf("a landed row is not titled from its title field:\n%s", body)
 	}
 	if strings.Contains(body, ">01") || strings.Contains(body, "Alpha milestone</h3></div>") == false {
 		t.Error("an ID shows, or the milestone is not named by its statement")

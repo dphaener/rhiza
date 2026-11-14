@@ -253,6 +253,27 @@ func runMilestones(ctx *Ctx, req any) (any, error) {
 		}
 		servedBy[l.To] = append(servedBy[l.To], l.From)
 	}
+	// A landed change set's title is in its open entry: fold the served ones
+	// not folded above.
+	var rest []id.ID
+	for _, cs := range servedBy {
+		for _, c := range cs {
+			if _, ok := flown[c]; !ok && !slices.Contains(rest, c) {
+				rest = append(rest, c)
+			}
+		}
+	}
+	if len(rest) > 0 {
+		entries, err := r.EntriesOf(rest)
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range planFold(rest, entries) {
+			if t := s.Open.DisplayTitle(); t != "" {
+				titles[s.ID] = t
+			}
+		}
+	}
 	row := func(cs id.ID) MilestoneChangeSet {
 		return MilestoneChangeSet{ID: cs, Title: titles[cs], State: states[cs]}
 	}
