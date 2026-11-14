@@ -7733,6 +7733,10 @@ cmp stdout describe.golden.json
                         "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
                         "type": "string"
                       },
+                      "intent": {
+                        "description": "The change set's intent",
+                        "type": "string"
+                      },
                       "state": {
                         "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
                         "type": "string"
@@ -7744,6 +7748,7 @@ cmp stdout describe.golden.json
                     },
                     "required": [
                       "id",
+                      "intent",
                       "state",
                       "title"
                     ],
@@ -7766,6 +7771,10 @@ cmp stdout describe.golden.json
                               "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
                               "type": "string"
                             },
+                            "intent": {
+                              "description": "The change set's intent",
+                              "type": "string"
+                            },
                             "state": {
                               "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
                               "type": "string"
@@ -7777,6 +7786,7 @@ cmp stdout describe.golden.json
                           },
                           "required": [
                             "id",
+                            "intent",
                             "state",
                             "title"
                           ],

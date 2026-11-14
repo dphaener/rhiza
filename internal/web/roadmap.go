@@ -69,9 +69,10 @@ type milestonesJSON struct {
 			Met       bool   `json:"met"`
 		} `json:"done_points"`
 		ChangeSets []struct {
-			ID    string `json:"id"`
-			Title string `json:"title"`
-			State string `json:"state"`
+			ID     string `json:"id"`
+			Title  string `json:"title"`
+			Intent string `json:"intent"`
+			State  string `json:"state"`
 		} `json:"change_sets"`
 	} `json:"milestones"`
 }
@@ -150,15 +151,6 @@ func plural(n int, w string) string {
 	return fmt.Sprintf("%d %ss", n, w)
 }
 
-// changeIntent reads a change set's intent, for the sub-line of its row.
-func changeIntent(r *http.Request, id string) string {
-	var cs changeJSON
-	if err := apiGet(r, "/api/change.show?ref="+url.QueryEscape(id), &cs); err != nil {
-		return ""
-	}
-	return cs.Intent
-}
-
 // activeRuns is the change sets with a run not finished: going, waiting on
 // the owner or stopped.
 func activeRuns(r *http.Request) map[string]string {
@@ -195,7 +187,7 @@ func fold(label string, rows []Row, more string) RowGroup {
 
 // milestoneGroup shapes an open milestone: its bar, its done points and its
 // change sets grouped by what is happening to them.
-func milestoneGroup(r *http.Request, m milestonesJSON, i int, runs map[string]string) RoadmapGroup {
+func milestoneGroup(m milestonesJSON, i int, runs map[string]string) RoadmapGroup {
 	ms := m.Milestones[i]
 	g := RoadmapGroup{Kind: "milestone", Title: ms.Statement, State: ms.State}
 	for _, d := range ms.DonePoints {
@@ -205,11 +197,12 @@ func milestoneGroup(r *http.Request, m milestonesJSON, i int, runs map[string]st
 		}
 	}
 	row := func(c struct {
-		ID    string `json:"id"`
-		Title string `json:"title"`
-		State string `json:"state"`
+		ID     string `json:"id"`
+		Title  string `json:"title"`
+		Intent string `json:"intent"`
+		State  string `json:"state"`
 	}, p Pill) Row {
-		return Row{Href: "/changes/" + c.ID, Title: c.Title, Sub: changeIntent(r, c.ID), Pill: p, Step: "—"}
+		return Row{Href: "/changes/" + c.ID, Title: c.Title, Sub: c.Intent, Pill: p, Step: "—"}
 	}
 	var building, accepted, proposed, landed, withdrawn, drafts []Row
 	count := map[string]int{}
@@ -257,27 +250,19 @@ func milestoneGroup(r *http.Request, m milestonesJSON, i int, runs map[string]st
 	add("Building now", building, "building")
 	add("Accepted, waiting", accepted, "accepted")
 	add("Proposed", proposed, "proposed")
-	landed = append(landed, withdrawn...)
-	if len(landed) > 0 {
+	// Landed shows its first rows; the rest and every withdrawn change set
+	// are in its fold.
+	if len(landed)+len(withdrawn) > 0 {
 		lg := fold("Landed", landed, "")
-		if len(lg.More) > 0 {
-			nl, nw := 0, 0
-			for _, rw := range lg.More {
-				if rw.Pill.State == "withdrawn" {
-					nw++
-				} else {
-					nl++
-				}
-			}
-			var parts []string
-			if nl > 0 {
-				parts = append(parts, fmt.Sprintf("%d more landed", nl))
-			}
-			if nw > 0 {
-				parts = append(parts, fmt.Sprintf("%d withdrawn", nw))
-			}
-			lg.MoreText = strings.Join(parts, ", ")
+		lg.More = append(lg.More, withdrawn...)
+		var parts []string
+		if n := len(lg.More) - len(withdrawn); n > 0 {
+			parts = append(parts, fmt.Sprintf("%d more landed", n))
 		}
+		if len(withdrawn) > 0 {
+			parts = append(parts, fmt.Sprintf("%d withdrawn", len(withdrawn)))
+		}
+		lg.MoreText = strings.Join(parts, ", ")
 		g.RowGroups = append(g.RowGroups, lg)
 	}
 	add("Drafts", drafts, "drafts")
@@ -309,7 +294,7 @@ func loadRoadmap(r *http.Request) (*RoadmapView, error) {
 			v.Finished = append(v.Finished, f)
 			continue
 		}
-		g := milestoneGroup(r, ms, i, runs)
+		g := milestoneGroup(ms, i, runs)
 		for _, c := range m.ChangeSets {
 			if c.State == "draft" || c.State == "proposed" || c.State == "accepted" || c.State == "landed" || c.State == "withdrawn" {
 				v.Total++

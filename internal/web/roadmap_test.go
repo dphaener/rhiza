@@ -321,3 +321,54 @@ func TestRoadmapMilestones(t *testing.T) {
 		}
 	}
 }
+
+// TestRoadmapWithdrawnAlwaysFolds: with two landed and one withdrawn change
+// set, the withdrawn one is in the Landed group's fold, never a shown row.
+func TestRoadmapWithdrawnAlwaysFolds(t *testing.T) {
+	ctx := fixtureCtx(t)
+	newChange(t, ctx, "Milestones", "record")
+	callJSON(t, ctx, "add", `{"kind":"intent","handle":"a","fields":["statement=Alpha milestone","milestone=1"]}`)
+	callJSON(t, ctx, "land", `{}`)
+	mk := func(intent string, steps ...string) {
+		cs := newChange(t, ctx, intent, "intention")
+		callJSON(t, ctx, "link", `{"from":"`+cs+`","type":"serves","to":"a"}`)
+		for _, s := range steps {
+			callJSON(t, ctx, s, `{}`)
+		}
+	}
+	mk("A landed one", "propose", "accept", "land")
+	mk("A landed two", "propose", "accept", "land")
+	mk("A withdrawn", "propose", "withdraw")
+	body := serve(web.Handler(api.ReadOnlyHandler(ctx)), "GET", "/roadmap").Body.String()
+	i := strings.Index(body, "<summary>1 withdrawn</summary>")
+	if i < 0 {
+		t.Fatalf("no fold for the withdrawn change set:\n%s", body)
+	}
+	if w := strings.Index(body, ">A withdrawn<"); w < i {
+		t.Errorf("the withdrawn change set shows as a Landed row:\n%s", body)
+	}
+	if l := strings.Index(body, ">A landed two<"); l < 0 || l > i {
+		t.Errorf("a landed change set is not a shown row:\n%s", body)
+	}
+}
+
+// TestRoadmapReadsNoChangePerRow: the roadmap renders from its operations,
+// never one change.show per milestone row.
+func TestRoadmapReadsNoChangePerRow(t *testing.T) {
+	_, ctx := milestoneProject(t, 23, "")
+	api0 := api.ReadOnlyHandler(ctx)
+	shows := 0
+	counted := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/change.show") {
+			shows++
+		}
+		api0.ServeHTTP(w, r)
+	})
+	body := serve(web.Handler(counted), "GET", "/roadmap").Body.String()
+	if shows != 0 {
+		t.Errorf("the roadmap read change.show %d times", shows)
+	}
+	if !strings.Contains(body, `>A landed 1<small>Land the first of seven, then more</small></a>`) {
+		t.Errorf("a row lacks its intent:\n%s", body)
+	}
+}

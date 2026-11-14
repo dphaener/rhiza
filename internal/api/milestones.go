@@ -72,9 +72,10 @@ type MilestoneDonePoint struct {
 
 // MilestoneChangeSet is one change set serving a milestone or a done point.
 type MilestoneChangeSet struct {
-	ID    id.ID           `json:"id" desc:"The change set's ID"`
-	Title string          `json:"title" desc:"The change set's short title"`
-	State changeset.State `json:"state" desc:"draft, proposed, accepted, landed, rejected, withdrawn or superseded"`
+	ID     id.ID           `json:"id" desc:"The change set's ID"`
+	Title  string          `json:"title" desc:"The change set's short title"`
+	Intent string          `json:"intent" desc:"The change set's intent"`
+	State  changeset.State `json:"state" desc:"draft, proposed, accepted, landed, rejected, withdrawn or superseded"`
 }
 
 // Human writes the milestones as text: each with its state and its done
@@ -185,8 +186,10 @@ func runMilestones(ctx *Ctx, req any) (any, error) {
 	}
 	states := map[id.ID]changeset.State{}
 	titles := map[id.ID]string{}
+	intentOf := map[id.ID]string{}
 	for _, c := range infos {
 		states[c.ID] = c.State
+		intentOf[c.ID] = c.Intent
 		titles[c.ID] = changeset.Open{Intent: c.Intent}.DisplayTitle()
 	}
 	// EachInFlight calls back from several decode workers at once.
@@ -203,6 +206,9 @@ func runMilestones(ctx *Ctx, req any) (any, error) {
 	for c, s := range flown {
 		if t := s.Open.DisplayTitle(); t != "" {
 			titles[c] = t
+		}
+		if s.Open.Intent != "" {
+			intentOf[c] = s.Open.Intent
 		}
 	}
 	// A dropped change set's links are not in the view: its own ops make them.
@@ -272,10 +278,13 @@ func runMilestones(ctx *Ctx, req any) (any, error) {
 			if t := s.Open.DisplayTitle(); t != "" {
 				titles[s.ID] = t
 			}
+			if s.Open.Intent != "" {
+				intentOf[s.ID] = s.Open.Intent
+			}
 		}
 	}
 	row := func(cs id.ID) MilestoneChangeSet {
-		return MilestoneChangeSet{ID: cs, Title: titles[cs], State: states[cs]}
+		return MilestoneChangeSet{ID: cs, Title: titles[cs], Intent: intentOf[cs], State: states[cs]}
 	}
 
 	var ms []id.ID
