@@ -1,0 +1,35 @@
+# builtin-ship-change-plan-interview
+
+source · `01M7AHVNR2TA9N54ZVEGJ15BGJ`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+51b0babb871d1251c64402dd5fd299c7fa79a809de94bcc9015804aaedc2314f
+
+## session
+
+9a4a7e78-6eb7-4185-b879-01a1d51484a5
+
+## summary
+
+Autonomous plan run for change set 01M79KH5 (The builtin ship-change), 2026-11-13; no owner, an arbiter answered. The planner's research found: the builtin ship-change is 56 steps and about 66 testscripts plus Go tests in internal/api, internal/daemon and internal/workflow drive it; run start refuses a leafless change set only when the workflow is named ship-change (internal/api/run.go), which would stop the conductor default from planning leaves; Rhiza's own .rhiza/workflows/ship-change.toml shadow exists only to build rhiza from the PR head (SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) and ship rebase already runs SHIP_HEAD_BUILD itself; docs/runs-and-daemon.md, docs/custom-workflows.md and the workflows guide topic describe ship-change as build then review. The planner raised four questions as one batch; the arbiter answered with Decision builtin-ship-change-open-points: the new builtin keeps ship and deploy-check after close-out and is exactly 10 steps; a red main CI after the merge stops the run with no hand-back; the shadow is removed and its [env] moves to a thin .rhiza/workflows/ship-rhiza.toml that includes the builtin, picked by .rhiza/dispatch.toml [ready] feature; the classic tests stay, pointed at ship-change-classic, and only the tests of the default move to the new builtin. The planner then split the work into leaves: the classic builtin, the leafless refusal keyed on a leaves step, the classic tests pinned, the conductor default, the one-CI-round scenario, Rhiza's repo on the default, and the docs.
+
+## title
+
+The builtin ship-change plan interview (autonomous)
+
+## Links
+
+### In
+
+- derived-from [builtin-ship-change-open-points](../decision/builtin-ship-change-open-points.md)
+
+## History
+
+- `01M79KH59D0HEME6B85PXXB056` The builtin ship-change becomes the conductor default (conduct, gate, signoff, push, CI, merge, main CI, close-out; every red hands back to conduct) and the old one stays as ship-change-classic

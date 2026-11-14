@@ -24,6 +24,8 @@ When a run hands back to an agent step, it passes the routing step's cause to th
 
 - depends-on [spawn-durable](../../orchestration/daemon/spawn-durable.md)
 - depends-on [spawn-visible](spawn-visible.md)
+- depends-on [builtin-conductor-default](../built-in-workflows/builtin-conductor-default.md)
+- depends-on [handback-target-survives-include](../built-in-workflows/handback-target-survives-include.md)
 - verifies [run-handback-verified](../../../../evidence/run-handback-verified.md)
 - verifies [run-handback-qa-1](../../../../evidence/run-handback-qa-1.md)
 - verifies [run-handback-qa-2](../../../../evidence/run-handback-qa-2.md)

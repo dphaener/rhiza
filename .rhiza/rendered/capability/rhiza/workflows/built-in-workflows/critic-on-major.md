@@ -20,6 +20,8 @@ rhiza run review-check works in a run whose workflow has a step that declares ch
 
 ### In
 
+- depends-on [builtin-conductor-default](builtin-conductor-default.md)
+- depends-on [review-check-declared-checks](built-in-review/review-check-declared-checks.md)
 - verifies [critic-on-major-verified](../../../../evidence/critic-on-major-verified.md)
 - verifies [critic-on-major-qa-1](../../../../evidence/critic-on-major-qa-1.md)
 - verifies [critic-on-major-verified-2](../../../../evidence/critic-on-major-verified-2.md)
