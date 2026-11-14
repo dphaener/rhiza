@@ -2616,7 +2616,7 @@ rhiza skill check <invoke> --permission-mode <permission-mode> [--role <role>] [
 Arguments and flags:
 
 - `<invoke>`: The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as "/my-builder Build {leaf}" (required)
-- `--role`: The role the invoke plays: builder; default builder
+- `--role`: The role the invoke plays: builder, verifier or check; default builder
 - `--agent`: The agent adapter to launch; default the built-in default adapter
 - `--permission-mode`: The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused (required)
 - `--keep`: Keep the scratch repo instead of removing it, and name it in the report

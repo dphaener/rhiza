@@ -9,6 +9,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/dphaener/rhiza/internal/check"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -38,7 +40,7 @@ func init() {
 // SkillCheckRequest names the invoke, the role it plays and its agent.
 type SkillCheckRequest struct {
 	Invoke         string `json:"invoke" arg:"0" desc:"The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as \"/my-builder Build {leaf}\""`
-	Role           string `json:"role,omitempty" desc:"The role the invoke plays: builder; default builder"`
+	Role           string `json:"role,omitempty" desc:"The role the invoke plays: builder, verifier or check; default builder"`
 	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the built-in default adapter"`
 	PermissionMode string `json:"permission_mode" desc:"The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused"`
 	Keep           bool   `json:"keep,omitempty" desc:"Keep the scratch repo instead of removing it, and name it in the report"`
@@ -49,11 +51,16 @@ const (
 	gateSessionDone = "session-done"
 	gateTrailers    = "trailers"
 	gateCheck       = "check"
+	gateEvidence    = "evidence"
+	gateFindings    = "findings"
 )
+
+// skillCheckRoles are the roles skill check runs an invoke as.
+var skillCheckRoles = []string{workflow.RoleBuilder, workflow.RoleVerifier, workflow.RoleCheck}
 
 // SkillGate is one gate of the role's contract and how the session did.
 type SkillGate struct {
-	Name   string `json:"name" desc:"The gate: session-done, trailers or check"`
+	Name   string `json:"name" desc:"The gate: session-done, then the role's own (a builder's trailers, a verifier's evidence, a check's findings), then check"`
 	Result string `json:"result" desc:"pass or fail"`
 	Detail string `json:"detail" desc:"What the gate wants and what the session did"`
 }
@@ -106,9 +113,30 @@ const (
 	skillCheckLeaf     = "greeting-file"
 	skillCheckWorkflow = "skill-check"
 	skillCheckStep     = "build"
-	// skillCheckVerifier is the fixture workflow's verifier invoke: a
+	// skillCheckVerifier is the builder fixture's verifier invoke: a
 	// leaves step needs one, and it runs only after the builder passes.
 	skillCheckVerifier = "Verify leaf {leaf} of change set {change}: follow `rhiza guide verifier`."
+	// skillCheckChecks and skillCheckCheck are the check fixture's checks
+	// step and its one check.
+	skillCheckChecks = "review"
+	skillCheckCheck  = "fixture"
+	// skillCheckBuilder is the actor of the fixture's builder commit, the
+	// one the verifier and check roles start from, and skillCheckBuilt
+	// the session the verifier fixture's journal says made it.
+	skillCheckBuilder = "fixture-builder"
+	skillCheckBuilt   = "skill-check-fixture-builder"
+	// skillCheckUnused starts the invoke of every fixture role but the
+	// one checked: a slash command no agent has installed, so its session
+	// start is refused before an agent launches and the run ends there,
+	// rather than a fixture role spending a real session.
+	skillCheckUnused = "/rhiza-skill-check-unused The fixture's "
+	// skillCheckArbiter is the fixture's arbiter step and skillCheckNoMode
+	// its permission mode, one no adapter accepts: the question a failed
+	// leaf or review raises gets no advisor session, whose start is
+	// refused and only logged. The run is never autonomous, so no arbiter
+	// runs.
+	skillCheckArbiter = "arbiter"
+	skillCheckNoMode  = "skill-check-none"
 )
 
 // skillCheckRoot is the scratch folder's root config: the scratch repo
@@ -138,8 +166,8 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 	if r.Role == "" {
 		r.Role = workflow.RoleBuilder
 	}
-	if r.Role != workflow.RoleBuilder {
-		return nil, Usagef("unknown role %q: want builder", r.Role)
+	if !slices.Contains(skillCheckRoles, r.Role) {
+		return nil, Usagef("unknown role %q: want builder, verifier or check", r.Role)
 	}
 	a, err := startAdapter(ctx, SessionStartRequest{Agent: r.Agent, PermissionMode: r.PermissionMode})
 	if err != nil {
@@ -164,7 +192,7 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 		os.RemoveAll(dir)
 		return nil, Errorf("scratch folder: %v", err)
 	}
-	sc := &scratch{ctx: ctx, dir: dir, repo: filepath.Join(dir, "repo")}
+	sc := &scratch{ctx: ctx, dir: dir, repo: filepath.Join(dir, "repo"), role: r.Role}
 	out := SkillCheckResponse{Invoke: r.Invoke, Role: r.Role, Agent: a.Name()}
 	if r.Keep {
 		out.Scratch = sc.repo
@@ -182,6 +210,15 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 		args = append(args, "--agent", r.Agent)
 	}
 	_, runErr := sc.rhiza(sc.repo, args...)
+	if r.Role == workflow.RoleVerifier {
+		// The fixture's builder is refused at its start, so the run fails
+		// there; journal its attempt as passed at the fixture's builder
+		// commit and retry the step, which starts the verifier on it.
+		if err := sc.seedBuilder(runErr); err != nil {
+			return nil, Errorf("the scratch run: %v", err)
+		}
+		_, runErr = sc.rhiza(sc.repo, "run", "resume", "--retry", "--foreground", sc.run)
+	}
 	gates, ran, err := sc.grade(runErr)
 	if err != nil {
 		return nil, err
@@ -191,11 +228,20 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 	return out, nil
 }
 
-// scratch is the scratch folder and the repo in it.
+// scratch is the scratch folder and the repo in it, the role checked,
+// and what the fixture made: its change set, its leaf, the commit the
+// builder started from and, for the verifier and check roles, the
+// fixture's builder commit; run is the scratch run once seeded.
 type scratch struct {
-	ctx  *Ctx
-	dir  string
-	repo string
+	ctx    *Ctx
+	dir    string
+	repo   string
+	role   string
+	change string
+	leaf   string
+	base   string
+	built  string
+	run    string
 }
 
 // rhiza runs the running rhiza with args in dir, its environment the
@@ -225,13 +271,16 @@ func (s *scratch) exec(dir, name string, args ...string) (string, error) {
 }
 
 // fixture builds the scratch repo: git and rhiza initialized, a change
-// set with one leaf capability, and the one-step workflow whose builder
-// runs invoke, all committed.
+// set with one leaf capability, and the one-step workflow whose role
+// s.role runs invoke, all committed. For the verifier and check roles the
+// leaf is then built: a commit writing the file, its Change:, Actor: and
+// Leaf: trailers naming the change set, the fixture's recorded builder
+// actor and the leaf.
 func (s *scratch) fixture(invoke string) error {
 	if err := os.Mkdir(s.repo, 0o755); err != nil {
 		return Errorf("scratch repo: %v", err)
 	}
-	wf, err := skillCheckDefinition(invoke)
+	wf, err := skillCheckDefinition(s.role, invoke)
 	if err != nil {
 		return err
 	}
@@ -243,16 +292,46 @@ func (s *scratch) fixture(invoke string) error {
 		},
 		func() error { _, err := s.git(s.repo, "init", "-q"); return err },
 		func() error { _, err := s.rhiza(s.repo, "init"); return err },
-		func() error { return s.commit("init") },
 		func() error {
-			_, err := s.rhiza(s.repo, "change", "new", skillCheckChange, "--title", skillCheckChange)
+			if s.role == workflow.RoleBuilder {
+				return nil
+			}
+			if _, err := s.rhiza(s.repo, "add", "actor", skillCheckBuilder, "--record"); err != nil {
+				return err
+			}
+			_, err := s.rhiza(s.repo, "render")
 			return err
 		},
+		func() error { return s.commit("init") },
 		func() error {
-			_, err := s.rhiza(s.repo, "add", "capability", skillCheckLeaf,
+			out, err := s.rhiza(s.repo, "change", "new", skillCheckChange, "--title", skillCheckChange, "--json")
+			if err != nil {
+				return err
+			}
+			var cs struct {
+				ChangeSet string `json:"change_set"`
+			}
+			if err := json.Unmarshal([]byte(out), &cs); err != nil || cs.ChangeSet == "" {
+				return fmt.Errorf("rhiza change new printed no change set: %s", out)
+			}
+			s.change = cs.ChangeSet
+			return nil
+		},
+		func() error {
+			out, err := s.rhiza(s.repo, "add", "capability", skillCheckLeaf,
 				"--field", "statement=The file GREETING at the repo's top holds the line hello.",
-				"--field", "acceptance=test \"$(cat GREETING)\" = hello")
-			return err
+				"--field", "acceptance=test \"$(cat GREETING)\" = hello", "--json")
+			if err != nil {
+				return err
+			}
+			var n struct {
+				Nodes []string `json:"nodes"`
+			}
+			if err := json.Unmarshal([]byte(out), &n); err != nil || len(n.Nodes) != 1 {
+				return fmt.Errorf("rhiza add capability printed no node: %s", out)
+			}
+			s.leaf = n.Nodes[0]
+			return nil
 		},
 		func() error {
 			p := filepath.Join(s.repo, workflowsDir, skillCheckWorkflow+".toml")
@@ -263,10 +342,69 @@ func (s *scratch) fixture(invoke string) error {
 		},
 		func() error { _, err := s.rhiza(s.repo, "render"); return err },
 		func() error { return s.commit("fixture") },
+		func() (err error) { s.base, err = s.head(); return err },
+		func() error {
+			if s.role == workflow.RoleBuilder {
+				return nil
+			}
+			if err := os.WriteFile(filepath.Join(s.repo, "GREETING"), []byte("hello\n"), 0o644); err != nil {
+				return err
+			}
+			if err := s.commit("build " + skillCheckLeaf + "\n\nChange: " + s.change + "\nActor: " + skillCheckBuilder + "\nLeaf: " + skillCheckLeaf); err != nil {
+				return err
+			}
+			s.built, err = s.head()
+			return err
+		},
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
 			return Errorf("build the scratch repo %s: %v", s.repo, err)
+		}
+	}
+	return nil
+}
+
+// head is the scratch repo's HEAD commit.
+func (s *scratch) head() (string, error) {
+	out, err := s.git(s.repo, "rev-parse", "HEAD")
+	return strings.TrimSpace(out), err
+}
+
+// seedBuilder journals, on the verifier fixture's failed run, its
+// builder's first attempt: a session started at the fixture commit and
+// judged pass at the fixture's builder commit, as a builder that built
+// the leaf leaves it. runErr is run start's failure: the fixture's
+// builder is refused at its start, so the run must have failed at its
+// one step, and anything else is that failure.
+func (s *scratch) seedBuilder(runErr error) error {
+	rs := run.NewStore(run.Dir(filepath.Join(s.repo, ".git")))
+	js, err := rs.List()
+	if err != nil {
+		return fmt.Errorf("read the scratch run: %v", err)
+	}
+	if len(js) == 0 {
+		if runErr == nil {
+			runErr = fmt.Errorf("no run started")
+		}
+		return runErr
+	}
+	j := js[len(js)-1]
+	st := j.State()
+	if step, err := st.FailedStep(); err != nil || step != skillCheckStep || st.Visits[skillCheckStep] != 1 {
+		return fmt.Errorf("the run did not fail at its fixture builder's start: %s: %s", st.Result, st.Detail)
+	}
+	s.run = j.ID
+	now := s.ctx.Now()
+	for _, e := range []run.Entry{
+		{Type: run.TypeLeafSession, At: now, Step: skillCheckStep, Leaf: s.leaf, Handle: skillCheckLeaf,
+			Role: workflow.RoleBuilder, Attempt: 1, Session: skillCheckBuilt, Commit: s.base},
+		{Type: run.TypeLeafAttempt, At: now, Step: skillCheckStep, Leaf: s.leaf, Handle: skillCheckLeaf,
+			Role: workflow.RoleBuilder, Attempt: 1, Outcome: workflow.OutcomePass, Commit: s.built,
+			Detail: "the fixture's builder commit"},
+	} {
+		if err := rs.Append(j.ID, e); err != nil {
+			return fmt.Errorf("journal the fixture's builder: %v", err)
 		}
 	}
 	return nil
@@ -281,19 +419,41 @@ func (s *scratch) commit(msg string) error {
 	return err
 }
 
-// skillCheckDefinition is the fixture's one-step workflow: a leaves step
-// whose builder runs invoke.
-func skillCheckDefinition(invoke string) ([]byte, error) {
+// skillCheckDefinition is the fixture's one-step workflow for role: a
+// leaves step whose builder runs invoke; a leaves step whose verifier
+// runs invoke, its builder never started; or a checks step with one
+// check that runs invoke, its critic, fixer and verifier never started.
+// A check that fails re-runs in the further cycles a review gives it; the
+// gates read its first. Its arbiter step launches no advisor.
+func skillCheckDefinition(role, invoke string) ([]byte, error) {
+	unused := func(r string) map[string]string {
+		return map[string]string{"invoke": skillCheckUnused + r + " never runs."}
+	}
+	step, body := skillCheckStep, map[string]any{
+		"kind":     workflow.KindLeaves,
+		"on":       map[string]string{workflow.OutcomePass: "done"},
+		"builder":  map[string]string{"invoke": invoke},
+		"verifier": map[string]string{"invoke": skillCheckVerifier},
+	}
+	switch role {
+	case workflow.RoleVerifier:
+		body["builder"], body["verifier"] = unused(workflow.RoleBuilder), map[string]string{"invoke": invoke}
+	case workflow.RoleCheck:
+		step, body = skillCheckChecks, map[string]any{
+			"kind":                workflow.KindChecks,
+			"on":                  map[string]string{workflow.OutcomePass: "done"},
+			"check":               []map[string]string{{"name": skillCheckCheck, "invoke": invoke}},
+			workflow.RoleCritic:   unused(workflow.RoleCritic),
+			workflow.RoleFixer:    unused(workflow.RoleFixer),
+			workflow.RoleVerifier: unused(workflow.RoleVerifier),
+		}
+	}
 	doc := map[string]any{
 		"name":  skillCheckWorkflow,
-		"start": skillCheckStep,
+		"start": step,
 		"step": map[string]any{
-			skillCheckStep: map[string]any{
-				"kind":     workflow.KindLeaves,
-				"on":       map[string]string{workflow.OutcomePass: "done"},
-				"builder":  map[string]string{"invoke": invoke},
-				"verifier": map[string]string{"invoke": skillCheckVerifier},
-			},
+			step:              body,
+			skillCheckArbiter: map[string]string{"kind": workflow.KindArbiter, "permission_mode": skillCheckNoMode},
 		},
 	}
 	var b bytes.Buffer
@@ -303,11 +463,10 @@ func skillCheckDefinition(invoke string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// grade reads the scratch run's journal and grades the builder's first
-// attempt: its session said done, a commit it made carries the Change:,
-// Actor: and Leaf: trailers, and rhiza check is clean at its newest
-// commit. runErr is run start's failure, if any: with no run journalled
-// it is the error. A run that never started a builder fails every gate.
+// grade reads the scratch run's journal and grades the first session of
+// the role checked (gradeBuilder, gradeVerifier, gradeCheck). runErr is
+// the scratch run's failure, if any: with no run journalled it is the
+// error.
 func (s *scratch) grade(runErr error) ([]SkillGate, string, error) {
 	common := filepath.Join(s.repo, ".git")
 	js, err := run.NewStore(run.Dir(common)).List()
@@ -335,21 +494,74 @@ func (s *scratch) grade(runErr error) ([]SkillGate, string, error) {
 			leaf = l
 		}
 	}
+	switch s.role {
+	case workflow.RoleVerifier:
+		return s.gradeVerifier(common, st, leaf, ran), ran, nil
+	case workflow.RoleCheck:
+		return s.gradeCheck(common, st, ran), ran, nil
+	}
+	return s.gradeBuilder(common, st, leaf, ran), ran, nil
+}
+
+// notStarted fails each of gates: the role's session never started.
+func notStarted(role, ran string, gates ...string) []SkillGate {
+	why := "the " + role + " never started (" + ran + ")"
+	out := make([]SkillGate, len(gates))
+	for i, g := range gates {
+		out[i] = SkillGate{Name: g, Result: workflow.OutcomeFail, Detail: why}
+	}
+	return out
+}
+
+// gradeBuilder grades the builder's first attempt: its session said done,
+// a commit it made carries the Change:, Actor: and Leaf: trailers, and
+// rhiza check is clean at its newest commit. A run that never started a
+// builder fails every gate.
+func (s *scratch) gradeBuilder(common string, st run.State, leaf run.LeafState, ran string) []SkillGate {
 	b, started := leaf.Session(workflow.RoleBuilder, 1)
 	if !started {
-		why := "the builder never started (" + ran + ")"
-		return []SkillGate{
-			{Name: gateSessionDone, Result: workflow.OutcomeFail, Detail: why},
-			{Name: gateTrailers, Result: workflow.OutcomeFail, Detail: why},
-			{Name: gateCheck, Result: workflow.OutcomeFail, Detail: why},
-		}, ran, nil
+		return notStarted(workflow.RoleBuilder, ran, gateSessionDone, gateTrailers, gateCheck)
 	}
 	commits, why := s.builderCommits(st, leaf, b)
 	return []SkillGate{
-		s.sessionDoneGate(common, b.Session),
+		s.sessionDoneGate(common, workflow.RoleBuilder, b.Session),
 		trailersGate(commits, why, st.Change),
 		s.checkGate(commits, why),
-	}, ran, nil
+	}
+}
+
+// gradeVerifier grades the verifier's session on the fixture's builder
+// commit: it said done, live Evidence its actor wrote verifies the leaf,
+// and rhiza check is clean in the run's worktree once it ended, its
+// Evidence committed there. A run that never started the verifier fails
+// every gate.
+func (s *scratch) gradeVerifier(common string, st run.State, leaf run.LeafState, ran string) []SkillGate {
+	v, started := leaf.Session(workflow.RoleVerifier, 1)
+	if !started {
+		return notStarted(workflow.RoleVerifier, ran, gateSessionDone, gateEvidence, gateCheck)
+	}
+	return []SkillGate{
+		s.sessionDoneGate(common, workflow.RoleVerifier, v.Session),
+		s.evidenceGate(common, st, v.Session),
+		s.worktreeCheckGate(st, workflow.RoleVerifier),
+	}
+}
+
+// gradeCheck grades the check's first cycle: its session said done, it
+// recorded a round with rhiza run findings for its check, and rhiza check
+// is clean in the run's worktree once it ended, its writes committed
+// there. A run that never started the check fails every gate.
+func (s *scratch) gradeCheck(common string, st run.State, ran string) []SkillGate {
+	c, _ := st.Check(skillCheckChecks, skillCheckCheck)
+	cs, started := c.Session(workflow.RoleCheck, 1)
+	if !started {
+		return notStarted(workflow.RoleCheck, ran, gateSessionDone, gateFindings, gateCheck)
+	}
+	return []SkillGate{
+		s.sessionDoneGate(common, workflow.RoleCheck, cs.Session),
+		findingsGate(c),
+		s.worktreeCheckGate(st, workflow.RoleCheck),
+	}
 }
 
 // builderCommits are the commits the builder's first attempt made, newest
@@ -376,19 +588,104 @@ func (s *scratch) builderCommits(st run.State, leaf run.LeafState, b run.LeafSes
 	return commits, ""
 }
 
-// sessionDoneGate passes when the builder's session ran rhiza session done
+// sessionDoneGate passes when role's session sid ran rhiza session done
 // before it exited.
-func (s *scratch) sessionDoneGate(common, sid string) SkillGate {
+func (s *scratch) sessionDoneGate(common, role, sid string) SkillGate {
 	g := SkillGate{Name: gateSessionDone}
 	rec, err := session.NewStore(session.Dir(common)).Read(sid)
 	switch {
 	case err != nil:
-		g.Result, g.Detail = workflow.OutcomeFail, fmt.Sprintf("read the builder's session %s: %v", sid, err)
+		g.Result, g.Detail = workflow.OutcomeFail, fmt.Sprintf("read the %s's session %s: %v", role, sid, err)
 	case rec.Status.SaidDone():
-		g.Result, g.Detail = workflow.OutcomePass, "the builder ran rhiza session done"
+		g.Result, g.Detail = workflow.OutcomePass, "the "+role+" ran rhiza session done"
 	default:
-		g.Result, g.Detail = workflow.OutcomeFail, "the builder never ran rhiza session done before it exited"
+		g.Result, g.Detail = workflow.OutcomeFail, "the "+role+" never ran rhiza session done before it exited"
 	}
+	return g
+}
+
+// evidenceGate passes when live Evidence created by the actor of verifier
+// session sid verifies the fixture's leaf, as the leaves step judges a
+// verifier: read in the run's worktree, where the verifier's writes land.
+func (s *scratch) evidenceGate(common string, st run.State, sid string) SkillGate {
+	g := SkillGate{Name: gateEvidence, Result: workflow.OutcomeFail}
+	ok, detail, err := s.verifierEvidence(common, st, sid)
+	switch {
+	case err != nil:
+		g.Detail = fmt.Sprintf("read the verifier's Evidence: %v", err)
+	case ok:
+		g.Result, g.Detail = workflow.OutcomePass, "Evidence the verifier wrote verifies "+skillCheckLeaf
+	case detail != "":
+		g.Detail = "no Evidence the verifier wrote verifies " + skillCheckLeaf + ": " + detail
+	default:
+		g.Detail = "no Evidence verifies " + skillCheckLeaf + ": the verifier wrote none"
+	}
+	return g
+}
+
+// verifierEvidence is leafEvidence over the run change set's view in the
+// run's worktree, for the actor of verifier session sid.
+func (s *scratch) verifierEvidence(common string, st run.State, sid string) (bool, string, error) {
+	rec, err := session.NewStore(session.Dir(common)).Read(sid)
+	if err != nil {
+		return false, "", err
+	}
+	cs, err := id.Parse(st.Change)
+	if err != nil {
+		return false, "", err
+	}
+	lid, err := id.Parse(s.leaf)
+	if err != nil {
+		return false, "", err
+	}
+	w, err := openWorkspace(st.Worktree, s.ctx.Now, nil, true)
+	if err != nil {
+		return false, "", err
+	}
+	m := w.model(cs)
+	actor, err := liveActor(m, rec.Actor)
+	if err != nil {
+		return false, "", fmt.Errorf("its actor %s: %s", rec.Actor, AsError(err).Message)
+	}
+	ok, detail := leafEvidence(m, w.creator(m), lid, actor)
+	return ok, detail, nil
+}
+
+// findingsGate passes when check c recorded a findings round in cycle 1,
+// with rhiza run findings --check.
+func findingsGate(c run.CheckState) SkillGate {
+	g := SkillGate{Name: gateFindings, Result: workflow.OutcomeFail,
+		Detail: fmt.Sprintf("the check recorded no round with rhiza run findings --check %s in cycle 1", skillCheckCheck)}
+	if r, ok := c.RoundFor(1); ok {
+		g.Result = workflow.OutcomePass
+		g.Detail = fmt.Sprintf("the check recorded round %d with %d finding(s) for check %s", r.Number, len(r.Findings), skillCheckCheck)
+	}
+	return g
+}
+
+// worktreeCheckGate passes when rhiza check is clean in the run's
+// worktree once role's session ended: the fixture's builder commit and
+// what the role wrote there. A verifier or check never renders, so the
+// worktree is rendered first, as a review's render step does after them.
+func (s *scratch) worktreeCheckGate(st run.State, role string) SkillGate {
+	g := SkillGate{Name: gateCheck, Result: workflow.OutcomeFail}
+	if st.Worktree == "" {
+		g.Detail = "the run recorded no worktree"
+		return g
+	}
+	if _, err := s.rhiza(st.Worktree, "render"); err != nil {
+		g.Detail = fmt.Sprintf("rhiza render in the run's worktree after the %s: %v", role, err)
+		return g
+	}
+	if out, err := s.rhiza(st.Worktree, "check"); err != nil {
+		why := strings.Join(strings.Fields(strings.TrimSpace(out)), " ")
+		if why == "" {
+			why = err.Error()
+		}
+		g.Detail = fmt.Sprintf("rhiza check in the run's worktree after the %s is not clean: %s", role, why)
+		return g
+	}
+	g.Result, g.Detail = workflow.OutcomePass, "rhiza check is clean in the run's worktree after the "+role
 	return g
 }
 

@@ -26655,7 +26655,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "role": {
-            "description": "The role the invoke plays: builder; default builder",
+            "description": "The role the invoke plays: builder, verifier or check; default builder",
             "type": "string"
           }
         },
@@ -26682,7 +26682,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "name": {
-                  "description": "The gate: session-done, trailers or check",
+                  "description": "The gate: session-done, then the role's own (a builder's trailers, a verifier's evidence, a check's findings), then check",
                   "type": "string"
                 },
                 "result": {
