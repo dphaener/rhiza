@@ -1,0 +1,48 @@
+{
+  "actor": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "after": [
+    "01M7E4QV3CJHAQJQ7MHYY71DRN"
+  ],
+  "at": "2026-11-14T23:02:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "options": [
+            "Orchestrator unblocks",
+            "Fix ship-rhiza gate",
+            "Park the run"
+          ],
+          "picked": "Orchestrator unblocks",
+          "question": "Run 01M7DVV7 (change set 01M79KHB) gate failed: its `rhiza check` runs the installed ~/bin/rhiza (v0.1.0-103-ga83650275, main), which lacks the new `rhiza skill` command, so it fails docs/reference/cli.md ('names rhiza skill, which is not a command' and 'differs from what rhiza docs writes'). The same check with the branch build ($SHIP_HEAD_RHIZA) passes. No branch commit can satisfy both binaries. How should this be resolved?",
+          "session": "61c60493-d643-4ab8-b81d-01a1dbbdfd32",
+          "statement": "Run 01M7DVV7 (change set 01M79KHB) gate failed: its `rhiza check` runs the installed ~/bin/rhiza (v0.1.0-103-ga83650275, main), which lacks the new `rhiza skill` command, so it fails docs/reference/cli.md ('names rhiza skill, which is not a command' and 'differs from what rhiza docs writes'). The same check with the branch build ($SHIP_HEAD_RHIZA) passes. No branch commit can satisfy both binaries. How should this be resolved? — Orchestrator unblocks",
+          "wording": "the agent's option, picked by the owner in session 61c60493-d643-4ab8-b81d-01a1dbbdfd32"
+        },
+        "handle": "answer-61c60493-3",
+        "id": "01M7E4QK2PW8TTR1D5FBYQPNPC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7E4QK2PW8TTR1D5F9EDQ5M2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E4QK2PW8TTR1D5F9EDQ5M2",
+        "id": "01M7E4QQVY8FERCB6PMPXDM40E",
+        "link": "01M7E4QQVY8FERCB6PMNQTCSZ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7DW3G5E24NZVATBZGT5YQBQ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M7E4QV3CJHAQJQ7MHVNRAR80",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7E4QWANQ2KKCQDV9CW2M2NA",
+  "type": "ops",
+  "v": 1
+}

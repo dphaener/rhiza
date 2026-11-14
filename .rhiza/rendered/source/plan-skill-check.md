@@ -31,6 +31,7 @@ Plan of rhiza skill check and workflow check warnings
 - derived-from [uncapped-loop-is-plain-red-loop](../decision/uncapped-loop-is-plain-red-loop.md)
 - derived-from [skill-check-scratch-one-role](../decision/skill-check-scratch-one-role.md)
 - derived-from [skill-check-plan-shape](../decision/skill-check-plan-shape.md)
+- derived-from [answer-61c60493-3](../decision/answer-61c60493-3.md)
 
 ## History
 
