@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AMFJE5Y9G414T0VA2KVPGF",
+  "after": [
+    "01M7AMS3RVSMZGPSFDEC7WG5BH"
+  ],
+  "at": "2026-11-13T14:25:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestReviewCheckDeclaredChecks shows, for a run at a later step than an agent step declaring plan, code and qa, review-check passing with only minor findings, failing with exit 1 and naming a confirmed major of the code check, and passing once the critic downgraded that major to minor or dropped it; go test -trimpath ./internal/api -run TestRunReviewCheck still passes for plan-review runs. Touches internal/api/run_review.go and internal/api/run_review_test.go.",
+          "statement": "rhiza run review-check, on a run whose workflow has an agent step declaring checks and which is past that step (at the gate), reads the latest round of each declared check and fails (exit 1) when any has a blocker or major finding the critic has not downgraded or dropped, naming each such finding; otherwise it passes. It leaves no question and has no round-3 pass. On a plan-review run, review-check is unchanged."
+        },
+        "handle": "review-check-declared-checks",
+        "id": "01M7AMS4TR5TGACVFJEEX562WV",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7AMS4TR5TGACVFJEDFEFZYE",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AMS4XE852N3P7CCBKWKZ27",
+  "type": "ops",
+  "v": 1
+}

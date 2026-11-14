@@ -1,0 +1,228 @@
+{
+  "actor": "01M7AHA2FK9EGDZN85KAM2K0V9",
+  "after": [
+    "01M7AHVP078NMMYSHVHZYTXTTM"
+  ],
+  "at": "2026-11-13T13:35:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows exactly 10 steps in that order, no leaves, checks or workflow step, every failure route before the merge being handback:conduct with a cap of 3, signoff's changes route handback:conduct, the merge's main-moved route going to the push step, and the main CI step having no failure route; go test -trimpath ./internal/daemon -run TestPick and go test -trimpath ./cmd/rhiza -run 'TestScripts/(bugfix-workflow-autonomous|daemon-root-ship-workflow|workflow-ls|describe-golden)' pass against the new default; rhiza workflow describe ship-change lists the 10 steps. Touches internal/workflow/builtin/ship-change.toml, internal/workflow/workflow_test.go, internal/daemon/pick_test.go and those testscripts.",
+          "statement": "The builtin ship-change is the conductor default of exactly 10 steps: conduct (the conduct skill), gate (every leaf has Evidence, no open blocker or major, rhiza check, the pre-push check, and the local gate while CI is unstable), signoff, push and open the PR, wait for CI at that head, merge the tested head, wait for main's CI, close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy); every red before the merge, a sign-off's requested changes included, hands back to conduct at most three times, main having moved at the merge goes back to the push for another CI round with no hand-back, and a red main CI after the merge stops the run."
+        },
+        "handle": "builtin-conductor-default",
+        "id": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinClassicUnchanged shows internal/workflow/builtin/ship-change-classic.toml equal to a golden copy of today's ship-change.toml (internal/workflow/testdata/ship-change-pre-m36.toml) apart from the name line, and BuiltinNames listing ship-change-classic; rhiza workflow check ship-change-classic is clean. Touches internal/workflow/builtin/ship-change-classic.toml, internal/workflow/testdata/ship-change-pre-m36.toml, internal/workflow/workflow_test.go.",
+          "statement": "The builtin ship-change as it is before milestone-36 ships, unchanged apart from its name, as the builtin ship-change-classic, so a project can pin it by name or in .rhiza/dispatch.toml."
+        },
+        "handle": "builtin-ship-change-classic",
+        "id": "01M79KPE1SEZAAMTA1A66Y2G66",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M79KPE1SEZAAMTA1A37YWDR0",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/ship-change-one-ci shows, with a fake gh and a fake conductor that lands and renders on the branch, exactly one CI wait and one push on the happy path, two CI waits when main moves before the merge, and the change set landed on main after the merge with no ship land step. Touches cmd/rhiza/testdata/script/ship-change-one-ci.txtar, and internal/api/ship*.go only if a ship command needs the change set unlanded.",
+          "statement": "On the conductor default the change set lands on the branch before the first push, so a run whose PR is green and whose main has not moved waits on CI once; a second CI round happens only when the merge finds main has moved."
+        },
+        "handle": "ship-one-ci-round",
+        "id": "01M79KPE2V3AZWKX2HR4D2GYXV",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "fields": {
+          "acceptance": "In this repo, rhiza workflow describe ship-change resolves to the builtin; rhiza workflow describe ship-rhiza shows the [env] and the builtin's 10 steps; rhiza workflow check passes with no new warning beyond the autonomous ones AGENTS.md expects; rhiza dispatch check (or rhiza daemon status) picks ship-rhiza for a feature and bugfix for a bug; make self-check passes. Touches .rhiza/workflows/ship-change.toml (removed), .rhiza/workflows/ship-rhiza.toml, .rhiza/dispatch.toml, .rhiza/workflows/bugfix.toml.",
+          "statement": "Rhiza's own repo runs the builtin conductor default: its .rhiza/workflows/ship-change.toml shadow is removed, its [env] (GOTMPDIR, SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) moves to a thin .rhiza/workflows/ship-rhiza.toml that includes the builtin ship-change, .rhiza/dispatch.toml sets [ready] feature = \"ship-rhiza\", and bugfix.toml keeps its own [env] and includes the new builtin."
+        },
+        "handle": "rhiza-repo-conductor-default",
+        "id": "01M79KPE3XB2JBTEB9ZZYPMBM4",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "op": "node.create",
+        "parent": "01M5SWT9GPK3F87HZRV8V9XY8D"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestCheckShipLeaves shows a leafless change set refused for ship-change-classic and for a repo workflow that includes build, and accepted for a workflow with no leaves step; go test -trimpath ./cmd/rhiza -run TestScripts/run-ship-needs-leaves passes with the script pinned to ship-change-classic. Touches internal/api/run.go, internal/api/run_test.go, cmd/rhiza/testdata/script/run-ship-needs-leaves.txtar.",
+          "statement": "rhiza run start refuses a change set with no leaves for any workflow whose expanded steps include a leaves step (ship-change-classic, or a repo workflow including build), instead of only for a workflow named ship-change, so a workflow without one, like the conductor default, starts on a leafless change set."
+        },
+        "handle": "leafless-refusal-by-leaves-step",
+        "id": "01M7AHXFBEANQM6G4MHVR425ZG",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7AHXFBEANQM6G4MHTGZJ9MA",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-.*|run-resume-.*|inbox-.*|daemon-resume.*|daemon-notify.*|plan-workflow-.*|workflow-stage-autonomy|run-nested-workflow-session|run-records-dispatch|headless-run-agent-tabs)' and go test -trimpath ./internal/api -run 'TestRun|TestShip|TestDaemon|TestInbox' pass with ship-change still the classic flow, and grep shows each of those that runs the ship flow names ship-change-classic. Touches cmd/rhiza/testdata/script/*.txtar that run ship-change's steps, internal/api/run_test.go and other internal/api tests that start a ship-change run.",
+          "statement": "Every existing test that drives the classic ship-change's own steps (land, rebase, conflict, CI, gate and infra loops, sign-off, merge, deploy) names ship-change-classic, by --workflow or a dispatch.toml in the script, so it keeps covering the ship machinery after the default changes; no such test is deleted."
+        },
+        "handle": "classic-tests-pinned",
+        "id": "01M7AHXFP07DFAG8GEEFXW8V8N",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run TestWorkflowsText shows the workflows topic naming ship-change-classic and the conductor default; go test -trimpath ./internal/doclinks passes; docs/runs-and-daemon.md no longer says ship-change is build and then review. Touches docs/runs-and-daemon.md, docs/custom-workflows.md, internal/guide/text/workflows.md, internal/guide/workflows_test.go.",
+          "statement": "docs/runs-and-daemon.md, docs/custom-workflows.md and the workflows guide topic describe ship-change as the conductor default (its 10 steps and the hand-back to conduct) and ship-change-classic as the old build-then-review flow a project can pin in .rhiza/dispatch.toml."
+        },
+        "handle": "docs-conductor-default",
+        "id": "01M7AHXH9AZCZPEX26PN7Z6A8D",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7AHXH9AZCZPEX26PHDJ1V5M",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXFBEANQM6G4MHTGZJ9MA",
+        "id": "01M7AHXHKT4023EY35R1Y2VEDS",
+        "link": "01M7AHXHKT4023EY35QZ739Z13",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVQ03YYFAZDYWBBZW5H8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "id": "01M7AHXHW42SD2VZMGHF90RD5S",
+        "link": "01M7AHXHW42SD2VZMGHE24H9EJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7AHXJ81HSC2DN8ZWZZS03RT",
+        "link": "01M7AHXJ81HSC2DN8ZWZ8M148N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "id": "01M7AHXJJ5CHHYEERC870AM83Y",
+        "link": "01M7AHXJJ5CHHYEERC834B31BJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXH9AZCZPEX26PHDJ1V5M",
+        "id": "01M7AHXK2CQP2YTJKQXJQFP67H",
+        "link": "01M7AHXK2CQP2YTJKQXHV0X2G5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVVA41GTMTPHV8C9BGQN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "id": "01M7AHXKMXPY9D64NEJTR5WFJG",
+        "link": "01M7AHXKMXPY9D64NEJSM8G9CQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE1SEZAAMTA1A37YWDR0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "id": "01M7AHXM4XDHTKWFPSYJK214B8",
+        "link": "01M7AHXM4XDHTKWFPSYFCCCVAP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXFBEANQM6G4MHTGZJ9MA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7AHXMSCFB2WV3JMN0R4T80E",
+        "link": "01M7AHXMSCFB2WV3JMMYSXA3J9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "id": "01M7AHXNH115PKCV0PH1N2Z5ZM",
+        "link": "01M7AHXNH115PKCV0PH156JYGD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "id": "01M7AHXP38RMXN6C2V1ZQNE7VA",
+        "link": "01M7AHXP38RMXN6C2V1WTN19YQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHXH9AZCZPEX26PHDJ1V5M",
+        "id": "01M7AHXPATPVHYKS90MB5R4E5G",
+        "link": "01M7AHXPATPVHYKS90M93SYWKH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "id": "01M7AHXPKEQJKTN79TMEQKK0PG",
+        "link": "01M7AHXPKEQJKTN79TMDBCFE4E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7AHVNR2TA9N54ZVEGJ15BGJ",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AHXPZYKTZVKB02T0NAN2YZ",
+  "type": "ops",
+  "v": 1
+}

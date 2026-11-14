@@ -1,0 +1,41 @@
+{
+  "actor": "01M7BZCXXB7RPECFG66K577CN7",
+  "after": [
+    "01M7BZC6GPH9Y87JVNR4G63QES"
+  ],
+  "at": "2026-11-14T02:51:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "I read origin/main internal/workflow/include.go:226-227. It does CutPrefix(t, HandbackPrefix) and returns HandbackPrefix + workflow + \"/\" + step, and that landed in #572. workflow.go:1636 refuses a handback to a step the workflow lacks, so an included handback:nosuch fails naming <workflow>/nosuch, which names both the step and the workflow. The critic's finding holds: the leaf's premise is false. But no test on main covers handback inside an include. TestHandbackTarget and TestHandbackRoute exercise only flat workflows. The conductor default depends on an included conduct handback working, so this leaf's acceptance is still worth having as a regression pin. Retiring the leaf would drop that coverage. Keeping it as a code change would contradict the code. A test-only leaf with a corrected statement serves the intent and matches main.",
+          "statement": "Settle f3 by keeping handback-target-survives-include as a test-only leaf: the mapping in include.go's inlined.outer (handback:<step> to handback:<workflow>/<step>) and the parse-time refusal of an unknown included handback step already exist on main, so the leaf changes no production code. It adds TestIncludeHandbackTarget in internal/workflow/include_test.go (included on.fail handback:conduct parses as handback:<workflow>/conduct; an included handback:nosuch is refused by Validate with an error naming <workflow>/nosuch; done and failed still map as today) and TestHandbackIncluded in internal/run (an included step's failure hands back to <workflow>/conduct and continues from it). The planner rewords the leaf's statement to drop the false premise that outer prefixes the whole target, and reverts to a code change only if a test exposes a real gap.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "handback-include-already-mapped",
+        "id": "01M7BZEE9GD1WR3BS3JKPFGQX2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7BZEE9GD1WR3BS3JJRS7E1K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BZEE9GD1WR3BS3JJRS7E1K",
+        "id": "01M7BZEECPP9RK5R438B44X08K",
+        "link": "01M7BZEECPP9RK5R4388YABFHJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BZ7EERY8PQN0AAF643PNEB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BZEEFE1Z8P9J9NVFRZ71Y6",
+  "type": "ops",
+  "v": 1
+}

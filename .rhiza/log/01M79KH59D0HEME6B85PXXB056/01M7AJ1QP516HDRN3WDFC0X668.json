@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AHA2FK9EGDZN85KAM2K0V9",
+  "after": [
+    "01M7AHXPZYKTZVKB02T0NAN2YZ"
+  ],
+  "at": "2026-11-13T13:37:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "In this repo, rhiza workflow describe ship-change resolves to the builtin; rhiza workflow describe ship-rhiza shows the [env] and the builtin's 10 steps; rhiza workflow check passes with no new warning beyond the autonomous ones AGENTS.md expects; rhiza check accepts .rhiza/dispatch.toml naming ship-rhiza for [ready] feature and bugfix for bug; make self-check passes. Touches .rhiza/workflows/ship-change.toml (removed), .rhiza/workflows/ship-rhiza.toml, .rhiza/dispatch.toml, .rhiza/workflows/bugfix.toml.",
+          "statement": "Rhiza's own repo runs the builtin conductor default: its .rhiza/workflows/ship-change.toml shadow is removed, its [env] (GOTMPDIR, SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) moves to a thin .rhiza/workflows/ship-rhiza.toml that includes the builtin ship-change, .rhiza/dispatch.toml sets [ready] feature = \"ship-rhiza\", and bugfix.toml keeps its own [env] and includes the new builtin."
+        },
+        "handle": "rhiza-repo-conductor-default",
+        "id": "01M79KPE3XB2JBTEB9ZZYPMBM4",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "op": "node.create",
+        "parent": "01M5SWT9GPK3F87HZRV8V9XY8D"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AJ1QP516HDRN3WDFC0X668",
+  "type": "ops",
+  "v": 1
+}

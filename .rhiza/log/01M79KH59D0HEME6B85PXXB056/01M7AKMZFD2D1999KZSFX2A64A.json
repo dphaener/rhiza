@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AK33B7AF0ZR9R76TA923JW",
+  "after": [
+    "01M7AKMX88Y79D23TS5DW0ZJD7"
+  ],
+  "at": "2026-11-13T14:05:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestShipHeadBuildOnDemand shows, with SHIP_HEAD_RHIZA naming a missing binary and SHIP_HEAD_BUILD set, ship's render and ship close-out running SHIP_HEAD_BUILD once in the worktree and then rendering with the built binary; with SHIP_HEAD_BUILD empty, the missing binary failing with its 'not a built rhiza' error; and a failing SHIP_HEAD_BUILD failing with nothing rendered or pushed. go test -trimpath ./cmd/rhiza -run TestScripts/ship-land-branch-build passes, with a new case where SHIP_HEAD_RHIZA is missing and SHIP_HEAD_BUILD is set and ship land builds it, logs to head.log and lands. Touches internal/api/ship_build.go, internal/api/ship_build_test.go and cmd/rhiza/testdata/script/ship-land-branch-build.txtar.",
+          "statement": "When the run's workflow sets SHIP_HEAD_BUILD and the SHIP_HEAD_RHIZA binary it names does not exist yet, the ship commands that land or render with it (ship land, ship close-out and every ship render) run SHIP_HEAD_BUILD themselves (sh -c, in the worktree) and then use the built binary, as ship rebase already does, so a workflow with no head-build steps (Rhiza's ship-rhiza over the conductor default) renders and closes out with the branch's own rhiza. With SHIP_HEAD_BUILD empty, a missing binary still fails with nothing landed, rendered or pushed, and a failed build fails the same way, carrying the build's output."
+        },
+        "handle": "ship-head-build-on-demand",
+        "id": "01M7AKMZ9ZJ01N0XZ24NGN029W",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7AKMZ9QVN9EJJDVT64WXM13",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AKMZFD2D1999KZSFX2A64A",
+  "type": "ops",
+  "v": 1
+}

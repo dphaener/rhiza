@@ -1,0 +1,30 @@
+{
+  "actor": "01M7AK33B7AF0ZR9R76TA923JW",
+  "after": [
+    "01M7AKMF541ZKACQ21FDF8XVEP"
+  ],
+  "at": "2026-11-13T14:05:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-headless-runs|run-log|run-ship-change|run-ship-change-rebase|run-ship-ci-fix|run-ship-ci-lint-fix|run-ship-conflict-fix|run-ship-deploy-check|run-ship-deploy-timeout|run-ship-land-conflict|run-ship-main-dispatch|run-ship-main-dispatch-fail|run-ship-main-dispatch-resume|run-ship-model-conflict|run-ship-rerun-fail|run-ship-rerun-pass|daemon-max-runs-pending|daemon-milestone-request|daemon-notify|daemon-notify-hook|daemon-rex-session|inbox-blocker-advice|inbox-blocking-questions|inbox-landed-resumable|inbox-list|inbox-open|inbox-permission|inbox-projects|inbox-signoff|inbox-stale)$' and go test -trimpath ./internal/api -run 'TestPrePushJournal|TestInboxReadsChangeSetsOnce' pass with ship-change still the classic flow, and grep -L ship-change-classic run on those 30 scripts and on internal/api/ship_prepush_test.go and internal/api/inbox_fold_test.go prints nothing. The first 16 scripts start a run on the default ship-change (rhiza run start with no --workflow, or the daemon's ready pick in daemon-headless-runs) and assert its steps; each passes --workflow ship-change-classic, or a .rhiza/dispatch.toml with [ready] feature = \"ship-change-classic\" for the daemon. The other 14 seed a run log whose started entry names workflow ship-change at a classic step; each names ship-change-classic there. TestPrePushJournal and TestInboxReadsChangeSetsOnce seed run.Started{Workflow: \"ship-change\"}; each names ship-change-classic. Scripts that copy their own .rhiza/workflows/ship-change.toml (run-ship-infra-wait, run-ship-landed-infra-wait, run-ship-retry-ci-triage, run-ship-retry-pending, run-ship-merge-draft, run-ship-merge-main-moved, run-ship-change-fail, headless-run-agent-tabs, plan-workflow-ci-infra-timeout, plan-workflow-pr, run-records-dispatch, run-ship-needs-leaves) shadow the builtin and are left as they are; leafless-refusal-by-leaves-step owns run-ship-needs-leaves. Touches exactly those 30 scripts, internal/api/ship_prepush_test.go and internal/api/inbox_fold_test.go.",
+          "statement": "Every existing test that drives the classic ship-change's own steps (land, rebase, conflict, CI, gate and infra loops, sign-off, merge, deploy) names ship-change-classic, by --workflow or a dispatch.toml in the script, so it keeps covering the ship machinery after the default changes; no such test is deleted."
+        },
+        "handle": "classic-tests-pinned",
+        "id": "01M7AHXFP07DFAG8GEEFXW8V8N",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7AHXFP07DFAG8GEEEHRXJ5S",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AKMX88Y79D23TS5DW0ZJD7",
+  "type": "ops",
+  "v": 1
+}

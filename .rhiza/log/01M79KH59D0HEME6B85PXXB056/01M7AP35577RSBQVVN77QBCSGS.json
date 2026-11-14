@@ -1,0 +1,30 @@
+{
+  "actor": "01M7ANWHX5VVNP4K50PD689T19",
+  "after": [
+    "01M7AMSDDWFW3W1K2BPAQME05F"
+  ],
+  "at": "2026-11-13T14:48:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows the builtin has exactly the 10 steps conduct, gate, signoff, push, CI wait, merge, main's CI (running rhiza ship check --main), close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy), in that order, the conduct step declaring exactly the checks plan, code and qa, the gate step's commands being rhiza run build-check, rhiza run review-check, rhiza check and rhiza ship gate, every failure outcome of the steps up to and including the merge routing to handback:conduct (the merge step's fail included, with no merge route to the push step), main's CI, close-out, ship and deploy-check having no on.fail route and no hand-back, the hand-back cap at 3, the conduct step's prompt telling the conductor to run rhiza ship rebase when the hand-back is rhiza ship merge's main-moved output, and no leaves or checks step remaining; go test -trimpath ./internal/api -run TestBuildCheck shows build-check failing on a leaf with no Evidence; rhiza workflow describe ship-change lists those steps.",
+          "statement": "The builtin ship-change is the conductor default: conduct (the conduct skill, its step declaring the review checks plan, code and qa), gate (a command step running rhiza run build-check, which fails unless every leaf has live Evidence by a verifier who wrote none of its commits; rhiza run review-check, failing on any open blocker or major finding of a declared check; rhiza check; and rhiza ship gate, the local gate while CI is unstable; the pre-push check runs where it does today, inside the push step's rhiza ship open-pr), signoff, push and open the PR, wait for CI at that head, merge the tested head, main's CI (one step), close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy), exactly 10 steps; every red result up to and including the merge hands back to conduct, at most three times. The steps after the merge (main's CI, close-out, ship and deploy-check) have no on.fail route and no hand-back, as in classic: nothing on the branch can fix a merged change set, so a red main CI stops the run with output saying main is red after this change set's merge, and a failed close-out, ship or deploy-check stops it too. The merge step has only pass and fail: a draft or a merge GitHub refused stops the run (rhiza ship merge's stop exit), and every other failure, main having moved past the tested head or a gh, fetch or git error, hands back to conduct with rhiza ship merge's output. On a main-moved hand-back the conductor merges origin/main into the branch with rhiza ship rebase, resolves and commits any code conflict it leaves in progress, and the run goes through gate, signoff, push and a second CI wait on the new head; the push step never re-pushes an unchanged head to retry a main-moved merge."
+        },
+        "handle": "builtin-conductor-default",
+        "id": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      }
+    ]
+  },
+  "change_set": "01M79KH59D0HEME6B85PXXB056",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7AP35577RSBQVVN77QBCSGS",
+  "type": "ops",
+  "v": 1
+}
