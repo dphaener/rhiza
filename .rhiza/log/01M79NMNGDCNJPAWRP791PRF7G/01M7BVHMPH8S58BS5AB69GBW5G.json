@@ -1,0 +1,109 @@
+{
+  "actor": "01M7BTVRF853W73N4QC9M569BE",
+  "after": [
+    "01M7BTMEN6YWYZNX9SJCTQ6H33"
+  ],
+  "at": "2026-11-14T01:42:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c1769e866, a fresh scratch build run on a clone of the branch: rhiza milestones --json ran 12 times, every one exit 0 with byte-identical output (36 milestones, 6 finished), no 'concurrent map writes' crash and none in a daemon serving the pages; every done point's met flag and every milestone's state word matched the rules (checked with jq). rhiza api call milestones printed the same bytes. The human text listed milestones, done points [x]/[ ] and '6 of 36 finished'. --view as-is and what-if:<this change set> worked; --view bogus, an unknown what-if ref and an extra argument failed cleanly with exit 2; an empty project gave 'No milestones yet.' and finished 0."
+        },
+        "handle": "web-roadmap-milestone-data-qa-2",
+        "id": "01M7BVHJ0QFFWM9XHXGCPYV9NT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BVHJ0QFFWM9XHXG9DXCBJP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BVHJ0QFFWM9XHXG9DXCBJP",
+        "id": "01M7BVHJDK4FCMXWY6G63D24MD",
+        "link": "01M7BVHJDK4FCMXWY6G4M8DKK3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c1769e866, a scratch-build daemon (paused) on a two-project root: /p/rhiza/roadmap showed 30 open milestones; each one's kicker state and bar aria-label (landed, accepted, proposed and withdrawn counts) matched /api/milestones for all 30 (checked by script). Done points sat in closed folds, groups ran Accepted waiting, Proposed, Landed, Drafts, landed rows were titled from the title field ('Builder sessions' actor'), the backlog and the umbrella came after the milestones, '6 finished milestones' was one in-page fold with no links, no finished milestone was among the open ones and every link stayed under /p/rhiza. /p/other/roadmap said Nothing is planned. Building now was not exercised (no runs in the clone). The page took 50-91s per load at host load ~17."
+        },
+        "handle": "web-roadmap-milestone-page-qa-2",
+        "id": "01M7BVHJYHR4WDM2XADXYJWXT9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BVHJYHR4WDM2XADXFZH9J3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BVHJYHR4WDM2XADXFZH9J3",
+        "id": "01M7BVHK9KDWMWQJ8Y7TSNFZ4T",
+        "link": "01M7BVHK9KDWMWQJ8Y7QWZG5F7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c1769e866, scratch-build daemon: /roadmap redirects (302) to the project's roadmap; it shows the open milestones, then 'Not in a milestone' (the backlog), then the umbrella group, each row linking to /p/rhiza/changes/<id>, and every change set page checked returned 200."
+        },
+        "handle": "web-roadmap-page-milestones-qa-2",
+        "id": "01M7BVHKQVMY0GBCDY5JD72NHQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BVHKQVMY0GBCDY5JCFCN7C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BVHKQVMY0GBCDY5JCFCN7C",
+        "id": "01M7BVHM4XDKGH7VSYTCH4T76N",
+        "link": "01M7BVHM4XDKGH7VSYT9EA2JWX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6PFKAN1436CCE15SQMFT2B9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c1769e866, scratch-build daemon: /p/rhiza/changes/<The web UI's frame> (landed) showed h1 title, state, full intent, Facts Shipped 2026-11-13 22:07, Pull request PR #571 linking to GitHub, Serves and Depends on, with no change set ID outside the model's text; 6 leaves with statement, acceptance and 'Verified, has evidence'; Why with decisions; all 12 /p/rhiza/nodes links 200; Proposed/Accepted/Landed history. This change set's page (accepted) showed 3 leaves, depends-on and Why (its 4 node links 200); the draft 'Approved designs' said 'No leaves yet' and history Drafted; a withdrawn one showed its Withdrawn history; the short ref gave the same page; an unknown ref gave 404. The Run fact was not exercised (no runs in the clone)."
+        },
+        "handle": "web-change-set-detail-qa-2",
+        "id": "01M7BVHMAVAM4RXNPYHWH3EE24",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BVHMAVAM4RXNPYHRM938WD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BVHMAVAM4RXNPYHRM938WD",
+        "id": "01M7BVHMGDJESSEJC6BRWHN1K2",
+        "link": "01M7BVHMGDJESSEJC6BQJV9YHH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BVHMPH8S58BS5AB69GBW5G",
+  "type": "ops",
+  "v": 1
+}
