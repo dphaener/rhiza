@@ -127,7 +127,25 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 	out.Warnings = append(out.Warnings, placeholderWarnings(name, data, ctx)...)
 	out.Warnings = append(out.Warnings, invokeWarnings(name, data, ctx)...)
 	out.Warnings = append(out.Warnings, loopWarnings(name, data, ctx)...)
+	out.Warnings = append(out.Warnings, mergeGateWarnings(name, data, ctx)...)
 	return out, nil
+}
+
+// mergeGateWarnings warns for each merge step (workflow.IsMergeStep) the
+// run can reach from its start step without entering a gate step
+// (workflow.UngatedMerges), naming the step and one such path. It never
+// makes the workflow invalid.
+func mergeGateWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, m := range def.UngatedMerges() {
+		out = append(out, fmt.Sprintf("step %s merges with no gate step before it: the run can reach it along %s; route every path to it through a gate step",
+			m.Step, strings.Join(m.Path, " -> ")))
+	}
+	return out
 }
 
 // loopWarnings warns for each plain red loop (workflow.PlainRedLoops): a
