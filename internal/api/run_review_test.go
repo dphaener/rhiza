@@ -449,3 +449,73 @@ func TestReviewCheckConductor(t *testing.T) {
 	findings("plan")
 	pass("latest plan round clean")
 }
+
+// review-check on a run past an agent step declaring plan, code and qa
+// passes with minor findings only, fails naming a confirmed major of the
+// code check or a declared check with no round, and passes once the critic
+// downgraded that major to minor or dropped it.
+func TestReviewCheckDeclaredChecks(t *testing.T) {
+	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n" +
+		"[step.gate]\nkind = \"command\"\nrun = \"true\"\n"
+	if err := store.Create("R14", run.Entry{
+		Type: run.TypeStarted, Step: "conduct", At: t0,
+		Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Conduct"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R14", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	app(run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1})
+	app(run.Entry{Type: run.TypeEntered, Step: "gate", Visit: 1})
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R14"
+		}
+		return ""
+	}
+	round := func(check string, fs ...run.Finding) {
+		app(run.Entry{Type: run.TypeFindings, Step: "conduct", Check: check, Cycle: 1, Findings: fs})
+	}
+	verdict := func(v run.Verdict) {
+		app(run.Entry{Type: run.TypeVerdict, Step: "conduct", Check: "code", Cycle: 1, Verdicts: []run.Verdict{v}})
+	}
+	review := func() (any, error) { return callOp(t, f.ctx, "run.review-check", `{}`) }
+
+	if _, err := review(); err == nil {
+		t.Error("declared checks with no round passed")
+	}
+	minor := run.Finding{ID: "f1", Severity: "minor", Place: "a.go:1", Reason: "small thing"}
+	round("plan", minor)
+	round("code", minor)
+	round("qa")
+	if _, err := review(); err != nil {
+		t.Fatalf("minor findings only: %v", err)
+	}
+	major := run.Finding{ID: "f1", Severity: "major", Place: "b.go:2", Reason: "real defect"}
+	round("code", major)
+	verdict(run.Verdict{Finding: "f1", Verdict: run.Confirmed, Reason: "real"})
+	_, err := review()
+	e := AsError(err)
+	if e == nil || ExitCode(err) != 1 || !strings.Contains(e.Message, "real defect") {
+		t.Fatalf("confirmed major: %v", err)
+	}
+	round("code", major)
+	verdict(run.Verdict{Finding: "f1", Verdict: run.Downgraded, Severity: "minor", Original: "major", Reason: "small"})
+	if _, err := review(); err != nil {
+		t.Errorf("downgraded major: %v", err)
+	}
+	round("code", major)
+	verdict(run.Verdict{Finding: "f1", Verdict: run.Dropped, Reason: "no"})
+	if _, err := review(); err != nil {
+		t.Errorf("dropped major: %v", err)
+	}
+}
