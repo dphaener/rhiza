@@ -159,3 +159,53 @@ func TestNestedWorkflowStepResumesAtFullPath(t *testing.T) {
 		t.Errorf("outcomes = %v, want %v", got, want)
 	}
 }
+
+const includedHandback = `
+name = "inner"
+[step.conduct]
+kind = "agent"
+prompt = "conduct"
+on.pass = "gate"
+[step.gate]
+kind = "command"
+run = "gate"
+on.fail = "handback:conduct"
+`
+
+const includingHandback = `
+name = "wf"
+[step.w]
+kind = "workflow"
+workflow = "inner"
+`
+
+// An included step failing hands back to the included agent step and the
+// run continues from it.
+func TestHandbackIncluded(t *testing.T) {
+	def, err := workflow.ParseWith("wf", []byte(includingHandback), func(string) ([]byte, error) { return []byte(includedHandback), nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := newStore(t)
+	s := Started{Workflow: "wf", Definition: includingHandback, Includes: def.Includes, Change: "CS1", Title: "Handing back"}
+	if err := Start(store, runID, s, t0, def); err != nil {
+		t.Fatal(err)
+	}
+	r := newFakeRunner()
+	r.store = store
+	r.outcome["S-inner/conduct"] = workflow.OutcomePass
+	r.codes["inner/gate"] = []int{1, 0}
+	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
+	e := &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"inner/conduct:pass", "inner/gate:fail", "inner/conduct:pass", "inner/gate:pass"}
+	if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st), want) {
+		t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+	}
+	if len(st.Handbacks) != 1 || st.Handbacks[0].Target != "inner/conduct" || st.Handbacks[0].Step != "inner/gate" {
+		t.Errorf("handbacks %+v", st.Handbacks)
+	}
+}
