@@ -13,6 +13,11 @@
 # ship check --conflicts passes while the merge is unresolved and fails once
 # the resolving merge is committed, before and after the head is pushed.
 #
+# With --no-rebase (the conductor default's wait-ci and merge steps) a
+# CONFLICTING PR is never merged with main: --settled --no-rebase settles the
+# wait with nothing merged or pushed, and plain --no-rebase fails naming the
+# conflict even on green checks, so the merge step hands back to conduct.
+#
 # The fake gh reports CONFLICTING until origin's branch holds origin's main.
 
 chmod 755 bin/gh
@@ -95,6 +100,17 @@ exec git commit -qm 'Main edits code'
 exec git push -q origin main
 
 cd $WORK/repo2
+exec rhiza ship check --settled --no-rebase
+stdout 'settled: GitHub reports pull request #7 conflicting with origin/main; nothing merged or pushed'
+! exec git rev-parse --verify --quiet MERGE_HEAD
+exec git status --porcelain --untracked-files=no
+! stdout .
+exec sh -c 'test "$(git rev-parse HEAD)" = "$(cat $WORK/before.txt)" && test "$(git rev-parse origin/cs/ship-it)" = "$(cat $WORK/before.txt)"'
+! exec rhiza ship check --no-rebase
+stdout 'failed: GitHub reports pull request #7 conflicting with origin/main: bring main in with rhiza ship rebase --no-push'
+! exec rhiza ship check --no-rebase --main
+stderr 'no-rebase'
+
 exec rhiza ship check --settled --json
 stdout '"settled": true'
 stdout 'code\.txt'

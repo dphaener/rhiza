@@ -209,17 +209,29 @@ permission_mode = "bypassPermissions"
 		}
 	})
 
-	t.Run("every bypassing session is named, with the roles of a leaves and checks step", func(t *testing.T) {
+	t.Run("the conductor default names its conduct session and the arbiter", func(t *testing.T) {
 		ctx := exposureRepo(t, nil)
 		got := exposureNames(t, requestExposedWorkflows(ctx, exposureSettings("auto", "auto", "auto", bypass)))
-		steps := got["ship-change"].Steps
+		if want := []string{"conduct", "arbiter"}; !reflect.DeepEqual(got["ship-change"].Steps, want) {
+			t.Fatalf("ship-change steps %v, want %v", got["ship-change"].Steps, want)
+		}
+	})
+
+	t.Run("every bypassing session is named, with the roles of a leaves and checks step", func(t *testing.T) {
+		ctx := exposureRepo(t, nil)
+		rules := "[ready]\nfeature = \"ship-change-classic\"\n"
+		if err := os.WriteFile(filepath.Join(ctx.Root, ".rhiza", "dispatch.toml"), []byte(rules), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		got := exposureNames(t, requestExposedWorkflows(ctx, exposureSettings("auto", "auto", "auto", bypass)))
+		steps := got["ship-change-classic"].Steps
 		for _, w := range []string{"build/build builder", "build/build verifier", "review/review check qa", "review/review critic", "review/review fixer", "review/review verifier"} {
 			found := false
 			for _, s := range steps {
 				found = found || s == w
 			}
 			if !found {
-				t.Errorf("ship-change steps %v lack %q", steps, w)
+				t.Errorf("ship-change-classic steps %v lack %q", steps, w)
 			}
 		}
 	})

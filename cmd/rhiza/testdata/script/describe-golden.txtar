@@ -25190,6 +25190,10 @@ cmp stdout describe.golden.json
             "description": "Exit 0 only if the ship state records a land refused for a model conflict (a stale write another change set landed to the same node aspect), the branch is still at the head it was refused at, and the run has made fewer than 3 model-conflict fixes (commits on the branch carrying its Review: trailer and a Model-Conflict: trailer), else exit 1 naming why; with --json shows the conflict with both change sets' IDs and intents; reads the state file and git only and records nothing (for a step that routes a model conflict to a fixer)",
             "type": "boolean"
           },
+          "no_rebase": {
+            "description": "Never merge main into the branch when GitHub reports the pull request CONFLICTING: with --settled the conflict settles the wait (exit 0) with nothing merged or pushed, and without it the check fails naming the conflict (for a workflow whose agent step brings main in with rhiza ship rebase --no-push)",
+            "type": "boolean"
+          },
           "pr_open": {
             "description": "Exit 0 once a pull request from the change set's branch is open, whatever its CI; records nothing (for an agent step's until)",
             "type": "boolean"

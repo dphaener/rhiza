@@ -64,12 +64,14 @@ on.fail = "handback:conduct"
 
 # Waits for CI at the pushed head to settle, green or red, so a red CI
 # ends the wait as soon as it finishes rather than at the timeout. A PR
-# GitHub reports conflicting has no CI: --settled merges main into the
-# branch as ship rebase does, and a conflict in code it leaves in progress
-# settles the wait. A timeout hands back.
+# GitHub reports conflicting has no CI: --no-rebase settles the wait with
+# nothing merged or pushed, so the merge step's ship check fails on the
+# conflict and hands back to conduct, which brings main in with ship
+# rebase --no-push and goes through gate, signoff and push again. A
+# timeout hands back.
 [step.wait-ci]
 kind = "wait"
-until = "rhiza ship check --settled"
+until = "rhiza ship check --settled --no-rebase"
 timeout = "2h"
 interval = "30s"
 max_interval = "2m"
@@ -78,13 +80,13 @@ on.timeout = "handback:conduct"
 
 # Only pass and fail. Ship check first: it passes only when every check is
 # green and records the head the merge tests against, so a settled red CI
-# (or a code conflict left in progress) fails here and hands back to
-# conduct with its output. A draft or a merge GitHub refused stops the run
+# (or a PR GitHub reports conflicting, which --no-rebase fails on without
+# merging main) fails here and hands back to conduct with its output. A draft or a merge GitHub refused stops the run
 # (the stop exit); main having moved past the tested head, or a gh, fetch
 # or git error, hands back to conduct with ship merge's output.
 [step.merge]
 kind = "command"
-run = "rhiza ship check && rhiza ship merge"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
 on.pass = "main-ci"
 on.fail = "handback:conduct"
 

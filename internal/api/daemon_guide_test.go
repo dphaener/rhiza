@@ -24,7 +24,8 @@ func realExec(name string, args []string, dir string, env []string) ([]byte, err
 }
 
 // oldGuide installs the guide into base for an older rhiza and drops the
-// builder skill, as a guide from before the role topics lacks it.
+// conduct skill the default ship-change starts with, as a guide from before
+// the conductor lacks it.
 func oldGuide(t *testing.T, ctx *Ctx, base string, project bool) string {
 	t.Helper()
 	c := *ctx
@@ -36,7 +37,7 @@ func oldGuide(t *testing.T, ctx *Ctx, base string, project bool) string {
 	}
 	guideInstall(t, &c, `{"agent":"claude","project":`+map[bool]string{true: "true", false: "false"}[project]+`}`)
 	dir := filepath.Join(base, ".claude", "skills", "rhiza")
-	if err := os.RemoveAll(filepath.Join(dir, "skills", "rhiza-builder")); err != nil {
+	if err := os.RemoveAll(filepath.Join(dir, "skills", "rhiza-conduct")); err != nil {
 		t.Fatal(err)
 	}
 	return dir
@@ -268,7 +269,7 @@ func TestDaemonGuideHold(t *testing.T) {
 		var held bool
 		for _, sk := range skips {
 			if sk.Change == f.target && sk.Reason == daemon.SkipGuideStale {
-				held = strings.Contains(strings.Join(sk.Detail, " "), "/rhiza-builder")
+				held = strings.Contains(strings.Join(sk.Detail, " "), "/rhiza-conduct")
 			}
 		}
 		if !held {
@@ -353,7 +354,7 @@ func TestDaemonGuideHoldPlansAndResumes(t *testing.T) {
 		t.Fatalf("skips %+v: want the request held for the guide", skips)
 	}
 
-	// An interrupted run of ship-change, whose builder starts /rhiza-builder.
+	// An interrupted run of ship-change, whose conduct step starts /rhiza-conduct.
 	_, def, data, err := resolveWorkflow(ctx.Root, shipChangeWorkflow)
 	if err != nil {
 		t.Fatal(err)

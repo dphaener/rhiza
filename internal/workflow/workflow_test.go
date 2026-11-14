@@ -2928,12 +2928,30 @@ func TestBuiltinShipChange(t *testing.T) {
 	}
 	// A settled red CI ends the wait at once, not at the timeout: wait-ci
 	// waits only for CI to settle, and the merge step's ship check fails on
-	// a red and hands back before anything is merged.
-	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled" || s.On[OutcomeTimeout] != back {
-		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on rhiza ship check --settled timing out to %s", s.Kind, s.Until, s.On, back)
+	// a red and hands back before anything is merged. A conflicting PR
+	// settles the wait with nothing merged or pushed (--no-rebase), and the
+	// merge step's ship check fails on it, so conduct brings main in and
+	// the new head goes through gate, signoff and push.
+	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled --no-rebase" || s.On[OutcomeTimeout] != back {
+		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on rhiza ship check --settled --no-rebase timing out to %s", s.Kind, s.Until, s.On, back)
 	}
-	if s := def.Steps["merge"]; s.Run != "rhiza ship check && rhiza ship merge" {
-		t.Errorf("merge runs %q; want rhiza ship check && rhiza ship merge, so a settled red hands back", s.Run)
+	if s := def.Steps["merge"]; s.Run != "rhiza ship check --no-rebase && rhiza ship merge" {
+		t.Errorf("merge runs %q; want rhiza ship check --no-rebase && rhiza ship merge, so a settled red or a conflict hands back", s.Run)
+	}
+	// Classic still merges main into the branch from its wait.
+	if data, ok := Builtin("ship-change-classic"); !ok {
+		t.Error("no builtin ship-change-classic")
+	} else if classic, err := ParseWith("ship-change-classic", data, builtinResolver); err != nil {
+		t.Error(err)
+	} else {
+		for name, s := range classic.Steps {
+			if strings.Contains(s.Until+s.Run, "--no-rebase") {
+				t.Errorf("ship-change-classic step %s runs %q%q; classic rebases from its wait", name, s.Until, s.Run)
+			}
+		}
+		if s := classic.Steps["wait-pr"]; s.Until != "rhiza ship check --settled" {
+			t.Errorf("ship-change-classic wait-pr until %q; want rhiza ship check --settled", s.Until)
+		}
 	}
 	if def.Steps["push"].On[OutcomePass] != "wait-ci" {
 		t.Errorf("push passes to %q", def.Steps["push"].On[OutcomePass])
