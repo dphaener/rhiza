@@ -89,10 +89,15 @@ func (r *stepRunner) leavesOf(w *workspace, cs id.ID) ([]run.Leaf, error) {
 // rhiza writes reach the build worktree's log. Its tab still opens in the
 // worktree: `rhiza session run` writes there too, and the checkout is
 // removed once the session ends while the tab may stay. The session opens its own tab.
+// Under skill check's builder fixture (envSkillCheckOnce set) a builder
+// past its round's first attempt is refused, so the agent launches once.
 func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	role := spec.Step.Role(spec.Role)
 	if role == nil {
 		return "", fmt.Errorf("step %q has no %s", spec.Step.Name, spec.Role)
+	}
+	if spec.Role == workflow.RoleBuilder && spec.RoundAttempt > 1 && ctxGetenv(r.ctx)(envSkillCheckOnce) != "" {
+		return "", fmt.Errorf("skill check runs its builder once: attempt %d is not started", spec.Attempt)
 	}
 	req := agentStepRequest(workflow.Step{Name: spec.Step.Name, Agent: role.Agent, PermissionMode: role.PermissionMode}, r.mode, r.agent)
 	req.Change, req.Run, req.autonomous = r.change, r.run, r.autonomous

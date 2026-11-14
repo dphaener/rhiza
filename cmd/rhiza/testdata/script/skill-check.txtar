@@ -9,8 +9,8 @@
 # The fake rex runs each tab's command synchronously. The fake claude, as
 # a builder, picks its behaviour from its prompt: good renders and
 # commits everything with the three trailers and says done, bare commits
-# with no trailers, quiet commits with the trailers and never says done. As a verifier it writes
-# its own Evidence.
+# with no trailers, quiet commits with the trailers and never says done, fail commits with the
+# trailers and exits 1. As a verifier it writes its own Evidence.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -67,6 +67,16 @@ stdout '"name": "trailers",\s+"result": "pass"'
 exec sh -c 'git status --porcelain; ls -R .rhiza/log'
 cmp stdout $WORK/before
 
+# A builder that fails is launched once: its attempt is not retried, and
+# no verifier starts after any builder.
+! exec rhiza skill check '/rhiza-builder fail {leaf}' --role builder --permission-mode manual
+stdout 'as builder fails: '
+exec grep -c '^builder greeting-file fail' $WORK/claude.log
+stdout '^1$'
+! exec grep '^verifier' $WORK/claude.log
+exec sh -c 'git status --porcelain; ls -R .rhiza/log'
+cmp stdout $WORK/before
+
 # --keep keeps the scratch repo, outside the current repo, and names it.
 exec sh -c 'rhiza skill check "/rhiza-builder good {leaf}" --permission-mode manual --keep | sed -n "s/^  scratch repo kept: //p" > $WORK/kept'
 exec cat $WORK/kept
@@ -118,6 +128,7 @@ if [ "$RHIZA_ROLE" = builder ]; then
 	*good*) mode=good ;;
 	*bare*) mode=bare ;;
 	*quiet*) mode=quiet ;;
+	*fail*) mode=fail ;;
 	esac
 	echo "builder $RHIZA_LEAF $mode $RHIZA_ATTEMPT" >> "$WORK/claude.log"
 	echo hello > GREETING
@@ -133,6 +144,9 @@ Actor: $RHIZA_ACTOR
 Leaf: $RHIZA_LEAF"
 	if [ "$mode" = good ]; then
 		rhiza session done >&2
+	fi
+	if [ "$mode" = fail ]; then
+		exit 1
 	fi
 	exit 0
 fi

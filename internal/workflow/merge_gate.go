@@ -16,8 +16,25 @@ func IsMergeStep(s Step) bool {
 	return s.Kind == KindCommand && mergeCommand.MatchString(s.Run)
 }
 
+// gateCommand matches a run that calls rhiza run gate or rhiza ship gate,
+// as a whole command, and failedFlag its --failed flag.
+var (
+	gateCommand = regexp.MustCompile(`(^|[^\w-])rhiza\s+(run|ship)\s+gate($|[^\w-])`)
+	failedFlag  = regexp.MustCompile(`(^|\s)--failed($|[\s=])`)
+)
+
+// isGateStep says the step gates a merge: a gate step, or a command step
+// whose run calls rhiza run gate or rhiza ship gate, not with --failed
+// (which re-runs only what failed before).
+func isGateStep(s Step) bool {
+	if s.Kind == KindGate {
+		return true
+	}
+	return s.Kind == KindCommand && gateCommand.MatchString(s.Run) && !failedFlag.MatchString(s.Run)
+}
+
 // UngatedMerge is a merge step the run can reach from its start step along
-// the steps' on.<outcome> routes without entering a gate step.
+// the steps' on.<outcome> routes without entering a gate step (isGateStep).
 type UngatedMerge struct {
 	// Step is the merge step.
 	Step string
@@ -32,7 +49,7 @@ type UngatedMerge struct {
 // not one.
 func (d *Definition) UngatedMerges() []UngatedMerge {
 	start, ok := d.Steps[d.Start]
-	if !ok || start.Kind == KindGate {
+	if !ok || isGateStep(start) {
 		return nil
 	}
 	prev := map[string]string{d.Start: ""}
@@ -52,7 +69,7 @@ func (d *Definition) UngatedMerges() []UngatedMerge {
 				continue
 			}
 			next, ok := d.Steps[t]
-			if !ok || next.Kind == KindGate {
+			if !ok || isGateStep(next) {
 				continue
 			}
 			if _, seen := prev[t]; seen {

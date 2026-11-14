@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -50,6 +51,39 @@ kind = "command"
 run = "gh pr merge --squash"
 on.pass = "done"
 `, []UngatedMerge{{Step: "merge", Path: []string{"build", "push", "merge"}}}},
+		{"merge reached only through a command gate", `name = "w"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "rhiza ship gate"
+on.pass = "merge"
+on.fail = "handback:build"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "done"
+`, nil},
+		{"a --failed gate is no gate", `name = "w"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+on.pass = "gate"
+
+[step.gate]
+kind = "command"
+run = "rhiza run gate --failed"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "done"
+`, []UngatedMerge{{Step: "merge", Path: []string{"build", "gate", "merge"}}}},
 		{"no merge", `name = "w"
 [step.build]
 kind = "agent"
@@ -89,5 +123,25 @@ func TestMergeWithoutGateShipChangeHasNone(t *testing.T) {
 	}
 	if got := d.UngatedMerges(); got != nil {
 		t.Errorf("ship-change: UngatedMerges() = %+v, want none", got)
+	}
+}
+
+func TestMergeWithoutGateBuiltinsHaveNone(t *testing.T) {
+	resolve := func(name string) ([]byte, error) {
+		src, ok := Builtin(name)
+		if !ok {
+			return nil, fmt.Errorf("no built-in workflow %q", name)
+		}
+		return src, nil
+	}
+	for _, name := range BuiltinNames() {
+		src, _ := Builtin(name)
+		d, err := ParseWith(name, src, resolve)
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if got := d.UngatedMerges(); got != nil {
+			t.Errorf("%s: UngatedMerges() = %+v, want none", name, got)
+		}
 	}
 }

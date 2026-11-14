@@ -76,6 +76,36 @@ on.fail = "lint"
 	}
 }
 
+func TestPlainRedLoopsThroughHandbackAreCapped(t *testing.T) {
+	// fail goes to a command step whose only way back to the agent step is
+	// a handback:build route: handback_cap counts that loop.
+	src := `name = "w"
+[step.build]
+kind = "agent"
+prompt = "build {change}"
+on.pass = "test"
+
+[step.test]
+kind = "command"
+run = "go test ./..."
+on.pass = "done"
+on.fail = "triage"
+
+[step.triage]
+kind = "command"
+run = "triage"
+on.pass = "done"
+on.fail = "handback:build"
+`
+	d, err := Parse("w", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.PlainRedLoops(); got != nil {
+		t.Errorf("way back through a handback route: PlainRedLoops() = %+v, want none", got)
+	}
+}
+
 func TestPlainRedLoopsShipChangeHasNone(t *testing.T) {
 	src, ok := Builtin("ship-change")
 	if !ok {

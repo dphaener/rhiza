@@ -50,8 +50,8 @@ func (d *Definition) PlainRedLoops() []PlainRedLoop {
 }
 
 // backThroughAgent finds a path along the steps' on.<outcome> routes from
-// from to to that passes through an agent step (from and to included), and
-// returns the first agent step on it.
+// from to to that passes through an agent step (from and to included) and
+// takes no handback:<step> route, and returns the first agent step on it.
 func (d *Definition) backThroughAgent(from, to string) (string, bool) {
 	type state struct{ step, agent string }
 	seen := map[state]bool{}
@@ -83,10 +83,11 @@ func (d *Definition) backThroughAgent(from, to string) (string, bool) {
 		sort.Strings(outcomes)
 		for _, o := range outcomes {
 			t := s.On[o]
-			if t == TargetDone || t == TargetFailed {
+			// A path through a handback route is counted by handback_cap.
+			if t == TargetDone || t == TargetFailed || strings.HasPrefix(t, HandbackPrefix) {
 				continue
 			}
-			if a, ok := walk(strings.TrimPrefix(t, HandbackPrefix), agent); ok {
+			if a, ok := walk(t, agent); ok {
 				return a, true
 			}
 		}

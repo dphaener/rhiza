@@ -113,9 +113,6 @@ const (
 	skillCheckLeaf     = "greeting-file"
 	skillCheckWorkflow = "skill-check"
 	skillCheckStep     = "build"
-	// skillCheckVerifier is the builder fixture's verifier invoke: a
-	// leaves step needs one, and it runs only after the builder passes.
-	skillCheckVerifier = "Verify leaf {leaf} of change set {change}: follow `rhiza guide verifier`."
 	// skillCheckChecks and skillCheckCheck are the check fixture's checks
 	// step and its one check.
 	skillCheckChecks = "review"
@@ -139,6 +136,12 @@ const (
 	skillCheckNoMode  = "skill-check-none"
 )
 
+// envSkillCheckOnce, set in the builder fixture's scratch rhiza, refuses
+// a leaf builder's start past its round's first attempt: a failed builder
+// ends the scratch run instead of launching the agent again, as only the
+// first attempt is graded.
+const envSkillCheckOnce = "RHIZA_SKILL_CHECK_ONCE"
+
 // skillCheckRoot is the scratch folder's root config: the scratch repo
 // is its one project, and no failure classifier runs.
 const skillCheckRoot = "[projects.repo]\npath = \"repo\"\n\n[daemon]\n\"rhiza.daemon.failureClassifier\" = \"\"\n"
@@ -150,7 +153,7 @@ const skillCheckRoot = "[projects.repo]\npath = \"repo\"\n\n[daemon]\n\"rhiza.da
 var skillCheckUnset = []string{
 	envChange, envActor, envFor, envSession, envRun, envAutonomous, envMilestone, envMilestoneNumber,
 	envLeaf, envAttempt, envRole, envCommit, envCheck, envCycle, envRoot,
-	envBrief, envSlice, envHandback, "RHIZA_STEP", "RHIZA_RUN_LOG",
+	envBrief, envSlice, envHandback, envSkillCheckOnce, "RHIZA_STEP", "RHIZA_RUN_LOG",
 	"REX_BLOCK", "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
 }
 
@@ -184,12 +187,13 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("skill check has no dry run: it writes only to its own scratch repo")
 	}
-	dir, err := os.MkdirTemp("", "rhiza-skill-check-*")
+	tmp, err := os.MkdirTemp("", "rhiza-skill-check-*")
 	if err != nil {
 		return nil, Errorf("scratch folder: %v", err)
 	}
-	if dir, err = filepath.EvalSymlinks(dir); err != nil {
-		os.RemoveAll(dir)
+	dir, err := filepath.EvalSymlinks(tmp)
+	if err != nil {
+		os.RemoveAll(tmp)
 		return nil, Errorf("scratch folder: %v", err)
 	}
 	sc := &scratch{ctx: ctx, dir: dir, repo: filepath.Join(dir, "repo"), role: r.Role}
@@ -256,9 +260,12 @@ func (s *scratch) git(dir string, args ...string) (string, error) {
 }
 
 func (s *scratch) exec(dir, name string, args ...string) (string, error) {
-	full := make([]string, 0, 2*len(skillCheckUnset)+1+len(args))
+	full := make([]string, 0, 2*len(skillCheckUnset)+2+len(args))
 	for _, v := range skillCheckUnset {
 		full = append(full, "-u", v)
+	}
+	if s.role == workflow.RoleBuilder {
+		full = append(full, envSkillCheckOnce+"=1")
 	}
 	full = append(append(full, name), args...)
 	out, err := s.ctx.Exec("env", full, dir, nil)
@@ -420,7 +427,8 @@ func (s *scratch) commit(msg string) error {
 }
 
 // skillCheckDefinition is the fixture's one-step workflow for role: a
-// leaves step whose builder runs invoke; a leaves step whose verifier
+// leaves step whose builder runs invoke, its verifier never started (the
+// scratch rhiza runs the builder once, envSkillCheckOnce); a leaves step whose verifier
 // runs invoke, its builder never started; or a checks step with one
 // check that runs invoke, its critic, fixer and verifier never started.
 // A check that fails re-runs in the further cycles a review gives it; the
@@ -433,7 +441,7 @@ func skillCheckDefinition(role, invoke string) ([]byte, error) {
 		"kind":     workflow.KindLeaves,
 		"on":       map[string]string{workflow.OutcomePass: "done"},
 		"builder":  map[string]string{"invoke": invoke},
-		"verifier": map[string]string{"invoke": skillCheckVerifier},
+		"verifier": unused(workflow.RoleVerifier),
 	}
 	switch role {
 	case workflow.RoleVerifier:

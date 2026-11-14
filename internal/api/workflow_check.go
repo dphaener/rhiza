@@ -187,15 +187,21 @@ func placeholderWarnings(name string, data []byte, ctx *Ctx) []string {
 // with a slash command that its agent's adapter (the default for none)
 // finds installed neither in the agent's config folder nor in the repo,
 // naming the step, the role and the command, and for a Rhiza skill the
-// rhiza guide install command that installs it. It never makes the
+// rhiza guide install command that installs it; when Rhiza's own skills
+// cannot be listed it warns so and names no install command. It never makes the
 // workflow invalid; an agent no adapter knows is agentProblems' to report.
 func invokeWarnings(name string, data []byte, ctx *Ctx) []string {
 	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
 	if err != nil {
 		return nil
 	}
-	files, _ := pluginFiles(ctx.Version)
 	var out []string
+	files, err := pluginFiles(ctx.Version)
+	if err != nil {
+		// Without them no warning can tell a Rhiza skill apart, so none
+		// names the install command.
+		out = append(out, fmt.Sprintf("cannot list Rhiza's skills (%v): no invoke warning names rhiza guide install", err))
+	}
 	warn := func(step, role, agent, prompt string) {
 		a := adapter.Default()
 		if agent != "" {
