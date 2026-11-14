@@ -64,6 +64,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza log`](#rhiza-log)
 - [`rhiza ls`](#rhiza-ls)
 - [`rhiza machine show`](#rhiza-machine-show)
+- [`rhiza milestones`](#rhiza-milestones)
 - [`rhiza model commit-untracked`](#rhiza-model-commit-untracked)
 - [`rhiza mv`](#rhiza-mv)
 - [`rhiza note add`](#rhiza-note-add)
@@ -1013,6 +1014,24 @@ Output (`--json` fields):
 - `file` (boolean): Whether the machine config file exists; false means trust is daily by default
 - `path` (string): The machine config file, whether or not it exists
 - `trust` (string): The machine's trust: dedicated when its config says so, else daily
+
+## rhiza milestones
+
+Show every milestone with its done points and change sets in every state.
+
+```
+rhiza milestones [--view <view>]
+```
+
+Arguments and flags:
+
+- `--view`: The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set
+
+Output (`--json` fields):
+
+- `finished` (integer): How many of the milestones are finished
+- `milestones` (array of object): Every milestone of the project, in intent-tree order
+- `view` (string): The view read: as-is, to-be or what-if:<ID>
 
 ## rhiza model commit-untracked
 

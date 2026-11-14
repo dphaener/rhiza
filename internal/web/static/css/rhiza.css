@@ -420,3 +420,12 @@ a.rz-session-who:hover b { color: var(--teal); }
 .rz-lk .rz-glyph { margin-top: 4px; }
 .rz-lk b { display: block; font-weight: 500; font-size: var(--fs-15); line-height: var(--lh-22); }
 .rz-lk small { display: block; font-size: var(--fs-13); line-height: var(--lh-18); color: var(--ink-3); }
+
+/* Roadmap milestones: a withdrawn share of the bar, in-place folds. */
+.rz-bar .withdrawn { background: var(--ink-3); opacity: .25; }
+.rz-legend .rz-seg-landed { background: var(--teal); }
+.rz-legend .rz-seg-accepted { background: var(--teal); opacity: .42; }
+.rz-legend .rz-seg-proposed { background: var(--ink-3); opacity: .55; }
+.rz-legend .rz-seg-withdrawn { background: var(--ink-3); opacity: .25; }
+.rz-fold > summary { cursor: pointer; padding: 12px var(--space-5); font: 500 var(--fs-13)/var(--lh-18) var(--font-body); color: var(--teal); border-top: var(--rule) solid var(--line); }
+.rz-donepoints { list-style: none; margin: 0; padding: 0 var(--space-5) 12px; display: flex; flex-direction: column; gap: 8px; font: 400 var(--fs-14)/var(--lh-20) var(--font-body); color: var(--ink-2); }

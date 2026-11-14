@@ -7699,6 +7699,174 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "milestones",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "view": {
+            "description": "The view: as-is, to-be or what-if:<change set>; default to-be, whatever the current change set",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "finished": {
+            "description": "How many of the milestones are finished",
+            "type": "integer"
+          },
+          "milestones": {
+            "description": "Every milestone of the project, in intent-tree order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_sets": {
+                  "description": "Every change set serving the milestone or one of its intents, in every state, by ID",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "description": "The change set's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "intent": {
+                        "description": "The change set's intent",
+                        "type": "string"
+                      },
+                      "state": {
+                        "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The change set's short title",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "intent",
+                      "state",
+                      "title"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "done_points": {
+                  "description": "Its child intents, in tree order",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "change_sets": {
+                        "description": "Every change set serving the done point or one of its child intents, in every state, by ID",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "description": "The change set's ID",
+                              "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                              "type": "string"
+                            },
+                            "intent": {
+                              "description": "The change set's intent",
+                              "type": "string"
+                            },
+                            "state": {
+                              "description": "draft, proposed, accepted, landed, rejected, withdrawn or superseded",
+                              "type": "string"
+                            },
+                            "title": {
+                              "description": "The change set's short title",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "intent",
+                            "state",
+                            "title"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "handle": {
+                        "description": "The done point intent's handle",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "The done point intent's ID",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "type": "string"
+                      },
+                      "met": {
+                        "description": "True when at least one change set serves it and every one that is not dropped is landed",
+                        "type": "boolean"
+                      },
+                      "statement": {
+                        "description": "The done point intent's statement",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "change_sets",
+                      "id",
+                      "met",
+                      "statement"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "handle": {
+                  "description": "The milestone intent's handle",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The milestone intent's ID",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "finished when it has done points and all are met; else building when it has an accepted or a landed change set; else planned when it has a proposed one; else designing",
+                  "type": "string"
+                },
+                "statement": {
+                  "description": "The milestone intent's statement",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "change_sets",
+                "done_points",
+                "id",
+                "state",
+                "statement"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "view": {
+            "description": "The view read: as-is, to-be or what-if:<ID>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "finished",
+          "milestones",
+          "view"
+        ],
+        "type": "object"
+      },
+      "summary": "Show every milestone with its done points and change sets in every state",
+      "write": false
+    },
+    {
       "name": "model.commit-untracked",
       "request": {
         "additionalProperties": false,

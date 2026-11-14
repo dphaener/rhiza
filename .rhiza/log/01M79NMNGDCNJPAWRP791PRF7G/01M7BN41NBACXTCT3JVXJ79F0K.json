@@ -1,0 +1,86 @@
+{
+  "actor": "01M7BMDZZJ664A5H16SQYHQMS1",
+  "after": [
+    "01M7BM78DJHASRT111Y8V783XJ"
+  ],
+  "at": "2026-11-13T23:50:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 33cc5a571, scratch build run on a clone of the branch's repo: rhiza milestones --json gave 36 milestones, 6 finished; every done point's met flag and every milestone's state word matched the rules (checked with jq), and each done point's change sets were in its milestone's list. --view bogus and a short what-if ref failed cleanly with exit 2. But 2 of 11 runs died with 'fatal error: concurrent map writes' at internal/api/milestones.go:164 (an unlocked map write in the EachInFlight callback), and the same crash killed a daemon serving /roadmap."
+        },
+        "handle": "web-roadmap-milestone-data-qa-1",
+        "id": "01M7BN416T6VMR4SRTW8ZJA72K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BN416T6VMR4SRTW5VA33GM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BN416T6VMR4SRTW5VA33GM",
+        "id": "01M7BN418FDJYBXVANNQ8RYGJP",
+        "link": "01M7BN418FDJYBXVANNPBF6XKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA at 33cc5a571, a scratch-build daemon (paused) on a two-project root: /p/rhiza/roadmap showed 30 open milestones each with 'Milestone · <state>', a segmented bar and legend (e.g. 13 landed, 2 accepted, 1 withdrawn), done points in a closed fold, groups Accepted waiting, Proposed, Landed, Drafts, with folds such as '8 more landed, 1 withdrawn', then the backlog and the umbrella, and '6 finished milestones' in one in-page fold with no links; every link stayed under /p/rhiza and no ID was rendered outside the model's own text. /p/other/roadmap (empty project) said Nothing is planned. Building now was not exercised (no runs in the clone). Loading the page once crashed the daemon via /api/milestones' concurrent map write, and renders took 25-51s."
+        },
+        "handle": "web-roadmap-milestone-page-qa-1",
+        "id": "01M7BN41B45DQEFX8ED7V57S35",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BN41B45DQEFX8ED73J40JN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BN41B45DQEFX8ED73J40JN",
+        "id": "01M7BN41DDZ80A2ZTFGQBFCS9B",
+        "link": "01M7BN41DDZ80A2ZTFGQ81P9HP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 33cc5a571, a scratch-build daemon: /p/rhiza/changes/<The web UI's frame> (landed) showed the title, state and intent, Facts Shipped 2026-11-13 22:07, Pull request PR #571 linking to GitHub and Serves, with no change set ID; 6 leaves with statement links, acceptance and 'Verified, has evidence'; decisions under Why, each link a 200 /p/rhiza/nodes/<id> page; and the Drafted/Proposed/Accepted/Landed history. The draft 'Approved designs' said 'No leaves yet'; unknown refs gave 404. The Run fact was not exercised (no runs in the clone)."
+        },
+        "handle": "web-change-set-detail-qa-1",
+        "id": "01M7BN41G2E77F0M4DXXE3HTS8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BN41G2E77F0M4DXSF0JE8E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BN41G2E77F0M4DXSF0JE8E",
+        "id": "01M7BN41HK9ZABEGAGZDSN6FGV",
+        "link": "01M7BN41HK9ZABEGAGZA2YBHGX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BN41NBACXTCT3JVXJ79F0K",
+  "type": "ops",
+  "v": 1
+}

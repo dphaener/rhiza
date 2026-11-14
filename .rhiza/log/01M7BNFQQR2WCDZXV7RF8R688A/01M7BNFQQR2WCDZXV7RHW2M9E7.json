@@ -1,0 +1,15 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-13T23:57:04Z",
+  "body": {
+    "intent": "Record agent actor claude-code-debb8724 for session debb8724-b1e3-4276-9f8c-01a1d757a17c",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7BNFQQR2WCDZXV7RF8R688A",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BNFQQR2WCDZXV7RHW2M9E7",
+  "type": "open",
+  "v": 1
+}

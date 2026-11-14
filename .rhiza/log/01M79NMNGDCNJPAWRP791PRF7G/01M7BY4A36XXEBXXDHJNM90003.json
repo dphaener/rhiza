@@ -1,0 +1,86 @@
+{
+  "actor": "01M7BXQMMZNSMPS7R6RG2Z0N2F",
+  "after": [
+    "01M7BXP9C42Z7DAPCDN1EB5KD5"
+  ],
+  "at": "2026-11-14T02:28:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 08472f9c4, fresh scratch build on a clone of the branch in a two-project root: rhiza milestones --json gave exit 0, 36 milestones, 6 finished, every change set with a non-empty intent (the new field), and rhiza api call milestones printed the same bytes. Each milestone's state word and each done point's met flag matched the rules (checked with jq). In the second project: a milestone with only a withdrawn change set was designing, one with a landed and a withdrawn one was building, and the finished count was 0. Concurrent /api/milestones loads all returned 200 and the daemon did not crash. Rough edge: a withdrawn change set's title is taken from its intent, not its --title field."
+        },
+        "handle": "web-roadmap-milestone-data-qa-3",
+        "id": "01M7BY49CQN1S2PG3CKZH7YZNB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BY49CQN1S2PG3CKZ38NGMK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BY49CQN1S2PG3CKZ38NGMK",
+        "id": "01M7BY49ET434S6Q0BMQGY17PM",
+        "link": "01M7BY49ET434S6Q0BMN300TQW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38B8RHGSEEJ3KW7TGGNSJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 08472f9c4, scratch-build daemon (paused, max-runs 0) on a two-project root: /roadmap redirected 302 to /p/rhiza/roadmap, which rendered in 1.5-5s (it was 50-91s at cycle 2). A script checked all 30 open milestones against /api/milestones: the kicker state, the bar aria-label counts of landed, accepted, proposed and withdrawn, the set of rows, each row's title and its intent sub-line, and that the only withdrawn row sits in the Landed fold ('8 more landed, 1 withdrawn'). Every check matched. The backlog ('Not in a milestone') and the umbrella came after the milestones, '6 finished milestones' was one in-page fold with no links, every link stayed under /p/rhiza, and every ID on the page came from the model's own text. /p/other/roadmap showed only its own milestones, with proposed (PR E), landed (LD B), drafts (DR D) and withdrawn rows in their groups. Three parallel loads gave byte-identical pages. Building now was not exercised (no runs in the clone). Rough edges: a milestone with only withdrawn change sets renders an empty Landed heading, and withdrawn rows show their intent as the title."
+        },
+        "handle": "web-roadmap-milestone-page-qa-3",
+        "id": "01M7BY49HJFHSRES7CBCDVV389",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BY49HJFHSRES7CB9KZRRW9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BY49HJFHSRES7CB9KZRRW9",
+        "id": "01M7BY49MDH35YF7THBP2R392K",
+        "link": "01M7BY49MDH35YF7THBKVMS14P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7B38BDN8999D5B70GG5HASC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 08472f9c4, scratch-build daemon: this change set's page (accepted, by its short ref) showed the title, state, full intent, 3 leaves each with statement, acceptance and 'has evidence', Serves and Depends on, Why with its decision, and the Proposed/Accepted history. All 4 /p/rhiza/nodes links returned 200. A withdrawn change set in the other project showed its title field 'WD A', 'No leaves yet' and its Proposed/Withdrawn history. An unknown ref, and the other project's change set under /p/rhiza, both gave 404."
+        },
+        "handle": "web-change-set-detail-qa-3",
+        "id": "01M7BY49W5DAA10ZJ89T28FQ74",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BY49W5DAA10ZJ89R5QRNYN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BY49W5DAA10ZJ89R5QRNYN",
+        "id": "01M7BY4A10EM9H5KA8AEDYF6KH",
+        "link": "01M7BY4A10EM9H5KA8ABJHD8ZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8MWE8XTM6BXCY3EXST92",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NMNGDCNJPAWRP791PRF7G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BY4A36XXEBXXDHJNM90003",
+  "type": "ops",
+  "v": 1
+}
