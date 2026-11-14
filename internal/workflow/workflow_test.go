@@ -2926,6 +2926,15 @@ func TestBuiltinShipChange(t *testing.T) {
 	if got := def.Steps["merge"].On; len(got) != 2 || got[OutcomePass] != "main-ci" || got[OutcomeFail] != back {
 		t.Errorf("merge routes = %v; want only pass and fail", got)
 	}
+	// A settled red CI ends the wait at once, not at the timeout: wait-ci
+	// waits only for CI to settle, and the merge step's ship check fails on
+	// a red and hands back before anything is merged.
+	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled" || s.On[OutcomeTimeout] != back {
+		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on rhiza ship check --settled timing out to %s", s.Kind, s.Until, s.On, back)
+	}
+	if s := def.Steps["merge"]; s.Run != "rhiza ship check && rhiza ship merge" {
+		t.Errorf("merge runs %q; want rhiza ship check && rhiza ship merge, so a settled red hands back", s.Run)
+	}
 	if def.Steps["push"].On[OutcomePass] != "wait-ci" {
 		t.Errorf("push passes to %q", def.Steps["push"].On[OutcomePass])
 	}

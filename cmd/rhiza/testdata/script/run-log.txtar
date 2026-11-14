@@ -9,6 +9,7 @@ mkdir repo
 cd repo
 exec git init -q
 exec rhiza init
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
 exec rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
@@ -60,6 +61,9 @@ exec sh -c 'kill $(sed -n "s/.*\"pid\":\([0-9]*\).*/\1/p" .git/rhiza/runs/$(cat 
 rm .git/rhiza/logs
 exec sh -c 'rhiza run log 2>/dev/null; echo exit $?'
 stdout 'exit 2'
+-- dispatch.toml --
+[ready]
+feature = "ship-change-classic"
 -- bin/rex --
 #!/bin/sh
 echo "rex $*" >> "$WORK/rex.log"

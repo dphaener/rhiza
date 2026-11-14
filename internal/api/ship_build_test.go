@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -236,6 +237,61 @@ func TestLandRenderHeadBuild(t *testing.T) {
 		}
 		if len(*calls) != 0 {
 			t.Errorf("calls = %v", *calls)
+		}
+	})
+
+	// A head that is a wrapper (a script that execs another rhiza) is not
+	// the running binary as a file. Its child must not see SHIP_HEAD_RHIZA,
+	// or it execs the wrapper again without end. The fake runs the child's
+	// render and land in this process, with the environment it was handed
+	// (nil: this one), and fails past one level rather than recursing.
+	t.Run("a wrapper head: the child runs in-process, never execs the head", func(t *testing.T) {
+		f, bin, _ := headFixture(t, "", true)
+		t.Setenv(envShipRhiza, bin)
+		parent := f.ctx.Getenv
+		depth := 0
+		var execs []string
+		f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+			if name != bin {
+				return nil, errors.New(name + " " + strings.Join(args, " ") + ": unexpected call")
+			}
+			execs = append(execs, name+" "+args[0])
+			if depth > 0 {
+				return nil, errors.New("the head's child exec'd the head again: no recursion guard")
+			}
+			child := *f.ctx
+			child.Getenv = parent
+			if env != nil {
+				child.Getenv = func(k string) string {
+					for _, kv := range env {
+						if kk, v, ok := strings.Cut(kv, "="); ok && kk == k {
+							return v
+						}
+					}
+					return ""
+				}
+			}
+			if v := child.Getenv(envShipRhiza); v != "" {
+				t.Errorf("%s %s: the child's environment has %s=%s", name, args[0], envShipRhiza, v)
+			}
+			depth++
+			defer func() { depth-- }()
+			resp, err := callOp(t, &child, args[0], `{}`)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(resp)
+		}
+		for _, op := range []string{"render", "land"} {
+			if _, err := callOp(t, f.ctx, op, `{}`); err != nil {
+				t.Fatalf("%s: %v", op, err)
+			}
+		}
+		if got, want := strings.Join(execs, "|"), bin+" render|"+bin+" land"; got != want {
+			t.Errorf("execs = %s, want %s", got, want)
+		}
+		if _, err := os.Stat(filepath.Join(f.ctx.Root, renderedDir)); err != nil {
+			t.Errorf("the child did not render in-process: %v", err)
 		}
 	})
 

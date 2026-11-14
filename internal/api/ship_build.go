@@ -176,15 +176,32 @@ func shipActorFlags(ctx *Ctx) []string {
 }
 
 // shipRunHead runs the head build bin with args (and the actor flags) in
-// ctx.Root, and returns its standard output.
+// ctx.Root, and returns its standard output. The child gets this process's
+// environment without SHIP_HEAD_RHIZA (headChildEnv), so it does the work
+// in-process and never execs a head build itself.
 func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
-	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, nil)
+	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, headChildEnv())
 	if err != nil {
 		e := Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
 		e.Conflict = headConflict(out)
 		return nil, e
 	}
 	return out, nil
+}
+
+// headChildEnv is the environment a head build runs with: this process's,
+// less SHIP_HEAD_RHIZA. It is the recursion guard of runViaHead: a head
+// that is not the running binary as a file (a wrapper script that execs
+// another rhiza) would otherwise see SHIP_HEAD_RHIZA, not be itself, and
+// exec the head again without end.
+func headChildEnv() []string {
+	env := []string{}
+	for _, kv := range os.Environ() {
+		if k, _, _ := strings.Cut(kv, "="); k != envShipRhiza {
+			env = append(env, kv)
+		}
+	}
+	return env
 }
 
 // headConflict is the model conflict the child's --json error body carries
