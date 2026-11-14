@@ -79,6 +79,16 @@ stdout '"name": "drop-db"'
 exec rhiza workflow describe build --json
 stdout '"cleanup": \[\]'
 
+# a workflow's own [env], in name order, {run_tmp} as written
+cp $WORK/env.toml env.toml
+exec rhiza workflow describe env.toml
+stdout '^env A_DIR=\{run_tmp\}/a$'
+stdout '^env B_CMD=go build -o "\$A_DIR" \./x$'
+exec rhiza workflow describe env.toml --json
+stdout '"name": "A_DIR",\n\s*"value": "\{run_tmp\}/a"'
+exec rhiza workflow describe build --json
+stdout '"env": \[\]'
+
 # a verifier's tiering fields
 cp $WORK/tier.toml tier.toml
 exec rhiza workflow describe tier.toml
@@ -122,6 +132,13 @@ workflow = "build"
 [autonomy]
 signoff = "owner"
 ship = "auto"
+[step.only]
+kind = "command"
+run = "true"
+-- env.toml --
+[env]
+B_CMD = 'go build -o "$A_DIR" ./x'
+A_DIR = "{run_tmp}/a"
 [step.only]
 kind = "command"
 run = "true"

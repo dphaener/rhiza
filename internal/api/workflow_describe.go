@@ -58,6 +58,13 @@ type WorkflowDescribeResponse struct {
 	Includes []string           `json:"includes" desc:"The workflows it includes, directly or through another, sorted"`
 	Autonomy []WorkflowAutonomy `json:"autonomy" desc:"The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none"`
 	Cleanup  []WorkflowCleanup  `json:"cleanup" desc:"The cleanup steps, in order: commands run once when a run ends done, failed or abandoned; empty when it declares none"`
+	Env      []WorkflowEnv      `json:"env" desc:"The file's own [env] variables, in name order, set for every process the run's steps start; {run_tmp} stands for the run's temp folder; empty when it declares none"`
+}
+
+// WorkflowEnv is one [env] variable.
+type WorkflowEnv struct {
+	Name  string `json:"name" desc:"The variable's name"`
+	Value string `json:"value" desc:"Its value as written, {run_tmp} unreplaced"`
 }
 
 // WorkflowCleanup is one cleanup step.
@@ -84,6 +91,9 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 	}
 	for _, a := range r.Autonomy {
 		fmt.Fprintf(w, "autonomy %s %s\n", a.Stage, a.Mode)
+	}
+	for _, e := range r.Env {
+		fmt.Fprintf(w, "env %s=%s\n", e.Name, e.Value)
 	}
 	for _, c := range r.Cleanup {
 		fmt.Fprintf(w, "cleanup %s: %s\n", c.Name, c.Run)
@@ -175,7 +185,11 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}, Autonomy: []WorkflowAutonomy{}, Cleanup: []WorkflowCleanup{}}
+	out := WorkflowDescribeResponse{Name: def.Name, Path: path, Start: def.Start, Shadows: []WorkflowLayer{}, Steps: []WorkflowStepView{}, Includes: []string{}, Autonomy: []WorkflowAutonomy{}, Cleanup: []WorkflowCleanup{}, Env: []WorkflowEnv{}}
+	for _, kv := range def.EnvPairs(workflow.RunTmpToken) {
+		k, v, _ := strings.Cut(kv, "=")
+		out.Env = append(out.Env, WorkflowEnv{Name: k, Value: v})
+	}
 	for _, c := range def.Cleanup {
 		out.Cleanup = append(out.Cleanup, WorkflowCleanup{Name: c.Name, Run: c.Run})
 	}

@@ -28212,6 +28212,28 @@ cmp stdout describe.golden.json
             },
             "type": "array"
           },
+          "env": {
+            "description": "The file's own [env] variables, in name order, set for every process the run's steps start; {run_tmp} stands for the run's temp folder; empty when it declares none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "description": "The variable's name",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "Its value as written, {run_tmp} unreplaced",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "includes": {
             "description": "The workflows it includes, directly or through another, sorted",
             "items": {
@@ -28338,6 +28360,7 @@ cmp stdout describe.golden.json
         "required": [
           "autonomy",
           "cleanup",
+          "env",
           "includes",
           "layer",
           "name",

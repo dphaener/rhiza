@@ -34,7 +34,13 @@ sends a bug request to the `plan-bug` workflow and the change set it plans
 to `bugfix`. Both are autonomous (`.rhiza/workflows/plan-bug.toml`,
 `bugfix.toml`), so a bug is planned and shipped with no owner step, whatever
 `rhiza.autonomy.*` says. `rhiza workflow check` warns about this; that is
-expected. Inspect them with `rhiza workflow describe plan-bug` and
+expected. A feature's ready change set goes to `ship-rhiza`
+(`.rhiza/workflows/ship-rhiza.toml`): the built-in `ship-change` with this
+repo's `[env]` and go-cleanup. When `rhiza.autonomy.*` lets a ready change set
+start a run with no owner step, `rhiza workflow check` also warns that
+`ship-rhiza` and `bugfix` run from a ready change set with bypassed
+permissions in `ship-change/conduct` and the arbiter; that is expected too.
+Inspect them with `rhiza workflow describe plan-bug` and
 `rhiza workflow describe bugfix`.
 
 ## Release marks

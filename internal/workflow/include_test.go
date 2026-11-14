@@ -54,3 +54,67 @@ func TestIncludeHandbackTarget(t *testing.T) {
 		t.Errorf("handback:nosuch: error %v, want one naming nosuch and inner", err)
 	}
 }
+
+const signoffHandbackInner = `
+[step.conduct]
+kind = "agent"
+prompt = "conduct"
+on.pass = "sign"
+[step.sign]
+kind = "signoff"
+on.pass = "done"
+on.changes = "handback:conduct"
+`
+
+// A signoff may hand back to an agent step in a workflow with includes:
+// an included workflow's signoff keeps its hand-back through the include
+// (handback:inner/conduct), and so does an including workflow's own. A
+// signoff hand-back naming a missing step, an included step or a step that
+// is no agent is refused.
+func TestIncludeSignoffHandback(t *testing.T) {
+	files := map[string]string{"inner": signoffHandbackInner}
+	d, err := ParseWith("test", []byte("[step.w]\nkind = \"workflow\"\nworkflow = \"inner\"\non.pass = \"done\"\n"), mapResolver(files))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["inner/sign"].On[OutcomeChanges]; got != "handback:inner/conduct" {
+		t.Errorf("inner/sign on.changes = %q, want handback:inner/conduct", got)
+	}
+
+	outer := func(changes string) string {
+		return `
+[step.w]
+kind = "workflow"
+workflow = "inner"
+on.pass = "fix"
+[step.fix]
+kind = "agent"
+prompt = "fix"
+on.pass = "gate"
+[step.cmd]
+kind = "command"
+run = "true"
+[step.gate]
+kind = "signoff"
+on.pass = "done"
+on.changes = "` + changes + `"
+`
+	}
+	d, err = ParseWith("test", []byte(outer("handback:fix")), mapResolver(files))
+	if err != nil {
+		t.Fatalf("an including workflow's signoff handing back to its agent step: %v", err)
+	}
+	if got := d.Steps["gate"].On[OutcomeChanges]; got != "handback:fix" {
+		t.Errorf("gate on.changes = %q, want handback:fix", got)
+	}
+	for _, tt := range []struct{ changes, want string }{
+		{"handback:nosuch", `hands back to "nosuch", which is not a step`},
+		{"handback:w/conduct", `hands back to "w/conduct", which is not a step`},
+		{"handback:cmd", `hands back to "cmd", which is a command step`},
+	} {
+		_, err := ParseWith("test", []byte(outer(tt.changes)), mapResolver(files))
+		if err == nil || !strings.Contains(err.Error(), tt.want) {
+			t.Errorf("on.changes %q: error %v, want one containing %q", tt.changes, err, tt.want)
+		}
+	}
+}

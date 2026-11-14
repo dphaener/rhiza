@@ -2824,6 +2824,7 @@ Output (`--json` fields):
 
 - `autonomy` (array of object): The autonomy the workflow declares, by stage in order; a stage it leaves out follows rhiza.autonomy.<stage>; empty when it declares none
 - `cleanup` (array of object): The cleanup steps, in order: commands run once when a run ends done, failed or abandoned; empty when it declares none
+- `env` (array of object): The file's own [env] variables, in name order, set for every process the run's steps start; {run_tmp} stands for the run's temp folder; empty when it declares none
 - `includes` (array of string): The workflows it includes, directly or through another, sorted
 - `layer` (string): personal, repo, builtin or file
 - `name` (string): The workflow's name
