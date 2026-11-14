@@ -401,6 +401,13 @@ a.rz-session-who:hover b { color: var(--teal); }
   .rz-picker-grip { display: none; }
 }
 
+/* An action form under an inbox row, above the row's whole-row link. */
+.rz-pause-forms { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.rz-row-form { grid-column: 1 / -1; position: relative; z-index: 1; display: flex; gap: var(--space-2); align-items: flex-start; padding: 0 0 var(--space-2); }
+.rz-row-form textarea { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--panel); border: var(--rule) solid var(--line); border-radius: 4px; padding: 6px 8px; }
+.rz-row-form button { font: inherit; min-height: 44px; padding: 0 12px; color: var(--ink); background: var(--panel); border: var(--rule) solid var(--line); border-radius: 4px; cursor: pointer; }
+.rz-row-form button:hover { border-color: var(--teal); color: var(--teal); }
+
 /* ── model node page ────────────────────────────────── */
 .rz-nodekind { display: flex; align-items: center; gap: 6px; }
 .rz-lede { font-size: var(--fs-17); line-height: var(--lh-1-6); color: var(--ink-2); max-width: 62ch; }

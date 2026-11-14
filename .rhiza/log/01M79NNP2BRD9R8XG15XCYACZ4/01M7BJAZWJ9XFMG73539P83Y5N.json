@@ -1,0 +1,40 @@
+{
+  "actor": "01M7BJ1DG63NPFFES9Q6KC3NZT",
+  "after": [
+    "01M7BHQR79VPXWE15VNHWG0XW3"
+  ],
+  "at": "2026-11-13T23:02:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5f216aec2: go test -trimpath ./internal/web -run 'TestWebPause|TestWebActionsOnly' passed (pause/resume forms carry the CSRF field, absent without a token or with none set; daemon and project pause/resume POSTs reach Actions.Pause; missing or wrong CSRF is 403 and runs nothing; POSTs to /retry, /abandon, /merge, /actions/{retry,abandon,merge}, /runs/R1/retry, /api/daemon.set and others are 404/405). go test -trimpath ./internal/api -run TestWebPauseAction passed through WebProjectHandler and WebRootHandler at /p/repo, reading rhiza.daemon.paused and rhiza.project.paused back through daemon.settings after daemon.set. The full ./internal/web package and the commit's ./internal/api Web|Inbox|Describe|Docs|Signoff|ReadOnly run both passed. Diff read: only web pause wiring, its template/CSS and tests; no TODOs; the form's action=\"/actions/pause\" is rewritten under /p/<project>/ by scope.rewrite. make self-check failed only on the verifier's own unrendered actor (claude-code-1fc45f09.md and index.md); the parent commit fails identically in a clean detached worktree, so it is from the run environment, not the leaf."
+        },
+        "handle": "web-action-pause-verified",
+        "id": "01M7BJAZSJ8949WJX17Q13SFDW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7BJAZSJ8949WJX17PE3VK7X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7BJAZSJ8949WJX17PE3VK7X",
+        "id": "01M7BJAZV2ZPDW3DGFHXBPB2CJ",
+        "link": "01M7BJAZV2ZPDW3DGFHV81VDG1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79Q8Q1X2SDBPR5CNADZJAS1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79NNP2BRD9R8XG15XCYACZ4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7BJAZWJ9XFMG73539P83Y5N",
+  "type": "ops",
+  "v": 1
+}

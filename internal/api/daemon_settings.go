@@ -128,6 +128,8 @@ var settingDefs = []settingDef{
 		_, err := web.ParsePort(v)
 		return err
 	}},
+	// The web token turns the web UI's actions on; its value is never shown.
+	{key: web.TokenKey, def: "", typ: "secret", desc: "The token that turns the web UI's actions on: a browser presents it once with ?token= and keeps it in a cookie, a script sends it as a bearer header; unset means no actions, and its value is never shown, only whether it is set", validate: func(v string) error { return web.ValidateToken(v) }},
 	// The ship deploy check: the health URL ship-change waits on after a
 	// merge (unset means no deploy check) and how long it waits.
 	{project: true, key: DeployURLKey, def: "", typ: "http or https URL", desc: "The health URL ship-change waits on after a merge; unset means no deploy check", validate: validateDeployURL},
@@ -281,9 +283,28 @@ func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 		if v, ok := flags[d.key]; ok {
 			s.Value, s.Source = v, SettingFlag
 		}
+		if d.key == web.TokenKey && s.Value != "" {
+			s.Value = web.TokenSet
+		}
 		out = append(out, s)
 	}
 	return out, nil
+}
+
+// webTokenOf reads the web token raw, for the web handler's gate alone: no
+// listing ever carries it (settingsOf shows only whether it is set).
+func webTokenOf(ctx *Ctx) string {
+	if _, cfg, ok := rootOf(ctx); ok {
+		if v := strings.TrimSpace(cfg.Daemon[web.TokenKey]); v != "" {
+			return v
+		}
+	}
+	if ctx.Git != nil {
+		if v, err := ctx.Git("config", "--get", web.TokenKey); err == nil {
+			return strings.TrimSpace(v)
+		}
+	}
+	return ""
 }
 
 func settingValue(rows []Setting, key string) string {
@@ -440,7 +461,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
 }
@@ -479,12 +500,12 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 		// does not load: never to the project's git config instead.
 		if root, ok := rootcfg.Find(ctx.Wd); ok {
 			if ctx.DryRun {
-				return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
+				return DaemonSetResponse{Key: d.key, Value: shown(d, v), Scope: ScopeMachine}, nil
 			}
 			if err := rootcfg.SetDaemon(root, d.key, v); err != nil {
 				return nil, Errorf("write %s: %v", d.key, err)
 			}
-			return DaemonSetResponse{Key: d.key, Value: v, Scope: ScopeMachine}, nil
+			return DaemonSetResponse{Key: d.key, Value: shown(d, v), Scope: ScopeMachine}, nil
 		}
 	}
 	wc := ctx
@@ -495,7 +516,7 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	if ctx.DryRun {
-		return DaemonSetResponse{Key: d.key, Value: v, Scope: d.scope()}, nil
+		return DaemonSetResponse{Key: d.key, Value: shown(d, v), Scope: d.scope()}, nil
 	}
 	if wc.Git == nil {
 		return nil, Errorf("no git to write %s", d.key)
@@ -503,7 +524,7 @@ func runDaemonSet(ctx *Ctx, req any) (any, error) {
 	if _, err := wc.Git("config", d.key, v); err != nil {
 		return nil, Errorf("write %s: %v", d.key, err)
 	}
-	return DaemonSetResponse{Key: d.key, Value: v, Scope: d.scope()}, nil
+	return DaemonSetResponse{Key: d.key, Value: shown(d, v), Scope: d.scope()}, nil
 }
 
 func (c daemonConf) stateRows() []daemon.SettingValue {
@@ -531,4 +552,13 @@ func parseMaxLoad(v string) (float64, error) {
 		return 0, fmt.Errorf("must be a load per core of 0 or more, such as 3.0")
 	}
 	return f, nil
+}
+
+// shown is a setting's value as a listing or a reply may show it: a secret
+// only as set.
+func shown(d settingDef, v string) string {
+	if d.key == web.TokenKey && v != "" {
+		return web.TokenSet
+	}
+	return v
 }
