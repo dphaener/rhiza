@@ -1,8 +1,9 @@
-# A repo workflow whose workflow step wraps ship-change runs through to its
-# builder's session start: the builder's step is ship-change/build/build,
-# three levels deep from the wrapper, and the run journal records it. Nothing
-# reaches GitHub, Rex or Claude Code: gh always fails, so the run stops
-# after build, at the first step that needs the pull request.
+# A repo workflow whose workflow step wraps ship-change-classic runs through
+# to its builder's session start: the builder's step is
+# ship-change-classic/build/build, three levels deep from the wrapper, and
+# the run journal records it. Nothing reaches GitHub, Rex or Claude Code: gh
+# always fails, so the run stops after build, at the first step that needs
+# the pull request.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -33,19 +34,19 @@ stdout '^done$'
 exec sh -c 'cat $WORK/claude.log'
 stdout '^role=builder leaf=only$'
 exec rhiza run status
-stdout 'ship-change/build/build'
+stdout 'ship-change-classic/build/build'
 exec rhiza run status --json
-stdout '"step": "ship-change/review/review"'
-stdout '"step": "ship-change/build/build"'
+stdout '"step": "ship-change-classic/review/review"'
+stdout '"step": "ship-change-classic/build/build"'
 exec sh -c 'cat .git/rhiza/runs/*.jsonl'
-stdout 'ship-change/build/build'
+stdout 'ship-change-classic/build/build'
 
 -- wrap.toml --
 name = "wrap"
 
 [step.ship]
 kind = "workflow"
-workflow = "ship-change"
+workflow = "ship-change-classic"
 on.pass = "done"
 -- bin/rex --
 #!/bin/sh

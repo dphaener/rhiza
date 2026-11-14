@@ -1,6 +1,8 @@
-# A failed check on the PR fails the built-in ship-change run at pr-green:
-# the wait passes once the checks have finished, the check that follows
-# names the failure, and nothing is merged, landed or closed out.
+# A failed check on the PR fails the built-in ship-change-classic run at
+# pr-green: the wait passes once the checks have finished, the check that
+# follows names the failure, and nothing is merged, landed or closed out.
+# The run is pinned to ship-change-classic, whose steps it asserts; the
+# conductor default's steps are other scripts'.
 #
 # Then a repo's own .rhiza/workflows/ship-change.toml replaces the built-in
 # by name: run start with no --workflow runs it instead.
@@ -32,13 +34,13 @@ exec git push -q -u origin main
 
 # An infra failure (no failing test) goes to wait-ci-rerun, where --no-wait
 # stops the run instead of waiting 6h for CI to move.
-exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait
+exec rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --no-wait
 stdout 'waiting: rhiza ship check --settled --changed'
 # The check names the failed check in the step's output.
 stderr '^PR #7 at [0-9a-f]{7}: failed: test$'
 
 exec rhiza run status --json
-stdout '"workflow": "ship-change"'
+stdout '"workflow": "ship-change-classic"'
 ! stdout '"state": "failed"'
 exec rhiza run status
 stdout '^- build/build \(visit 1\): pass, then build/render: 1 of 1 leaves passed$'
