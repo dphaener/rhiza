@@ -1,0 +1,15 @@
+{
+  "actor": "01M7DZ88C5A26638ZWNS3MGP1B",
+  "after": [],
+  "at": "2026-11-14T21:29:25Z",
+  "body": {
+    "intent": "The built-in plan, plan-review, plan-milestone and ship-change-classic workflows route red outcomes by plain step name back through agent steps (review rounds, prepush-triage), so rhiza workflow check now warns about plain red loops on them: decide per route whether to hand back with handback:<agent step> or keep the loop and stop warning for it",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7DZE40RZKK137YW1VKQN66W",
+  "for": "01M7DVW6X3S8Q9BEB4HSNBBMPK",
+  "id": "01M7DZE40RZKK137YW1WHKCVPY",
+  "type": "open",
+  "v": 1
+}

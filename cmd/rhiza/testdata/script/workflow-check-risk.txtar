@@ -8,10 +8,10 @@ exec git init -q
 exec rhiza init
 fold-ok
 
-# no bypass mode: no warning
+# no bypass mode: no exposure warning (plan's own red loops warn apart)
 exec rhiza workflow check plan
 stdout '^workflow plan is valid'
-! stdout 'warning'
+! stdout 'bypassed permissions'
 
 exec git config rhiza.autonomy.plan auto
 exec git config rhiza.daemon.permissionMode bypassPermissions

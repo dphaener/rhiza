@@ -126,7 +126,26 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 	}
 	out.Warnings = append(out.Warnings, placeholderWarnings(name, data, ctx)...)
 	out.Warnings = append(out.Warnings, invokeWarnings(name, data, ctx)...)
+	out.Warnings = append(out.Warnings, loopWarnings(name, data, ctx)...)
 	return out, nil
+}
+
+// loopWarnings warns for each plain red loop (workflow.PlainRedLoops): a
+// red outcome naming by plain step name a step that leads back through an
+// agent step, which handback_cap does not count. It names the step, the
+// outcome and its target and suggests handback:<agent step>. It never
+// makes the workflow invalid.
+func loopWarnings(name string, data []byte, ctx *Ctx) []string {
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, l := range def.PlainRedLoops() {
+		out = append(out, fmt.Sprintf("step %s: on.%s = %q loops back through agent step %s uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.%s = \"%s%s\"",
+			l.Step, l.Outcome, l.Target, l.Agent, l.Outcome, workflow.HandbackPrefix, l.Agent))
+	}
+	return out
 }
 
 // placeholderWarnings warns for each command step still running the
