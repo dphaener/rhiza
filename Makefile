@@ -50,12 +50,14 @@ TEST_FLAGS = -trimpath -timeout 20m
 # CPU count keeps them busy, capped at 8 so a big machine does not start
 # hundreds of rhiza children at once (memory, not CPU, is the limit there).
 # NPROC is the CPU count (getconf unless set). RHIZA_TEST_SCRIPT_PARALLEL
-# overrides the result when it is a positive integer; anything else (0, -2,
-# abc) falls back to the NPROC default. Only cmd/rhiza's go test gets it.
+# overrides the result when it is a positive integer, read in decimal (08 is
+# 8: go's flag would read it as octal and reject it); anything else (0, 00,
+# -2, abc) falls back to the NPROC default. Only cmd/rhiza's go test gets it.
 NPROC ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 SCRIPT_PARALLEL := $(shell \
 	p='$(RHIZA_TEST_SCRIPT_PARALLEL)'; n='$(NPROC)'; \
 	case "$$p" in (''|*[!0-9]*) p=;; esac; \
+	[ -z "$$p" ] || p=$$(expr "$$p" + 0); \
 	if [ -n "$$p" ] && [ "$$p" -gt 0 ]; then echo "$$p"; exit 0; fi; \
 	case "$$n" in (''|*[!0-9]*) n=1;; esac; \
 	[ "$$n" -gt 0 ] || n=1; \

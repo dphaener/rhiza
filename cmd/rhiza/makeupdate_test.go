@@ -138,8 +138,13 @@ func checkScriptParallel(t *testing.T, target ...string) {
 		{"1", "", "2"},
 		{"4", "3", "3"},
 		{"4", "12", "12"},
+		// Leading zeros are read in decimal: go's flag would read 08 as
+		// octal and reject it.
+		{"4", "08", "8"},
+		{"4", "007", "7"},
 		// Not a positive integer: the NPROC default, never -parallel 0.
 		{"4", "0", "8"},
+		{"4", "00", "8"},
 		{"2", "-2", "4"},
 		{"16", "abc", "8"},
 		{"2", "2x", "4"},
