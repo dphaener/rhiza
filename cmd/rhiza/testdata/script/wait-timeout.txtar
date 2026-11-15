@@ -1,0 +1,42 @@
+# Scripts run on the scaled clock (Setup sets RHIZA_TEST_CLOCK_SCALE=1000);
+# a script that clears it runs on RealClock. A wait of timeout 2s and
+# interval 1s whose condition logs each check and never holds times out
+# both ways, but checks 3 times on RealClock (at 0, 1 and 2 s) and at least
+# 10 times on the scaled clock (a 50 ms sleep floor under a 2 s real-time
+# floor).
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Time out a wait' --title 'Wait timeout' --json
+mkdir .rhiza/workflows
+cp ../never.toml .rhiza/workflows/never.toml
+
+# Setup's scaled clock: at least ten checks before the timeout.
+! exec rhiza run start --foreground --workflow never
+stdout '^Run \S+ failed$'
+stdout '^- never \(visit 1\): timeout, then end: did not hold within 2s$'
+exec sh -c 'test $(wc -l < $WORK/checks.log) -ge 10'
+
+# RealClock: three checks (at 0, 1 and 2 s), then the same timeout.
+rm $WORK/checks.log
+env RHIZA_TEST_CLOCK_SCALE=
+! exec rhiza run start --foreground --workflow never
+stdout '^Run \S+ failed$'
+stdout '^- never \(visit 1\): timeout, then end: did not hold within 2s$'
+exec sh -c 'wc -l < $WORK/checks.log'
+stdout '^ *3$'
+
+-- never.toml --
+name = "never"
+
+[step.never]
+kind = "wait"
+until = "echo check >> $WORK/checks.log; false"
+timeout = "2s"
+interval = "1s"
+on.pass = "done"
+on.timeout = "failed"

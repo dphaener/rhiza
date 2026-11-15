@@ -5442,6 +5442,7 @@
 - [claude-code-0bb4b32d](actor/claude-code-0bb4b32d.md)
 - [claude-code-0bb515d4](actor/claude-code-0bb515d4.md)
 - [claude-code-0bb6d80a](actor/claude-code-0bb6d80a.md)
+- [claude-code-0bc0f2d7](actor/claude-code-0bc0f2d7.md)
 - [claude-code-0bcb58f1](actor/claude-code-0bcb58f1.md)
 - [claude-code-0bcb9d6d](actor/claude-code-0bcb9d6d.md)
 - [claude-code-0bd69de1](actor/claude-code-0bd69de1.md)

@@ -111,6 +111,10 @@ case "$1 $2" in
 	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
 	exit 0
 	;;
+# The run's own block names no window: its record keeps the block alone.
+"block inspect")
+	exit 1
+	;;
 esac
 verb=$1
 dir=
