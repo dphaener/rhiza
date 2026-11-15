@@ -1,0 +1,101 @@
+{
+  "actor": "01M7EXR439YVFT5SH4PY5NF8M9",
+  "after": [
+    "01M7EXTY3X5WS6D378K3BXWMRN"
+  ],
+  "at": "2026-11-15T06:21:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The brief allows pinning a version or deferring; go-runewidth's init runs as soon as a package importing it is linked, so rhiza cannot defer it without restructuring its imports, and a fork or replace would be a new dependency to maintain, which the planner rules forbid. v0.0.28 through v0.0.31 all init lazily; v0.0.31 is the latest and its go.mod requires the same github.com/clipperhouse/uax29/v2 v2.2.0 as v0.0.27, so the bump adds and moves no dependency.",
+          "statement": "rhiza's start stops paying go-runewidth's eager init by moving github.com/mattn/go-runewidth (indirect, through charmbracelet/colorprofile and charmbracelet/x/ansi) from v0.0.27 to v0.0.31, the latest release, whose init paints only the first 0x300 LUT entries and builds the rest lazily; never by a fork, a replace directive or a vendored copy, and with no other module's version changed",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "runewidth-pin-not-fork",
+        "id": "01M7EQF5W66CPHY1X3H4QG1ZKV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQF5W66CPHY1X3H3RPZT8H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza && GODEBUG=inittrace=1 $TMPDIR/rhiza-x version 2>&1 | grep runewidth shows its init under 2 ms (2026-11-15 on v0.0.27: 22 ms); go.mod requires github.com/mattn/go-runewidth v0.0.31 // indirect, has no replace directive, and git diff main -- go.mod changes only that line; go mod why -m github.com/mattn/go-runewidth names the same importers (cmd/rhiza, charmbracelet/colorprofile, charmbracelet/x/ansi); go test -trimpath ./internal/tui/... passes, so text widths are unchanged. Failure case: go mod verify passes, so go.sum holds the new version's hashes. Speedup measure: /usr/bin/time -f '%e s' sh -c 'for i in $(seq 200); do $TMPDIR/rhiza-x version >/dev/null; done' against the same loop with a build of 88516d956. Touches go.mod, go.sum.",
+          "statement": "A rhiza process starts without go-runewidth's eager table init, so a start that never measures text width costs about 17 ms instead of 39 ms, across the 6,600+ rhiza processes cmd/rhiza's scripts start."
+        },
+        "handle": "cheap-process-start",
+        "id": "01M7EQF5XD1RT48N8TWZRWNTFR",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQF5XD1RT48N8TWXXJAXT3",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "/usr/bin/time -f '%e s' go test -trimpath -count=1 ./internal/slice -run '^TestFit$' passes within 5 s (2026-11-15: 42 s) and go test -trimpath -count=1 ./internal/slice passes; coverage kept: go test -trimpath -count=1 -coverprofile $TMPDIR/new.out ./internal/slice -run '^TestFit$', and the same into $TMPDIR/old.out in a detached worktree of 88516d956: every internal/slice/budget.go block with a count above 0 in old.out has a count above 0 in new.out; failure case: a test feeds the factored order checker a hand-made sequence that skips a state and one that goes back a state, and each fails with the budget and both states named; TestFitWithin's doc comment no longer says TestFit sweeps every budget. Touches internal/slice/budget_test.go only; must not change budget.go or loosen any assertion TestFit makes at a budget it fits.",
+          "statement": "internal/slice's TestFit checks big's cuts at the fit's state boundaries instead of fitting at every token budget: the 'cuts in order' subtests (markdown and JSON) and the 'footer' subtest find each cut state's first budget by bisection, and the cut order is checked just below, at and just above each boundary plus at a fixed seeded sample of budgets between, with every per-budget assertion the sweep made."
+        },
+        "handle": "testfit-boundaries",
+        "id": "01M7EQF5ZRFYQWZJCW8EP36DQR",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQF5ZRFYQWZJCW8CKY1S8V",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQF5W66CPHY1X3H3RPZT8H",
+        "id": "01M7EXVP1B12PWXRQAJFSZXYKG",
+        "link": "01M7EXVP1B12PWXRQAJCJZ5X94",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXTY3BFT665EFN79E6H9ND",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The brief says test the state boundaries instead of sweeping every budget. Bisection assumes the state is monotone in the budget, which is what the test asserts, so the boundary neighbours and a seeded sample between keep a check on monotonicity off the boundaries; a fixed seed keeps the run deterministic. The footer subtest sweeps the same way for the first two-cut budget, so it uses the same search. The 'empty sections are never cut' sweep is over tiny and stays as it is.",
+          "statement": "TestFit's sweeps over big (cuts in order, for markdown and JSON, and footer) find each cut state's first budget by bisection over the budget and check the budgets just below, at and just above each boundary, plus 64 budgets drawn from a fixed-seed math/rand source between uncut and 1, running every per-budget assertion the sweep ran (state order, every state reached, never-cut sections unchanged, tokens within the budget unless over, fit's byte rules); the monotone-state check is factored into a function a test feeds a hand-made out-of-order sequence",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "testfit-bisect-boundaries",
+        "id": "01M7EXVP2KEB9D20D32WA4PVX1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EXVP2KEB9D20D32T0NYMKJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EXVP2KEB9D20D32T0NYMKJ",
+        "id": "01M7EXVP39TD2V9ZVQH9FANRNX",
+        "link": "01M7EXVP39TD2V9ZVQH6G69WKR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXTY3BFT665EFN79E6H9ND",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQF5ZRFYQWZJCW8CKY1S8V",
+        "id": "01M7EXVP3Z6H0AN3A8YR20TRKK",
+        "link": "01M7EXVP3Z6H0AN3A8YPCHH1ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXVP2KEB9D20D32T0NYMKJ",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ42Y1M8ENZCQ202D761JM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EXVP5WSWX2Y5QZAGRMV2X0",
+  "type": "ops",
+  "v": 1
+}

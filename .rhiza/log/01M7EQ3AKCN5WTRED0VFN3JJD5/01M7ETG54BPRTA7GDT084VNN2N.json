@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7ET6V3BHNB2M7YMG7B2CPJF"
+  ],
+  "at": "2026-11-15T05:22:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on budgets-out-of-make-test): The leaf takes 'everything CI runs' out of make check's help text, AGENTS.md and README.md because make check will no longer run the timing budgets that CI's budgets job runs. That contradicts the live, owner-accepted Decision t1-d10-makefile-targets ('`check` = everything CI runs.'). No node in the plan supersedes or amends it: budgets-opt-in supersedes only budgets-run-alone. The model would keep a Decision the code no longer follows. Fix: have budgets-opt-in (or a new Decision) supersede or restate t1-d10's check clause. The critic confirmed it: Verified: t1-d10-makefile-targets (01M5SWRRHWVZC2PG6R7EPZ82SJ) is a live owner-accepted Decision whose statement ends '`check` = everything CI runs.', and rhiza show lists no links_in, so nothing supersedes it. The plan's leaf budgets-out-of-make-test drops the budgets from make check while ci.yml:187-206's budgets job runs make test-budgets, and it removes 'everything CI runs' from the Makefile, AGENTS.md and README.md. budgets-opt-in supersedes only budgets-run-alone and restates nothing about check. The model would keep a Decision the code contradicts, which is a contradiction finding, so major stands. How should it be settled?"
+        },
+        "handle": "review-01m7esaqzks7xqrzcg90zvagfb-r3-f1",
+        "id": "01M7ETG4ZMA7XPXHDMHMZNBWXG",
+        "key": null,
+        "kind": "question",
+        "node": "01M7ETG4ZKGAHYDAE4YRNCNADX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ETG4ZKGAHYDAE4YRNCNADX",
+        "id": "01M7ETG505HA99JH76K96PK5TT",
+        "link": "01M7ETG505HA99JH76K5B9TBQ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQDFY7GKPF549RAPQE285W",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on make-test-shard-targets): The plan updates this verified capability's statement but keeps its acceptance, which still says 'TestMakeTestTimeout still passes unchanged for make test'. Leaf budgets-out-of-make-test requires TestMakeTestTimeout's expected commands to change: cmd/rhiza/makeupdate_test.go:83-87 asserts the 'Timing budgets' phase and its -run line, which leave make test. Once the leaf is built, this node's acceptance contradicts the leaf and the code. Its acceptance needs updating as budgets-measure-in-quiet's was. The critic confirmed it: Verified: make-test-shard-targets (verified) has its statement amended by this plan, but its acceptance is unchanged and still says 'TestMakeTestTimeout still passes unchanged for make test'. cmd/rhiza/makeupdate_test.go:81-90 asserts the budgets -run line and the lock \"the timing budgets\" phase in make -n test, and budgets-out-of-make-test's acceptance requires those expected commands updated and no 'Timing budgets' phase in make test. Once the leaf is built, this node's acceptance contradicts the leaf and the code, as budgets-measure-in-quiet's did before it was amended. Major stands. How should it be settled?"
+        },
+        "handle": "review-01m7esaqzks7xqrzcg90zvagfb-r3-f2",
+        "id": "01M7ETG50SJ5FHK62K1FJZYH28",
+        "key": null,
+        "kind": "question",
+        "node": "01M7ETG50SJ5FHK62K1ETXAZPK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ETG50SJ5FHK62K1ETXAZPK",
+        "id": "01M7ETG51P84EH86B8PG9BEZZQ",
+        "link": "01M7ETG51P84EH86B8PCHK36YR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ETG54BPRTA7GDT084VNN2N",
+  "type": "ops",
+  "v": 1
+}
