@@ -79,8 +79,8 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 		t.Fatal(err)
 	}
 	f.git = &fakeGit{out: map[string]string{
-		"rev-parse --git-common-dir": ".git\n",
-		"rev-parse --show-prefix":    "\n",
+		"rev-parse --path-format=absolute --git-common-dir": ".git\n",
+		"rev-parse --show-prefix":                           "\n",
 		"worktree list --porcelain": "worktree " + root + "\nHEAD 1111\nbranch refs/heads/main\n\n" +
 			"worktree " + f.worktree + "\nHEAD 2222\nbranch refs/heads/cs/" + slug + "\n\n",
 	}}

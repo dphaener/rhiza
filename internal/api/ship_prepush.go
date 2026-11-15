@@ -99,6 +99,9 @@ func prePushCheckAt(ctx *Ctx, dir, head string) error {
 		gitAt(ctx, dir, "worktree", "remove", "--force", tmp)
 		gitAt(ctx, dir, "worktree", "prune")
 	}()
+	// tmp is a worktree of dir's repository: rhiza check there takes dir's
+	// kept common dir instead of asking git again.
+	shareCommonDir(ctx, dir, tmp)
 
 	lines, err := prePushCheckLines(ctx, dir, tmp)
 	if err != nil {

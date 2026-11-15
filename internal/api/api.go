@@ -156,6 +156,9 @@ type Ctx struct {
 	builtModel func(cs id.ID)
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
+	// commonDirs keeps gitCommonDir's answers by Root; copies of the Ctx
+	// share it. Nil until the first call.
+	commonDirs *commonDirs
 	// guideGate is the daemon's hold on starts while a guide is stale; nil
 	// outside the daemon and when none is.
 	guideGate *guideGate

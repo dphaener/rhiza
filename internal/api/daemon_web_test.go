@@ -40,7 +40,7 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 	ports := make(chan string)
 	hosts := make(chan string)
 	ctx.Git = func(args ...string) (string, error) {
-		if len(args) == 2 && args[0] == "rev-parse" {
+		if len(args) == 3 && args[0] == "rev-parse" && args[2] == "--git-common-dir" {
 			return common + "\n", nil
 		}
 		if len(args) == 3 && args[0] == "config" && args[2] == web.HostKey {
