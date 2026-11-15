@@ -1,0 +1,21 @@
+# script-shards-weighted-verified
+
+evidence · `01M7FN38H1P45YFHVMNMC4RQAB` · actor [claude-code-bb8b7c90](../actor/claude-code-bb8b7c90.md)
+
+## result
+
+PASS
+
+## statement
+
+Verified at f8fa2173e. Re-ran the Checks: block: go test -trimpath -p 2 ./cmd/rhiza -run '^(TestScriptShard|TestScriptShardEnvError|TestScriptOrder)$' exit 0 (all subtests PASS, capped scope, RHIZA_/SHIP_/REX_ unset); gofmt -l cmd/rhiza empty, exit 0; go vet ./cmd/rhiza exit 0; rhiza ship generate exit 0 (0 files); rhiza render exit 0. Diff read: shardNames sorts by weight desc (timed before untimed on equal weight, then name), places each on the least-loaded shard with ties to the lower index, weighs untimed scripts at the median (1 when none timed) for placement only, returns the shard via longestFirst so untimed scripts run last by name. Hand-checked the fixtures: 8 timed over 3 shards gives {a,f},{b,e,g},{c,d,h} with the g tie to shard 2; adding untimed x,y (median 4.5) gives {a,g,y},{b,f,h,x},{c,d,e}; order_test shard 1/2 e,a,d also matches. Checked-in timings over 4 shards (398 scripts, recomputed independently): totals 100/100/99/99 s, 0.5% off the mean, and the test asserts the 15% bound and per-shard order. TestScriptShardEnvError refuses 0/4, 5/4, 1/0 through scriptFiles with an error naming RHIZA_TEST_SHARD. The test-scripts-sharded statement says the split is weighted by recorded time. Shard env format (i/n parse) unchanged; no .github or Makefile change, so the CI matrix is unchanged. No TODOs. order_test.go is also touched (scriptFiles lives there and its shard case asserted round-robin), a necessary consequence. The after-5-PRs CI measure is the orchestrator's and was not checked.
+
+## Links
+
+### Out
+
+- verifies [script-shards-weighted](../capability/rhiza/integrity/self-check/script-shards-weighted.md)
+
+## History
+
+- `01M7EQ3K7PW2XYR684CXSX74TG` Parallel scripts, longest first, weighted CI shards: cmd/rhiza's scripts run at a -parallel bounded by cores and memory, start longest first, and CI's script shards split by a checked-in timing file instead of round-robin by name. Evidence: scripts use ~1.2 cores at -parallel 4; at -parallel 12 they take 381 s instead of 639 s with 0 failures; CI shards took 61-239 s.

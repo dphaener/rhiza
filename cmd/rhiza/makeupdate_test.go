@@ -66,11 +66,15 @@ func TestMakeUpdateDryRun(t *testing.T) {
 // results), and the machine-wide lock taken around cmd/rhiza's scripts,
 // while the other packages run unlocked beside the scripts. The timing
 // budgets are skipped and never run: only make test-budgets runs them.
+// cmd/rhiza's scripts, and only they, run at -parallel min(2*NPROC, 8), or
+// RHIZA_TEST_SCRIPT_PARALLEL when it is a positive integer.
 func TestMakeTestTimeout(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
 	}
-	cmd := exec.Command("make", "-n", "test", "TEST_LOCK=/locks/rhiza-test.lock")
+	// NPROC and RHIZA_TEST_SCRIPT_PARALLEL on the command line override
+	// the machine's CPU count and the caller's environment.
+	cmd := exec.Command("make", "-n", "test", "TEST_LOCK=/locks/rhiza-test.lock", "NPROC=4", "RHIZA_TEST_SCRIPT_PARALLEL=")
 	cmd.Dir = "../.."
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -83,7 +87,9 @@ func TestMakeTestTimeout(t *testing.T) {
 	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
 	skip := "go test -trimpath -timeout 20m -skip '" + budgets + "' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
-	scripts := skip + "./cmd/rhiza 9>&-"
+	// Only cmd/rhiza's scripts get -parallel (NPROC=4: 8); the other
+	// packages keep go test's default.
+	scripts := "go test -trimpath -timeout 20m -parallel 8 -skip '" + budgets + "' ./cmd/rhiza 9>&-"
 	lockScripts := `lock "the cmd/rhiza scripts"`
 	for _, want := range []string{
 		rest, scripts, lockScripts,
@@ -109,6 +115,60 @@ func TestMakeTestTimeout(t *testing.T) {
 	for i := 1; i < len(order); i++ {
 		if at(order[i-1]) < 0 || at(order[i]) < 0 || at(order[i-1]) > at(order[i]) {
 			t.Errorf("make -n test: %q does not come before %q:\n%s", order[i-1], order[i], got)
+		}
+	}
+	if n := strings.Count(got, "-parallel"); n != 1 {
+		t.Errorf("make -n test passes -parallel %d times, want once (cmd/rhiza only):\n%s", n, got)
+	}
+	checkScriptParallel(t, "test")
+}
+
+// checkScriptParallel checks the -parallel that make -n <target> passes
+// cmd/rhiza's scripts: twice NPROC capped at 8, or RHIZA_TEST_SCRIPT_PARALLEL
+// when it is a positive integer, else the NPROC default. Each case sets both
+// on make's command line, so neither the machine nor the caller leaks in.
+func checkScriptParallel(t *testing.T, target ...string) {
+	t.Helper()
+	for _, c := range []struct {
+		nproc, override, want string
+	}{
+		{"4", "", "8"},
+		{"2", "", "4"},
+		{"16", "", "8"},
+		{"1", "", "2"},
+		{"4", "3", "3"},
+		{"4", "12", "12"},
+		// Leading zeros are read in decimal: go's flag would read 08 as
+		// octal and reject it.
+		{"4", "08", "8"},
+		{"4", "007", "7"},
+		// Not a positive integer: the NPROC default, never -parallel 0.
+		{"4", "0", "8"},
+		{"4", "00", "8"},
+		{"2", "-2", "4"},
+		{"16", "abc", "8"},
+		{"2", "2x", "4"},
+		// No CPU count to read: one CPU.
+		{"abc", "", "2"},
+	} {
+		args := append([]string{"--no-print-directory", "-n"}, target...)
+		args = append(args, "TEST_LOCK=/locks/rhiza-test.lock", "NPROC="+c.nproc, "RHIZA_TEST_SCRIPT_PARALLEL="+c.override)
+		cmd := exec.Command("make", args...)
+		cmd.Dir = "../.."
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Errorf("make %s: %v\n%s", strings.Join(args, " "), err, out)
+			continue
+		}
+		var got []string
+		fields := strings.Fields(string(out))
+		for i, f := range fields {
+			if f == "-parallel" && i+1 < len(fields) {
+				got = append(got, fields[i+1])
+			}
+		}
+		if len(got) != 1 || got[0] != c.want {
+			t.Errorf("make %s: -parallel %v, want [%s]:\n%s", strings.Join(args, " "), got, c.want, out)
 		}
 	}
 }
@@ -159,7 +219,8 @@ func commandsBlock(doc string) (string, bool) {
 // TestMakeTestShardTargets checks the per-job test targets CI runs in
 // parallel: each go test line keeps -trimpath and either skips the timing
 // budgets or runs only them; test-api's shards partition internal/api's
-// listed tests, budgets excluded; test-budgets prints the read-budget timings.
+// listed tests, budgets excluded; test-budgets prints the read-budget timings;
+// test-scripts passes the scripts' -parallel, test-rest and test-budgets none.
 func TestMakeTestShardTargets(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
@@ -179,15 +240,26 @@ func TestMakeTestShardTargets(t *testing.T) {
 	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
 	lock := "TEST_LOCK=/locks/rhiza-test.lock"
 
-	scripts := make("-n", "test-scripts", "SHARD=2/3", lock)
+	// test-scripts pipes go test -json through tools/scripttimings replay
+	// under the lock, and keeps go test's status (sh has no pipefail, so it
+	// goes through a file), falling back to the replay's.
+	scripts := make("-n", "test-scripts", "SHARD=2/3", lock, "NPROC=4", "RHIZA_TEST_SCRIPT_PARALLEL=")
 	for _, want := range []string{
-		"RHIZA_TEST_SHARD='2/3' go test -trimpath -timeout 20m -run '^TestScripts$' -skip '" + budgets + "' ./cmd/rhiza 9>&-",
+		`go build -trimpath -o "$replay" ./tools/scripttimings`,
 		`lock "the cmd/rhiza scripts"`,
+		"{ RHIZA_TEST_SHARD='2/3' go test -trimpath -timeout 20m -parallel 8 -json -run '^TestScripts$' -skip '" + budgets + `' ./cmd/rhiza 9>&-; echo $? >"$st"; }`,
+		`| "$replay" replay 9>&-`,
+		`rstatus=$?; unlock`,
+		`status=$(cat "$st")`,
+		`[ "$status" != 0 ] || status=$rstatus`,
+		`exit $status`,
 	} {
 		if !strings.Contains(scripts, want) {
 			t.Errorf("make -n test-scripts has no %s:\n%s", want, scripts)
 		}
 	}
+
+	checkScriptParallel(t, "test-scripts", "SHARD=1/4")
 
 	rest := make("-n", "test-rest")
 	if want := "go test -trimpath -timeout 20m -skip '" + budgets[:len(budgets)-1] + "$|^TestScripts$'"; !strings.Contains(rest, want) ||
@@ -198,6 +270,13 @@ func TestMakeTestShardTargets(t *testing.T) {
 	budget := make("-n", "test-budgets", lock)
 	if want := "go test -trimpath -timeout 20m -count=1 -p 1 -run '" + budgets + "' ./internal/api ./internal/index ./internal/slice 9>&-"; !strings.Contains(budget, want) {
 		t.Errorf("make -n test-budgets has no %s:\n%s", want, budget)
+	}
+
+	// -parallel is cmd/rhiza's scripts' alone.
+	for name, out := range map[string]string{"test-rest": rest, "test-budgets": budget} {
+		if strings.Contains(out, "-parallel") {
+			t.Errorf("make -n %s passes -parallel, which only cmd/rhiza's scripts get:\n%s", name, out)
+		}
 	}
 
 	lint := make("-n", "lint")

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FMKD3SZNKX3CBGE2G6A5PR",
+  "after": [
+    "01M7FM5FFSC0TZ9PFR8Z1PN2JE"
+  ],
+  "at": "2026-11-15T12:59:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 29dafac45: re-ran the Checks: block under the machine lock with RHIZA_/SHIP_/REX_ unset: go test -trimpath -p 2 ./cmd/rhiza -run '^(TestScriptOrder|TestScriptShard|TestScriptShardEnvError)$' exit 0 (all 9 TestScriptOrder subtests pass, also with -count=1); go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/^(add|apply)$' exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (no tracked change). Diff read: only cmd/rhiza/main_test.go (TestScripts now passes Files from scriptFiles, Dir dropped) and new cmd/rhiza/order_test.go plus the builder's model log entries and actor render. TestScriptOrder covers descending seconds, ties and untimed scripts by name, a shard ordered too, missing timings file by name, and every testdata/script/*.txtar exactly once against the real script-timings.tsv; malformed cases (no tab, seconds not a number, negative, empty name, duplicate) each assert the error contains '<file>:<line>:'. No .txt scripts exist, so the *.txtar glob matches testscript's Dir set. No script content, Setup or environment changed. Per Decision longest-first-is-list-order the code only sorts the list (sort.SliceStable), with no start-order mechanism; comments say so. No stubs or TODOs."
+        },
+        "handle": "scripts-longest-first-verified",
+        "id": "01M7FMP15H3P7QJTW8QP5J62JP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FMP15H3P7QJTW8QM5CWHGJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FMP15H3P7QJTW8QM5CWHGJ",
+        "id": "01M7FMP16J8RKD0EXN8PJZSTJZ",
+        "link": "01M7FMP16J8RKD0EXN8MEB8G84",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M7FK22HT46MBBNF1KQJM4PHP",
+  "id": "01M7FMP17H3YEP2EQ8NNHJ9T78",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,12 @@
+{"Time":"2026-11-15T10:00:00Z","Action":"start","Package":"github.com/x/rhiza/cmd/rhiza"}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts"}
+{"Time":"2026-11-15T10:00:01Z","Action":"run","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/alpha"}
+{"Time":"2026-11-15T10:00:01Z","Action":"output","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/alpha","Output":"=== RUN   TestScripts/alpha\n"}
+{"Time":"2026-11-15T10:00:05Z","Action":"pass","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/alpha","Elapsed":4.21}
+{"Time":"2026-11-15T10:00:06Z","Action":"pass","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/bravo","Elapsed":12.5}
+{"Time":"2026-11-15T10:00:07Z","Action":"fail","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/charlie","Elapsed":2}
+{"Time":"2026-11-15T10:00:07Z","Action":"pass","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/delta","Elapsed":0.333}
+{"Time":"2026-11-15T10:00:08Z","Action":"pass","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts/gone","Elapsed":3}
+{"Time":"2026-11-15T10:00:08Z","Action":"pass","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestOther","Elapsed":9}
+{"Time":"2026-11-15T10:00:09Z","Action":"fail","Package":"github.com/x/rhiza/cmd/rhiza","Test":"TestScripts","Elapsed":22}
+{"Time":"2026-11-15T10:00:09Z","Action":"fail","Package":"github.com/x/rhiza/cmd/rhiza","Elapsed":22}

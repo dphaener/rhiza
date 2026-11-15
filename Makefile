@@ -45,6 +45,24 @@ BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 # keys those results on the files' absolute paths and mtimes.
 TEST_FLAGS = -trimpath -timeout 20m
 
+# cmd/rhiza's scripts mostly wait on git and the rhiza children they start,
+# so go test's default -parallel (GOMAXPROCS) leaves cores idle: twice the
+# CPU count keeps them busy, capped at 8 so a big machine does not start
+# hundreds of rhiza children at once (memory, not CPU, is the limit there).
+# NPROC is the CPU count (getconf unless set). RHIZA_TEST_SCRIPT_PARALLEL
+# overrides the result when it is a positive integer, read in decimal (08 is
+# 8: go's flag would read it as octal and reject it); anything else (0, 00,
+# -2, abc) falls back to the NPROC default. Only cmd/rhiza's go test gets it.
+NPROC ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+SCRIPT_PARALLEL := $(shell \
+	p='$(RHIZA_TEST_SCRIPT_PARALLEL)'; n='$(NPROC)'; \
+	case "$$p" in (''|*[!0-9]*) p=;; esac; \
+	[ -z "$$p" ] || p=$$(expr "$$p" + 0); \
+	if [ -n "$$p" ] && [ "$$p" -gt 0 ]; then echo "$$p"; exit 0; fi; \
+	case "$$n" in (''|*[!0-9]*) n=1;; esac; \
+	[ "$$n" -gt 0 ] || n=1; \
+	p=$$((n * 2)); [ "$$p" -le 8 ] || p=8; echo "$$p")
+
 # cmd/rhiza's scripts run in parallel and keep every core busy, so on one
 # machine only one worktree runs them at a time: concurrent `make test`s
 # (one per Rhiza run worktree) queue on this lock instead of thrashing. The
@@ -78,7 +96,7 @@ test: ## Run the test suite but the timing budgets (make test-budgets runs those
 	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' $$(go list ./... | grep -v '/cmd/rhiza$$') >$$rest 2>&1 9>&- & \
 	pid=$$!; \
 	lock "the cmd/rhiza scripts"; \
-	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
+	go test $(TEST_FLAGS) -parallel $(SCRIPT_PARALLEL) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
 	status=$$?; \
 	unlock; \
 	wait $$pid || status=1; \
@@ -112,10 +130,24 @@ LOCK_SH = lockfile='$(TEST_LOCK)'; \
 
 .PHONY: test-scripts
 test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skipped
+# go test -json is piped through tools/scripttimings replay, which prints go
+# test's text for what did not pass and the package's FAIL or ok line, then a
+# script-time line per passing script, so each CI scripts job's log carries
+# its scripts' times (make script-timings RUN=<id> reads them back). The tool
+# is built before the lock is taken. sh has no pipefail, so go test's status
+# goes through a file: make fails when go test failed, else when the replay
+# did (a test failed, or go test was killed and never ended its package).
 	@$(LOCK_SH); \
+	replay=$$(mktemp) && st=$$(mktemp) || exit 1; \
+	go build -trimpath -o "$$replay" ./tools/scripttimings || { rm -f "$$replay" "$$st"; exit 1; }; \
 	lock "the cmd/rhiza scripts"; \
-	RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; \
-	status=$$?; unlock; exit $$status
+	{ RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -parallel $(SCRIPT_PARALLEL) -json -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; echo $$? >"$$st"; } \
+		| "$$replay" replay 9>&-; \
+	rstatus=$$?; unlock; \
+	status=$$(cat "$$st"); rm -f "$$replay" "$$st"; \
+	[ -n "$$status" ] || status=1; \
+	[ "$$status" != 0 ] || status=$$rstatus; \
+	exit $$status
 
 .PHONY: test-api
 test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budgets excluded
@@ -152,6 +184,13 @@ gate: ## Run the scoped local ship gate from RHIZA_GATE_BASE (see tools/gate)
 # reverse dependencies, the affected testscripts, then self-check. The full
 # suite is CI's. Pass -dry-run via ARGS to print the plan only.
 	go run -trimpath ./tools/gate $(ARGS)
+
+.PHONY: script-timings
+script-timings: ## Rewrite cmd/rhiza/testdata/script-timings.tsv from a CI run (RUN=<run id>) or a go test -json file (JSON=<file>)
+# tools/scripttimings merges the fresh times into the previous file: a script
+# that failed or did not run keeps its time, a removed script is dropped.
+# RUN reads the scripts jobs' script-time lines with gh run view --log.
+	go run -trimpath ./tools/scripttimings merge -run '$(RUN)' -json '$(JSON)'
 
 .PHONY: lint
 lint: fmt-check vet self-check ## Run fmt-check, vet and self-check

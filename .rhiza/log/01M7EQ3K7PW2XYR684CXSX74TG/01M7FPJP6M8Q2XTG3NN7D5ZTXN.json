@@ -1,0 +1,155 @@
+{
+  "actor": "01M7FPCHG1GYET9P48JZG4WC23",
+  "after": [
+    "01M7FNS682DYW6WCHKC7D3C3WH"
+  ],
+  "at": "2026-11-15T13:33:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee with a scratch build of tools/scripttimings: replay on the testdata fixtures prints the failing script's text and --- FAIL:/FAIL lines plus script-time lines, exit 0 for replay-pass and 1 for replay-fail, replay-build, replay-killed and none; hand-made streams: a skipped subtest's text dropped and no script-time for it, a stream cut mid-line, empty input and non-JSON input all exit 1 with the no-package-end message; a real go test -json of TestScripts/version and describe-golden replays to ok plus two script-time lines, exit 0. make test-scripts SHARD=2/3 with a fake GO_TEST printing fixtures exits 0 for pass/0 and fails with go test's status kept (Error 1, 3, 137) for fail/1, pass/3, killed/0, build/1, killed/137; make -n shows RHIZA_TEST_SHARD='2/3', -json, the replay and the lock."
+        },
+        "handle": "ci-script-timings-qa-1",
+        "id": "01M7FPJNNK7CB0WDV4AV72XNQJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJNNK7CB0WDV4AV4WN73H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJNNK7CB0WDV4AV4WN73H",
+        "id": "01M7FPJNPMWV0JXYBM5TJABWC6",
+        "link": "01M7FPJNPMWV0JXYBM5SCGJ5F7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EZ13K1QGZHVMCYCGB79TTD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee: the checked-in script-timings.tsv has 398 lines, one per *.txtar. make script-timings JSON=<real go test -json of two scripts> rewrote exactly those two lines (restored afterwards); JSON of a build failure, a missing file, neither or both of RUN/JSON exit 2 with the file unchanged. With -file/-scripts on scratch copies: a fake gh printing the replay's script-time lines behind job/step/timestamp prefixes merges, a removed script is dropped, a new one gets 1, a missing previous file is created; a malformed or duplicated previous line, a failing gh and a malformed script-time line exit 1 and leave the file unchanged."
+        },
+        "handle": "script-timings-file-qa-1",
+        "id": "01M7FPJNQNXB9EXQYXKJ3BDTHD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJNQNXB9EXQYXKFXDMPK8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJNQNXB9EXQYXKFXDMPK8",
+        "id": "01M7FPJNRRA288JYWVNW6VDEDJ",
+        "link": "01M7FPJNRRA288JYWVNSJPNXWZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee: go test -run '^TestScriptOrder$' passes; with the checked-in timings line 3 made tab-less, real TestScripts fails with 'testdata/script-timings.tsv:3: malformed line' (file restored)."
+        },
+        "handle": "scripts-longest-first-qa-1",
+        "id": "01M7FPJNSQTG0VBCY68Q8HNKNP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJNSQTG0VBCY68NAWY30H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJNSQTG0VBCY68NAWY30H",
+        "id": "01M7FPJNTQZYZS9SQXG14DDGN0",
+        "link": "01M7FPJNTQZYZS9SQXG0FQNGPW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee: make -n test and make -n test-scripts SHARD=1/4 pass -parallel 8 by default on this 4-core VM and with NPROC=4 or 16, 4 with NPROC=2, 2 with NPROC=1, 0 or abc, 3 with RHIZA_TEST_SCRIPT_PARALLEL=3 (also as env, and over NPROC=16), and the NPROC default for 0, -2, abc and '3 4'; TestMakeTestTimeout and TestMakeTestShardTargets pass."
+        },
+        "handle": "scripts-parallel-bounded-qa-1",
+        "id": "01M7FPJNVYXXYA8ME3PTM33WS6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJNVYXXYA8ME3PT6DFTDN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJNVYXXYA8ME3PT6DFTDN",
+        "id": "01M7FPJNXB51EWM25XTN04BT7Z",
+        "link": "01M7FPJNXB51EWM25XTKM5AYR5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE64JDCYTPPV1369XDSNM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee: TestScriptShard and TestScriptShardEnvError pass; real TestScripts with RHIZA_TEST_SHARD=0/4, 5/4, 1/0, x and 1/4x fails with 'want i/n with 1 <= i <= n'; running version and describe-golden under shards 1/4..4/4 runs each in exactly one shard (describe-golden in 2, version in 3)."
+        },
+        "handle": "script-shards-weighted-qa-1",
+        "id": "01M7FPJP0JWWTSMV59SA5T96WX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJP0JWWTSMV59S7VWTCFG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJP0JWWTSMV59S7VWTCFG",
+        "id": "01M7FPJP2VJ2GGKYZBDW8NEGVG",
+        "link": "01M7FPJP2VJ2GGKYZBDS4D9C3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE69J35XJW25SPBZBH1MS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 6e4fed7ee: TestScriptShard passes; RHIZA_TEST_SHARD unset runs both named scripts, each of shards 1/4..4/4 runs a disjoint part of them, and malformed values (0/4, 5/4, x) fail TestScripts with a clear error."
+        },
+        "handle": "test-scripts-sharded-weighted-qa-1",
+        "id": "01M7FPJP4BNJEZJ3878RA66C0N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FPJP4BNJEZJ3878N4MH8XN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FPJP4BNJEZJ3878N4MH8XN",
+        "id": "01M7FPJP5FZHHQDH48K8MVHA6X",
+        "link": "01M7FPJP5FZHHQDH48K7XXPKVS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M7FK22HT46MBBNF1KQJM4PHP",
+  "id": "01M7FPJP6M8Q2XTG3NN7D5ZTXN",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FNPQTVZRMVK2J6H5VJDRTS",
+  "after": [
+    "01M7FN7Q2VF19C1H8XG5KZCG99"
+  ],
+  "at": "2026-11-15T13:19:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 6e4fed7ee: go test -trimpath -p 2 ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets)$' -count=1 exit 0 (both PASS; checkScriptParallel covers NPROC 4/2/16/1, overrides 3/12, and 0/-2/abc/2x fallbacks for make test and make test-scripts SHARD=1/4); rhiza ship generate exit 0 (0 files changed); rhiza render exit 0. By hand, make -n for both make test and make test-scripts SHARD=1/4 printed -parallel 8 (NPROC=4), 4 (NPROC=2), 8 (NPROC=16), 3 (RHIZA_TEST_SCRIPT_PARALLEL=3), and the NPROC default 8/4/8 for RHIZA_TEST_SCRIPT_PARALLEL=0/-2/abc, all exit 0; the env-var form works too; the default on this 4-core VM is -parallel 8. -parallel appears once, only on cmd/rhiza's go test (test-rest and test-budgets have none); the default is capped at 8; lock \"the cmd/rhiza scripts\" is still taken in both targets. Diff touches only Makefile, cmd/rhiza/makeupdate_test.go and the builder's actor record; no TODOs. The speedup/memory measure was left to the orchestrator as briefed."
+        },
+        "handle": "scripts-parallel-bounded-verified",
+        "id": "01M7FNS63S1V62VRTKZ0S7RYPW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FNS63S1V62VRTKYY1VFZXW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FNS63S1V62VRTKYY1VFZXW",
+        "id": "01M7FNS660M0TKHR40R934ZM7H",
+        "link": "01M7FNS660M0TKHR40R64Z548K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE64JDCYTPPV1369XDSNM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M7FK22HT46MBBNF1KQJM4PHP",
+  "id": "01M7FNS682DYW6WCHKC7D3C3WH",
+  "type": "ops",
+  "v": 1
+}

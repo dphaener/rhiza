@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FN61YKEJNZSS6MT0D6MVCT",
+  "after": [
+    "01M7FN38K1G2ZQT3PAZVPA5R7H"
+  ],
+  "at": "2026-11-15T13:09:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at f8fa2173e: go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^(TestScriptShard|TestScriptShardEnvError|TestScriptOrder)$' (covers -run TestScriptShard) exit 0, every subtest PASS; gofmt -l cmd/rhiza empty; go vet ./cmd/rhiza exit 0. Diff read: shardNames sorts by recorded time (untimed weigh the median, timed first on ties, then name) and places each on the least-loaded shard, ties to the lower; scriptFiles passes the selection to testscript Files. TestScriptShard asserts: n=4 over testdata/script with script-timings.tsv disjoint and covering every script, each shard longest-first, totals within 15% of the mean; exact greedy placements pinned on fixtures (incl. tie to lower shard and median weight for missing scripts); unset returns all scripts longest first; 0/4, 5/4, x (and 1/0, 1/, /4, 1/4x, -1/4) rejected; TestScriptShardEnvError checks the error names RHIZA_TEST_SHARD with want i/n. Note: the n=4 real-data case checks balance rather than re-deriving the exact greedy assignment, which the fixtures pin. No TODOs or stubs."
+        },
+        "handle": "test-scripts-sharded-greedy-verified",
+        "id": "01M7FN7Q0PTD4ENPD6Q4DP933K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FN7Q0PTD4ENPD6Q1XP3G30",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FN7Q0PTD4ENPD6Q1XP3G30",
+        "id": "01M7FN7Q1P3V05FEFQ8T3CJVT3",
+        "link": "01M7FN7Q1P3V05FEFQ8RYQ72MV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M7FK22HT46MBBNF1KQJM4PHP",
+  "id": "01M7FN7Q2VF19C1H8XG5KZCG99",
+  "type": "ops",
+  "v": 1
+}
