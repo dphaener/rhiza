@@ -48,7 +48,7 @@ func TestDaemonProfile(t *testing.T) {
 	polls := make(chan int, 100)
 	n := 0
 	poll := func() error { prof.Poll(); n++; polls <- n; return nil }
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.Wd = root
 	ticks, stop := make(chan time.Time), make(chan struct{})
 	done := make(chan error, 1)
@@ -150,7 +150,7 @@ func TestDaemonProfileDefaultPath(t *testing.T) {
 	prof.After = func(time.Duration) <-chan time.Time { c := make(chan time.Time, 1); c <- time.Now(); return c }
 	profileWaitEvery = time.Millisecond
 	t.Cleanup(func() { profileWaitEvery = 200 * time.Millisecond })
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.Wd = root
 	go func() {
 		for i := 0; i < 5000; i++ {
@@ -178,7 +178,7 @@ func TestDaemonProfileNoDaemon(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, rootcfg.File), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.Wd = root
 	if _, err := callOp(t, ctx, "daemon.profile", `{}`); err == nil || !strings.Contains(err.Error(), "no daemon") {
 		t.Fatalf("got %v, want a no daemon error", err)

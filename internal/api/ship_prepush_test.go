@@ -54,7 +54,7 @@ func newPrePushRepo(t *testing.T) *prePushRepo {
 	gitRun(t, base, "init", "-q", "--bare", "-b", "main", r.origin)
 	gitRun(t, base, "init", "-q", "-b", "main", r.root)
 	r.git("remote", "add", "origin", r.origin)
-	ctx := testCtx(r.root)
+	ctx := testCtx(t, r.root)
 	ctx.Git = func(args ...string) (string, error) { return gitAt(ctx, r.root, args...) }
 	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
 		c := exec.Command(name, args...)
@@ -755,7 +755,7 @@ func TestShipRunEnv(t *testing.T) {
 	t.Parallel()
 	const def = "name = \"w\"\n[env]\nSHIP_HEAD_RHIZA = \"{run_tmp}/rhiza-head\"\nSHIP_HEAD_BUILD = 'go build -o \"$SHIP_HEAD_RHIZA\" ./cmd/rhiza'\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"
 	j := run.Journal{ID: "r", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}}}}
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Getenv = func(key string) string { return "own-" + key }
 	got := ctxGetenv(shipRunEnv(ctx, j.State(), "/tmp/run"))
 	if v := got(envShipBuild); v != `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza` {

@@ -18,7 +18,7 @@ func TestWebRootHandlerServesEveryProject(t *testing.T) {
 	intents := map[string]string{"alpha": "Alpha intent", "beta": "Beta intent"}
 	var home *Ctx
 	for name, intent := range intents {
-		c := testCtx(filepath.Join(root, name))
+		c := testCtx(t, filepath.Join(root, name))
 		pinFreeBytes(c)
 		if err := os.MkdirAll(c.Root, 0o755); err != nil {
 			t.Fatal(err)

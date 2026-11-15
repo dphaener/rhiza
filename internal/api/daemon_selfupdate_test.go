@@ -36,7 +36,7 @@ func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
 	var updatedAt []int
 	// Polls 1 and 2 leave a start pending, polls 3 and 4 do not.
 	pendingAt := map[int]int{1: 1, 2: 1}
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ticks, stop := make(chan time.Time), make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
@@ -136,7 +136,7 @@ func (h *hangProcess) Kill() {
 // terminal prompt, and reported as failed.
 func TestFetchMainWithinTimesOut(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	var got Program
 	h := &hangProcess{killed: make(chan struct{})}
 	h.r, h.w = io.Pipe()
@@ -153,7 +153,7 @@ func TestFetchMainWithinTimesOut(t *testing.T) {
 
 func TestFetchMainWithinExitCode(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Start = (&shStart{codes: map[string]int{}}).start
 	if err := fetchMainWithin(ctx, "/main", time.Second); err != nil {
 		t.Fatalf("err %v", err)

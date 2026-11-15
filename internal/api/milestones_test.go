@@ -11,7 +11,7 @@ import (
 // every change set state, and the roadmap of the same fixture, unchanged.
 func TestMilestonesOperation(t *testing.T) {
 	t.Parallel()
-	c := testCtx(filepath.Join(t.TempDir(), "p"))
+	c := testCtx(t, filepath.Join(t.TempDir(), "p"))
 	pinFreeBytes(c)
 	if err := os.MkdirAll(c.Root, 0o755); err != nil {
 		t.Fatal(err)

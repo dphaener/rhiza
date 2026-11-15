@@ -55,7 +55,7 @@ func guideGit(t *testing.T, dir string, args ...string) string {
 func TestDaemonGuideRefresh(t *testing.T) {
 	t.Parallel()
 	setup := func(t *testing.T) (*Ctx, string, rootcfg.Config) {
-		ctx := testCtx(t.TempDir())
+		ctx := testCtx(t, t.TempDir())
 		ctx.Version = "1.2.3"
 		ctx.Exec = realExec
 		ctx.Home = t.TempDir()
@@ -64,7 +64,7 @@ func TestDaemonGuideRefresh(t *testing.T) {
 		if err := os.MkdirAll(proj, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := callOp(t, testCtx(proj), "init", `{}`); err != nil {
+		if _, err := callOp(t, testCtx(t, proj), "init", `{}`); err != nil {
 			t.Fatal(err)
 		}
 		guideGit(t, proj, "init", "-q")
@@ -162,7 +162,7 @@ func TestDaemonGuideRefreshAtStart(t *testing.T) {
 	if err := os.MkdirAll(proj, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := callOp(t, testCtx(proj), "init", `{}`); err != nil {
+	if _, err := callOp(t, testCtx(t, proj), "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
 	guideGit(t, proj, "init", "-q")

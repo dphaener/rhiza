@@ -389,7 +389,7 @@ func TestCheckFindingWhere(t *testing.T) {
 
 func TestCheckErrors(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	_, err := callOp(t, ctx, "check", `{}`)
 	wantExit(t, err, 4)
 	wantNext(t, err, "rhiza init")

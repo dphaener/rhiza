@@ -17,7 +17,7 @@ import (
 // records its argv.
 func rexTestCtx(t *testing.T) (ctx *Ctx, dir string, calls *[][]string) {
 	t.Helper()
-	ctx = testCtx(t.TempDir())
+	ctx = testCtx(t, t.TempDir())
 	dir = t.TempDir()
 	ctx.Getenv = func(k string) string {
 		if k == "REX_CONFIG" {

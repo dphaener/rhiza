@@ -149,7 +149,7 @@ func TestModelNetThrottled(t *testing.T) {
 // killed after its timeout, never prompts for credentials, and fails.
 func TestBoundedExecTimesOut(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) {
 		t.Fatal("untimed Exec used")
 		return nil, nil
@@ -169,7 +169,7 @@ func TestBoundedExecTimesOut(t *testing.T) {
 
 func TestBoundedExecOutputAndExit(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) { return nil, nil }
 	code := 0
 	ctx.Start = func(Program) (Process, error) {

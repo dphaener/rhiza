@@ -254,7 +254,7 @@ func budgetReads(g generated, v string) []budgetRead {
 // runRead runs rd once as the CLI does: a fresh Ctx, so a fresh workspace
 // and index open.
 func runRead(g generated, rd budgetRead) (any, error) {
-	ctx := testCtx(g.root)
+	ctx := testCtxNoIndex(g.root)
 	ctx.IndexPath = g.indexPath
 	o, _ := Lookup(rd.op)
 	return o.Run(ctx, rd.req)
@@ -351,7 +351,7 @@ func TestReadBudget(t *testing.T) {
 			var laps []quiettest.Lap
 			var size int
 			for range readBudgetRuns {
-				ctx := testCtx(g.root)
+				ctx := testCtx(t, g.root)
 				ctx.IndexPath = g.indexPath
 				ctx.ChangeSet = landed
 				o, _ := Lookup(rd.op)

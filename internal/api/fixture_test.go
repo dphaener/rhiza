@@ -21,9 +21,10 @@ import (
 // a failed build fails every test that asks for it with the build's error.
 //
 // A build lays its files out under dir and returns the Ctx that its writes
-// went through: the copy's Ctx is testCtx over the same folder in the copy,
-// with its ID generator advanced past the IDs the build drew, so a test on
-// a copy draws exactly the IDs it would have drawn after building afresh.
+// went through: the copy's Ctx is testCtx over the same folder in the copy
+// (an index under the test's own t.TempDir()), with its ID generator
+// advanced past the IDs the build drew, so a test on a copy draws exactly
+// the IDs it would have drawn after building afresh.
 // A build must write no absolute path into the files (the copy lives
 // elsewhere); a git repository is copied whole, .git included.
 type snapshot struct {
@@ -104,15 +105,15 @@ func (s *snapshot) make() error {
 	return nil
 }
 
-// drawsOf counts the IDs ctx's generator has drawn since testCtx made it:
-// it draws the next ID from ctx (whose build is over) and counts the draws
-// a fresh testCtx generator takes to reach one before it.
+// drawsOf counts the IDs ctx's generator has drawn since testCtxNoIndex made
+// it: it draws the next ID from ctx (whose build is over) and counts the
+// draws a fresh testCtxNoIndex generator takes to reach one before it.
 func drawsOf(ctx *Ctx) (int, error) {
 	next, err := ctx.IDs.New()
 	if err != nil {
 		return 0, err
 	}
-	fresh := testCtx(ctx.Root).IDs
+	fresh := testCtxNoIndex(ctx.Root).IDs
 	for n := 0; n < 1_000_000; n++ {
 		v, err := fresh.New()
 		if err != nil {
@@ -122,7 +123,7 @@ func drawsOf(ctx *Ctx) (int, error) {
 			return n, nil
 		}
 	}
-	return 0, fmt.Errorf("the build's next ID %s is not one testCtx's generator draws", next)
+	return 0, fmt.Errorf("the build's next ID %s is not one testCtxNoIndex's generator draws", next)
 }
 
 // noAbsolutePaths fails when a file under dir names dir, which a copy
@@ -152,7 +153,8 @@ func (s *snapshot) copyTo(dst string) (*Ctx, error) {
 	if err := copyTree(s.dir, dst); err != nil {
 		return nil, fmt.Errorf("snapshot %s: copy: %w", s.name, err)
 	}
-	ctx := testCtx(filepath.Join(dst, s.rel))
+	// No index here: copyTo has no test to put one under; copy adds it.
+	ctx := testCtxNoIndex(filepath.Join(dst, s.rel))
 	for range s.draws {
 		if _, err := ctx.IDs.New(); err != nil {
 			return nil, err
@@ -171,6 +173,7 @@ func (s *snapshot) copy(t *testing.T) (string, *Ctx) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	return dst, ctx
 }
 
@@ -254,7 +257,8 @@ func runOp(ctx *Ctx, name, reqJSON string) (any, error) {
 // buildInit is the snapshot of a repository just after init: the repo is
 // dir itself.
 func buildInit(dir string) (*Ctx, error) {
-	ctx := testCtx(dir)
+	// No index: the build runs once per binary, outside any test's TempDir.
+	ctx := testCtxNoIndex(dir)
 	_, err := runOp(ctx, "init", `{}`)
 	return ctx, err
 }

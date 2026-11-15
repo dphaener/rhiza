@@ -67,7 +67,7 @@ func modelBranchFixture(t *testing.T, withOrigin bool) *modelFixture {
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	exec := hermeticExec(t, tmp)
 	git := func(dir string, args ...string) string {
 		t.Helper()
@@ -229,7 +229,7 @@ func TestModelBranch(t *testing.T) {
 		}
 		wt := filepath.Join(t.TempDir(), "wt")
 		f.git(f.root, "worktree", "add", "-q", "--detach", wt, "FETCH_HEAD")
-		cc := testCtx(wt)
+		cc := testCtx(t, wt)
 		cc.Git = func(args ...string) (string, error) {
 			out, err := f.gh.exec("git", args, wt, nil)
 			return string(out), err

@@ -165,7 +165,7 @@ func TestCIInstallLatest(t *testing.T) {
 
 func TestCIInstallErrors(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	_, err := callOp(t, ctx, "ci.install", `{}`)
 	wantExit(t, err, 4)
 	wantNext(t, err, "rhiza init")

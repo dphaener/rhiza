@@ -21,7 +21,7 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 		ok, err := timeWithinBudget(label, func() (readTiming, error) {
 			var laps []quiettest.Lap
 			for range readBudgetRuns {
-				ctx := testCtx(g.root)
+				ctx := testCtx(t, g.root)
 				ctx.IndexPath = g.indexPath
 				ctx.ChangeRef = cs.String()
 				reads := countingCtx(ctx)
@@ -55,7 +55,7 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 		timeShow("change show "+c.name+" fresh", c.cs)
 	}
 	// Append an entry to an unrelated change set: a new draft.
-	ctx := testCtx(g.root)
+	ctx := testCtx(t, g.root)
 	ctx.IndexPath = g.indexPath
 	if _, err := callOp(t, ctx, "change.new", `{"intent":"Unrelated to the others"}`); err != nil {
 		t.Fatal(err)
@@ -65,7 +65,7 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 	// window; backdateLog sets it back) every open lists the log again, so
 	// one more read after that stores the fresh stats; the timed reads are
 	// the ones that follow.
-	warm := testCtx(g.root)
+	warm := testCtx(t, g.root)
 	warm.IndexPath = g.indexPath
 	warm.ChangeRef = s.Draft.String()
 	for range 2 {

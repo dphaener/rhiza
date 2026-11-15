@@ -90,7 +90,7 @@ func runDaemonTicks(t *testing.T, ctx *Ctx, n int, between func(tick int)) error
 // RHIZA_TEST_NOW, so the daemon binds no web listener).
 func daemonRepo(t *testing.T) (*Ctx, string) {
 	t.Helper()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	pinFreeBytes(ctx)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
@@ -174,7 +174,7 @@ func TestDaemonLoopReexecWaitsForPending(t *testing.T) {
 		}
 		// Polls 1 and 2 leave a start pending, polls 3 to 5 do not.
 		pendingAt := map[int]int{1: 1, 2: 2}
-		ctx := testCtx(t.TempDir())
+		ctx := testCtx(t, t.TempDir())
 		ticks, stop := make(chan time.Time), make(chan struct{})
 		type result struct {
 			lock *daemon.Lock

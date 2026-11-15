@@ -66,7 +66,7 @@ func leafOf(leaves []run.Leaf, handle string) run.Leaf {
 
 func newDriverFixture(t testing.TB, root, indexPath string, cs, actor id.ID, debounce time.Duration) *driverFixture {
 	t.Helper()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.IndexPath = indexPath
 	ctx.Git = func(args ...string) (string, error) { return "\n", nil }
 	reads := countingCtx(ctx)
@@ -98,7 +98,7 @@ func TestDriverPollIsCheap(t *testing.T) {
 	if _, err := gen.Write(root, gen.Options{Seed: 7, Nodes: 800, Links: 300, Landed: 120, InFlight: 6}); err != nil {
 		t.Fatal(err)
 	}
-	setup := testCtx(root)
+	setup := testCtx(t, root)
 	setup.IndexPath = filepath.Join(tmp, "index.db")
 	cs := newChange(t, setup, `{"intent":"Build"}`).ChangeSet
 	mustWrite(t, setup, "add", `{"kind":"capability","handle":"leaf-a"}`)
@@ -198,7 +198,7 @@ const (
 func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	t.Helper()
 	// The run's change set: a few leaves, as a planned change set has.
-	mk := testCtx(g.root)
+	mk := testCtx(t, g.root)
 	mk.IndexPath = g.indexPath
 	mk.IDs = id.NewGenerator(mk.Now, rand.New(rand.NewSource(771)))
 	cs := newChange(t, mk, `{"intent":"A run under the driver budget"}`).ChangeSet
@@ -256,7 +256,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 	// set would have the index compute its views again, and the change sets
 	// of the generated model are large to fold: no poll could pay for
 	// either.)
-	other := testCtx(g.root)
+	other := testCtx(t, g.root)
 	other.IndexPath = g.indexPath
 	other.IDs = id.NewGenerator(other.Now, rand.New(rand.NewSource(991)))
 	other.ChangeSet = newChange(t, other, `{"intent":"Unrelated to the driver"}`).ChangeSet
@@ -298,7 +298,7 @@ func TestEvidenceReadsPastSessionWrites(t *testing.T) {
 	if err := os.Mkdir(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	setup := testCtx(root)
+	setup := testCtx(t, root)
 	setup.IndexPath = filepath.Join(tmp, "index.db")
 	if _, err := callOp(t, setup, "init", `{}`); err != nil {
 		t.Fatal(err)

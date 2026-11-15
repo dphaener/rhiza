@@ -152,7 +152,7 @@ func TestSkillCheckDefinition(t *testing.T) {
 func TestSkillCheckRefusals(t *testing.T) {
 	t.Parallel()
 	home := t.TempDir()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = home
 	ctx.Getenv = func(k string) string {
 		if k == "HOME" {
@@ -242,7 +242,7 @@ func TestSkillCheckRoles(t *testing.T) {
 	})
 	t.Run("Unused skill refused", func(t *testing.T) {
 		home := t.TempDir()
-		ctx := testCtx(t.TempDir())
+		ctx := testCtx(t, t.TempDir())
 		ctx.Home = home
 		ctx.Getenv = func(k string) string {
 			if k == "HOME" {

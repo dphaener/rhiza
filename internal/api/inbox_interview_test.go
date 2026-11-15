@@ -64,7 +64,7 @@ func TestInboxMilestoneInterview(t *testing.T) {
 // The daemon notifies a milestone interview once, with the interview text.
 func TestDaemonNotifyMilestoneInterview(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	var rex bytes.Buffer
 	ctx.Rex = &rex
 	rs := run.NewStore(t.TempDir())

@@ -43,7 +43,7 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 	if _, err := gen.Write(root, gen.Options{Seed: 7, Nodes: 3000, Links: 1200, Landed: 80, InFlight: 8}); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	p, err := index.DefaultPath(root)
 	if err != nil {
 		t.Fatal(err)
@@ -163,7 +163,7 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 func TestInboxGateQuestionsKept(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir() // no .rhiza: the worktree does not read
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	st := run.State{Change: "01M6RXK2SB0M12FXVEGXER022R", Worktree: root, Stopped: run.OpenStop + "kept-a, kept-b"}
 	got := inboxGateQuestions(ctx, st)
 	if len(got) != 2 || got[0].Handle != "kept-a" || got[1].Handle != "kept-b" {

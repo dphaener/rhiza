@@ -17,7 +17,7 @@ func TestAddQuestionLenientRefs(t *testing.T) {
 	cs := currentOf(t, f.ctx)
 	// The question is written in the session's worktree, so the node it
 	// names is added there.
-	wctx := testCtx(f.worktree)
+	wctx := testCtx(t, f.worktree)
 	wctx.Git, wctx.ChangeSet = f.git.run, cs
 	store := mustWrite(t, wctx, "add", `{"kind":"capability","handle":"store"}`).Nodes[0]
 	r := &stepRunner{ctx: f.ctx, change: cs.String(), sessions: f.st}
@@ -34,7 +34,7 @@ func TestAddQuestionLenientRefs(t *testing.T) {
 	if got, want := fieldText(node.Fields["statement"]), "Use @{"+store.String()+"}, not @ghost?"; got != want {
 		t.Errorf("stored statement %q, want %q", got, want)
 	}
-	sctx := testCtx(f.worktree)
+	sctx := testCtx(t, f.worktree)
 	sctx.ChangeSet, sctx.IndexPath = cs, filepath.Join(t.TempDir(), "index.db")
 	resp, err := callOp(t, sctx, "show", `{"ref":"`+q.Handle+`","view":"what-if:`+cs.String()+`"}`)
 	if err != nil {

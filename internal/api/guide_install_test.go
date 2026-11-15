@@ -63,7 +63,7 @@ func TestSkillFileFrontmatter(t *testing.T) {
 
 func TestGuideInstall(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	ctx.Version = "v1.2.3"
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
@@ -95,7 +95,7 @@ func TestGuideInstall(t *testing.T) {
 // the rhiza-build skill: frontmatter, then rhiza guide build's text.
 func TestGuideInstallBuild(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
 	if !slices.Contains(r.Written, "skills/rhiza-build/SKILL.md") {
@@ -122,7 +122,7 @@ func TestGuideInstallBuild(t *testing.T) {
 // install reports them unchanged.
 func TestGuideInstallRoleSkills(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
 	for _, tc := range []struct{ skill, text string }{{"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-check-plan", "check-plan"}, {"rhiza-check-code", "check-code"}, {"rhiza-conduct", "conduct"}} {
@@ -157,7 +157,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 // the rhiza-review skill: frontmatter, then rhiza guide review's text.
 func TestGuideInstallReview(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
 	if !slices.Contains(r.Written, "skills/rhiza-review/SKILL.md") {
@@ -183,7 +183,7 @@ func TestGuideInstallReview(t *testing.T) {
 // and a second install reporting them unchanged.
 func TestGuideInstallReviewRoles(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
 	for _, topic := range []string{"check-plan", "check-code", "check-compliance", "check-quality", "check-qa", "check-model", "critic", "fixer", "ci-fix", "gate-fix", "conflict-fix"} {
@@ -212,7 +212,7 @@ func TestGuideInstallReviewRoles(t *testing.T) {
 
 func TestGuideInstallForeign(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, filepath.Join(dir, "SKILL.md"), "mine\n")
@@ -268,7 +268,7 @@ func TestInstalledVersion(t *testing.T) {
 
 func TestGuideInstallErrors(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	for _, tc := range []struct {
 		name, req string
 		dryRun    bool
@@ -299,7 +299,7 @@ func TestGuideInstallErrors(t *testing.T) {
 
 func TestGuideInstallEmptyFolder(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, filepath.Join(dir, "notes.txt"), "keep\n")
@@ -315,7 +315,7 @@ func TestGuideInstallEmptyFolder(t *testing.T) {
 
 func TestGuideInstallFileInTheWay(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
 	writePath(t, dir, "a file\n")
@@ -333,7 +333,7 @@ func TestGuideInstallFileInTheWay(t *testing.T) {
 // folder another may have just created, and none may call it foreign.
 func TestGuideInstallConcurrent(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = t.TempDir()
 	const n = 8
 	errs := make(chan error, n)

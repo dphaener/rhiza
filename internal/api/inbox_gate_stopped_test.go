@@ -17,7 +17,7 @@ import (
 func TestInboxListsGateStoppedPlanRun(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	call := func(name, req string) any {
 		t.Helper()
 		resp, err := callOp(t, ctx, name, req)

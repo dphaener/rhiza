@@ -66,7 +66,7 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	if err := os.WriteFile(filepath.Join(tmp, "rhiza.toml"), []byte("[projects.repo]\npath = \"repo\"\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	if err := os.MkdirAll(f.worktree, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	wctx := testCtx(f.worktree)
+	wctx := testCtx(t, f.worktree)
 	if _, err := callOp(t, wctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +184,7 @@ func TestSessionStartReusesWorktree(t *testing.T) {
 
 	// The worktree's log got the change set, which is current there, and
 	// the agent's actor, written by the launcher.
-	ww := ctxWorkspace(t, testCtx(f.worktree))
+	ww := ctxWorkspace(t, testCtx(t, f.worktree))
 	if cur, err := ww.current(); err != nil || cur != cs {
 		t.Errorf("worktree current = %s, %v; want %s", cur, err, cs)
 	}
@@ -279,7 +279,7 @@ func TestSessionStartCreatesWorktree(t *testing.T) {
 			if err := os.MkdirAll(path, 0o755); err != nil {
 				return "", err
 			}
-			if _, err := callOp(t, testCtx(path), "init", `{}`); err != nil {
+			if _, err := callOp(t, testCtx(t, path), "init", `{}`); err != nil {
 				return "", err
 			}
 			f.git.calls = append(f.git.calls, add)
@@ -426,11 +426,11 @@ func TestSessionLsNeedsGit(t *testing.T) {
 
 func TestNewSessionIDDeterministic(t *testing.T) {
 	t.Parallel()
-	a, err := newSessionID(testCtx("").IDs)
+	a, err := newSessionID(testCtx(t, "").IDs)
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, _ := newSessionID(testCtx("").IDs)
+	b, _ := newSessionID(testCtx(t, "").IDs)
 	if a != b {
 		t.Errorf("same seed, different IDs: %s %s", a, b)
 	}

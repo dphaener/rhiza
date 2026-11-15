@@ -43,7 +43,7 @@ func TestSessionBrief(t *testing.T) {
 	}
 	// slice is what rhiza slice --json prints for the change set now.
 	slice := func() []byte {
-		sc := *testCtx(f.worktree)
+		sc := *testCtx(t, f.worktree)
 		sc.ChangeRef = r.change
 		sl, err := callOp(t, &sc, "slice", `{}`)
 		if err != nil {

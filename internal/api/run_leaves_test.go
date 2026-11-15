@@ -56,7 +56,7 @@ func leafCommitRunner(t *testing.T) (*stepRunner, func(...string) string) {
 	if err := os.MkdirAll(wt, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(wt)
+	ctx := testCtx(t, wt)
 	ctx.Exec = hermeticExec(t, tmp)
 	git := func(args ...string) string {
 		t.Helper()
@@ -297,7 +297,7 @@ func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *C
 	if err := os.MkdirAll(wt, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(wt)
+	ctx := testCtx(t, wt)
 	ctx.Exec = hermeticExec(t, tmp)
 	git := func(args ...string) string {
 		t.Helper()

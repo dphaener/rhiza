@@ -19,7 +19,7 @@ func projectAgentCtx(t *testing.T, agent string) (*Ctx, map[string]string) {
 		conf[ProjectAgentKey] = agent
 	}
 	home := t.TempDir()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.Home = home
 	ctx.Getenv = func(k string) string {
 		if k == "HOME" {

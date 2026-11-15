@@ -15,9 +15,23 @@ import (
 	"github.com/dphaener/rhiza/internal/store"
 )
 
-// testCtx is a Ctx over root with a fixed clock, seeded IDs and a git
-// config whose user.email is test@example.com.
-func testCtx(root string) *Ctx {
+// testCtx is a Ctx over root with a fixed clock, seeded IDs, a git config
+// whose user.email is test@example.com and, as in production, an index:
+// IndexPath is a fresh file under t's own t.TempDir(), so no two tests (or
+// two Ctxs of one test) share an index. A test that exercises the no-index
+// fallback on purpose clears IndexPath, with a comment saying so.
+func testCtx(t testing.TB, root string) *Ctx {
+	t.Helper()
+	ctx := testCtxNoIndex(root)
+	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
+	return ctx
+}
+
+// testCtxNoIndex is testCtx with no index (IndexPath empty), for code with
+// no test to put one under: a snapshot's build and copy (snapshot.copy gives
+// the copy's Ctx its test's index) and the budget reads (runRead sets the
+// generated repository's own index).
+func testCtxNoIndex(root string) *Ctx {
 	now := time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC)
 	clock := func() time.Time { return now }
 	return &Ctx{
@@ -59,7 +73,7 @@ func human(t *testing.T, resp any) string {
 func TestInit(t *testing.T) {
 	t.Run("Fresh", func(t *testing.T) {
 		root := t.TempDir()
-		resp, err := callOp(t, testCtx(root), "init", `{}`)
+		resp, err := callOp(t, testCtx(t, root), "init", `{}`)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -91,10 +105,10 @@ func TestInit(t *testing.T) {
 
 	t.Run("Exists", func(t *testing.T) {
 		root := t.TempDir()
-		if _, err := callOp(t, testCtx(root), "init", `{}`); err != nil {
+		if _, err := callOp(t, testCtx(t, root), "init", `{}`); err != nil {
 			t.Fatal(err)
 		}
-		_, err := callOp(t, testCtx(root), "init", `{}`)
+		_, err := callOp(t, testCtx(t, root), "init", `{}`)
 		if ExitCode(err) != 3 {
 			t.Fatalf("second init: %v, exit %d; want 3", err, ExitCode(err))
 		}
@@ -106,7 +120,7 @@ func TestInit(t *testing.T) {
 	t.Run("RelativeRootIsMadeAbsolute", func(t *testing.T) {
 		root := t.TempDir()
 		t.Chdir(root)
-		resp, err := callOp(t, testCtx("."), "init", `{}`)
+		resp, err := callOp(t, testCtx(t, "."), "init", `{}`)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -117,7 +131,7 @@ func TestInit(t *testing.T) {
 
 	t.Run("DryRunIsUsage", func(t *testing.T) {
 		root := t.TempDir()
-		ctx := testCtx(root)
+		ctx := testCtx(t, root)
 		ctx.DryRun = true
 		_, err := callOp(t, ctx, "init", `{}`)
 		if ExitCode(err) != 2 {

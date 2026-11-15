@@ -44,7 +44,7 @@ func newDaemonFoldFix(t testing.TB) *daemonFoldFix { return newDaemonFoldFixN(t,
 // change sets are written, to add more of them directly.
 func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemonFoldFix {
 	t.Helper()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	call := func(name, req string) any {
 		o, _ := Lookup(name)

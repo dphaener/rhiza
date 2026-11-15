@@ -121,7 +121,7 @@ func TestLiveRunWriteCommittedByRunsNextCommit(t *testing.T) {
 		return strings.TrimSpace(string(out))
 	}
 	ctxAt := func(dir string) *Ctx {
-		c := testCtx(dir)
+		c := testCtx(t, dir)
 		c.Exec = exec
 		c.Git = func(args ...string) (string, error) {
 			out, err := exec("git", args, dir, nil)

@@ -52,7 +52,7 @@ type pollGitStarts struct {
 
 func pollGitCtx(t *testing.T, dir string, st *pollGitStarts) *Ctx {
 	t.Helper()
-	ctx := testCtx(dir)
+	ctx := testCtx(t, dir)
 	ctx.Git = func(...string) (string, error) { t.Fatal("unbounded Git used"); return "", nil }
 	ctx.GitConfig = func(string) (string, error) { t.Fatal("unbounded GitConfig used"); return "", nil }
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) {
@@ -105,7 +105,7 @@ func TestPollGitBounded(t *testing.T) {
 	checkPollGitBounded(t, projectCtx(pollGitCtx(t, dir, &st), dir), dir, &st)
 
 	// A git that exits in time returns its output unchanged.
-	ctx := testCtx(dir)
+	ctx := testCtx(t, dir)
 	ctx.Git = func(...string) (string, error) { return "", nil }
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) { return nil, nil }
 	ctx.Start = func(Program) (Process, error) { return &fakeProcess{out: strings.NewReader("main\n")}, nil }
