@@ -16,6 +16,7 @@ import (
 // is one of the step's cycles that runs the check; anything else is 0, so
 // the cycle is inferred.
 func TestEnvCheckCycle(t *testing.T) {
+	t.Parallel()
 	st := run.State{Cycles: []run.CheckCycle{
 		{Step: "review", Cycle: 1, Checks: []string{"alpha", "beta"}},
 		{Step: "review", Cycle: 2, Checks: []string{"beta"}},
@@ -47,6 +48,7 @@ func TestEnvCheckCycle(t *testing.T) {
 // Two run IDs that share their first 8 characters (the same start time)
 // get different question handles carrying the full IDs.
 func TestReviewQuestionHandleFullID(t *testing.T) {
+	t.Parallel()
 	a := "01M6VY7E0AAAAAAAAAAAAAAAAA"
 	b := "01M6VY7E0BBBBBBBBBBBBBBBBB"
 	ha, hb := reviewQuestionHandle(a, 3, "f1"), reviewQuestionHandle(b, 3, "f1")
@@ -61,6 +63,7 @@ func TestReviewQuestionHandleFullID(t *testing.T) {
 // The asked entry for a finding is found by its journalled handle, the base
 // or base-N, and the autonomous gate takes it for the question left.
 func TestReviewAskedFor(t *testing.T) {
+	t.Parallel()
 	base := reviewQuestionHandle("01M6VY7E0AAAAAAAAAAAAAAAAA", 3, "f1")
 	other := reviewQuestionHandle("01M6VY7E0BBBBBBBBBBBBBBBBB", 3, "f1")
 	asked := []run.Asked{{Handle: other, Question: "x"}, {Handle: base + "-2", Question: "q2"}}
@@ -93,6 +96,7 @@ func TestReviewAskedFor(t *testing.T) {
 // review-check, and its --fresh test, refuse a round journaled before the
 // latest revise visit, adding nothing, even when the round is 3.
 func TestReviewCheckRefusesStaleRound(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -158,6 +162,7 @@ func TestReviewCheckRefusesStaleRound(t *testing.T) {
 // journalled with the finding's original; a downgrade to the same or a
 // higher severity, to none, or of a finding that is not serious is usage.
 func TestRunVerdictDowngrade(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	def, ok := workflow.Builtin("review")
@@ -234,6 +239,7 @@ func TestRunVerdictDowngrade(t *testing.T) {
 // (missing-provenance), and review-check and the gate count only confirmed
 // major findings, so a confirmed minor one passes.
 func TestPlanReviewDowngradeByKind(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	rs := run.NewStore(run.Dir(f.common))
@@ -296,6 +302,7 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 // refuses --check scope with a message naming the declared checks. An
 // agent step that declares no checks refuses --check.
 func TestRunFindingsAgentStepChecks(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -370,6 +377,7 @@ func TestRunFindingsAgentStepChecks(t *testing.T) {
 // conduct: a declared check with no round fails, minor rounds pass, a blocker with no verdict or a confirmed
 // major fails, a downgraded blocker or dropped major passes.
 func TestReviewCheckConductor(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -455,6 +463,7 @@ func TestReviewCheckConductor(t *testing.T) {
 // code check or a declared check with no round, and passes once the critic
 // downgraded that major to minor or dropped it.
 func TestReviewCheckDeclaredChecks(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))

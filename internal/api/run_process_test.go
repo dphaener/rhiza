@@ -13,6 +13,7 @@ import (
 // window `rex block inspect` names for it. Outside Rex the entry has no
 // window or block.
 func TestRunJournalsProcess(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "w", `

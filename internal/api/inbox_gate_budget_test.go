@@ -23,6 +23,9 @@ const inboxGateBudget = time.Second
 // questions spread over several planned change sets, in a repository with a
 // large log, and requires that inboxGateQuestions answers every question
 // with its statement without decoding the log, within the budget.
+//
+// Serial: it calls t.Setenv (XDG_CACHE_HOME, HOME) so run temp folders move,
+// process-wide state.
 func TestInboxGateQuestionsBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("generates a large log; skipped under -short")
@@ -155,6 +158,8 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 // TestInboxGateQuestionsKept stops a plan run at its gate on two questions
 // whose worktree does not read: the inbox still lists both handles,
 // statements empty.
+//
+// Serial: it calls t.Setenv (HOME), process-wide state.
 func TestInboxGateQuestionsKept(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir() // no .rhiza: the worktree does not read
@@ -175,6 +180,8 @@ func TestInboxGateQuestionsKept(t *testing.T) {
 // questions whose worktree reads, one of whose handles resolves in no
 // planned change set: the inbox lists both handles, the unresolved one with
 // an empty statement and the resolved one with its full statement.
+//
+// Serial: it calls t.Setenv (HOME), process-wide state.
 func TestInboxGateQuestionsUnresolved(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	ctx := initCtx(t)
@@ -212,6 +219,9 @@ func TestInboxGateQuestionsUnresolved(t *testing.T) {
 // (question.answer --run, which the Inbox app's gate submit calls once per
 // question): the worktree's own index answers the gate's reads and the
 // answer's write, so the full disk log is never decoded.
+//
+// Serial: it calls t.Setenv (XDG_CACHE_HOME, HOME) so run temp folders move,
+// process-wide state.
 func TestGateAnswerUsesWorktreeIndex(t *testing.T) {
 	cache := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", cache)

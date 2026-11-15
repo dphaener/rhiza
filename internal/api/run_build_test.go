@@ -15,6 +15,7 @@ import (
 // the leaf's commit. A commit naming another leaf, or the actor by ID,
 // counts as described.
 func TestBuildCheck(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)

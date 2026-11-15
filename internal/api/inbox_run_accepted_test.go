@@ -11,6 +11,7 @@ import (
 // item, even while main's model still says proposed; one the run did not
 // accept keeps its item.
 func TestInboxSkipsRunAcceptedGated(t *testing.T) {
+	t.Parallel()
 	at := time.Date(2026, 11, 13, 14, 0, 0, 0, time.UTC)
 	journal := func(extra ...run.Entry) run.Journal {
 		es := []run.Entry{

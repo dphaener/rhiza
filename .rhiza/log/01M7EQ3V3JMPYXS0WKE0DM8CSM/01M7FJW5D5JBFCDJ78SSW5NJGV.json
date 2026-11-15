@@ -1,0 +1,155 @@
+{
+  "actor": "01M7FH1AXNE7MFD7AVFC5NKEEY",
+  "after": [
+    "01M7FEJSB27EAPGEGP8264AR7S"
+  ],
+  "at": "2026-11-15T12:28:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: ^TestSnapshotFixture passed with -test.count=2 -test.cpu=1,4 shuffled and with -race -test.count=3 -test.cpu=1,4; a mix of serial XDG_CACHE_HOME/run-tmp tests (TestAbandonRemovesRunGoTmp, TestDaemonSweepLeftovers*) with initSnapshot/linkEndpoints users (TestChange*, TestLink*) passed with -test.count=2 -test.cpu=1,4, -test.parallel=1 and -test.parallel=16 shuffled. A -test.timeout=5s kill leaves rhiza-api-cache-*/rhiza-api-snapshots-* behind, and the next run's TestMain sweeps them once over tmpsweep.MaxAge (checked by back-dating them); a normal run leaves none."
+        },
+        "handle": "api-snapshot-fixtures-qa-1",
+        "id": "01M7FJW51F9S9FZWB0SB8CE5NM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW51F9S9FZWB0S9Y7XDRF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW51F9S9FZWB0S9Y7XDRF",
+        "id": "01M7FJW52DH4YZDYPK7QQ54N4J",
+        "link": "01M7FJW52DH4YZDYPK7PEWDWYV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: The 214 newSessionFixture-file tests passed shuffled twice (seeds 7741, 90210; ~10 s each) and once under -race shuffled with no data race; ~/.cache/rhiza/run-tmp was unchanged across every run, and no new rhiza-api-* temp folder stayed after a normal run."
+        },
+        "handle": "api-tests-parallel-session-qa-1",
+        "id": "01M7FJW538CC995K70AX83JXN6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW538CC995K70ATJSFNJ9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW538CC995K70ATJSFNJ9",
+        "id": "01M7FJW543Y4Q3KXX374HZ8F8X",
+        "link": "01M7FJW543Y4Q3KXX372VAEH3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WW01FJ4NQPJ2GPYEZNX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: The 208 runtime-file tests passed shuffled twice (seeds 31337, 424242; ~65 s each); under -race the whole group overran a 250 s timeout as one command, so it ran in three parts (daemon_ 46, run_ 79, ship_/watchdog_/health_/usage_/feed_ 83 tests; 53 s, 28 s, 210 s), each passing with no data race. The slow part is the serial usage_ tests at 23-28 s each under -race, not a hang."
+        },
+        "handle": "api-tests-parallel-runtime-qa-1",
+        "id": "01M7FJW54XSSZXGZ4EPKMK84KW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW54XSSZXGZ4EPHBJK7AX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW54XSSZXGZ4EPHBJK7AX",
+        "id": "01M7FJW55SQ5AMWMQQD6MF75XD",
+        "link": "01M7FJW55SQ5AMWMQQD5HA31ND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WWQZT7JZK1MD30V9086",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: The 139 rest-group tests passed shuffled twice (seeds 31337, 424242) and under -race shuffled (106 s) with no data race."
+        },
+        "handle": "api-tests-parallel-rest-qa-1",
+        "id": "01M7FJW56MGJS29Z67FCTRZ2XP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW56MGJS29Z67FA3KSBA0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW56MGJS29Z67FA3KSBA0",
+        "id": "01M7FJW57HDRHWMPGZRNYZPPA8",
+        "link": "01M7FJW57HDRHWMPGZRN0X4SKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WX9045E0A4MD9RZV4A5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: The 201 model-group tests passed shuffled twice (seeds 31337, 424242; ~70 s each); under -race in two halves of 100/101 tests there was no data race; the only failure was TestRootIdlePollBudget's CPU budget under -race, which failed before this change set too."
+        },
+        "handle": "api-tests-parallel-model-qa-1",
+        "id": "01M7FJW58KR5VMPQTESP4359AF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW58KR5VMPQTESJHWMR4C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW58KR5VMPQTESJHWMR4C",
+        "id": "01M7FJW5A1TY5MK1QWAC7Y4QWD",
+        "link": "01M7FJW5A1TY5MK1QWA9FHH8S6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with test binaries built by go test -trimpath -c (and -race -c) to $TMPDIR, run from internal/api under the machine lock: The whole package, skipping the three budget tests, passed with -test.shuffle=8086 in 157 s wall on the busy shared VM and left no new temp folder; go vet ./internal/api is clean; the top-level Test funcs differ from the merge-base only by the five added TestSnapshotFixture* tests and TestMain (none removed); non-test .go files are unchanged from the merge-base."
+        },
+        "handle": "api-tests-parallel-finish-qa-1",
+        "id": "01M7FJW5B2BTFRJVZSZHHAJ9FQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FJW5B2BTFRJVZSZEWZYN97",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FJW5B2BTFRJVZSZEWZYN97",
+        "id": "01M7FJW5C1AFE27JVFWBP3QQ05",
+        "link": "01M7FJW5C1AFE27JVFW9XGEPPQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7F32H4Y94GASPX3X98497EV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M7F2ZFCH3XETVPK9A6WPV47G",
+  "id": "01M7FJW5D5JBFCDJ78SSW5NJGV",
+  "type": "ops",
+  "v": 1
+}

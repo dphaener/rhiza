@@ -18,6 +18,7 @@ import (
 // shows once it lands, and an old report is served while one new refresh
 // starts.
 func TestWebDaemonHealthCachedInBackground(t *testing.T) {
+	t.Parallel()
 	var started atomic.Int32
 	release := make(chan struct{})
 	var mu sync.Mutex
@@ -91,6 +92,7 @@ func TestWebDaemonHealthCachedInBackground(t *testing.T) {
 // event, so its pending panel is replaced live; a refresh that finds the same
 // report sends none.
 func TestWebDaemonHealthLandingSendsDaemonEvent(t *testing.T) {
+	t.Parallel()
 	release := make(chan struct{})
 	var started atomic.Int32
 	read := func() []web.HealthPill {

@@ -55,6 +55,8 @@ var usageFakeOnce = func() func() {
 	}
 }()
 
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to.
 func TestLimitHitsBecomeLearnedLimits(t *testing.T) {
 	usageFakeOnce()
 	f, _, _ := limitFixture(t)
@@ -99,6 +101,9 @@ func TestLimitHitsBecomeLearnedLimits(t *testing.T) {
 }
 
 // A run driver's session stopped at its limit records the hit.
+//
+// Serial: it swaps the package's runClock and usageFakeReset and
+// resets limitLaunches (limitFixture), which other runs in the binary read.
 func TestSessionRunRecordsLimitHit(t *testing.T) {
 	usageFakeOnce()
 	f, s, path := limitFixture(t)
@@ -125,6 +130,9 @@ func TestSessionRunRecordsLimitHit(t *testing.T) {
 // A Ctx with an empty Wd is outside any root even when the process cwd sits
 // under one: the hit lands in the repo's own daemon folder and nothing is
 // written under the enclosing root.
+//
+// Serial: it calls t.Chdir, which moves the whole process, and resets
+// the package's limitLaunches (limitFixture).
 func TestUsageLearnEmptyWdStaysInRepoFolder(t *testing.T) {
 	usageFakeOnce()
 	f, _, _ := limitFixture(t)
@@ -154,6 +162,9 @@ func TestUsageLearnEmptyWdStaysInRepoFolder(t *testing.T) {
 // A hit teaches only the window kind its reset time gives: a session-kind hit
 // leaves a learned weekly limit as it was, and a weekly-kind hit leaves a
 // learned session limit as it was.
+//
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to.
 func TestLimitHitTeachesOnlyItsKind(t *testing.T) {
 	usageFakeOnce()
 	hit := time.Date(2026, 11, 4, 10, 45, 0, 0, time.UTC)
@@ -190,6 +201,7 @@ func TestLimitHitTeachesOnlyItsKind(t *testing.T) {
 }
 
 func TestLearnedLimitRatchets(t *testing.T) {
+	t.Parallel()
 	hitAt := time.Date(2026, 11, 1, 10, 0, 0, 0, time.UTC)
 	start := time.Date(2026, 11, 4, 10, 0, 0, 0, time.UTC)
 	reset := start.Add(7 * 24 * time.Hour)
@@ -242,6 +254,9 @@ func TestLearnedLimitRatchets(t *testing.T) {
 // TestLearnedLimitRatchetsAtPoll drives the daemon's poll of a project with a
 // fake clock and fake token records, and reads the learned weekly limit back
 // from the daemon state the poll saves.
+//
+// Serial: it sets the package's holdFakeRecords and resets limitLaunches
+// (limitFixture), which the fake agents registered for the whole binary read.
 func TestLearnedLimitRatchetsAtPoll(t *testing.T) {
 	holdFakeOnce()
 	usageFakeOnce()

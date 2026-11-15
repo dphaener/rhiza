@@ -93,6 +93,8 @@ func exposureNames(t *testing.T, got []ExposedWorkflow) map[string]ExposedWorkfl
 	return m
 }
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME, in exposureRepo),
+// process-wide state.
 func TestRequestExposedWorkflows(t *testing.T) {
 	const bypass = "bypassPermissions"
 
@@ -259,6 +261,8 @@ func sprintfExposure(format, arg string) string {
 	return fmt.Sprintf(format, arg)
 }
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME, in exposureRepo),
+// process-wide state.
 func TestExposureWarnings(t *testing.T) {
 	ctx := exposureRepo(t, nil)
 	if got := exposureWarnings(ctx, "plan"); got != nil {

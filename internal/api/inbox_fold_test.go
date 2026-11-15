@@ -16,6 +16,7 @@ import (
 // state or title: none of the log with an index, the log once without one.
 // Both give the same items, overlaps among them.
 func TestInboxReadsChangeSetsOnce(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	// Two in-flight change sets that both write done-0: an overlap.
 	for i := range 2 {
@@ -106,6 +107,7 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 // An overlap between change sets with no run is notified by the change
 // sets' titles from the fold, never by either ID.
 func TestDaemonNotifyOverlapByTitle(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	var rex bytes.Buffer
 	f.ctx.Rex = &rex

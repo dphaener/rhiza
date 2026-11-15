@@ -46,6 +46,7 @@ func callSlice(t *testing.T, ctx *Ctx, req string) (SliceResponse, error) {
 // The response's fields are slice.Doc's, tags and all, so its schema is
 // the document's.
 func TestSliceResponseIsDoc(t *testing.T) {
+	t.Parallel()
 	got, err := canon.Marshal(Schema(reflect.TypeFor[SliceResponse]()))
 	if err != nil {
 		t.Fatal(err)
@@ -60,6 +61,9 @@ func TestSliceResponseIsDoc(t *testing.T) {
 }
 
 // --json prints exactly the bytes slice.Fit fitted, and Human the markdown.
+//
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
+// index and run temp folders move, process-wide state.
 func TestSliceBytesAreFit(t *testing.T) {
 	ctx := sliceCtx(t)
 	sliceModel(t, ctx)
@@ -134,6 +138,8 @@ func itoa(n int) string {
 	return string(b)
 }
 
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
+// index and run temp folders move, process-wide state.
 func TestSliceViews(t *testing.T) {
 	ctx := sliceCtx(t)
 	sliceModel(t, ctx)
@@ -180,6 +186,8 @@ func TestSliceViews(t *testing.T) {
 	}
 }
 
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
+// index and run temp folders move, process-wide state.
 func TestSliceErrors(t *testing.T) {
 	ctx := sliceCtx(t)
 	sliceModel(t, ctx)
@@ -235,6 +243,9 @@ func TestSliceErrors(t *testing.T) {
 }
 
 // resolveInModel follows index.Resolve's rules.
+//
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
+// index and run temp folders move, process-wide state.
 func TestSliceResolveInModel(t *testing.T) {
 	ctx := sliceCtx(t)
 	sliceModel(t, ctx)

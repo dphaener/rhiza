@@ -41,6 +41,7 @@ func spawnedRun(t *testing.T, f *messageFixture, change string) {
 }
 
 func TestRunStatusSpawned(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	cs := currentOf(t, f.ctx).String()
 	if _, err := callOp(t, f.ctx, "add", `{"kind":"capability","handle":"spawned-leaf","fields":["statement=Show spawned sessions"]}`); err != nil {
@@ -77,6 +78,9 @@ func TestRunStatusSpawned(t *testing.T) {
 }
 
 // A spawned child is opened, messaged and resumed as any session is.
+//
+// Serial: it sets the package's resumeTranscript, which the resume fake
+// agent registered for the whole binary reads.
 func TestSpawnedSessionOpenResume(t *testing.T) {
 	f := askFixture(t, false)
 	spawnedRun(t, f, currentOf(t, f.ctx).String())

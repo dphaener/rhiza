@@ -32,6 +32,7 @@ func useEnvClock(t *testing.T, v string) run.Clock {
 	return c
 }
 
+// Serial: it calls t.Setenv (RHIZA_TEST_CLOCK_SCALE), process-wide state.
 func TestRunClockFromEnv(t *testing.T) {
 	for _, v := range []string{"", "0", "abc"} {
 		t.Setenv(run.ClockScaleEnv, v)
@@ -47,6 +48,9 @@ func TestRunClockFromEnv(t *testing.T) {
 
 // On the scaled clock a 10 min wait for a session that reaches its prompt
 // only after 1 s of real time still sends the message.
+//
+// Serial: it swaps the package's runClock and calls t.Setenv (useEnvClock),
+// state every run in the binary reads.
 func TestTypePointerScaledClockWaitsForRealWork(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindQuestion)
@@ -75,6 +79,9 @@ func TestTypePointerScaledClockWaitsForRealWork(t *testing.T) {
 
 // On the scaled clock a 1 s timeout on a session that never reaches its
 // prompt fails only after 1 s of real time.
+//
+// Serial: it swaps the package's runClock and calls t.Setenv (useEnvClock),
+// state every run in the binary reads.
 func TestTypePointerScaledClockTimeoutKeepsRealTime(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindQuestion)
@@ -94,6 +101,9 @@ func TestTypePointerScaledClockTimeoutKeepsRealTime(t *testing.T) {
 // Ship deploy measures its deadline on the clock it sleeps on: on the
 // scaled clock it polls a probe that never turns healthy as often as
 // RealClock would, in far less real time than the timeout.
+//
+// Serial: it swaps the package's runClock and calls t.Setenv (useEnvClock),
+// state every run in the binary reads.
 func TestShipDeployScaledClockKeepsPollCount(t *testing.T) {
 	srv, n := fakeHealth(503)
 	defer srv.Close()
@@ -137,6 +147,9 @@ func TestShipDeployScaledClockKeepsPollCount(t *testing.T) {
 // With the variable set, the spawn poll's fallback sleeps on the scaled
 // clock: a 2 s poll costs a fraction of its real time and moves Now by 2 s.
 // With it unset, it is time.Sleep and waits the whole poll.
+//
+// Serial: it swaps the package's runClock and calls t.Setenv (useEnvClock),
+// state every run in the binary reads.
 func TestSpawnSleepClock(t *testing.T) {
 	c := useEnvClock(t, "1000")
 	before, start := c.Now(), time.Now()
@@ -158,6 +171,9 @@ func TestSpawnSleepClock(t *testing.T) {
 // retryGH and retryRex with no ctx.Sleep sleep on runClock: with the
 // variable set their backoff costs little real time and moves the scaled
 // clock's Now by the whole wait; with it unset each wait is real.
+//
+// Serial: it swaps the package's runClock and calls t.Setenv (useEnvClock),
+// state every run in the binary reads.
 func TestRetryDefaultSleepClock(t *testing.T) {
 	transient := errors.New("HTTP 502: Bad Gateway")
 	gh := func(fails int) func() ([]byte, error) {

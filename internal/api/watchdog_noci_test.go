@@ -18,6 +18,8 @@ import (
 // bare repos) and a fake gh read: a clean merge is pushed without force and
 // recorded in the ship state, a conflicting one is aborted, the branch left
 // unchanged, and the run resumed or an inbox item held.
+//
+// Serial: it calls t.Setenv (HOME, GIT_CONFIG_*), process-wide state.
 func TestWatchdogPRNoCI(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)

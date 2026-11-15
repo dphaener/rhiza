@@ -20,6 +20,7 @@ type paramsRequest struct {
 }
 
 func TestParams(t *testing.T) {
+	t.Parallel()
 	ps := Params(reflect.TypeFor[paramsRequest]())
 	type row struct {
 		Name, Flag string
@@ -54,6 +55,7 @@ type restRequest struct {
 }
 
 func TestParamsRest(t *testing.T) {
+	t.Parallel()
 	ps := Params(reflect.TypeFor[restRequest]())
 	if len(ps) != 2 || !ps[1].Rest || ps[1].Kind != ParamList || ps[0].Rest {
 		t.Errorf("Params = %+v", ps)
@@ -61,6 +63,7 @@ func TestParamsRest(t *testing.T) {
 }
 
 func TestParamsPanics(t *testing.T) {
+	t.Parallel()
 	type gap struct {
 		A string `json:"a" arg:"1"`
 	}
@@ -93,6 +96,7 @@ func TestParamsPanics(t *testing.T) {
 }
 
 func TestUsageLine(t *testing.T) {
+	t.Parallel()
 	o := Operation{Name: "change.new", Request: reflect.TypeFor[paramsRequest]()}
 	got := UsageLine(o)
 	want := "rhiza change new <kind> [<handle>] --reason <reason> [--parent <parent>] [--field <field>]... [--force-it] [--depth <depth>]"

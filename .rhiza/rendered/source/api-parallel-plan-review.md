@@ -1,0 +1,41 @@
+# api-parallel-plan-review
+
+source · `01M7EWJSPMGRMDNJ2QGBB9CPXX`
+
+## quotes
+
+```json
+[
+  {
+    "by": "orchestrator",
+    "text": "The owner approved keeping the projection rewrite out of scope: only t.Parallel and shared fixtures here. Review and complete its leaves; do not widen scope.",
+    "where": "2026-11-15T05:57:08Z, message to the planner"
+  }
+]
+```
+
+## raw_sha256
+
+dde6bf0700876fe5e71e9cfeac921689dd8bdd348dbb99eadd49784ef4534395
+
+## session
+
+7d3a5c45-d241-4534-9dd2-01a1ddc78da4
+
+## summary
+
+Autonomous plan run (no owner). The orchestrator's message said the change set was drafted from milestone 38's chat-planned interview, the owner approved keeping the projection rewrite out of scope (only t.Parallel and shared fixtures here), and the planner should review and complete the two drafted leaves without widening scope, deciding with wording '(assumed, would have escalated)'. The research pass found: internal/api has 751 top-level tests in 175 _test.go files and no t.Parallel; newSessionFixture (65 callers) calls t.Setenv("XDG_CACHE_HOME", ...), and Go panics when a test that called t.Setenv calls t.Parallel, so as drafted every session-fixture test would stay serial; testCtx gives every test the same fixed clock and ID seed, so run IDs repeat across tests, and run.TmpDir puts each run's temp folder at os.UserCacheDir()/rhiza/run-tmp/<run id>, so two parallel tests sharing a cache folder would share and remove each other's run temp folders; 16 test files swap package variables (daemonTicker, daemonReexec, runClock, webFactory, pollGitTimeout and others); TestMain lives in budget_test.go. Decided: the cache folder moves to one per-binary folder set in TestMain, so the session fixture no longer needs t.Setenv; tests that create or inspect run temp folders, or that swap package variables, stay serial with a comment; fixture builds are safe for concurrent callers so the two leaves build in either order; the race check names concrete test prefixes. Nothing left open.
+
+## title
+
+Parallel internal/api tests: autonomous plan review
+
+## Links
+
+### In
+
+- derived-from [api-cache-per-binary](../decision/api-cache-per-binary.md)
+
+## History
+
+- `01M7EQ3V3JMPYXS0WKE0DM8CSM` internal/api tests run in parallel: independent tests call t.Parallel and share snapshot fixtures instead of rebuilding the model per test; projection replacing FoldLog stays out of scope. Evidence: 749 tests, no t.Parallel in the repo, 58% of CPU in store.ReadLog because each write re-reads the log; ~180 s.

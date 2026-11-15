@@ -17,6 +17,7 @@ const limitPane = "working on it\nClaude usage limit reached|1700000000\n> "
 // worktree, and asks the session's own adapter whether the text shows a
 // usage-limit prompt.
 func TestSessionPaneCapturesAndAsksTheAdapter(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	f.rex.out = limitPane
 	resp, err := callOp(t, f.ctx, "session.pane", `{"session":"`+f.sid[:8]+`"}`)
@@ -47,6 +48,7 @@ func TestSessionPaneCapturesAndAsksTheAdapter(t *testing.T) {
 // An agent whose adapter cannot read a pane never reports a usage limit,
 // whatever the text says.
 func TestSessionPaneAdapterWithoutPaneLimiter(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Agent = askAgent }); err != nil {
 		t.Fatal(err)
@@ -63,6 +65,7 @@ func TestSessionPaneAdapterWithoutPaneLimiter(t *testing.T) {
 
 // A capture rex fails is an error naming the session.
 func TestSessionPaneRexFails(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	f.rex.err = errors.New("rex capture: block block:b1 not found")
 	_, err := callOp(t, f.ctx, "session.pane", `{"session":"`+f.sid+`"}`)
@@ -73,6 +76,7 @@ func TestSessionPaneRexFails(t *testing.T) {
 
 // session.key presses escape or enter in the session's block, in any case.
 func TestSessionKeyPresses(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	for _, key := range []string{"escape", " Enter "} {
 		f.rex.calls, f.rex.dirs = nil, nil
@@ -96,6 +100,7 @@ func TestSessionKeyPresses(t *testing.T) {
 // Only escape and enter are keys: anything else is a usage error and
 // nothing is sent.
 func TestSessionKeyRefusesOtherKeys(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	for _, key := range []string{"", "tab", "y", "ctrl-c", "escape enter"} {
 		_, err := callOp(t, f.ctx, "session.key", `{"session":"`+f.sid+`","key":"`+key+`"}`)
@@ -106,6 +111,7 @@ func TestSessionKeyRefusesOtherKeys(t *testing.T) {
 
 // A dry run names the key and sends nothing.
 func TestSessionKeyDryRun(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	f.ctx.DryRun = true
 	resp, err := callOp(t, f.ctx, "session.key", `{"session":"`+f.sid+`","key":"escape"}`)
@@ -121,6 +127,7 @@ func TestSessionKeyDryRun(t *testing.T) {
 // A session that has exited, or has no tab, is a conflict for both
 // operations, and rex is never run; an unknown session is not found.
 func TestSessionPaneAndKeyRefuseSessions(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name   string
 		update func(*session.Record)

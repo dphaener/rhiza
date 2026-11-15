@@ -48,6 +48,7 @@ func onDemandFixture(t *testing.T, build string, buildErr error) (f *sessionFixt
 }
 
 func TestShipHeadBuildOnDemand(t *testing.T) {
+	t.Parallel()
 	const cmd = "make head"
 	render := func(t *testing.T, f *sessionFixture) error {
 		t.Helper()
@@ -190,6 +191,7 @@ func headFixture(t *testing.T, build string, writeBin bool) (f *sessionFixture, 
 	return f, bin, calls
 }
 
+// Serial: it calls t.Setenv (SHIP_HEAD_RHIZA), process-wide state.
 func TestLandRenderHeadBuild(t *testing.T) {
 	t.Run("named binary: render and land exec it and write nothing in-process", func(t *testing.T) {
 		f, bin, calls := headFixture(t, "", true)
@@ -378,6 +380,7 @@ func checkHeadFixture(t *testing.T, build string, writeBin bool, report string, 
 }
 
 func TestCheckHeadBuild(t *testing.T) {
+	t.Parallel()
 	const okReport = `{"ok":true,"base":"","findings":[{"severity":"warn","rule":"append-only","message":"from the head"}]}`
 	const failReport = `{"ok":false,"base":"","findings":[{"severity":"fail","rule":"render","path":"docs/reference/x.md","message":"head says stale"}]}`
 	wantCalls := func(t *testing.T, calls *[]string, w ...string) {

@@ -53,9 +53,9 @@ type sessionFixture struct {
 
 func newSessionFixture(t *testing.T, slug string) *sessionFixture {
 	t.Helper()
-	// Runs' temp folders live under the user cache: keep them in the test's
-	// own folder, never the host's ~/.cache.
-	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	// Runs' temp folders live under the user cache, which TestMain points at
+	// one temporary folder for the whole binary (never the host's ~/.cache),
+	// so the fixture sets no environment and its tests may run in parallel.
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	if err := os.MkdirAll(root, 0o755); err != nil {
@@ -102,6 +102,7 @@ func startSession(t *testing.T, ctx *Ctx, req string) SessionStartResponse {
 }
 
 func TestSessionStartRefusals(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, req string
 		exit      int
@@ -137,6 +138,7 @@ func TestSessionStartRefusals(t *testing.T) {
 }
 
 func TestSessionStartNoChangeSet(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	_, err := callOp(t, f.ctx, "session.start", `{"permission_mode":"manual"}`)
 	wantExit(t, err, 2)
@@ -145,6 +147,7 @@ func TestSessionStartNoChangeSet(t *testing.T) {
 }
 
 func TestSessionStartReusesWorktree(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	cs := newChange(t, f.ctx, `{"intent":"Make tabs readable: name them","title":"Readable tabs"}`).ChangeSet
 	r := startSession(t, f.ctx, `{"permission_mode":"manual"}`)
@@ -218,6 +221,7 @@ func TestSessionStartReusesWorktree(t *testing.T) {
 }
 
 func TestSessionStartStepAndRexSession(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "carving-keeps-ids")
 	f.ctx.RexSession = "session:mine"
 	newChange(t, f.ctx, `{"intent":"Carving keeps IDs, always"}`)
@@ -238,6 +242,7 @@ func TestSessionStartStepAndRexSession(t *testing.T) {
 }
 
 func TestSessionStartDryRun(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	before := logFiles(t, f.worktree)
@@ -261,6 +266,7 @@ func TestSessionStartDryRun(t *testing.T) {
 }
 
 func TestSessionStartCreatesWorktree(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "other")
 	newChange(t, f.ctx, `{"intent":"Fresh work"}`)
 	path := filepath.Join(filepath.Dir(f.worktree), "repo.fresh-work")
@@ -288,6 +294,7 @@ func TestSessionStartCreatesWorktree(t *testing.T) {
 }
 
 func TestSessionStartNoRepoAtHEAD(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "other")
 	newChange(t, f.ctx, `{"intent":"Fresh work"}`)
 	_, err := callOp(t, f.ctx, "session.start", `{"permission_mode":"manual"}`)
@@ -298,6 +305,7 @@ func TestSessionStartNoRepoAtHEAD(t *testing.T) {
 }
 
 func TestSessionStartSquattedPath(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "other")
 	newChange(t, f.ctx, `{"intent":"Squatted"}`)
 	if err := os.MkdirAll(filepath.Join(filepath.Dir(f.worktree), "repo.squatted"), 0o755); err != nil {
@@ -318,6 +326,7 @@ func TestSessionStartSquattedPath(t *testing.T) {
 }
 
 func TestSessionStartRexFails(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	f.rex.err = errors.New("rex window new: rex is not running")
@@ -342,6 +351,7 @@ func TestSessionStartRexFails(t *testing.T) {
 }
 
 func TestSessionLsShow(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	resp, err := callOp(t, f.ctx, "session.ls", `{}`)
 	if err != nil {
@@ -408,12 +418,14 @@ func TestSessionLsShow(t *testing.T) {
 }
 
 func TestSessionLsNeedsGit(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	_, err := callOp(t, ctx, "session.ls", `{}`)
 	wantExit(t, err, 1)
 }
 
 func TestNewSessionIDDeterministic(t *testing.T) {
+	t.Parallel()
 	a, err := newSessionID(testCtx("").IDs)
 	if err != nil {
 		t.Fatal(err)
@@ -428,6 +440,7 @@ func TestNewSessionIDDeterministic(t *testing.T) {
 }
 
 func TestParseRexWindow(t *testing.T) {
+	t.Parallel()
 	tab, err := parseRexWindow(session.Tab{Title: "t"}, []byte(rexWindowJSON))
 	if err != nil || tab.Window != "window:w1" || tab.Block != "block:b1" || tab.Title != "t" {
 		t.Errorf("tab %+v, %v", tab, err)
@@ -442,6 +455,7 @@ func TestParseRexWindow(t *testing.T) {
 // The agent's actor lives in the worktree only; its log is otherwise the
 // launcher's.
 func TestSessionStartWorktreeLogFolds(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	startSession(t, f.ctx, `{"permission_mode":"manual"}`)
@@ -506,6 +520,7 @@ func runFixture(t *testing.T, startReq string) (*sessionFixture, SessionInfo, *f
 }
 
 func TestSessionRun(t *testing.T) {
+	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"manual","run":"run-1"}`)
 	f.ctx.RexSession, f.ctx.RexBlock = "session:s1", "block:b1"
 	fs.events = statusEvent("block:other", "error", "", "not this tab") + "\n" +
@@ -588,6 +603,7 @@ func TestSessionRun(t *testing.T) {
 }
 
 func TestSessionRunNoRunNoRex(t *testing.T) {
+	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"plan"}`)
 	fs.agent.code = 0
 	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
@@ -608,6 +624,7 @@ func TestSessionRunNoRunNoRex(t *testing.T) {
 }
 
 func TestSessionRunDryRun(t *testing.T) {
+	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"manual"}`)
 	f.ctx.DryRun = true
 	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
@@ -624,6 +641,7 @@ func TestSessionRunDryRun(t *testing.T) {
 }
 
 func TestSessionRunRefusals(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name    string
 		edit    func(*session.Record)
@@ -667,6 +685,7 @@ func TestSessionRunRefusals(t *testing.T) {
 }
 
 func TestSessionRunStartFails(t *testing.T) {
+	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"manual"}`)
 	fs.err = errors.New("executable file not found in $PATH")
 	_, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
@@ -689,6 +708,7 @@ func removedEvent(block, reason string) string {
 }
 
 func TestRexStatus(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, line        string
 		ok, exited        bool
@@ -720,6 +740,7 @@ func TestRexStatus(t *testing.T) {
 // then Rex saying the terminal's program exited, then a late report. Rex
 // alone ends the session, and nothing after the exit revives it.
 func TestRecordRexExitIsFinal(t *testing.T) {
+	t.Parallel()
 	var r session.Record
 	feed := func(line string) {
 		t.Helper()
@@ -765,6 +786,7 @@ func hook(t *testing.T, ctx *Ctx, event, payload string) (SessionHookResponse, s
 }
 
 func TestSessionHook(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	st := session.NewStore(session.Dir(f.common))
 	read := func() session.Record {
@@ -833,6 +855,7 @@ func TestSessionHook(t *testing.T) {
 }
 
 func TestSessionDone(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	st := session.NewStore(session.Dir(f.common))
 
@@ -907,6 +930,7 @@ func TestSessionDone(t *testing.T) {
 }
 
 func TestSessionDoneAfterExit(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	st := session.NewStore(session.Dir(f.common))
 	code := 0
@@ -927,6 +951,9 @@ func TestSessionDoneAfterExit(t *testing.T) {
 // The answers are captured before the done mark is written, so a step that
 // waits on the mark finds the Decisions; a capture that fails (here, no
 // transcript) is a warning and the mark stands.
+//
+// Serial: it swaps the package's beforeDoneMark hook, which every
+// session done in the binary calls.
 func TestSessionDoneCapturesBeforeMark(t *testing.T) {
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	st := session.NewStore(session.Dir(f.common))
@@ -964,6 +991,7 @@ func TestSessionDoneCapturesBeforeMark(t *testing.T) {
 // Done lists the handles of the Decisions it proposed, in the response and
 // in its human output, so the planner and the run see what was captured.
 func TestSessionDoneReportsProposed(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	f.ctx.Getenv = func(string) string { return "" }
 	writeTranscript(t, f.ctx.Home, s.ID, pickedAnswer, typedAnswer)
@@ -985,6 +1013,7 @@ func TestSessionDoneReportsProposed(t *testing.T) {
 }
 
 func TestRecordAgentActorReusesSession(t *testing.T) {
+	t.Parallel()
 	ww := testWorkspace(t, false)
 	launcher, err := ww.ids.New()
 	if err != nil {
@@ -1020,6 +1049,7 @@ func TestRecordAgentActorReusesSession(t *testing.T) {
 }
 
 func TestStartStepNestedPaths(t *testing.T) {
+	t.Parallel()
 	seg := func(n int) string { return strings.Repeat("a", n) }
 	long := seg(58) + "/" + seg(59)                // 118
 	max := seg(40) + "/" + seg(40) + "/" + seg(38) // 120
@@ -1038,6 +1068,7 @@ func TestStartStepNestedPaths(t *testing.T) {
 }
 
 func TestCopyChangeSetLogWritesReadOnly(t *testing.T) {
+	t.Parallel()
 	src, dst := t.TempDir(), t.TempDir()
 	cs := id.ID{}
 	dir := filepath.Join(src, store.Dir, store.LogDir, cs.String())
@@ -1062,6 +1093,10 @@ func TestCopyChangeSetLogWritesReadOnly(t *testing.T) {
 // A session in a run whose workflow has an [env] table gets it over the
 // terminal's environment: {run_tmp} is the run's own temp folder, made
 // before the agent starts, and a plain value is set as written.
+//
+// Serial: its workflow names {run_tmp}, so its step makes and removes
+// the run temp folder os.UserCacheDir()/rhiza/run-tmp/R1, shared by every
+// test whose run has that ID.
 func TestSessionRunWorkflowEnv(t *testing.T) {
 	f, s, fs := runFixture(t, `{"permission_mode":"manual","run":"R1"}`)
 	src := "[env]\nGOTMPDIR = \"{run_tmp}/go\"\nGOFLAGS = \"-count=1\"\n" +
@@ -1110,6 +1145,7 @@ func actorCreate(t *testing.T, ww *workspace, h, sid string) op.Op {
 }
 
 func TestRecordAgentActorLandedHandleOtherSession(t *testing.T) {
+	t.Parallel()
 	ww := testWorkspace(t, false)
 	launcher, _ := ww.ids.New()
 	cs, _ := ww.ids.New()
@@ -1135,6 +1171,7 @@ func TestRecordAgentActorLandedHandleOtherSession(t *testing.T) {
 }
 
 func TestRecordAgentActorReusesInFlightSession(t *testing.T) {
+	t.Parallel()
 	ww := testWorkspace(t, false)
 	launcher, _ := ww.ids.New()
 	cs, _ := ww.ids.New()
@@ -1158,6 +1195,7 @@ func TestRecordAgentActorReusesInFlightSession(t *testing.T) {
 }
 
 func TestRecordAgentActorInFlightHandleOtherSession(t *testing.T) {
+	t.Parallel()
 	ww := testWorkspace(t, false)
 	launcher, _ := ww.ids.New()
 	cs, _ := ww.ids.New()

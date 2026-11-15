@@ -15,6 +15,7 @@ import (
 // first request is open; a CI flake queues none; fileBugs = false queues
 // none.
 func TestWatchdogBugs(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = "name = \"w\"\n[step.build]\nkind = \"command\"\nrun = \"true\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\n"
 	failed := func(id, step, detail string) run.Journal {

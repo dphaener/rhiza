@@ -9,6 +9,7 @@ import (
 // change set the title change ls shows: the set title, else the intent's
 // first clause.
 func TestRoadmapChangeSetsCarryTheirDisplayTitle(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {

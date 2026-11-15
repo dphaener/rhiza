@@ -43,6 +43,14 @@ The milestone is planned as the orchestrator proposed it on 2026-11-15: the targ
 - decided-by [script-timings-file](../capability/rhiza/integrity/self-check/script-timings-file.md)
 - decided-by [scripts-longest-first](../capability/rhiza/integrity/self-check/scripts-longest-first.md)
 - decided-by [script-shards-weighted](../capability/rhiza/integrity/self-check/script-shards-weighted.md)
+- decided-by [api-snapshot-fixtures](../capability/rhiza/integrity/self-check/api-snapshot-fixtures.md)
+- decided-by [cheap-process-start](../capability/rhiza/integrity/self-check/cheap-process-start.md)
+- decided-by [testfit-boundaries](../capability/rhiza/integrity/self-check/testfit-boundaries.md)
+- decided-by [api-tests-parallel-session](../capability/rhiza/integrity/self-check/api-tests-parallel-session.md)
+- decided-by [api-tests-parallel-runtime](../capability/rhiza/integrity/self-check/api-tests-parallel-runtime.md)
+- decided-by [api-tests-parallel-rest](../capability/rhiza/integrity/self-check/api-tests-parallel-rest.md)
+- decided-by [api-tests-parallel-model](../capability/rhiza/integrity/self-check/api-tests-parallel-model.md)
+- decided-by [api-tests-parallel-finish](../capability/rhiza/integrity/self-check/api-tests-parallel-finish.md)
 
 ## History
 

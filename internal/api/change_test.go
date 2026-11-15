@@ -15,13 +15,11 @@ import (
 	"github.com/dphaener/rhiza/internal/store"
 )
 
-// initCtx runs init in a temp folder and returns a Ctx over it.
+// initCtx gives t a repository just after init in its own temp folder
+// (a copy of initSnapshot) and returns a Ctx over it.
 func initCtx(t *testing.T) *Ctx {
 	t.Helper()
-	ctx := testCtx(t.TempDir())
-	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
-		t.Fatal(err)
-	}
+	_, ctx := initSnapshot.copy(t)
 	return ctx
 }
 
@@ -64,19 +62,38 @@ func wantExit(t *testing.T, err error, code int) {
 // returns its ID.
 func landNode(t *testing.T, ctx *Ctx, kind op.Kind, handle string) id.ID {
 	t.Helper()
-	w := ctxWorkspace(t, ctx)
-	node := w.mustID(t)
-	c := op.Op{ID: w.mustID(t), Type: op.TypeNodeCreate, Node: node, Kind: kind, Handle: handle}
-	if kind == op.KindSource {
-		c.Fields = map[string]json.RawMessage{"url": json.RawMessage(`"https://example.com"`)}
-	}
-	if _, _, err := w.writeRecord("Add "+handle, []op.Op{c}, w.mustID(t), w.mustID(t)); err != nil {
+	node, err := landNodeOn(ctx, kind, handle)
+	if err != nil {
 		t.Fatal(err)
 	}
 	return node
 }
 
+// landNodeOn is landNode returning its failure, for snapshot builds.
+func landNodeOn(ctx *Ctx, kind op.Kind, handle string) (id.ID, error) {
+	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, false)
+	if err != nil {
+		return id.ID{}, err
+	}
+	var ids [4]id.ID
+	for i := range ids {
+		if ids[i], err = w.ids.New(); err != nil {
+			return id.ID{}, err
+		}
+	}
+	node := ids[0]
+	c := op.Op{ID: ids[1], Type: op.TypeNodeCreate, Node: node, Kind: kind, Handle: handle}
+	if kind == op.KindSource {
+		c.Fields = map[string]json.RawMessage{"url": json.RawMessage(`"https://example.com"`)}
+	}
+	if _, _, err := w.writeRecord("Add "+handle, []op.Op{c}, ids[2], ids[3]); err != nil {
+		return id.ID{}, err
+	}
+	return node, nil
+}
+
 func TestChangeOutsideRepo(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct{ op, req string }{
 		{"change.new", `{"intent":"x"}`},
 		{"change.use", `{"none":true}`},
@@ -91,6 +108,7 @@ func TestChangeOutsideRepo(t *testing.T) {
 }
 
 func TestChangeNew(t *testing.T) {
+	t.Parallel()
 	t.Run("OpensAndMakesCurrent", func(t *testing.T) {
 		ctx := initCtx(t)
 		r := newChange(t, ctx, `{"intent":"Try it"}`)
@@ -265,6 +283,7 @@ func TestChangeNew(t *testing.T) {
 }
 
 func TestChangeUse(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	first := newChange(t, ctx, `{"intent":"First"}`).ChangeSet
 	second := newChange(t, ctx, `{"intent":"Second"}`).ChangeSet
@@ -343,6 +362,7 @@ func TestChangeUse(t *testing.T) {
 }
 
 func TestChangeShow(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	_, err := callOp(t, ctx, "change.show", `{}`)
 	wantExit(t, err, 2)
@@ -432,6 +452,7 @@ func relanded(t *testing.T, ctx *Ctx) id.ID {
 }
 
 func TestChangeShowHistory(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := relanded(t, ctx)
 	resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
@@ -474,6 +495,7 @@ func TestChangeShowHistory(t *testing.T) {
 }
 
 func TestChangeLs(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	resp, err := callOp(t, ctx, "change.ls", `{}`)
 	if err != nil {
@@ -543,6 +565,7 @@ func TestChangeLs(t *testing.T) {
 }
 
 func TestChangeShowLeaves(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	landed(t, ctx) // store, a capability outside the change set
 	cs := newChange(t, ctx, `{"intent":"Leaves"}`).ChangeSet
@@ -639,6 +662,7 @@ func TestChangeShowLeaves(t *testing.T) {
 }
 
 func TestChangeShowLeavesLanded(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := landed(t, ctx)
 	leaves := func() []string {
@@ -671,6 +695,7 @@ func TestChangeShowLeavesLanded(t *testing.T) {
 // and refuses an unknown name, both or neither of name and --clear, and a
 // landed change set.
 func TestChangeWorkflow(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	common := t.TempDir()
 	ctx.Git = func(args ...string) (string, error) { return common + "\n", nil }

@@ -15,6 +15,9 @@ import (
 // TestUsageScanOncePerPoll: the usage governor walks the transcript tree at
 // most once a minute and rereads only files that changed, however many
 // projects poll.
+//
+// Serial: it sets the package's holdFakeRecords, which the hold-fake
+// agent registered for the whole binary reads.
 func TestUsageScanOncePerPoll(t *testing.T) {
 	holdFakeRecords = nil
 	config := t.TempDir()

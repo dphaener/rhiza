@@ -47,6 +47,10 @@ func (f *idleFix) settle(t testing.TB) {
 // TestRootIdlePoll runs the root daemon's poll over two projects with
 // nothing changed: the second poll folds nothing and computes no pick. Each
 // stamp then changes in turn, and the next poll does the work again.
+//
+// Serial: it reads the package's planReadCount, planFoldCount and
+// daemonPickCount and claudecode's usage scan stats, process-wide counters
+// every parallel test's reads would bump.
 func TestRootIdlePoll(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds the production-sized idle fixture; skipped under -short")
@@ -161,6 +165,9 @@ func firstTranscript(t testing.TB, f *idleFix) string {
 
 // TestRootIdlePollBudget requires that an unchanged root poll over the
 // idle fixture costs under idleBudget of process CPU (median).
+//
+// Serial: it times root polls in process CPU, which any parallel test
+// would inflate.
 func TestRootIdlePollBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds the production-sized idle fixture; skipped under -short")

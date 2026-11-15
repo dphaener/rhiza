@@ -10,6 +10,7 @@ import (
 // codeCheck names rhiza check's failures (not its warnings), then each
 // leaf build-check found not OK; it passes with neither.
 func TestCodeCheckCauses(t *testing.T) {
+	t.Parallel()
 	cr := CheckResponse{OK: false, Findings: []CheckFinding{
 		{Severity: check.SeverityWarn, Rule: "evidence-actor", Message: "just a warning"},
 		{Severity: check.SeverityFail, Rule: "render", Path: ".rhiza/rendered/index.md", Message: "differs from what render writes"},

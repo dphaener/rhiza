@@ -42,6 +42,7 @@ func setFreeBytes(ctx *Ctx, n string) {
 // A test can still set its own free figure: under 10 GiB the daemon's disk
 // guard reports low and health's disk part goes bad.
 func TestFreeBytesOverride(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "s")
 	pinFreeBytes(f.ctx)
 	if low, free := daemonDiskLow(f.ctx, 10<<30); low || free != 1<<40 {

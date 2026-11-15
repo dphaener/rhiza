@@ -175,6 +175,7 @@ func wantReasons(t *testing.T, p *planChangeSet, want ...string) {
 }
 
 func TestPlanReadyWithLandedDep(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	landed := f.cs("L", changeset.StateLanded)
 	a := f.cs("A", changeset.StateAccepted)
@@ -187,6 +188,7 @@ func TestPlanReadyWithLandedDep(t *testing.T) {
 }
 
 func TestPlanDependencyNotLanded(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	a := f.cs("A", changeset.StateAccepted)
 	b := f.cs("B", changeset.StateAccepted)
@@ -206,6 +208,7 @@ func TestPlanDependencyNotLanded(t *testing.T) {
 }
 
 func TestPlanDependencyOnlyItsOwn(t *testing.T) {
+	t.Parallel()
 	// A depends-on link from B written inside a third change set does not
 	// make B depend (D1), though the to-be view has it.
 	f := newPlanFix()
@@ -220,6 +223,7 @@ func TestPlanDependencyOnlyItsOwn(t *testing.T) {
 }
 
 func TestPlanRestsOnDropped(t *testing.T) {
+	t.Parallel()
 	// B updates a node withdrawn A created: rests-on comes after the
 	// depends-on reasons and before the blocking questions, and stays when
 	// B no longer depends on A.
@@ -245,6 +249,7 @@ func TestPlanRestsOnDropped(t *testing.T) {
 }
 
 func TestPlanRevisedUnder(t *testing.T) {
+	t.Parallel()
 	// A revises in place, after B wrote it, a field B sets: one reason per
 	// dependency, counting B's ops, after the depends-on reasons.
 	f := newPlanFix()
@@ -269,6 +274,7 @@ func TestPlanRevisedUnder(t *testing.T) {
 }
 
 func TestPlanNotAccepted(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	a := f.cs("A", changeset.StateAccepted)
 	p := f.cs("P", changeset.StateProposed)
@@ -279,6 +285,7 @@ func TestPlanNotAccepted(t *testing.T) {
 }
 
 func TestPlanBlockedByQuestion(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	a := f.cs("A", changeset.StateAccepted)
 	root := f.node(op.KindCapability, "store", id.ID{}, "s")
@@ -307,6 +314,7 @@ func TestPlanBlockedByQuestion(t *testing.T) {
 }
 
 func TestPlanBlocksOwnOps(t *testing.T) {
+	t.Parallel()
 	// A blocks link written inside the change set counts too (D7).
 	f := newPlanFix()
 	a := f.cs("A", changeset.StateAccepted)
@@ -316,6 +324,7 @@ func TestPlanBlocksOwnOps(t *testing.T) {
 }
 
 func TestPlanServesInsideChangeSet(t *testing.T) {
+	t.Parallel()
 	// A serves link written inside a proposed change set groups it (D7);
 	// a retired view copy of the same link wins over the op.
 	f := newPlanFix()
@@ -349,6 +358,7 @@ func planGroupIDs(res planResult) [][]id.ID {
 }
 
 func TestPlanTopologicalOrder(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	i := f.intent("fast", id.ID{}, "f")
 	f.milestone(i)
@@ -367,6 +377,7 @@ func TestPlanTopologicalOrder(t *testing.T) {
 }
 
 func TestPlanCycle(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	a := f.cs("A", changeset.StateAccepted)
 	b := f.cs("B", changeset.StateAccepted)
@@ -383,6 +394,7 @@ func TestPlanCycle(t *testing.T) {
 }
 
 func TestPlanRoadmapGroupsAndReadyOrder(t *testing.T) {
+	t.Parallel()
 	// Milestone groups in intent-tree pre-order (siblings by key), then one
 	// backlog: work on plain, retired and no intents, each once; drafts only
 	// in the ready order, after.
@@ -454,6 +466,7 @@ func planWantGroups(t *testing.T, f *planFix, want ...[]id.ID) planResult {
 }
 
 func TestPlanMilestonesThenBacklog(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	m2 := f.intent("m2", id.ID{}, "b")
 	m1 := f.intent("m1", id.ID{}, "a")
@@ -470,6 +483,7 @@ func TestPlanMilestonesThenBacklog(t *testing.T) {
 }
 
 func TestPlanMilestoneAndPlainIntent(t *testing.T) {
+	t.Parallel()
 	// Serving a milestone and a plain intent: the milestone group only.
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
@@ -481,6 +495,7 @@ func TestPlanMilestoneAndPlainIntent(t *testing.T) {
 }
 
 func TestPlanDonePointServes(t *testing.T) {
+	t.Parallel()
 	// Serving an intent under a milestone puts the change set in the
 	// milestone's group, whose intent is the milestone.
 	f := newPlanFix()
@@ -494,6 +509,7 @@ func TestPlanDonePointServes(t *testing.T) {
 }
 
 func TestPlanNestedMilestones(t *testing.T) {
+	t.Parallel()
 	// Nested milestones: the nearest at or above a served intent only.
 	f := newPlanFix()
 	outer := f.intent("outer", id.ID{}, "a")
@@ -509,6 +525,7 @@ func TestPlanNestedMilestones(t *testing.T) {
 }
 
 func TestPlanTwoMilestones(t *testing.T) {
+	t.Parallel()
 	// Serving two milestones: in both groups, once in the ready order.
 	f := newPlanFix()
 	m1 := f.intent("m1", id.ID{}, "a")
@@ -524,6 +541,7 @@ func TestPlanTwoMilestones(t *testing.T) {
 }
 
 func TestPlanRetiredMilestone(t *testing.T) {
+	t.Parallel()
 	// A retired milestone, or one under a retired node, is no milestone:
 	// its work goes to the backlog. A live milestone above a retired one
 	// does not take it either, the served intent being outside the tree.
@@ -550,6 +568,7 @@ func TestPlanRetiredMilestone(t *testing.T) {
 }
 
 func TestPlanServesNothingInBacklog(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
 	f.milestone(m)
@@ -560,6 +579,7 @@ func TestPlanServesNothingInBacklog(t *testing.T) {
 }
 
 func TestPlanBacklogOrder(t *testing.T) {
+	t.Parallel()
 	// The backlog follows depends-on, ties by ID; cycle members come last
 	// with the cycle reason.
 	f := newPlanFix()
@@ -580,6 +600,7 @@ func TestPlanBacklogOrder(t *testing.T) {
 }
 
 func TestPlanNoBacklogGroup(t *testing.T) {
+	t.Parallel()
 	// No backlog group when every change set serves a milestone (drafts
 	// never show), and no groups when nothing is in flight.
 	f := newPlanFix()
@@ -603,6 +624,7 @@ func TestPlanNoBacklogGroup(t *testing.T) {
 }
 
 func TestPlanReadyFollowsGroups(t *testing.T) {
+	t.Parallel()
 	// Ready lists the milestone work first, then the backlog, then the
 	// drafts by ID, whatever the IDs.
 	f := newPlanFix()
@@ -640,6 +662,7 @@ func readyOf(t *testing.T, ctx *Ctx, req string) ReadyResponse {
 }
 
 func TestReadyEndToEnd(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	recordWrite(t, ctx, "add", `{"kind":"intent","handle":"fast"}`)
 	recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -695,6 +718,7 @@ func TestReadyEndToEnd(t *testing.T) {
 }
 
 func TestReadyRestsOnEndToEnd(t *testing.T) {
+	t.Parallel()
 	// B depends on A and sets a field on the node A adds; A is withdrawn.
 	ctx := readCtx(t)
 	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
@@ -717,6 +741,7 @@ func TestReadyRestsOnEndToEnd(t *testing.T) {
 }
 
 func TestReadyRestsOnBaseEndToEnd(t *testing.T) {
+	t.Parallel()
 	// A sets a field on a landed node, and B, depending on A, sets it again
 	// on A's version: B's op names A only by its base, an op ID. C, also
 	// withdrawn, is unrelated.
@@ -781,6 +806,7 @@ func TestReadyRestsOnBaseEndToEnd(t *testing.T) {
 }
 
 func TestReadyRevisedLandedEndToEnd(t *testing.T) {
+	t.Parallel()
 	// B depends on M, M on A. B sets the statement of A's base; A then
 	// revises it in place, and A and M land. B still went under A's
 	// revision (D13), found through the landed M.
@@ -819,6 +845,7 @@ func TestReadyRevisedLandedEndToEnd(t *testing.T) {
 }
 
 func TestRoadmapEndToEnd(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	resp, err := callOp(t, ctx, "roadmap", `{}`)
 	if err != nil {
@@ -869,6 +896,7 @@ func TestRoadmapEndToEnd(t *testing.T) {
 }
 
 func TestPlanMilestoneField(t *testing.T) {
+	t.Parallel()
 	for raw, want := range map[string]bool{`"2"`: true, `1.5`: true, `""`: false, `null`: false, ` null `: false, ``: false} {
 		if got := planMilestoneField(map[string]json.RawMessage{"milestone": json.RawMessage(raw)}); got != want {
 			t.Errorf("milestone %q = %v, want %v", raw, got, want)
@@ -881,6 +909,7 @@ func TestPlanMilestoneField(t *testing.T) {
 
 // An umbrella change set is never ready, and the daemon never picks it.
 func TestUmbrellaNotReady(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	u := f.intent("umb", id.ID{}, "a")
 	f.in.umbrellas[u] = true

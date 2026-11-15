@@ -173,6 +173,7 @@ func fixLeafRun(t *testing.T, fix fixCommit) (*fixLeafRunner, run.State, []run.E
 // verifier's actor, is committed alone; then only the failed check runs
 // again, and the step passes.
 func TestFixLeafEngine(t *testing.T) {
+	t.Parallel()
 	g, st, entries := fixLeafRun(t, fixOneParagraph)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomePass {
 		t.Fatalf("steps = %+v", st.Steps)
@@ -250,6 +251,7 @@ func TestFixLeafEngine(t *testing.T) {
 // A fixer that ends with no new commit naming its leaf fails the cycle:
 // no verifier starts and the failed check runs no session in it.
 func TestFixLeafEngineNoCommit(t *testing.T) {
+	t.Parallel()
 	g, st, _ := fixLeafRun(t, fixNone)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomeFail {
 		t.Fatalf("steps = %+v", st.Steps)
@@ -277,6 +279,7 @@ func TestFixLeafEngineNoCommit(t *testing.T) {
 // Co-Authored-By in a later one counts as the leaf's attempt: the fixer
 // passes on it, the verifier starts on it and the step passes.
 func TestFixLeafEngineSplitTrailers(t *testing.T) {
+	t.Parallel()
 	g, st, _ := fixLeafRun(t, fixSplit)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomePass {
 		t.Fatalf("steps = %+v", st.Steps)
@@ -299,6 +302,7 @@ func TestFixLeafEngineSplitTrailers(t *testing.T) {
 // A fixer's split-paragraph commit whose Leaf: names another leaf still
 // fails the cycle: no verifier starts.
 func TestFixLeafEngineSplitOtherLeaf(t *testing.T) {
+	t.Parallel()
 	g, st, _ := fixLeafRun(t, fixSplitOther)
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomeFail {
 		t.Fatalf("steps = %+v", st.Steps)

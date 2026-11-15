@@ -93,6 +93,7 @@ func askHook(t *testing.T, ctx *Ctx, event, payload string) (SessionHookResponse
 // asked mark, which later hooks leave alone; the JSON response is as
 // before.
 func TestSessionHookAutonomousAskDenied(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, true)
 	r, out := askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
 	want := `{"deny":"` + autonomousAskReason + `"}` + "\n"
@@ -131,6 +132,7 @@ func TestSessionHookAutonomousAskDenied(t *testing.T) {
 // TestSessionHookNormalAskUnchanged: outside an autonomous session the
 // question is the owner's: nothing printed, no asked mark.
 func TestSessionHookNormalAskUnchanged(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, false)
 	r, out := askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
 	if out != "" || !r.Recorded || r.State != "blocked" {
@@ -145,6 +147,7 @@ func TestSessionHookNormalAskUnchanged(t *testing.T) {
 // TestAgentStatusAsked: a live session with an asked mark is blocked on
 // its question whatever its hook says; an exited one is done.
 func TestAgentStatusAsked(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, true)
 	r := &stepRunner{ctx: f.ctx, sessions: f.st}
 	askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
@@ -175,6 +178,7 @@ func TestAgentStatusAsked(t *testing.T) {
 // TestDeliver sends the asking session the arbiter's answer as a message
 // once it is idle, and clears its asked mark.
 func TestDeliver(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, true)
 	r := &stepRunner{ctx: f.ctx, sessions: f.st}
 	askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)
@@ -220,6 +224,7 @@ func (askAdapter) APIError([]byte) (string, bool)                          { ret
 // TestDeliverInSessionCheckout writes the arbiter's answer under the
 // session's Dir when it runs in a separate checkout.
 func TestDeliverInSessionCheckout(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, true)
 	r := &stepRunner{ctx: f.ctx, sessions: f.st}
 	askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+f.sid+`","ask":"Which store?"}`)

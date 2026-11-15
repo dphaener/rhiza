@@ -26,6 +26,7 @@ func workflowSkips(skips []daemon.Skip) []daemon.Skip {
 // resolve starts no run (never the default), is skipped naming the workflow
 // and its source, and waits in the inbox; once the rule resolves it starts.
 func TestDaemonSkipsReadyWithUnresolvedWorkflow(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	file := filepath.Join(f.ctx.Root, ".rhiza", "dispatch.toml")
 	if err := os.WriteFile(file, []byte("[ready]\nfeature = \"ghost\"\n"), 0o644); err != nil {
@@ -60,6 +61,7 @@ func TestDaemonSkipsReadyWithUnresolvedWorkflow(t *testing.T) {
 // the default) and is skipped with the load error; once the file loads it
 // starts.
 func TestDaemonSkipsReadyWithUnloadableDispatch(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	file := filepath.Join(f.ctx.Root, ".rhiza", "dispatch.toml")
 	if err := os.WriteFile(file, []byte("[ready]\nfeature = 3\n"), 0o644); err != nil {
@@ -86,6 +88,7 @@ func TestDaemonSkipsReadyWithUnloadableDispatch(t *testing.T) {
 // A queued request whose recorded workflow does not resolve starts no plan
 // run and is skipped, while another request in the same poll still starts.
 func TestDaemonSkipsRequestWithUnresolvedWorkflow(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "unres")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }

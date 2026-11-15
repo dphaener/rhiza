@@ -109,6 +109,7 @@ func badRefs(md string) []string {
 }
 
 func TestGuideCommandsExist(t *testing.T) {
+	t.Parallel()
 	for _, txt := range guide.List() {
 		if len(commandRefs(txt.Body)) == 0 {
 			t.Errorf("guide %s: no command references found; is the scanner broken?", txt.Name)
@@ -120,6 +121,7 @@ func TestGuideCommandsExist(t *testing.T) {
 }
 
 func TestPendingCommandsUnregistered(t *testing.T) {
+	t.Parallel()
 	for _, c := range pendingCommands {
 		if resolves([]string{c}) {
 			t.Errorf("pending command %q is registered now; remove it from pendingCommands", c)
@@ -128,6 +130,7 @@ func TestPendingCommandsUnregistered(t *testing.T) {
 }
 
 func TestCommandRefsScanner(t *testing.T) {
+	t.Parallel()
 	md := "Write only through `rhiza` commands; see `rhiza-scrub`.\n" +
 		"Run `rhiza frobnicate --now`, then `rhiza change new \"x\"`,\n" +
 		"`rhiza link <node> derived-from <h>` and `rhiza guide scrub`.\n" +
@@ -150,6 +153,7 @@ func TestCommandRefsScanner(t *testing.T) {
 }
 
 func TestGuideNamesAreNotSubcommands(t *testing.T) {
+	t.Parallel()
 	for _, o := range Operations() {
 		sub, ok := strings.CutPrefix(o.Name, "guide.")
 		if !ok {
@@ -163,6 +167,7 @@ func TestGuideNamesAreNotSubcommands(t *testing.T) {
 }
 
 func TestGuide(t *testing.T) {
+	t.Parallel()
 	ctx := &Ctx{Version: "v9"}
 	got, err := runGuide(ctx, GuideRequest{})
 	if err != nil {
@@ -185,6 +190,7 @@ func TestGuide(t *testing.T) {
 }
 
 func TestGuideLs(t *testing.T) {
+	t.Parallel()
 	got, err := runGuideLs(&Ctx{}, GuideLsRequest{})
 	if err != nil {
 		t.Fatal(err)

@@ -63,6 +63,9 @@ func untrackedLog(t *testing.T, f *modelFixture) string {
 // branch deleted and main fast-forwarded with no untracked copy left; a red
 // or conflicting one is not merged and is an inbox item naming the change
 // set.
+//
+// Serial: it resets and reads the package's merges, which every
+// modelPRFixture's fake gh pr merge counts into.
 func TestDaemonModelPR(t *testing.T) {
 	t.Run("Green", func(t *testing.T) {
 		merges = 0
@@ -129,6 +132,7 @@ func TestDaemonModelPR(t *testing.T) {
 // The model branch network work runs on the first poll, then at most once
 // every modelNetEvery.
 func TestModelNetThrottled(t *testing.T) {
+	t.Parallel()
 	p := &daemonProj{}
 	t0 := time.Date(2026, 11, 12, 10, 0, 0, 0, time.UTC)
 	for _, c := range []struct {
@@ -144,6 +148,7 @@ func TestModelNetThrottled(t *testing.T) {
 // A model branch program that hangs (git ls-remote on a stalled network) is
 // killed after its timeout, never prompts for credentials, and fails.
 func TestBoundedExecTimesOut(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) {
 		t.Fatal("untimed Exec used")
@@ -163,6 +168,7 @@ func TestBoundedExecTimesOut(t *testing.T) {
 }
 
 func TestBoundedExecOutputAndExit(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Exec = func(string, []string, string, []string) ([]byte, error) { return nil, nil }
 	code := 0

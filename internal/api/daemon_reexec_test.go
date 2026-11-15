@@ -110,6 +110,8 @@ func daemonRepo(t *testing.T) (*Ctx, string) {
 // started: once, at the end of its first poll, with its lock let go for the
 // new image and taken back when the exec returns. An unchanged executable
 // never re-executes.
+//
+// Serial: it swaps the package's daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonReexecsRebuiltBinary(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
 	old := daemonReexec
@@ -156,6 +158,7 @@ func TestDaemonReexecsRebuiltBinary(t *testing.T) {
 // first later poll with none pending. An exec that returns, failed or not,
 // is not tried again, and the lock is held again.
 func TestDaemonLoopReexecWaitsForPending(t *testing.T) {
+	t.Parallel()
 	for _, execErr := range []error{nil, errors.New("exec format error")} {
 		common := t.TempDir()
 		lock, err := daemon.TryLock(common, time.Now())
@@ -207,6 +210,7 @@ func TestDaemonLoopReexecWaitsForPending(t *testing.T) {
 // unjournaled holds of the daemon before it: their start, and the runs
 // their change set had then.
 func TestDaemonKeepsUnjournaledHolds(t *testing.T) {
+	t.Parallel()
 	at := time.Unix(1700000000, 0).UTC()
 	prev := []daemon.Event{{Change: "B", At: at, Runs: 2}, {Change: "A", At: at.Add(time.Minute)}}
 	got := daemonRestoreUnjournaled(prev)
@@ -226,6 +230,7 @@ func TestDaemonKeepsUnjournaledHolds(t *testing.T) {
 // image's start and settings with the last poll, runs and skips the earlier
 // image of the same pid left, and no stopped line.
 func TestDaemonStateAtStart(t *testing.T) {
+	t.Parallel()
 	ctx, common := daemonRepo(t)
 	host, _ := os.Hostname()
 	old := daemon.Holder{Host: host, Pid: os.Getpid(), Started: time.Unix(1700000000, 0).UTC()}

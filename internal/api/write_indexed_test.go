@@ -23,6 +23,7 @@ func seededIDs(ctx *Ctx, n int64) {
 // (and the single-write commands) reads the log zero times, and what it
 // writes is what the log-folding write writes.
 func TestApplyIndexedReadsNoLog(t *testing.T) {
+	t.Parallel()
 	ctx, _ := indexedLog(t)
 	// Warm the index.
 	if _, err := callOp(t, ctx, "change.show", `{}`); err != nil {
@@ -165,6 +166,7 @@ func genLog(t *testing.T, ctx *Ctx, g *writeGen) {
 // writes, each write is accepted or refused through the index, with the
 // same error or the same ops, as through the fold of the log.
 func TestWritesThroughIndexMatchFold(t *testing.T) {
+	t.Parallel()
 	seeds := int64(4)
 	if testing.Short() {
 		seeds = 1

@@ -38,6 +38,7 @@ const (
 func verifyArgs(rev string) string { return "rev-parse --verify --quiet " + rev + "^{commit}" }
 
 func TestCheckBase(t *testing.T) {
+	t.Parallel()
 	inTree := map[string]string{gitWorkTree: "true\n"}
 	with := func(kv ...string) map[string]string {
 		m := map[string]string{}
@@ -100,6 +101,7 @@ func TestCheckBase(t *testing.T) {
 }
 
 func TestGitBlob(t *testing.T) {
+	t.Parallel()
 	// The IDs `git hash-object` prints for these bytes.
 	for in, want := range map[string]string{
 		"":        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
@@ -112,6 +114,7 @@ func TestGitBlob(t *testing.T) {
 }
 
 func TestParseLsTree(t *testing.T) {
+	t.Parallel()
 	line := func(typ, obj, p string) string { return "100644 " + typ + " " + obj + "\t" + p + "\x00" }
 	for _, c := range []struct {
 		name string
@@ -144,6 +147,7 @@ func TestParseLsTree(t *testing.T) {
 }
 
 func TestCurrentEntries(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	if es, err := currentEntries(root); err != nil || es != nil {
 		t.Fatalf("no log: %v, %v", es, err)
@@ -191,6 +195,7 @@ func writeEntry(t *testing.T, ctx *Ctx, p, b string) {
 }
 
 func TestCheckInputChanges(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	const (
 		edited = ".rhiza/log/x/y.json"
@@ -264,6 +269,7 @@ func TestCheckInputChanges(t *testing.T) {
 // moved to .rhiza/log with its bytes passes, an edited or deleted one fails
 // with a Next that restores it and moves it under .rhiza/.
 func TestCheckInputPreRename(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	writeEntry(t, ctx, ".rhiza/log/x/kept.json", "same\n")
 	writeEntry(t, ctx, ".rhiza/log/x/edited.json", "now\n")
@@ -298,6 +304,7 @@ func TestCheckInputPreRename(t *testing.T) {
 }
 
 func TestCheckFreshRepo(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	renderOK(t, ctx)
 	resp, err := callOp(t, ctx, "check", `{}`)
@@ -320,6 +327,7 @@ func TestCheckFreshRepo(t *testing.T) {
 }
 
 func TestCheckFailsFirst(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	// No render: the rendered folder is missing.
 	resp, err := callOp(t, ctx, "check", `{}`)
@@ -349,6 +357,7 @@ func TestCheckFailsFirst(t *testing.T) {
 }
 
 func TestCheckFindingWhere(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		f    CheckFinding
 		want string
@@ -366,6 +375,7 @@ func TestCheckFindingWhere(t *testing.T) {
 }
 
 func TestCheckErrors(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "check", `{}`)
 	wantExit(t, err, 4)
@@ -379,6 +389,7 @@ func TestCheckErrors(t *testing.T) {
 }
 
 func TestParseTrailerLog(t *testing.T) {
+	t.Parallel()
 	out := "aaa\x1fSubject\n\nChange: CS1\nActor: builder\nLeaf: leaf\nLeaf: other\x1e\n" +
 		"bbb\x1fSubject only\x1e\n" +
 		"ccc\x1fSubject\n\nprose\n\nchange: CS2\nCHANGE:  CS3 \nactor: 01M5ACTOR\x1e\n" +
@@ -429,6 +440,7 @@ func TestParseTrailerLog(t *testing.T) {
 }
 
 func TestGitCommits(t *testing.T) {
+	t.Parallel()
 	// Only commits that change a file outside the store folder, anywhere
 	// in the repository, and on every branch merged in.
 	logArgs := "log --full-history --format=" + trailerLogFormat + " HEAD -- :/ :(exclude).rhiza"
@@ -452,6 +464,7 @@ func TestGitCommits(t *testing.T) {
 // skip_reference leaves out the generated-reference comparison and the
 // docs-command rule; without it both fail.
 func TestCheckSkipReference(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	renderOK(t, ctx)
 	if _, err := callOp(t, ctx, "docs", `{}`); err != nil {
@@ -488,6 +501,7 @@ func TestCheckSkipReference(t *testing.T) {
 // the branch added it since the base; one at the base, or with the option
 // off, still fails.
 func TestCheckBranchNewerFormat(t *testing.T) {
+	t.Parallel()
 	const (
 		cs    = "01M7334KGW8V1N426E536GSPGM"
 		added = "01M731FHDC43E8XR3XAPNAFE1Y"

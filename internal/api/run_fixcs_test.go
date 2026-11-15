@@ -19,6 +19,7 @@ import (
 // whose Review: trailer names the run. A Review: trailer naming another
 // run, or other trailers alone, do not count, and the detail says why.
 func TestReviewCommit(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T) (*stepRunner, func(...string) string, string) {
 		r, git := leafCommitRunner(t)
 		r.run = "R1"
@@ -75,6 +76,7 @@ func TestReviewCommit(t *testing.T) {
 // A change-set fixer's session gets RHIZA_CYCLE and RHIZA_ROLE, and no
 // RHIZA_LEAF, RHIZA_ATTEMPT or RHIZA_CHECK.
 func TestFixChangeSetEnv(t *testing.T) {
+	t.Parallel()
 	set, unset := launchEnv(session.Record{ID: "S1", Change: "CS1", Run: "R1", Cycle: 2, Role: workflow.RoleFixer})
 	for _, v := range []string{"RHIZA_CYCLE=2", "RHIZA_ROLE=fixer", "RHIZA_RUN=R1"} {
 		if !slices.Contains(set, v) {
@@ -189,6 +191,7 @@ func fixCSRun(t *testing.T, review string) (*fixCSRunner, run.State, []run.Entry
 // session, whose prompt names both; its new commit carries a Review:
 // trailer naming the run; and the failed checks re-run after it.
 func TestFixChangeSetEngine(t *testing.T) {
+	t.Parallel()
 	g, st, entries := fixCSRun(t, "R1")
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomePass {
 		t.Fatalf("steps = %+v", st.Steps)
@@ -241,6 +244,7 @@ func TestFixChangeSetEngine(t *testing.T) {
 // the run (here it names another) fails the cycle: the failed checks run
 // no session in it.
 func TestFixChangeSetEngineNoCommit(t *testing.T) {
+	t.Parallel()
 	g, st, _ := fixCSRun(t, "R2")
 	if len(st.Steps) != 1 || st.Steps[0].Outcome != workflow.OutcomeFail {
 		t.Fatalf("steps = %+v", st.Steps)

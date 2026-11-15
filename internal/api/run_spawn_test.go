@@ -86,6 +86,7 @@ func (s *spawnFixture) state(t *testing.T) run.State {
 }
 
 func TestRunSpawn(t *testing.T) {
+	t.Parallel()
 	t.Run("Pass", func(t *testing.T) {
 		s := newSpawnFixture(t)
 		resp, err := s.sp.spawn(s.req())
@@ -237,6 +238,7 @@ func TestRunSpawn(t *testing.T) {
 // RHIZA_CYCLE are set; a critic names its check with --check; a --check
 // the step does not declare is refused.
 func TestRunSpawnCheck(t *testing.T) {
+	t.Parallel()
 	conductor := func(t *testing.T) *spawnFixture {
 		s := newSpawnFixture(t)
 		def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +

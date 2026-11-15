@@ -18,6 +18,7 @@ func ciHealth(t *testing.T, gate, rec string) HealthPart {
 }
 
 func TestHealthCI(t *testing.T) {
+	t.Parallel()
 	t.Run("one infra failure and a single flake stay ok", func(t *testing.T) {
 		p := ciHealth(t, "", `{"runs":[
 {"head":"a","result":"green","time":"x","infra":["scripts (4/4) / UNKNOWN STEP"]},
@@ -41,6 +42,7 @@ func TestHealthCI(t *testing.T) {
 }
 
 func TestHealthCIStability(t *testing.T) {
+	t.Parallel()
 	t.Run("clean record is ok", func(t *testing.T) {
 		p := ciHealth(t, "", `{"runs":[{"head":"a","result":"green","time":"x"}]}`)
 		if p.State != HealthOK || p.Part != HealthCI || p.Summary != "stable" || p.Next != "" || len(p.Detail) != 0 {

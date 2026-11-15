@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FBS0JKYFJCSDQBTTKD01RG",
+  "after": [
+    "01M7FBEGC80JSFBDH60BKR9XVQ"
+  ],
+  "at": "2026-11-15T10:31:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at d41a8ddb7 (8ade328e8 plus the fix d41a8ddb7). The fix diff is test code only (budget_test.go TestMain makes a rhiza-api-snapshots- folder into snapshotDir, sweeps stale ones and removes it at exit; fixture_test.go snapshotBase returns snapshotDir and no longer reads XDG_CACHE_HOME). Builds read no other fixture state from the environment. The leaf's non-test changes are only .rhiza/log and .rhiza/rendered records. The previous finding's reproducer go test -p 2 -trimpath -count=1 ./internal/api -run '^(TestSliceViews|TestSnapshotFixtureCopiesAreIsolated|TestChangeOutsideRepo)$' exits 0. go test -race -shuffle=on -run '^TestSnapshotFixture' -v passed all 5 tests, including the new TestSnapshotFixtureBuildUnderSetenvServesLaterCopies. The Checks: shuffle run over TestSlice|TestInboxGateQuestions|TestGateAnswerUsesWorktreeIndex|TestWeb|TestSnapshotFixture|TestChangeOutsideRepo exits 0. go vet exits 0 and gofmt -l prints nothing. go test -list counts 761, as the Checks: block says. The brief's 768 does not match this count, but the top-level test functions differ from 8ade328e8~1 only by the 5 added TestSnapshotFixture* tests: none skipped, deleted or merged, and no new t.Skip or TODO. Profile measure (-cpuprofile with the acceptance's -skip, -o $TMPDIR/api.test): store.ReadLog is 24.37% cum, under 30%. In that run TestDaemonProfile and TestDaemonProfileDefaultPath fail with 'cpu profiling already in use': they start a real CPU profile, which clashes with -cpuprofile. Neither file was touched by this leaf, and both tests pass without -cpuprofile (exit 0)."
+        },
+        "handle": "api-snapshot-fixtures-verified",
+        "id": "01M7FC5DX791GWBA6KC03N20QA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FC5DX791GWBA6KBXWGYAKX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FC5DX791GWBA6KBXWGYAKX",
+        "id": "01M7FC5DY6JFACGVAJJNCPJYFT",
+        "link": "01M7FC5DY6JFACGVAJJKNAPHAW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M7F2ZFCH3XETVPK9A6WPV47G",
+  "id": "01M7FC5DZ59K4JFPYQQBB75MJF",
+  "type": "ops",
+  "v": 1
+}

@@ -12,6 +12,7 @@ import (
 // both hits in --json and the human output; an entry with none, and a run
 // with no code-check entry, exit 0.
 func TestLintCheck(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))

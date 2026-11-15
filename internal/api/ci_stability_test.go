@@ -20,6 +20,7 @@ func stabilityRuns(t *testing.T, f *sessionFixture) []CIRun {
 // failing job and step of a red head whose rerun passed, a red with no flake, and
 // main's result, from the tested head's or from the dispatched run.
 func TestShipCheckStabilityRecord(t *testing.T) {
+	t.Parallel()
 	const logCall = "run view 42 --log-failed"
 	const testLog = "test\tRun\t--- FAIL: TestGarden (0.1s)\n--- FAIL: TestPond (0.1s)\n"
 
@@ -152,6 +153,7 @@ func TestShipCheckStabilityRecord(t *testing.T) {
 }
 
 func TestCIStability(t *testing.T) {
+	t.Parallel()
 	clean := func(n int) []CIRun {
 		var rs []CIRun
 		for range n {

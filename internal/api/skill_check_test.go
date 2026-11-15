@@ -11,6 +11,7 @@ import (
 )
 
 func TestSkillCheckReport(t *testing.T) {
+	t.Parallel()
 	gates := func(results ...string) []SkillGate {
 		names := []string{gateSessionDone, gateTrailers, gateCheck}
 		var out []SkillGate
@@ -93,6 +94,7 @@ func TestSkillCheckReport(t *testing.T) {
 }
 
 func TestSkillCheckTrailersGate(t *testing.T) {
+	t.Parallel()
 	const change = "01CHANGE"
 	full := check.Commit{Hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", Changes: []string{change}, Actors: []string{"claude-code-1"}, Leaves: []string{skillCheckLeaf}}
 	cases := []struct {
@@ -121,6 +123,7 @@ func TestSkillCheckTrailersGate(t *testing.T) {
 }
 
 func TestSkillCheckDefinition(t *testing.T) {
+	t.Parallel()
 	invoke := `/my-builder "quoted" \ {leaf}`
 	data, err := skillCheckDefinition(workflow.RoleBuilder, invoke)
 	if err != nil {
@@ -147,6 +150,7 @@ func TestSkillCheckDefinition(t *testing.T) {
 }
 
 func TestSkillCheckRefusals(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = home
@@ -180,6 +184,7 @@ func TestSkillCheckRefusals(t *testing.T) {
 // advisor refused before an agent launches, and the gates each role is
 // graded on.
 func TestSkillCheckRoles(t *testing.T) {
+	t.Parallel()
 	invoke := "/my-skill {leaf} {change}"
 	t.Run("Definitions", func(t *testing.T) {
 		for _, c := range []struct {

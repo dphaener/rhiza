@@ -11,6 +11,7 @@ import (
 // request struct to the CLI help style: a capitalised sentence with no
 // trailing period, and defaults written as "; default <x>".
 func TestHelpStyle(t *testing.T) {
+	t.Parallel()
 	for _, o := range Operations() {
 		check := func(where, s string) {
 			if s == "" {

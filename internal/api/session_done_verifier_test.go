@@ -15,6 +15,7 @@ import (
 // Evidence by another actor alone does not count, and a builder is never
 // refused.
 func TestSessionDoneVerifierNeedsRecord(t *testing.T) {
+	t.Parallel()
 	r, _, ctx, leaf, ada := evidenceCommitRunner(t)
 	common, err := gitCommonDir(ctx)
 	if err != nil {

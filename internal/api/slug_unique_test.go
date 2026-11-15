@@ -12,6 +12,7 @@ import (
 // Two change sets with one title: the later one's ship target and abandon
 // cleanup name its suffixed branch, not the earlier one's.
 func TestUniqueSlugShipTargetAndAbandon(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "twin")
 	first := newChange(t, f.ctx, `{"intent":"Twin work","title":"Twin work"}`).ChangeSet
 	second := newChange(t, f.ctx, `{"intent":"Twin work","title":"Twin work"}`).ChangeSet

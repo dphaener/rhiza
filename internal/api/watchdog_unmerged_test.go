@@ -16,6 +16,7 @@ import (
 // is left alone, and a succeeded run, or a run that needs the owner before
 // its merge, gets an inbox item with no resume.
 func TestWatchdogGreenUnmerged(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = `name = "w"
 [step.wait]
@@ -126,6 +127,7 @@ run = "rhiza ship merge"
 // bounded: a run found with no open PR is not read again on later polls,
 // through watchdogPasses as the daemon runs them, until its journal moves.
 func TestWatchdogGreenUnmergedReadsOnce(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = `name = "w"
 [step.merge]
@@ -178,6 +180,7 @@ const watchdogPRView = "pr view cs/ship-it --json number,url,state,headRefOid,bo
 // the change set's ship record names that run: another run's, or none, is no
 // PR, and the owning run still reads it.
 func TestWatchdogReadPR(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[watchdogPRView] = openPR(greenRollup)
 	g.answers["run list --commit abc1234def --json databaseId,attempt"] = `[]`
@@ -216,6 +219,7 @@ func TestWatchdogReadPR(t *testing.T) {
 // change set whose other run is live, or has a continue queued, gets no
 // hold and no resume.
 func TestWatchdogGreenUnmergedSkipsBusyChange(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = `name = "w"
 [step.merge]

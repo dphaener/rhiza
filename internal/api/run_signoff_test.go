@@ -13,6 +13,7 @@ import (
 // rule, and says changes were asked for; a run waits at its sign-off only
 // while stopped there, unfinished.
 func TestSignoffLine(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
 		s    RunSignoff
 		want string
@@ -36,6 +37,7 @@ func TestSignoffLine(t *testing.T) {
 // In an owner cycle the fixers' prompts say the owner asked for the
 // changes, not that a review cycle confirmed them.
 func TestOwnerCycleFixerPrompts(t *testing.T) {
+	t.Parallel()
 	role := workflow.Role{Prompt: "fix {leaf}"}
 	vars := workflow.PromptVars{Run: "R1"}
 	fs := []run.Finding{{ID: "f1", Check: "alpha", Severity: "major", Place: "a.go:1", Reason: "say more"}}
@@ -136,6 +138,7 @@ func raceSignoffs(t *testing.T, rs *run.Store) []run.Entry {
 // the run's lock exits 3 (running in another process) and journals
 // nothing: the sign-off is written only under the run's lock.
 func TestSignoffUnderLockHeld(t *testing.T) {
+	t.Parallel()
 	f, rs := signoffRaceFixture(t)
 	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
@@ -162,6 +165,7 @@ func TestSignoffUnderLockHeld(t *testing.T) {
 // under the run's lock, sees the run the first finished, exits 2 and
 // journals nothing.
 func TestSignoffRecheckedUnderLock(t *testing.T) {
+	t.Parallel()
 	f, rs := signoffRaceFixture(t)
 	first, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
@@ -196,6 +200,7 @@ func TestSignoffRecheckedUnderLock(t *testing.T) {
 // another process journalled a sign-off of the visit (and stopped before
 // running it), exits 2 (already signed off) and journals nothing.
 func TestSignoffAlreadySignedUnderLock(t *testing.T) {
+	t.Parallel()
 	f, rs := signoffRaceFixture(t)
 	sr, err := openSignoffRun(f.ctx, "run approve", signoffRaceRun)
 	if err != nil {
@@ -220,6 +225,7 @@ func TestSignoffAlreadySignedUnderLock(t *testing.T) {
 
 // A sign-off still waiting when the lock is taken is journalled once.
 func TestSignoffUnderLockJournalsOnce(t *testing.T) {
+	t.Parallel()
 	f, rs := signoffRaceFixture(t)
 	resp, err := callOp(t, f.ctx, "run.approve", `{"run":"`+signoffRaceRun+`","foreground":true}`)
 	if err != nil {

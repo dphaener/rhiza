@@ -13,6 +13,7 @@ import (
 // per question by its full text, and no row carries a run or session ID, a
 // question's handle or a command (constraint owner-surfaces-no-ids).
 func TestWebInboxViewsOwnerWording(t *testing.T) {
+	t.Parallel()
 	at := time.Date(2026, 11, 5, 6, 0, 0, 0, time.UTC)
 	journal := func(id string, es ...run.Entry) run.Journal {
 		started := run.Entry{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "build", Change: "C-" + id}}
@@ -88,6 +89,7 @@ func TestWebInboxViewsOwnerWording(t *testing.T) {
 // An open item whose questions could not be read still names its change
 // set, without the stop's handles.
 func TestWebInboxViewsOpenWithoutQuestions(t *testing.T) {
+	t.Parallel()
 	got := webInboxViews([]InboxItem{{Kind: InboxOpen, Run: "R1", Change: "C1", ChangeTitle: "Retry webhooks",
 		Detail: run.OpenStop + "q-a; answer each with a Decision, then rhiza run resume R1"}})
 	if len(got) != 1 || got[0].Title != "Retry webhooks" || got[0].Detail != "open questions wait on your answers" {
@@ -96,6 +98,7 @@ func TestWebInboxViewsOpenWithoutQuestions(t *testing.T) {
 }
 
 func TestWebInboxViewsPermission(t *testing.T) {
+	t.Parallel()
 	got := webInboxViews([]InboxItem{{Kind: InboxPermission, Run: "R1", Change: "C1", ChangeTitle: "Retry webhooks",
 		Session: "SESS1", Detail: "Allow rm -rf /home/x?", Next: "rhiza inbox open abc1234"}})
 	if len(got) != 1 || got[0].Kind != InboxPermission || got[0].Title != "Retry webhooks" || got[0].Detail != "a session waits for your permission" {
@@ -104,6 +107,7 @@ func TestWebInboxViewsPermission(t *testing.T) {
 }
 
 func TestWebInboxViewsAPIError(t *testing.T) {
+	t.Parallel()
 	got := webInboxViews([]InboxItem{{Kind: InboxAPIError, Run: "R1", Change: "C1", ChangeTitle: "Retry webhooks",
 		Session: "SESS1", Detail: "session SESS1 stopped on an API error: API Error: 403", Next: "rhiza session message SESS1 <text>"}})
 	if len(got) != 1 || got[0].Kind != InboxAPIError || got[0].Title != "Retry webhooks" || got[0].Detail != "a session stopped on an API error" {

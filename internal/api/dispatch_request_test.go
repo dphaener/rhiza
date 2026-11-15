@@ -17,6 +17,7 @@ import (
 // dispatch file's [request] table names for its kind: plan by default, and
 // a milestone's never with --autonomous.
 func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "disp")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
@@ -97,6 +98,7 @@ func TestDaemonStartsRequestWithDispatchedWorkflow(t *testing.T) {
 // rhiza.autonomy.plan=auto; a feature request under plan still follows the
 // setting.
 func TestMilestonePlanRunOwnerByDeclaration(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "gate")
 	auto, err := planRunAutonomous(f.ctx, daemon.Request{ID: "M", Kind: daemon.KindMilestone}, AutonomyAuto)
 	if err != nil || auto {
@@ -112,6 +114,7 @@ func TestMilestonePlanRunOwnerByDeclaration(t *testing.T) {
 // skipped, whatever workflow it runs (the daemon resumes it); a non-plan run
 // that never reached land is listed as skipped.
 func TestInboxKeepsPlanRunUnderOtherWorkflow(t *testing.T) {
+	t.Parallel()
 	landed := func(string) (string, bool) { return "landed", true }
 	items := func(plan bool) int {
 		j := run.Journal{ID: "R1", Entries: []run.Entry{
@@ -132,6 +135,7 @@ func TestInboxKeepsPlanRunUnderOtherWorkflow(t *testing.T) {
 // early (the interview lands its record), whatever workflow it runs; a run
 // not started for a request, which never reached land, is still refused.
 func TestRunResumeLetsLandedPlanRunUnderOtherWorkflow(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "landed")
 	cs := newChange(t, f.ctx, `{"intent":"Fix the bug","title":"Fix the bug"}`).ChangeSet
 	for _, s := range []string{"propose", "accept", "land"} {
@@ -165,6 +169,7 @@ func TestRunResumeLetsLandedPlanRunUnderOtherWorkflow(t *testing.T) {
 // entered a merge step (bare or included), and still refuses one that entered
 // neither land nor merge.
 func TestRunResumeLandedPastMerge(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "merged")
 	rs := run.NewStore(run.Dir(f.common))
 	try := func(id, step string) error {
@@ -199,6 +204,7 @@ func TestRunResumeLandedPastMerge(t *testing.T) {
 // The ready workflow is the change set's recorded workflow, else the [ready]
 // rule for its kind, else ship-change.
 func TestReadyWorkflowOrder(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	bug := changeset.Open{Kind: changeset.KindIntention, RequestKind: changeset.RequestBug}
 	got := func(o changeset.Open) string {
@@ -233,6 +239,7 @@ func TestReadyWorkflowOrder(t *testing.T) {
 // An explicit run start --workflow wins over the change set's recorded
 // workflow, the [ready] rule for its kind and the ship-change default.
 func TestStartWorkflowExplicitWins(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(root, ".rhiza"), 0o755); err != nil {
 		t.Fatal(err)
@@ -262,6 +269,7 @@ func TestStartWorkflowExplicitWins(t *testing.T) {
 // run start on an existing change set runs the [ready] rule's workflow with
 // no --workflow, and the explicit --workflow over it.
 func TestRunStartExplicitWorkflowOverRule(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "explicit")
 	newChange(t, f.ctx, `{"intent":"Plain work","title":"Plain work"}`)
 	writeWorkflow(t, f.ctx.Root, "bugfix", "name = \"bugfix\"\n"+twoCommands)

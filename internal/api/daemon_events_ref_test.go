@@ -13,6 +13,7 @@ import (
 // The event command's payload carries a change set's ref verbatim on every
 // move, and has no ref key for a change set without one.
 func TestDaemonEventsRef(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	call := func(name, req string) any {

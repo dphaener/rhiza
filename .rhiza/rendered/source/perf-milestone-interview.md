@@ -56,6 +56,8 @@ Planning the test-perf milestone with the owner
 - derived-from [scaled-test-clock](../decision/scaled-test-clock.md)
 - derived-from [budgets-opt-in](../decision/budgets-opt-in.md)
 - derived-from [script-parallel-bound](../decision/script-parallel-bound.md)
+- derived-from [api-fixture-templates](../decision/api-fixture-templates.md)
+- derived-from [runewidth-pin-not-fork](../decision/runewidth-pin-not-fork.md)
 
 ## History
 

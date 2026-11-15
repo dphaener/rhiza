@@ -92,6 +92,7 @@ const hourlyCmd = "[[schedules]]\nname = \"tick\"\nevery = \"1h\"\ncommand = \"t
 // A poll over two projects starts each due schedule's run; one slot full
 // makes the other wait, and it fires once when a slot frees.
 func TestDaemonPollFiresSchedules(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, hourlyCmd, strings.Replace(hourlyCmd, "tick", "tock", 1))
 	h.poll(1) // first sight: nothing due
 	if len(h.progs) != 0 {
@@ -177,6 +178,7 @@ func (h *schedHarness) journal(_ int, name string, running bool) {
 // A schedule whose workflow does not resolve starts nothing and the daemon
 // log names the schedule; a standing problem is logged once.
 func TestDaemonScheduleUnresolvedWorkflow(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, "[[schedules]]\nname = \"nightly\"\nevery = \"1h\"\nworkflow = \"gone\"\n")
 	h.poll(2)
 	h.now = h.now.Add(time.Hour)
@@ -193,6 +195,7 @@ func TestDaemonScheduleUnresolvedWorkflow(t *testing.T) {
 // A scheduled command run that starts and fails makes no Rex call; the
 // daemon log carries its start and its failure.
 func TestDaemonScheduledRunFailureLogged(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, "[[schedules]]\nname = \"bad\"\nevery = \"1h\"\ncommand = \"false\"\n")
 	h.poll(2)
 	h.now = h.now.Add(time.Hour)
@@ -239,6 +242,7 @@ func TestDaemonScheduledRunFailureLogged(t *testing.T) {
 // A scheduled run interrupted (its process gone, no finished entry) does not
 // stop the schedule: the next slot after it fires.
 func TestDaemonInterruptedScheduledRunNextSlotFires(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, hourlyCmd)
 	h.poll(2)
 	h.now = h.now.Add(31 * time.Minute) // 11:01, slot 11:00
@@ -288,6 +292,7 @@ func (h *schedHarness) rexCalls(i int) [][]string {
 // With slots for both, one poll over two projects starts each project's due
 // schedule.
 func TestDaemonPollStartsEachProjectsSchedule(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, hourlyCmd, strings.Replace(hourlyCmd, "tick", "tock", 1))
 	h.poll(2)
 	h.now = h.now.Add(31 * time.Minute)
@@ -300,6 +305,7 @@ func TestDaemonPollStartsEachProjectsSchedule(t *testing.T) {
 // A scheduled run started and not journaled yet holds the one slot, so a
 // queued start stays queued until the grace passes or its run journals.
 func TestDaemonScheduledStartHoldsSlotForQueuedStart(t *testing.T) {
+	t.Parallel()
 	h := newSchedHarness(t, hourlyCmd)
 	h.poll(1) // first sight: nothing due
 	h.now = h.now.Add(31 * time.Minute)

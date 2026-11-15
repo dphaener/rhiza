@@ -9,6 +9,7 @@ import (
 // The Overview lists unfinished runs by their change set's title, workflow
 // and step, and leaves finished runs out.
 func TestWebRunsSourceListsLiveRuns(t *testing.T) {
+	t.Parallel()
 	ctx, common := daemonRepo(t)
 	rs := run.NewStore(run.Dir(common))
 	mk := func(id, wf, title string, es ...run.Entry) {

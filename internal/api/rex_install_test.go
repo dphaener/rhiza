@@ -43,6 +43,7 @@ func readFile(t *testing.T, p string) string {
 }
 
 func TestRexInstallRoundTrip(t *testing.T) {
+	t.Parallel()
 	for _, owner := range []string{
 		"-- mine\nrex.bind(\"ctrl+a r\", \"client.config.reload\")\n",
 		"-- no trailing newline\nrex.bind(\"x\", \"y\")",
@@ -96,6 +97,7 @@ func TestRexInstallRoundTrip(t *testing.T) {
 }
 
 func TestRexInstallKeepsSettingsAndOwnersRequire(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	owner := "require('rhiza')\n"
 	writePath(t, filepath.Join(dir, "init.lua"), owner)
@@ -124,6 +126,7 @@ func TestRexInstallKeepsSettingsAndOwnersRequire(t *testing.T) {
 }
 
 func TestRexInstallForeignScript(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	writePath(t, filepath.Join(dir, "rhiza.lua"), "-- not ours\n")
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err == nil {
@@ -138,6 +141,7 @@ func TestRexInstallForeignScript(t *testing.T) {
 }
 
 func TestRexInstallThroughSymlink(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	real := filepath.Join(t.TempDir(), "dotfiles-init.lua")
 	writePath(t, real, "-- real\n")
@@ -156,6 +160,7 @@ func TestRexInstallThroughSymlink(t *testing.T) {
 }
 
 func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	ctx.Self = "/opt/my tools/rhiza"
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
@@ -199,6 +204,8 @@ func TestRexInstallScriptEntersTheKeyMode(t *testing.T) {
 	}
 }
 
+// Serial: it registers a launcher app (launcher.Register), which every rex
+// install in the binary writes into rhiza.lua.
 func TestRexInstallRegistersAnActionPerApp(t *testing.T) {
 	launcher.Register(launcher.App{Name: "zz-extra", Summary: "One more app"})
 	ctx, dir, _ := rexTestCtx(t)
@@ -240,6 +247,9 @@ func (c sizedComponent) NaturalSize() (int, int) { return c.cols, c.rows }
 // TestRexInstallSizesEachAppLayerToItsCells checks each action's layer is
 // sized at install time from its app's component's NaturalSize, and an app
 // without a component from the default size.
+//
+// Serial: it registers launcher apps (launcher.Register), which every rex
+// install in the binary writes into rhiza.lua.
 func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 	launcher.Register(launcher.App{Name: "zz-sized", Summary: "Sized", Component: func() modalshell.Component {
 		return sizedComponent{cols: 77, rows: 21}
@@ -272,6 +282,7 @@ func TestRexInstallSizesEachAppLayerToItsCells(t *testing.T) {
 }
 
 func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)
@@ -310,6 +321,7 @@ func TestRexInstallBindsAKeyPerAppInTheKeyMode(t *testing.T) {
 }
 
 func TestRexDefaultKeysAreMnemonicAndUnique(t *testing.T) {
+	t.Parallel()
 	got := rexDefaultKeys([]launcher.App{{Name: "model"}, {Name: "mine"}, {Name: "roadmap"}, {Name: "x"}, {Name: "x2"}})
 	want := map[string]string{"model": "m", "mine": "i", "roadmap": "r", "x": "x", "x2": "2"}
 	if !reflect.DeepEqual(got, want) {
@@ -318,6 +330,7 @@ func TestRexDefaultKeysAreMnemonicAndUnique(t *testing.T) {
 }
 
 func TestRexInstallKeepsKeyOverridesOnReinstall(t *testing.T) {
+	t.Parallel()
 	ctx, dir, _ := rexTestCtx(t)
 	if _, err := callOp(t, ctx, "rex.install", `{}`); err != nil {
 		t.Fatal(err)

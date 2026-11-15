@@ -12,6 +12,7 @@ import (
 )
 
 func TestRemoveRunScratchTakesOnlyTheEndedRunsSessions(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	ctx := &Ctx{Home: home}
 	st := session.NewStore(filepath.Join(t.TempDir(), "sessions"))
@@ -37,6 +38,8 @@ func TestRemoveRunScratchTakesOnlyTheEndedRunsSessions(t *testing.T) {
 	}
 }
 
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, GIT_CONFIG_*),
+// process-wide state.
 func TestRemoveWorktreeIndexKeepsOtherIndexes(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
@@ -70,6 +73,7 @@ func TestRemoveWorktreeIndexKeepsOtherIndexes(t *testing.T) {
 	}
 }
 
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME), process-wide state.
 func TestRemoveCheckoutRemovesItsIndex(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)

@@ -26,6 +26,7 @@ func interviewJournal(id string, started run.Started, ended bool) run.Journal {
 // interview's launch, with its tab, before any question block; it is gone
 // once the run ended, and a feature's plan run has none.
 func TestInboxMilestoneInterview(t *testing.T) {
+	t.Parallel()
 	tab := func(sid string) session.Tab {
 		return session.Tab{Session: "rs", Block: "blk", Title: "interview " + sid}
 	}
@@ -62,6 +63,7 @@ func TestInboxMilestoneInterview(t *testing.T) {
 
 // The daemon notifies a milestone interview once, with the interview text.
 func TestDaemonNotifyMilestoneInterview(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	var rex bytes.Buffer
 	ctx.Rex = &rex

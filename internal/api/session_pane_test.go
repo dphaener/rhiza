@@ -48,6 +48,7 @@ func (p *paneRex) exec(name string, args []string, _ string, _ []string) ([]byte
 // longer has splits another pane of its window, and one whose whole
 // window is gone opens a new tab.
 func TestOpenSessionPane(t *testing.T) {
+	t.Parallel()
 	anchor := session.Tab{Window: "window:w1", Block: "block:b1"}
 	landscape := `{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}`
 	portrait := `{"columns":100,"rows":120,"cell_width_px":8,"cell_height_px":16}`
@@ -113,6 +114,7 @@ func TestOpenSessionPane(t *testing.T) {
 // Without an anchor a session opens a new tab, as every session not of a
 // leaves step does.
 func TestOpenSessionPaneNewTab(t *testing.T) {
+	t.Parallel()
 	rex := paneRex{}
 	tab, args, err := openSessionPane(&Ctx{Exec: rex.exec}, session.Tab{Title: "T"}, session.Tab{}, "auto", "", "/wt", "rhiza", "S1")
 	if err != nil {
@@ -129,6 +131,7 @@ func TestOpenSessionPaneNewTab(t *testing.T) {
 // A pane closes with `rex block close`; one Rex no longer has is already
 // closed, and a session with no block has none to close.
 func TestCloseSessionPane(t *testing.T) {
+	t.Parallel()
 	var calls []string
 	errNext := error(nil)
 	ctx := &Ctx{Exec: func(_ string, args []string, _ string, _ []string) ([]byte, error) {

@@ -13,6 +13,7 @@ import (
 // pages and API answer from its own model, and an unknown project is not
 // found.
 func TestWebRootHandlerServesEveryProject(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	intents := map[string]string{"alpha": "Alpha intent", "beta": "Beta intent"}
 	var home *Ctx

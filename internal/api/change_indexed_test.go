@@ -52,6 +52,7 @@ func indexedLog(t *testing.T) (*Ctx, []id.ID) {
 // what the fold of the log answers, in every state, and reads the log not
 // at all, also after an entry is appended to an unrelated change set.
 func TestChangeShowIndexedMatchesFold(t *testing.T) {
+	t.Parallel()
 	ctx, sets := indexedLog(t)
 	folded := *ctx
 	folded.IndexPath = ""
@@ -100,6 +101,7 @@ func TestChangeShowIndexedMatchesFold(t *testing.T) {
 }
 
 func TestChangeShowIndexedErrors(t *testing.T) {
+	t.Parallel()
 	ctx, _ := indexedLog(t)
 	folded := *ctx
 	folded.IndexPath = ""
@@ -119,6 +121,7 @@ func TestChangeShowIndexedErrors(t *testing.T) {
 // TestShipCheckSettledReadsNoLog: ship check --settled finds its change
 // set from the index and reads the log not at all.
 func TestShipCheckSettledReadsNoLog(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	f.ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	g.answers[shipPRView] = openPR(greenRollup)
@@ -147,6 +150,7 @@ func TestShipCheckSettledReadsNoLog(t *testing.T) {
 // index, as in the fold: its create no longer applies strictly, but the
 // interim model keeps it, so the leaf is the moved node, not its new parent.
 func TestChangeShowIndexedKeepsMovedUnderLater(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	folded := *ctx
 	folded.IndexPath = ""
@@ -167,6 +171,7 @@ func TestChangeShowIndexedKeepsMovedUnderLater(t *testing.T) {
 // show of every change set answers through the index what it answers
 // through the fold of the log.
 func TestChangeShowIndexedMatchesFoldGenerated(t *testing.T) {
+	t.Parallel()
 	seeds := int64(6)
 	if testing.Short() {
 		seeds = 2

@@ -25,6 +25,7 @@ func (s *scriptedRex) run(string, []string, string, []string) ([]byte, error) {
 }
 
 func TestSessionRunRexRetryRecovers(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	rex := &scriptedRex{
@@ -47,6 +48,7 @@ func TestSessionRunRexRetryRecovers(t *testing.T) {
 }
 
 func TestSessionRunRexRetryGivesUp(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "readable-tabs")
 	newChange(t, f.ctx, `{"intent":"Readable tabs"}`)
 	rex := &scriptedRex{

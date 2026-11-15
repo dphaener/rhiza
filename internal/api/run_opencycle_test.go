@@ -20,6 +20,7 @@ func openCycleJournal() run.Journal {
 }
 
 func TestOpenCycleReadsOpen(t *testing.T) {
+	t.Parallel()
 	st := openCycleJournal().State()
 	c, ok := st.Check("review", "alpha")
 	if !ok {

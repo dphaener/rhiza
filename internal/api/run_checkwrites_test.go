@@ -18,6 +18,7 @@ import (
 // with the entries recording that actor. Another actor's uncommitted
 // write stays as it was. A second call commits nothing and returns "".
 func TestCommitCheckWrites(t *testing.T) {
+	t.Parallel()
 	r, git, ctx, _, ada := evidenceCommitRunner(t)
 	if err := r.sessions.Write(session.Record{ID: "S-qa", Actor: ada.String(), Change: r.change, Check: "qa", Role: "check", Cycle: 1}); err != nil {
 		t.Fatal(err)
@@ -79,6 +80,7 @@ func TestCommitCheckWrites(t *testing.T) {
 // actor's uncommitted record entries committed, with no Leaf: trailer; one
 // with nothing uncommitted makes no commit. A critic's commit names its role.
 func TestCommitCheckWritesNone(t *testing.T) {
+	t.Parallel()
 	r, git, ctx, _, ada := evidenceCommitRunner(t)
 	if err := r.sessions.Write(session.Record{ID: "S-c", Actor: ada.String(), Change: r.change, Check: "quality", Role: "critic", Cycle: 1}); err != nil {
 		t.Fatal(err)

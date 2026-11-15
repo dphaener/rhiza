@@ -73,6 +73,7 @@ func schedHealth(t *testing.T, ctx *Ctx) (HealthPart, bool) {
 }
 
 func TestHealthSchedulesPart(t *testing.T) {
+	t.Parallel()
 	t.Run("no schedules, no part", func(t *testing.T) {
 		ctx := schedHealthCtx(t, "")
 		if _, ok := healthSchedules(ctx, true); ok {

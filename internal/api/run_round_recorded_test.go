@@ -13,6 +13,7 @@ import (
 // done, only once the visit journaled a findings round, empty for a clean
 // review; a round of an earlier visit does not count.
 func TestReviewVisitNeedsRound(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -78,6 +79,7 @@ func TestReviewVisitNeedsRound(t *testing.T) {
 // a question naming it that blocks nothing; an ID that is neither a node
 // nor a link is usage and writes nothing.
 func TestReviewFindingsNameLinks(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "links")
 	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
 	x := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`).Nodes[0]
@@ -201,6 +203,7 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 // finding; a clean round needs no critic, and run verdict still refuses an
 // empty list.
 func TestReviewCheckFindingsFlag(t *testing.T) {
+	t.Parallel()
 	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
@@ -248,6 +251,7 @@ func TestReviewCheckFindingsFlag(t *testing.T) {
 // 3 as a major finding, and a kind outside the seven is still refused with
 // an error listing them, journalling nothing.
 func TestRunFindingsPlanKinds(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "plankinds")
 	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
 	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`)
