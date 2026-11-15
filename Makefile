@@ -45,6 +45,22 @@ BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 # keys those results on the files' absolute paths and mtimes.
 TEST_FLAGS = -trimpath -timeout 20m
 
+# cmd/rhiza's scripts mostly wait on git and the rhiza children they start,
+# so go test's default -parallel (GOMAXPROCS) leaves cores idle: twice the
+# CPU count keeps them busy, capped at 8 so a big machine does not start
+# hundreds of rhiza children at once (memory, not CPU, is the limit there).
+# NPROC is the CPU count (getconf unless set). RHIZA_TEST_SCRIPT_PARALLEL
+# overrides the result when it is a positive integer; anything else (0, -2,
+# abc) falls back to the NPROC default. Only cmd/rhiza's go test gets it.
+NPROC ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+SCRIPT_PARALLEL := $(shell \
+	p='$(RHIZA_TEST_SCRIPT_PARALLEL)'; n='$(NPROC)'; \
+	case "$$p" in (''|*[!0-9]*) p=;; esac; \
+	if [ -n "$$p" ] && [ "$$p" -gt 0 ]; then echo "$$p"; exit 0; fi; \
+	case "$$n" in (''|*[!0-9]*) n=1;; esac; \
+	[ "$$n" -gt 0 ] || n=1; \
+	p=$$((n * 2)); [ "$$p" -le 8 ] || p=8; echo "$$p")
+
 # cmd/rhiza's scripts run in parallel and keep every core busy, so on one
 # machine only one worktree runs them at a time: concurrent `make test`s
 # (one per Rhiza run worktree) queue on this lock instead of thrashing. The
@@ -78,7 +94,7 @@ test: ## Run the test suite but the timing budgets (make test-budgets runs those
 	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' $$(go list ./... | grep -v '/cmd/rhiza$$') >$$rest 2>&1 9>&- & \
 	pid=$$!; \
 	lock "the cmd/rhiza scripts"; \
-	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
+	go test $(TEST_FLAGS) -parallel $(SCRIPT_PARALLEL) -skip '$(BUDGET_TESTS)' ./cmd/rhiza 9>&-; \
 	status=$$?; \
 	unlock; \
 	wait $$pid || status=1; \
@@ -123,7 +139,7 @@ test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skip
 	replay=$$(mktemp) && st=$$(mktemp) || exit 1; \
 	go build -trimpath -o "$$replay" ./tools/scripttimings || { rm -f "$$replay" "$$st"; exit 1; }; \
 	lock "the cmd/rhiza scripts"; \
-	{ RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -json -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; echo $$? >"$$st"; } \
+	{ RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -parallel $(SCRIPT_PARALLEL) -json -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; echo $$? >"$$st"; } \
 		| "$$replay" replay 9>&-; \
 	rstatus=$$?; unlock; \
 	status=$$(cat "$$st"); rm -f "$$replay" "$$st"; \
