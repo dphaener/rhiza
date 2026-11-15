@@ -1,0 +1,41 @@
+{
+  "actor": "01M7ETJP85AQMHRFJYD929S4FD",
+  "after": [
+    "01M7ETHS6QDGAWEC9S7VPBBVMC"
+  ],
+  "at": "2026-11-15T05:24:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent moves the timing budgets out of make test into make test-budgets, and leaf budgets-out-of-make-test requires TestMakeTestTimeout's expected commands to change (cmd/rhiza/makeupdate_test.go:81-90 asserts the budget -run line and the 'timing budgets' lock phase). The node's statement was already amended to say make test runs the suite but the budgets, so only the word 'unchanged' contradicts the intent, the leaf and the built code. The precedent in this plan is budgets-measure-in-quiet, whose acceptance was amended to point at the leaf; doing the same keeps the verified capability's acceptance true after the build without widening scope or dropping any existing check.",
+          "statement": "make-test-shard-targets' acceptance is amended in this change set, as budgets-measure-in-quiet's was: its last clause 'TestMakeTestTimeout still passes unchanged for make test' becomes 'TestMakeTestTimeout passes with its expected commands updated so make -n test shows the budget tests skipped and no Timing budgets phase (@{01M7EQDFY7GKPF549RAPQE285W})'; the rest of the acceptance (the per-target make -n checks, test-api's shard partition and test-budgets printing the timings) stays as is.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "shard-targets-acceptance-follows-budget-move",
+        "id": "01M7ETKP6TY9S36RMNR5C7TQ23",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7ETKP6TY9S36RMNR24HCTE2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ETKP6TY9S36RMNR24HCTE2",
+        "id": "01M7ETKP7M8QM4W5JGCBCJ9H33",
+        "link": "01M7ETKP7M8QM4W5JGC9WASYCK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ETG50SJ5FHK62K1ETXAZPK",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ETKP8CR3NQAAXJ1K4MD4K6",
+  "type": "ops",
+  "v": 1
+}
