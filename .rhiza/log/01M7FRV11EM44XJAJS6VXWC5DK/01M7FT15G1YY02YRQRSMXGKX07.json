@@ -1,0 +1,611 @@
+{
+  "actor": "01M7FRW7X73MMK7H084ZTB6SYB",
+  "after": [
+    "01M7FSVR9VS1N90F4TBM6ZSWN1"
+  ],
+  "at": "2026-11-15T14:33:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "strace of bugfix-workflow-autonomous: 3,210 sleep 0.025 children of the fake rex. rhiza run start calls rex block inspect when REX_BLOCK is set (runProcess); these fakes have no case for it, so it falls into the ready-file loop meant for a started agent and times out after 1,600 polls (about 59 s a run start), and runProcess then ignores the failure. The wait is in the fake, not on rhiza's clock, so the scaled clock could never reach it. Answering inspect also exercises the window-id path runProcess was written for.",
+          "statement": "The scripts' fake rex answers rex block inspect at once with a window id, and waits for an agent's ready file only after it has started a pane's command (a call carrying --); any other call it does not know exits at once. The scripts keep every assertion they make today.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fake-rex-answers-inspect",
+        "id": "01M7FT142VT43K432BXEXT1G9J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT142VT43K432BXE64EJXH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT142VT43K432BXE64EJXH",
+        "id": "01M7FT143EYN6EHN0WT3DKHG0M",
+        "link": "01M7FT143EYN6EHN0WT1KSVBTT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 -v ./cmd/rhiza -run 'TestScripts/^(bugfix-workflow-autonomous|plan-workflow-autonomous-left|plan-workflow-autonomous|plan-review-workflow)$' passes, each subtest under 15 s run alone on the VM (2026-11-15: 91, 64, 59 and 58 s), with each script's stdout, stderr and file assertions unchanged (git diff shows only the fake rex sections changed). Every other script edited for the same fall-through passes the same way, run by name. Check: grep -l 'never got ready' cmd/rhiza/testdata/script/*.txtar lists only scripts whose fake rex either answers block inspect or reaches its ready loop only past a -- argument. Touches cmd/rhiza/testdata/script/bugfix-workflow-autonomous.txtar, plan-workflow-autonomous-left.txtar, plan-workflow-autonomous.txtar, plan-review-workflow.txtar, and any other script with the same fall-through. Must not touch internal/ or the scaled clock.",
+          "statement": "No fake rex in cmd/rhiza's scripts waits for an agent's ready file on a call that starts no command: bugfix-workflow-autonomous, plan-workflow-autonomous-left, plan-workflow-autonomous and plan-review-workflow answer rex block inspect with a window id, and every other script whose fake rex has the ready-file loop runs it only after starting a pane's command, so those four scripts take seconds, not a minute per run start."
+        },
+        "handle": "fake-rex-no-dead-wait",
+        "id": "01M7FT144PPDNCMCPTJZWH5N1M",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7FT144PPDNCMCPTJZ31CP1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT144PPDNCMCPTJZ31CP1Z",
+        "id": "01M7FT1458CS8RJR7A9133BHRF",
+        "link": "01M7FT1458CS8RJR7A8ZSYH7B9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT142VT43K432BXE64EJXH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The file still holds the 1-second seed for all 398 scripts (decision script-timings-seed-then-ci left the CI refresh for later and nobody ran it), so #593's weighted shards weigh nothing: scripts 3/4 ran 112 s of tests to the others' 60-80 s. Run 43721082089 is the newest code run on main's tree with every script timed. Its four slow scripts' times go stale once their dead wait is gone, and a full local scripts run is not allowed on this VM, so only those four are re-timed, alone.",
+          "statement": "cmd/rhiza/testdata/script-timings.tsv is filled from CI run 43721082089's script-time lines (make script-timings RUN=43721082089), then the four scripts fake-rex-no-dead-wait fixed are timed again locally, one go test -json run of those four alone merged with make script-timings JSON=<file>",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "script-timings-from-ci-then-local",
+        "id": "01M7FT145REH8RPZ842WNR12R3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT145REH8RPZ842V223TZ2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT145REH8RPZ842V223TZ2",
+        "id": "01M7FT146ACB1T37JPRHSET084",
+        "link": "01M7FT146ACB1T37JPRHJ6CWZN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "make script-timings RUN=43721082089, then go test -trimpath -p 2 -count=1 -json ./cmd/rhiza -run 'TestScripts/^(bugfix-workflow-autonomous|plan-workflow-autonomous-left|plan-workflow-autonomous|plan-review-workflow)$' > $TMPDIR/four.json and make script-timings JSON=$TMPDIR/four.json, leave a file with one line per cmd/rhiza/testdata/script/*.txtar (wc -l equals the ls count), the four scripts at their local times (each under 15), and the other scripts at run 43721082089's times (run-ship-conflict-fix-more among the top ten). go test -trimpath -p 2 ./tools/scripttimings -run '^TestCheckedInFileParses$' and go test -trimpath -p 2 ./cmd/rhiza -run '^(TestScriptShard|TestScriptOrder)$' pass, TestScriptShard's check that each shard's total is within 15% of the mean holding over the new file. Measure (orchestrator, on the next code PR): gh run view <run> --json jobs shows the four scripts jobs within 30 s of each other (2026-11-15, run 43721082089: 84-156 s). Touches cmd/rhiza/testdata/script-timings.tsv only.",
+          "statement": "cmd/rhiza/testdata/script-timings.tsv holds measured seconds for every script instead of the 1-second seed, from CI run 43721082089's script-time lines and, for the four scripts fake-rex-no-dead-wait sped up, a local run of those four, so CI's four scripts shards split by real time."
+        },
+        "handle": "script-timings-measured",
+        "id": "01M7FT147E37B6A5KCR557HG25",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7FT147E37B6A5KCR328M971",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT147E37B6A5KCR328M971",
+        "id": "01M7FT1481HQRN50ZPQDEXNB5V",
+        "link": "01M7FT1481HQRN50ZPQA8R214G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT145REH8RPZ842V223TZ2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7FT147E37B6A5KCR328M971",
+        "id": "01M7FT148QSGJ612QTZ22RHVE1",
+        "link": "01M7FT148QSGJ612QTYZHQAVAX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT144PPDNCMCPTJZ31CP1Z",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "reasoning": "It took 81 s serially, the single longest internal/api test and the long pole of CI's api 1/2 shard, because one loop copies the linkEndpoints fixture for each of about 1,500 cases. A refused link writes nothing, so its cases can share a copy (if one is wrongly allowed the test fails anyway); per-type subtests spread the rest over the cores. No case is dropped, so no coverage is lost.",
+          "statement": "TestLinkEndpointKinds keeps its full matrix (every link type x every end x every end) but runs one parallel subtest per link type, each with one fixture copy shared by the links it expects refused and a fresh copy only for each link it expects allowed",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "link-matrix-parallel-subtests",
+        "id": "01M7FT149DPXVR1A9MMTQJFVSK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT149DPXVR1A9MMQVV9KRD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT149DPXVR1A9MMQVV9KRD",
+        "id": "01M7FT14A4K4DYCM10KQ3T3740",
+        "link": "01M7FT14A4K4DYCM10KKZTW6RB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 -v ./internal/api -run '^TestLinkEndpointKinds$' passes in under 15 s of wall time on the VM (2026-11-15: 81 s), and the test fails unless the number of cases it checked equals len(op.LinkTypes()) x len(check.Ends())^2. Failure case (a scratch mutation, not committed): flipping check.Allowed's answer for one pair makes the test fail naming that pair. Touches internal/api/write_test.go only.",
+          "statement": "TestLinkEndpointKinds checks every (link type, from end, to end) of op.LinkTypes() x check.Ends() x check.Ends() as before, in parallel subtests per link type that copy the fixture only for links they expect allowed, so it takes seconds instead of 81 s."
+        },
+        "handle": "link-endpoint-kinds-fast",
+        "id": "01M7FT14BJ76NCG2N3322YK1R4",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7FT14BJ76NCG2N32YX9190C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14BJ76NCG2N32YX9190C",
+        "id": "01M7FT14CJMRHZT5YGETC3NNH2",
+        "link": "01M7FT14CJMRHZT5YGESTVZQRN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT149DPXVR1A9MMQVV9KRD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "In run-ship-conflict-fix-more, 1,650 of 3,874 git children are git config --get, about 40 per settingsOf call (one per setting), plus four per autonomy read; bugfix-workflow-autonomous shows the same share (227 of 481). Scripts are CPU-bound once the dead waits are gone (13 s alone for 15 CPU-s) and cold make test needs CPU cut (1,089 CPU-s, a 272 s floor on 4 cores). A cache across calls would go stale: the daemon re-reads settings every poll and daemon set writes them while processes run.",
+          "statement": "settingsOf reads git config once per call (one git config -z --get-regexp of the rhiza keys, or --list) and looks each setting up in that snapshot, and the autonomy settings are read the same way; there is no cache across calls. A snapshot keeps git config --get's meaning: the last value of a key wins, section and key names match case-insensitively, a subsection case-sensitively.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "settings-one-config-read-per-call",
+        "id": "01M7FT14DKS9EMMANF3WX06XS7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14DKS9EMMANF3SYAC2YY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14DKS9EMMANF3SYAC2YY",
+        "id": "01M7FT14EBEC0VEN1FSGHATWEC",
+        "link": "01M7FT14EBEC0VEN1FSG68JH3B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new internal/api test (go test -trimpath -p 2 -count=1 ./internal/api -run '^TestSettingsOfOneGitRead$') with a Ctx whose Git counts its calls and a repo setting several rhiza keys (one written with mixed case such as rhiza.ship.prePushCheck, one set twice so the last value wins, a three-part key such as rhiza.project.watchdog.enabled, one bad value) shows settingsOf making exactly one git config call and returning the same rows, sources and usage error naming the bad key as git config --get did. go test -trimpath -p 2 ./internal/api -run 'Setting|WebToken|Autonomy|DaemonAutoUpdate|Health' and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/^(daemon-settings|daemon-settings-scope|daemon-load-settings|usage-settings|ship-deploy-settings|autonomy-accept-rule|stage-autonomy)$' pass. Measure: strace -f -e trace=execve on go test -run 'TestScripts/^run-ship-conflict-fix-more$' ./cmd/rhiza counts under 400 git config --get children (2026-11-15: 1,650). Touches internal/api/daemon_settings.go, internal/api/autonomy.go and their tests.",
+          "statement": "Reading the settings runs git config once per read instead of once per setting: settingsOf and the autonomy settings look every key up in one snapshot of git config with the same values, sources and validation errors as before."
+        },
+        "handle": "settings-one-git-read",
+        "id": "01M7FT14FW3CF1Z9Q4GZETS9V5",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7FT14FW3CF1Z9Q4GW8Q33Q4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14FW3CF1Z9Q4GW8Q33Q4",
+        "id": "01M7FT14GQR80693P2TB8GM1KD",
+        "link": "01M7FT14GQR80693P2TAHENS9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14DKS9EMMANF3SYAC2YY",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "757 of run-ship-conflict-fix-more's 3,874 git children are rev-parse --git-common-dir, about 2.6 per rhiza process (287), and 133 of bugfix-workflow-autonomous's 481. A checkout's common dir does not change during one process, so keeping it is safe; the --path-format=absolute variants in check.go and run_leaves.go answer for other directories and stay as they are.",
+          "statement": "A rhiza process asks git for a checkout's common dir (git rev-parse --git-common-dir) once and keeps the answer on its Ctx; cmd/rhiza's test-mode ID offset (countSessionFiles) and internal/api's gitCommonDir share it",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "common-dir-asked-once",
+        "id": "01M7FT14HETCZ40CS5HFX3TQ8J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14HETCZ40CS5HDTBR8KM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14HETCZ40CS5HDTBR8KM",
+        "id": "01M7FT14J6SSYNNQCB5MDBTM02",
+        "link": "01M7FT14J6SSYNNQCB5MASKTJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new test with a counting Git (go test -trimpath -p 2 -count=1 ./internal/api -run '^TestGitCommonDirOnce$') shows two gitCommonDir calls on one Ctx making one git call and returning the same absolute, cleaned path, from the main checkout and from a worktree; go test -trimpath -p 2 ./internal/api -run 'Session' and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/^(session-run|session-start|apply|run-amend)$' pass, IDs unchanged (the scripts' deterministic IDs still match). Measure: strace -f -e trace=execve on go test -run 'TestScripts/^run-ship-conflict-fix-more$' ./cmd/rhiza counts at most one rev-parse --git-common-dir per rhiza child (2026-11-15: 757 for 287). Touches internal/api/session.go, internal/api/api.go (Ctx), cmd/rhiza/ctx.go and their tests.",
+          "statement": "A rhiza process runs git rev-parse --git-common-dir at most once for its checkout: the test-mode ID offset and every gitCommonDir call reuse the first answer."
+        },
+        "handle": "common-dir-once",
+        "id": "01M7FT14KGB9BV6KWFB4BXW6YY",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7FT14KGB9BV6KWFB238MDPT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14KGB9BV6KWFB238MDPT",
+        "id": "01M7FT14M7MWZ180QH6FF23FNT",
+        "link": "01M7FT14M7MWZ180QH6ESA94MR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14HETCZ40CS5HDTBR8KM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "headless-run-agent-tabs failed on #593's first CI attempt: a verifier's Evidence commit was refused ('cannot lock ref HEAD: is at c8e252a but expected e351d72') because another session committed in the same run worktree between commitOnly's HEAD read and its update-ref. The swap is right to refuse a stale parent; rebuilding on the new HEAD keeps both commits. The brief asks for a reproduction by injected delay, not stress, and a fix; a hook in the window is that delay, deterministic.",
+          "statement": "commitOnly retries when its compare-and-swap of HEAD is refused because HEAD moved: it reads the new HEAD and builds the commit again on it, at most 5 times, then fails with git's error as today; any other failure fails at once. A package hook between reading HEAD and update-ref lets a test inject the racing commit.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "evidence-commit-retries-moved-head",
+        "id": "01M7FT14N1P6AH118XPWYJ0S65",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14N1P6AH118XPRZPAPQP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14N1P6AH118XPRZPAPQP",
+        "id": "01M7FT14NR4SS2X40GRWZ8ZKN6",
+        "link": "01M7FT14NR4SS2X40GRTMZHRPZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A new internal/api test (go test -trimpath -p 2 -count=1 ./internal/api -run '^TestCommitOnlyHeadMoved') injects a commit on HEAD through the hook between commitOnly's HEAD read and its update-ref: CommitEvidence succeeds, the Evidence commit's parent is the injected commit, both are on the branch, the injected commit's files are intact and the real index shows the Evidence paths committed; failure case: a hook that moves HEAD on every try fails after 5 tries with update-ref's error. go test -trimpath -p 2 ./internal/api -run 'CommitEvidence|CommitOnly|RunLeaves' passes, and go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/^headless-run-agent-tabs$' passes all three runs. Touches internal/api/run_leaves.go and its test.",
+          "statement": "A verifier's Evidence commit (commitOnly) survives another commit landing on the run worktree's HEAD while it builds: it rebuilds on the new HEAD and moves HEAD there, keeping both commits, instead of failing the verifier step."
+        },
+        "handle": "evidence-commit-survives-moved-head",
+        "id": "01M7FT14Q1YV5YWP0RNCC36TBY",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7FT14Q1YV5YWP0RN8R7A8XA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14Q1YV5YWP0RN8R7A8XA",
+        "id": "01M7FT14QVX9DG79F5X9F42H1D",
+        "link": "01M7FT14QVX9DG79F5X7PNKHA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14N1P6AH118XPRZPAPQP",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "Both measure time against a fixed limit and take the budget lock, like the five budgets #590 moved out of make test under fast-suite-proposal-approved, but the skip regex does not name them, so they run serially in make test and in CI's api shards (13.7 s and 9.6 s). They still run in CI's budgets job, so m38-nothing-lost holds (its exception for tests moved to opt-in benchmarks). The budgets job gains about 23 s, which the fresh CI build cache more than repays.",
+          "statement": "TestInboxGateQuestionsBudget and TestRootIdlePollBudget join the opt-in timing budgets (BUDGET_TESTS): make test, test-api and test-rest skip them and make test-budgets runs them",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "idle-and-gate-budgets-opt-in",
+        "id": "01M7FT14RK9GZJAT8R9R46Z9WF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14RK9GZJAT8R9QXZGQ9W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14RK9GZJAT8R9QXZGQ9W",
+        "id": "01M7FT14S924A50PAZGSJCDQ6Y",
+        "link": "01M7FT14S924A50PAZGQY4WKRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14RK9GZJAT8R9QXZGQ9W",
+        "id": "01M7FT14SZHK64G0S98JFMHACN",
+        "link": "01M7FT14SZHK64G0S98GPHCMJA",
+        "note": "Applies its opt-in budgets ruling to two budgets #590 missed",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "relates-to"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^(TestMakeTestShardTargets|TestMakeTestTimeout)$' passes with the regex it pins naming both tests; make -n test-budgets runs them and make -n test, make -n test-api SHARD=1/2 and make -n test-rest skip them; every test that takes budgetLock is named by BUDGET_TESTS (grep -rl 'budgetLock(t)' --include=*_test.go . | xargs grep -B40 'budgetLock(t)' | grep -o 'func Test[A-Za-z]*' lists no name the regex misses); go test -list '.*' ./internal/api | grep -c '^Test' is unchanged. Touches Makefile, cmd/rhiza/makeupdate_test.go, and tools/gate only if it copies the regex.",
+          "statement": "Every timing budget is opt-in: BUDGET_TESTS also names TestInboxGateQuestionsBudget and TestRootIdlePollBudget, so make test and CI's api and rest jobs skip them and make test-budgets runs them with the others."
+        },
+        "handle": "every-budget-opt-in",
+        "id": "01M7FT14V71K8ZJGQ2P524TEZ3",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M7FT14V71K8ZJGQ2P4NXF2FG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14V71K8ZJGQ2P4NXF2FG",
+        "id": "01M7FT14VXB2YTAXYF3T90WB3Q",
+        "link": "01M7FT14VXB2YTAXYF3R17D9TD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14RK9GZJAT8R9QXZGQ9W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "setup-go keys its cache on go.sum's hash, so it was saved once and never refreshed ('Cache hit occurred on the primary key ..., not saving cache'), and every job compiles the repo's packages again: the api 1/2 step is 149 s for 86 s of tests, budgets 125 s for 73 s, scripts 3/4 140 s for 112 s. A pull request can restore caches its base branch saved, and saving from main alone keeps the cache within the repo's quota. It adds no job to a pull request's run, which matters: run 43721082089 waited 3.5 min for a runner.",
+          "statement": "CI's Go build and module caches come from main: a workflow on push to main (and workflow_dispatch) builds every package's tests the way the jobs do (-trimpath, go test -run '^$' ./... and go vet ./...) and saves ~/.cache/go-build and ~/go/pkg/mod with actions/cache under a key naming the OS, Go version and commit; every Go job in ci.yml restores the newest such key by prefix and saves nothing, with setup-go's own cache off",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ci-build-cache-warmed-on-main",
+        "id": "01M7FT14WNNJAFJJWBMER90MFE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14WNNJAFJJWBMDKXXM0W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14WNNJAFJJWBMDKXXM0W",
+        "id": "01M7FT14XCYQXB5GK5J446NADF",
+        "link": "01M7FT14XCYQXB5GK5J2SWV7HP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 ./internal/ciworkflow passes, with tests pinning the new workflow (push to main and workflow_dispatch; one job that builds with -trimpath, go test -run '^$' ./... and go vet ./..., then saves ~/.cache/go-build and ~/go/pkg/mod with actions/cache under a key with runner.os, the Go version and github.sha) and pinning in ci.yml that setup-go's cache is off and every Go job (model, lint, scripts, api, rest, budgets) restores that cache by key prefix with restore-keys and saves none; the existing ciworkflow tests (jobs, matrices, check aggregation) still pass. The action versions match the ones ci.yml already uses where they overlap. Measure (orchestrator, after merge and one push to main): in the next code PR's CI run, gh run view <id> --log shows each Go job restoring a cache saved from main, and the api jobs' Run api step exceeds its go test time by under 20 s (2026-11-15: 63 s). Touches .github/workflows/ci.yml, .github/workflows/go-cache.yml (new) and internal/ciworkflow/ciworkflow_test.go.",
+          "statement": "CI's Go jobs start from a build cache of main's latest commit: a workflow on push to main builds every package's tests with -trimpath and saves the Go build and module caches under a key naming the OS, Go version and commit, and each Go job in ci.yml restores the newest such cache by prefix instead of setup-go's go.sum-keyed one, so the jobs compile only what a pull request changed."
+        },
+        "handle": "ci-fresh-build-cache",
+        "id": "01M7FT14YKGTQ47MDNF20R178Q",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M7FT14YKGTQ47MDNF0MCX1YB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT14YKGTQ47MDNF0MCX1YB",
+        "id": "01M7FT14ZC2ZWWTEBTT33N0FNT",
+        "link": "01M7FT14ZC2ZWWTEBTSZM66KX8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14WNNJAFJJWBMDKXXM0W",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The brief asks to rebalance the api CI shards. Round-robin by name put the 81 s TestLinkEndpointKinds and half the serial tests on one shard (149-165 s against 110-137 s); a timing file keeps the split even as tests are added. Reusing scripttimings and #593's greedy split keeps one mechanism. Two shards, not more, because each extra job raises the chance of waiting for a runner.",
+          "statement": "CI's internal/api shards split by recorded test time the way the scripts shards do: make test-api pipes go test -json through tools/scripttimings replay, which prints a test-time line per passing top-level test; make api-timings RUN=<id> or JSON=<file> merges them into a checked-in internal/api/testdata/test-timings.tsv (seeded from one local go test -json run of internal/api, budgets skipped); and test-api gives each top-level test, longest first, to the shard with the least total so far, a test missing from the file weighted at the median, ties to the lower shard. Still two shards.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "api-shards-weighted-like-scripts",
+        "id": "01M7FT150122VYYP8MBG6BEDEP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT150122VYYP8MBEW2QPFR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT150122VYYP8MBEW2QPFR",
+        "id": "01M7FT150W8JE2WWYWH8ESAGCH",
+        "link": "01M7FT150W8JE2WWYWH7DE0S1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 ./tools/scripttimings passes, with tests for the test-time lines (printed for top-level tests only, parsed back from a gh run log line and from go test -json) and for the api merge (a failed or unrun test keeps its time, a removed test is dropped). go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^TestMakeTestShardTargets$' pins that make test-api keeps go test's exit status through the pipe (fails on a failed test, a failed build or a killed go test) as test-scripts does. The checked-in file lists every top-level test go test -list '^Test' ./internal/api prints except the BUDGET_TESTS ones, from one go test -trimpath -p 2 -json ./internal/api -skip '<BUDGET_TESTS>' run. Touches Makefile, tools/scripttimings/*.go and tests, internal/api/testdata/test-timings.tsv (new) and cmd/rhiza/makeupdate_test.go.",
+          "statement": "Each CI api job's log carries its tests' times and a checked-in file holds them: make test-api pipes go test -json through tools/scripttimings replay, which prints go test's text for what did not pass and one test-time line per passing top-level test, and make api-timings RUN=<id> or JSON=<file> merges those times into internal/api/testdata/test-timings.tsv, seeded from a local go test -json run of internal/api."
+        },
+        "handle": "api-test-timings",
+        "id": "01M7FT1523ZQDRWQFA9GS6ESDQ",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M7FT1523ZQDRWQFA9F4JW9S3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT1523ZQDRWQFA9F4JW9S3",
+        "id": "01M7FT152XC1GVVYAC87AWQJYX",
+        "link": "01M7FT152XC1GVVYAC83KWV508",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT150122VYYP8MBEW2QPFR",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test on a fixture of timings (go test -trimpath -p 2 -count=1 ./tools/scripttimings or ./cmd/rhiza -run the new shard test) shows the shards disjoint and covering every listed test but the budgets, greedy longest first to the least-loaded shard, a missing test weighted at the median, ties to the lower shard; with the checked-in file the two shards' totals are within 15% of their mean. go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^TestMakeTestShardTargets$' passes, the union of make test-api's shards equal to go test -list minus BUDGET_TESTS; failure case: SHARD=0/2, 3/2 and 1/0 are still refused. Measure (orchestrator, on the next code PR): the two api jobs' Run api steps are within 20 s of each other and each under 120 s (2026-11-15, run 43721082089: 149 and 110 s). Touches Makefile, tools/scripttimings and cmd/rhiza/makeupdate_test.go. Must not change the CI matrix.",
+          "statement": "make test-api SHARD=i/n splits internal/api's top-level tests by recorded time instead of round-robin by name: each test, longest first by internal/api/testdata/test-timings.tsv (a missing one weighted at the median, for placement only), goes to the shard with the least total so far, ties to the lower shard, so CI's two api shards take about the same time."
+        },
+        "handle": "api-shards-weighted",
+        "id": "01M7FT1545Y1MNAM7FRGARER2J",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M7FT1545Y1MNAM7FRFQ2RZ1P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT1545Y1MNAM7FRFQ2RZ1P",
+        "id": "01M7FT1552FB4HT1KD7H74QP6F",
+        "link": "01M7FT1552FB4HT1KD7G0V4MGS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT150122VYYP8MBEW2QPFR",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7FT1545Y1MNAM7FRFQ2RZ1P",
+        "id": "01M7FT156299G467RVX5S5E97H",
+        "link": "01M7FT156299G467RVX5CWKWX0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT1523ZQDRWQFA9F4JW9S3",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "reasoning": "Run one test at a time (go test -p 1 -parallel 1 -count=1, budgets skipped) on the idle VM: index 16 s (17 CPU-s), gen 5 s, web 8 s, slice 6 s, against 77, 30, 25 and 30 s inside the 2026-11-15 cold make test. They wait for CPU that cmd/rhiza's scripts and internal/api hold; cutting those is what speeds them up.",
+          "statement": "internal/index, internal/gen, internal/web and internal/slice get no work here: their slower cold times in make test are contention, not cost",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "contention-packages-left-alone",
+        "id": "01M7FT156PZZB0BEHQTNCK84AP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT156PZZB0BEHQTHYEPS45",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT156PZZB0BEHQTHYEPS45",
+        "id": "01M7FT157FGZVED36S9ERPD5CR",
+        "link": "01M7FT157FGZVED36S9EADE5TT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Cold make test used 1,089 CPU-s at 258% of 4 cores (422 s), a 272 s floor at full use, so waits alone cannot reach 240 s. The leaves cut CPU and the long poles: about 1,550 of every 3,900 git children in a busy script (settings and common-dir reads), TestLinkEndpointKinds' 81 s, 23 s of serial budgets and the four scripts' dead waits (about 280 script-seconds and the 99 s tail). That should bring CPU near 850 CPU-s and wall near 220-240 s. CI: with no recompile (about 50 s a job) and balanced shards the longest job should be about 110-130 s, a run about 150 s. If the orchestrator's measurements after landing still miss, the numbers go to the owner then.",
+          "statement": "m38-cold and m38-ci stay as written; this change set's leaves are expected to meet them, so no question goes to the owner about the hardware",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "m38-targets-in-reach",
+        "id": "01M7FT15889DZJVS7YHN7PTS19",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT15889DZJVS7YHJJ5FN82",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT15889DZJVS7YHJJ5FN82",
+        "id": "01M7FT1594F9BXXT5ZFWR0ZS4W",
+        "link": "01M7FT1594F9BXXT5ZFW0933FE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "head": "ab67d485c75e4c7529f28513cf048ba13745de31",
+          "result": "0:51.21 wall, 123% CPU, exit 0",
+          "statement": "At ab67d485c (all five milestone-38 change sets merged), a warm make test on the 4-core VM took 51.2 s of wall time (31 user + 32 sys CPU-s), within m38-warm's 60 s (2026-11-15: 254 s before). Measured by the orchestrator: make test, then /usr/bin/time make test.",
+          "status": "verified"
+        },
+        "handle": "m38-warm-at-ab67d485",
+        "id": "01M7FT15A5MDSHQ5WGA2Z8CZBJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FT15A5MDSHQ5WGA091BJ13",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT15A5MDSHQ5WGA091BJ13",
+        "id": "01M7FT15B0AF710W2ZZ0ER38C4",
+        "link": "01M7FT15B0AF710W2ZYXN2XF3T",
+        "note": "Evidence that m38-warm is met at ab67d485c",
+        "op": "link.create",
+        "to": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7FT15A5MDSHQ5WGA091BJ13",
+        "id": "01M7FT15BXX34JA20RDB9QHNS6",
+        "link": "01M7FT15BXX34JA20RD8GFMHK5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "head": "ab67d485c75e4c7529f28513cf048ba13745de31",
+          "result": "tests 1,892 -> 1,931; scripts 395 -> 398",
+          "statement": "At ab67d485c, go test -list '.*' ./... lists 1,931 tests and cmd/rhiza/testdata/script holds 398 txtar files, against 1,892 and 395 at the base 88516d956: no drop, so m38-nothing-lost holds. Measured by the orchestrator with the done point's commands on both commits.",
+          "status": "verified"
+        },
+        "handle": "m38-nothing-lost-at-ab67d485",
+        "id": "01M7FT15CWQ0295EMP4NCNEF97",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FT15CWQ0295EMP4HZV6M0X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FT15CWQ0295EMP4HZV6M0X",
+        "id": "01M7FT15DWAJWNGDK0W90NTNA3",
+        "link": "01M7FT15DWAJWNGDK0W79B1TA4",
+        "note": "Evidence that m38-nothing-lost holds at ab67d485c",
+        "op": "link.create",
+        "to": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7FT15CWQ0295EMP4HZV6M0X",
+        "id": "01M7FT15F200FZX6PFRM3VYEZJ",
+        "link": "01M7FT15F200FZX6PFRK26HDX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7FT15G1YY02YRQRSMXGKX07",
+  "type": "ops",
+  "v": 1
+}

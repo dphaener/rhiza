@@ -1,0 +1,33 @@
+{
+  "actor": "01M7FRW7X73MMK7H084ZTB6SYB",
+  "after": [
+    "01M7FRV11EM44XJAJS6WRG9XVV"
+  ],
+  "at": "2026-11-15T14:30:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "72a8e9d0077a070d96f8c3b2dabdbfd8af85322fe43e2084dbc4d03bc398934a",
+          "session": "8439813b-6756-47a2-a27a-01a1df8dfe0c",
+          "summary": "Autonomous plan run (no owner; the orchestrator's brief m38-followup-brief.md and machine rules govern). After the five milestone-38 change sets merged, at ab67d485c: cold make test 422 s (target 240), warm 51 s (pass), median CI ~220 s over the 4 code runs since #588 (target 180), 1,931 tests / 398 txtar (pass, was 1,892 / 395). Research, one test or script at a time under the capped scope. (1) The four slow workflow scripts (bugfix-workflow-autonomous 91 s alone, plan-workflow-autonomous-left, plan-workflow-autonomous, plan-review-workflow) do not wait on the scaled clock: an strace of bugfix-workflow-autonomous shows 3,210 `sleep 0.025` children in its fake rex. rhiza run start now calls `rex block inspect` when REX_BLOCK is set (runProcess, internal/api/run.go), and these fakes have no case for it, so the call falls into the loop that waits for an agent's ready file, which never comes: about 59 s per run start, then exit 1, which runProcess ignores. (2) Every script is CPU-bound once that wait is gone: run-ship-conflict-fix-more takes 13 s alone (6.8 user + 8.1 sys) against 41.6 s in the suite, run-ship-change-rebase 9 s against 37.5 s. Of its 3,874 git children, 1,650 are `git config --get` (settingsOf in internal/api/daemon_settings.go runs one per setting, about 40 a call, plus rhiza.project.agent 133 times) and 757 are `rev-parse --git-common-dir` (about 2.6 per rhiza process: gitCommonDir in internal/api/session.go and countSessionFiles in cmd/rhiza/ctx.go). bugfix-workflow-autonomous shows the same share (227 and 133 of 481). (3) Cold make test used 1,089 CPU-s (663 user, 426 sys) at 258% of 4 cores, so the 240 s target needs CPU cut as well as waits: the floor at full use is 272 s. (4) internal/index (16 s), gen (5 s), web (8 s) and slice (6 s) take that long run one test at a time (-p 1 -parallel 1); their 77, 30, 25 and 30 s in make test are contention alone, so they need no work. (5) internal/api: TestLinkEndpointKinds alone was 81 s serially (a serial loop over op.LinkTypes() x check.Ends() x check.Ends(), copying a fixture for every case), the long pole of api shard 1/2 (149-165 s step, 86 s of tests). 109 top-level tests are serial (package globals, t.Setenv, CPU timing), about 110 s; TestInboxGateQuestionsBudget (13.7 s) and TestRootIdlePollBudget (9.6 s) are timing budgets (budgetLock) the make test skip regex does not name. api shards split round-robin by name. (6) Every CI job compiles the repo again: setup-go's cache key is the go.sum hash, so it was saved once and never refreshed (log: 'Cache hit occurred on the primary key ..., not saving cache'). The api 1/2 step is 149 s for 86 s of tests, budgets 125 s for 73 s, scripts 3/4 140 s for 112 s. (7) cmd/rhiza/testdata/script-timings.tsv holds the 1-second seed for every script, so the weighted shards from #593 are weighted by nothing; CI run 43721082089 printed real script-time lines (four shards of 254-288 script-seconds; scripts 3/4 was bugfix-workflow-autonomous's 88 s). (8) The headless-run-agent-tabs flake: commitOnly (internal/api/run_leaves.go) reads HEAD, builds the Evidence commit in a temporary index and moves HEAD with a compare-and-swap update-ref; a builder session committing in the same worktree in that window moves HEAD, the swap is refused ('cannot lock ref HEAD: is at c8e252a but expected e351d72'), and the verifier step fails. (9) One CI run (43721082089) waited 3.5 min for a runner for one job, so more CI jobs would risk queueing; the plan adds no job to a pull request's run.",
+          "title": "Finish the fast suite: autonomous plan research, 2026-11-15"
+        },
+        "handle": "fast-suite-finish-research",
+        "id": "01M7FSVQMEMWGE5Q61FTH662C6",
+        "key": null,
+        "kind": "source",
+        "node": "01M7FSVQMEMWGE5Q61FPVX591P",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7FSVQN1AK34J2EFM41JSSZZ",
+  "type": "ops",
+  "v": 1
+}

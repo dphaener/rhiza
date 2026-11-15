@@ -1,0 +1,41 @@
+{
+  "actor": "01M7FV9RVWHX41SA9NFKHNZ5PY",
+  "after": [
+    "01M7FV964399Q70TJQ5R98B36J"
+  ],
+  "at": "2026-11-15T14:56:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding holds: api-test-timings has no depends-on link, so a conductor may seed the file before link-endpoint-kinds-fast cuts TestLinkEndpointKinds from about 81 s to under 15 s and before every-budget-opt-in adds the two budget tests to BUDGET_TESTS. api-shards-weighted would then place tests by stale weights and miss its CI measure (api jobs within 20 s) by about 66 s, and nothing refreshes the file afterwards. The plan already settles the same staleness on the script side by ordering (script-timings-measured depends on fake-rex-no-dead-wait), and api-shards-weighted-like-scripts says the api side follows the scripts, so ordering is the consistent fix. It is also the cheapest: two depends-on links, no new leaf or CI refresh step, and the acceptance's seed command (-skip BUDGET_TESTS) stays as written.",
+          "statement": "api-test-timings is built after link-endpoint-kinds-fast and every-budget-opt-in: it depends on both, so its seed of internal/api/testdata/test-timings.tsv is taken from a go test -json run of internal/api with TestLinkEndpointKinds already fast and with TestInboxGateQuestionsBudget and TestRootIdlePollBudget already named in BUDGET_TESTS (and so skipped and left out of the file).",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "api-timings-seed-after-fast-and-opt-in",
+        "id": "01M7FVAQVZNGDMEP788HF7S9H0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FVAQVZNGDMEP788DRYGQBJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FVAQVZNGDMEP788DRYGQBJ",
+        "id": "01M7FVAQX3YXTC8MBK5BH8VHT8",
+        "link": "01M7FVAQX3YXTC8MBK5974G14C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FV95ZCQ3ZJ0EJD59XEQF33",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7FVAQYBX5JEM4197KGZKGZ1",
+  "type": "ops",
+  "v": 1
+}
