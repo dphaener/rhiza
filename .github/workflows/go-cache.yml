@@ -1,0 +1,53 @@
+name: Go cache
+
+# Warms CI's Go build and module caches from main. setup-go's own cache keys
+# on go.sum's hash, so it was saved once and never refreshed, and every CI job
+# compiled the repo's packages again. This workflow runs on each push to main
+# (and by hand), compiles every package's tests the way ci.yml's jobs do, and
+# saves the caches under a key naming the OS, the Go version and the commit.
+# ci.yml's Go jobs restore the newest such key by prefix and save nothing: a
+# pull request can restore caches its base branch saved, and saving from main
+# alone keeps the cache within the repo's quota.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: go-cache
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-26.04
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up Go
+      id: go
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # Restores the newest earlier cache by prefix, so only what main changed
+    # compiles again, and saves the result under this commit's key.
+    - name: Cache Go build and modules
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
+
+    - name: Build
+      run: go build -trimpath ./...
+
+    - name: Compile every package's tests
+      run: go test -trimpath -run '^$' ./...
+
+    - name: Vet
+      run: go vet ./...
