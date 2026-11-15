@@ -1,0 +1,40 @@
+{
+  "actor": "01M7E6N0XZFH703RABKN5TYKBT",
+  "after": [
+    "01M7E5H4Q76R7HSEFVTD3J9CTQ"
+  ],
+  "at": "2026-11-14T23:36:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at cf9023b7f: go test -trimpath -p 2 ./internal/api -run 'TestProjectAgent|TestSessionStart|TestSkillCheck|TestDaemonSet|TestWorkflowCheck' passed (TestProjectAgentStart covers unset/default, set, explicit --agent wins and a step's agent wins for session start and run start's agent steps; TestProjectAgentSkillCheck covers skill check unset/set/explicit; TestProjectAgentDaemonSet refuses 'nope' with a usage error listing adapter.Names() and writes nothing, then sets and lists the key; TestProjectAgentUnknown). go test -trimpath ./cmd/rhiza -run 'TestScripts/(project-agent|docs-reference-config|describe-golden|daemon-settings|skill-check)$' passed, project-agent.txtar new. A scratch build's rhiza docs left the tree clean (docs/reference/config.md and cli.md current), gofmt clean. Diff touches the named files plus session_test.go (the refusal test now allows the setting's git config read) and the rendered actor; the added Go code names no agent, using the adapter registry."
+        },
+        "handle": "project-agent-setting-verified",
+        "id": "01M7E6PSVHYXEEEP8EY3P7GH0R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7E6PSVHYXEEEP8EY37S02XC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E6PSVHYXEEEP8EY37S02XC",
+        "id": "01M7E6PSWJSE8A6FB0YCGNED0W",
+        "link": "01M7E6PSWJSE8A6FB0YC034RFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H49QWATQ109YQMJKD8EX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHHVJK2RMMC25KY63QW13",
+  "for": "01M7E57K1GBHTF6VK8N67DJN6P",
+  "id": "01M7E6PSXMWK6V8S9XN5BN9GWD",
+  "type": "ops",
+  "v": 1
+}

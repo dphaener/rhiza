@@ -149,5 +149,7 @@ If you build a workflow that runs without anyone at the keyboard, watch for an a
 
 ## Where next
 
+- [Workflow primitives](primitives.md) covers each piece a workflow is made of (agent, spawn, gate, push/pr, wait, merge, sign-off and hook) and how a red hands back to an agent step.
+- [Bring your own agent](bring-your-own-agent.md) puts your team's own skills in a workflow: one role in a fork of `ship-change-classic`, the conductor in a fork of `ship-change`, or a workflow of your own.
 - [Runs and the daemon](runs-and-daemon.md) covers requests, autonomy and schedules, which all take a workflow name.
 - [Working with coding agents](agents.md) covers the loop each agent step follows.

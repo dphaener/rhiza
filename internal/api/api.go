@@ -225,6 +225,11 @@ type Ctx struct {
 	Commit string
 	// Stdin is read by operations that accept "-" for a file.
 	Stdin io.Reader
+	// Terminal is where an operation asks a person a question whose answer
+	// it reads from Stdin, as init asks for the project's agent. The CLI
+	// sets it only when its standard input is a terminal; nil means no one
+	// can answer, so nothing asks and the default is taken.
+	Terminal io.Writer
 	// Out is the sink an operation that streams (feed --follow) writes its
 	// lines to as they happen; nil means no streaming. JSON asks such an
 	// operation for NDJSON instead of text lines.

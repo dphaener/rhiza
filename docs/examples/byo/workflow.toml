@@ -1,0 +1,67 @@
+# Bring your own agent, level 3: a workflow.
+#
+# The team's own steps, put together from the primitives: a hook that
+# starts the services, one agent step running the team's skill, a gate
+# of the team's own commands that hands a red back to that agent, the
+# owner's sign-off, the push, a CI wait, the merge and close-out, and a
+# cleanup hook that stops the services however the run ends.
+name = "myteam-flow"
+handback_cap = 3
+
+[env]
+TMPDIR = "{run_tmp}"
+CI = "true"
+
+[step.services]
+kind = "command"
+run = "docker compose up -d --wait"
+on.pass = "work"
+
+[step.work]
+kind = "agent"
+invoke = "/myteam:implement Change set {change} ({title}). Your brief is {brief} and the model around it is {slice}. Build it, land it with rhiza land and rhiza render, commit, then run rhiza session done."
+handback = "/myteam:implement The run handed change set {change} back: read {handback}, fix what it names, land and render again, then run rhiza session done."
+permission_mode = "acceptEdits"
+until = "true"
+until_when = "done"
+on.pass = "gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check", "make lint", "make test"]
+on.pass = "signoff"
+on.fail = "handback:work"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "handback:work"
+
+[step.push]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-ci"
+on.fail = "handback:work"
+
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled --no-rebase"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "merge"
+on.timeout = "handback:work"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "close-out"
+on.fail = "handback:work"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+
+[[cleanup]]
+name = "stop-services"
+run = "docker compose down"

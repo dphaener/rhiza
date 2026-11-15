@@ -41,7 +41,7 @@ func init() {
 type SkillCheckRequest struct {
 	Invoke         string `json:"invoke" arg:"0" desc:"The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as \"/my-builder Build {leaf}\""`
 	Role           string `json:"role,omitempty" desc:"The role the invoke plays: builder, verifier or check; default builder"`
-	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the built-in default adapter"`
+	Agent          string `json:"agent,omitempty" desc:"The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter"`
 	PermissionMode string `json:"permission_mode" desc:"The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused"`
 	Keep           bool   `json:"keep,omitempty" desc:"Keep the scratch repo instead of removing it, and name it in the report"`
 }
@@ -211,9 +211,9 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	args := []string{"run", "start", "--foreground", "--workflow", skillCheckWorkflow, "--permission-mode", r.PermissionMode}
-	if r.Agent != "" {
-		args = append(args, "--agent", r.Agent)
-	}
+	// The scratch repo has no project setting of its own, so it is told the
+	// adapter this project resolved.
+	args = append(args, "--agent", a.Name())
 	_, runErr := sc.rhiza(sc.repo, args...)
 	if r.Role == workflow.RoleVerifier {
 		// The fixture's builder is refused at its start, so the run fails

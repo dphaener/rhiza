@@ -196,6 +196,13 @@ The most runs this project has at once; unset means only the daemon's cap applie
 - Type: whole number
 - Default: unset
 
+### `rhiza.project.agent`
+
+The agent adapter this project's runs, sessions and skill checks launch when --agent is unset; an explicit --agent wins, and unset means the registered default adapter.
+
+- Type: agent adapter name
+- Default: unset
+
 ### `rhiza.eventCommand`
 
 A command run through sh -c for each event; unset means none.

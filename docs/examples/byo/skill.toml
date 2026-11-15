@@ -1,0 +1,107 @@
+# Bring your own agent, level 1: a skill.
+#
+# A fork of ship-change-classic (rhiza workflow new myteam-ship --from
+# ship-change-classic) whose builder is the team's own skill, /myteam:build,
+# checked first with rhiza skill check. The classic includes the build
+# workflow; here its leaves step is written out, so the builder table can
+# name the team's invoke. The verifier stays Rhiza's. The rest is the
+# classic's path cut short for the example: review, the PR, CI, the
+# owner's sign-off, land, a gate, the merge and close-out. A real fork
+# keeps the classic's gate, conflict and CI fix steps too.
+name = "myteam-ship"
+
+[step.build]
+kind = "leaves"
+on.pass = "render"
+
+[step.build.builder]
+invoke = "/myteam:build Build leaf {leaf} of change set {change}, attempt {attempt}. Your brief is {brief}."
+permission_mode = "acceptEdits"
+
+[step.build.verifier]
+invoke = "/rhiza-verifier Verify leaf {leaf} of change set {change} ({title}) at commit $RHIZA_COMMIT: follow rhiza guide verifier."
+
+[step.render]
+kind = "command"
+run = """
+rhiza ship generate &&
+rhiza render &&
+git add -A -- .rhiza/rendered .rhiza/log &&
+{ git diff --cached --quiet ||
+  git commit -q -m 'Render after the build' -m "Change: $RHIZA_CHANGE"; }
+"""
+on.pass = "build-check"
+
+[step.build-check]
+kind = "command"
+run = "rhiza run build-check"
+on.pass = "review"
+
+[step.review]
+kind = "workflow"
+workflow = "review"
+skip = ["signoff"]
+on.pass = "open-pr"
+
+[step.open-pr]
+kind = "command"
+run = "rhiza ship open-pr"
+max_visits = 5
+on.pass = "wait-pr"
+
+[step.wait-pr]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_interval = "2m"
+max_visits = 5
+on.pass = "pr-green"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 5
+on.pass = "signoff"
+
+[step.signoff]
+kind = "signoff"
+max_visits = 5
+on.pass = "land"
+on.changes = "review/review"
+
+[step.land]
+kind = "command"
+run = "rhiza ship land"
+on.pass = "wait-landed"
+
+[step.wait-landed]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza ship check", "rhiza check", "rhiza ship gate"]
+stall = "70m"
+on.pass = "merge"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship merge"
+on.pass = "main-ci"
+
+[step.main-ci]
+kind = "wait"
+until = "rhiza ship check --main"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"

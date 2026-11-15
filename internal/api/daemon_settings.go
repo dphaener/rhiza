@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/web"
@@ -53,6 +54,37 @@ type settingDef struct {
 	emptyOK bool
 }
 
+// ProjectAgentKey names the project setting that picks the agent adapter.
+const ProjectAgentKey = "rhiza.project.agent"
+
+// validateAgent accepts a name the adapter registry knows. The registry is
+// read at each check, since adapters register in their packages' init.
+func validateAgent(v string) error {
+	if _, ok := adapter.Lookup(v); ok {
+		return nil
+	}
+	return fmt.Errorf("is not a registered agent adapter: want one of %s", strings.Join(adapter.Names(), ", "))
+}
+
+// projectAgent is the project's rhiza.project.agent from git config, empty
+// when unset. A name the registry does not know is a usage error.
+func projectAgent(ctx *Ctx) (string, error) {
+	if ctx.Git == nil {
+		return "", nil
+	}
+	v, err := ctx.Git("config", "--get", ProjectAgentKey)
+	if err != nil {
+		return "", nil
+	}
+	if v = strings.TrimSpace(v); v == "" {
+		return "", nil
+	}
+	if err := validateAgent(v); err != nil {
+		return "", Usagef("git config %s is %q: %v", ProjectAgentKey, v, err).WithNext("rhiza daemon set " + ProjectAgentKey + " <agent>")
+	}
+	return v, nil
+}
+
 func validateChoice(opts ...string) func(string) error {
 	return func(v string) error {
 		for _, o := range opts {
@@ -76,6 +108,9 @@ var settingDefs = []settingDef{
 		}
 		return nil
 	}},
+	// The project's agent: the adapter run start, session start and skill
+	// check launch when --agent is unset.
+	{project: true, key: ProjectAgentKey, def: "", typ: "agent adapter name", desc: "The agent adapter this project's runs, sessions and skill checks launch when --agent is unset; an explicit --agent wins, and unset means the registered default adapter", validate: validateAgent},
 	// The hook commands run through sh -c, per project.
 	{project: true, key: "rhiza.eventCommand", def: "", typ: "shell command", desc: "A command run through sh -c for each event; unset means none", validate: validateCommand},
 	{project: true, key: "rhiza.notifyCommand", def: "", typ: "shell command", desc: "A command run through sh -c to notify the owner; unset means none", validate: validateCommand},
@@ -461,9 +496,9 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
-	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes"`
+	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes"`
 }
 
 // DaemonSetResponse is the setting written.

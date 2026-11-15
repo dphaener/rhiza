@@ -1,0 +1,61 @@
+# rhiza.project.agent names the agent adapter a project uses: daemon set
+# refuses a name the adapter registry does not know, listing the
+# registered ones; run start, session start and skill check read it when
+# --agent is unset, and an explicit --agent wins.
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec rhiza change new 'Agent setting' --title 'Agent setting' --json
+mkdir .rhiza/workflows
+cp $WORK/passes.toml .rhiza/workflows/passes.toml
+
+# init wrote the default adapter; unset it to see the unset setting.
+exec git config --get rhiza.project.agent
+stdout '^claude-code$'
+exec git config --unset rhiza.project.agent
+
+# Unset: listed with no value, the default adapter used.
+exec rhiza daemon settings
+stdout '^rhiza.project.agent = "" \(default, project\)$'
+exec rhiza run start --foreground --workflow passes --permission-mode manual --dry-run
+stdout '^Run \S+ would start$'
+
+# daemon set refuses an unknown adapter, naming the registered ones, and
+# writes nothing.
+! exec rhiza daemon set rhiza.project.agent nope
+stderr 'rhiza.project.agent: "nope" is not a registered agent adapter: want one of claude-code$'
+! exec git config --get rhiza.project.agent
+
+# A registered adapter is written to git config and listed.
+exec rhiza daemon set rhiza.project.agent claude-code
+stdout '^rhiza.project.agent = claude-code$'
+exec git config --get rhiza.project.agent
+stdout '^claude-code$'
+exec rhiza daemon settings
+stdout '^rhiza.project.agent = claude-code \(git config, project\)$'
+exec rhiza run start --foreground --workflow passes --permission-mode manual --dry-run
+stdout '^Run \S+ would start$'
+
+# A name written behind daemon set's back shows the commands read it:
+# each refuses it, naming the key, until --agent is given.
+exec git config rhiza.project.agent nope
+! exec rhiza run start --foreground --workflow passes --permission-mode manual --dry-run
+stderr 'git config rhiza.project.agent is "nope": is not a registered agent adapter: want one of claude-code$'
+! exec rhiza session start --permission-mode manual
+stderr 'git config rhiza.project.agent is "nope"'
+! exec rhiza skill check 'Build {leaf}' --permission-mode manual
+stderr 'git config rhiza.project.agent is "nope"'
+exec rhiza run start --foreground --workflow passes --permission-mode manual --agent claude-code --dry-run
+stdout '^Run \S+ would start$'
+
+-- passes.toml --
+name = "passes"
+
+[step.build]
+kind = "agent"
+prompt = "Build {change} in step {step} of run {run}"
+on.pass = "done"

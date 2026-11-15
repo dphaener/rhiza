@@ -1,0 +1,109 @@
+{
+  "actor": "01M7EA5T4ZPCA6MNVD83RTXGJK",
+  "after": [
+    "01M7E8T8JP4SRAGMFTAD91GHPV"
+  ],
+  "at": "2026-11-15T00:40:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh scratch build at e323b6cbe in a hermetic scratch repo: rhiza daemon set rhiza.project.agent bogus exits 2 listing 'want one of claude-code' and writes nothing; claude-code is written and daemon settings lists it (git config, project), unset lists it as \"\" (default, project). With the git config set to bogus behind daemon set's back, run start --dry-run (step build), session start and skill check each refuse naming the key; an explicit --agent claude-code gets past it (run start would start); set and unset both start. go test -p 2 -trimpath ./internal/api -run 'TestInit|TestProjectAgent|TestSession' and TestScripts/(project-agent|docs-reference-config|describe-golden) pass."
+        },
+        "handle": "project-agent-setting-qa-1",
+        "id": "01M7EAC1TG42NV1N7Z703YYFY6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EAC1TG42NV1N7Z6ZR3RA4H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EAC1TG42NV1N7Z6ZR3RA4H",
+        "id": "01M7EAC1VN880C1RX5QTPPW2B7",
+        "link": "01M7EAC1VN880C1RX5QT4Y3TRH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H49QWATQ109YQMJKD8EX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh scratch build: rhiza init --agent claude-code in a git repo writes rhiza.project.agent and says so; --agent bogus exits 2 with the registered names and creates no .rhiza; stdin /dev/null and --json take claude-code without asking and the response has agent and saved; outside git it writes no setting and prints the rhiza daemon set command. Through a pty (script): an empty line takes the default, bogus is refused and asked again, then claude-code is stored; on a pty with --json nothing is asked; re-init of an existing repo asks nothing and fails as a conflict (exit 3). TestScripts/(init|root-init|describe-golden) pass."
+        },
+        "handle": "init-asks-agent-qa-1",
+        "id": "01M7EAC1WP55RWVPES3K6G8N2N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EAC1WP55RWVPES3H2VR3AK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EAC1WP55RWVPES3H2VR3AK",
+        "id": "01M7EAC1XTQBP7Y0BVP8S83NVQ",
+        "link": "01M7EAC1XTQBP7Y0BVP5HHJW4A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H4BW9J22TDPF2EBN0XBA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: read docs/primitives.md; it has sections for agent, spawn, gate, push/pr, wait, merge, sign-off and hook, the handback section, all nine step kinds and links reference/workflow-file.md; README.md, docs/runs-and-daemon.md and docs/custom-workflows.md link it. The flags it names (run spawn --role/--leaf/--brief/--model/--check, ship check --settled/--no-rebase/--main, ship rebase --no-push) exist in the scratch build's help. TestDocsPrimitives and TestScripts/docs-commands-exist pass; make self-check passes in a clean detached worktree at HEAD."
+        },
+        "handle": "docs-primitives-qa-1",
+        "id": "01M7EAC1YY3X0TRXCC5GAV6QWS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EAC1YY3X0TRXCC5EKPTAA1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EAC1YY3X0TRXCC5EKPTAA1",
+        "id": "01M7EAC203399Z592P38XA65JV",
+        "link": "01M7EAC203399Z592P35TEWZ6B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H4GA0EHHSE7MZ91QF875",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh scratch build: rhiza workflow check passes on docs/examples/byo/skill.toml, conductor.toml and workflow.toml (exit 0, only not-installed skill warnings); a copy with a bad step kind fails (exit 1). Followed the page in a scratch project: workflow new myteam-ship --from ship-change-classic and myteam-conduct --from ship-change work, the forked conduct step matches the page's shape, skill.toml copied in checks by name, change workflow myteam-ship pins and an unknown name is refused. skill check help has --role, --keep, --agent and a required --permission-mode. The page is linked from README.md, docs/agents.md and docs/custom-workflows.md. TestDocsExampleWorkflows and TestDocsBringYourOwn pass; make self-check passes in a clean detached worktree."
+        },
+        "handle": "docs-bring-your-own-agent-qa-1",
+        "id": "01M7EAC21B394A39N2ADK56TFK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EAC21B394A39N2A9XD4RZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EAC21B394A39N2A9XD4RZ6",
+        "id": "01M7EAC23CJ143GJ9FDA0V2GC6",
+        "link": "01M7EAC23CJ143GJ9FD961CKRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H4JPW8SNCH4HE643V6DT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M79KHHVJK2RMMC25KY63QW13",
+  "for": "01M7E57K1GBHTF6VK8N67DJN6P",
+  "id": "01M7EAC24VKFB0RC21NNJQNYJE",
+  "type": "ops",
+  "v": 1
+}

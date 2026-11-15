@@ -83,6 +83,11 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Stderr:     os.Stderr,
 		Interrupts: interrupts,
 	}
+	// A person at a terminal can answer a question: it is asked on
+	// standard error, so standard output keeps the response alone.
+	if isTerminal(stdin) {
+		ctx.Terminal = os.Stderr
+	}
 	// Inside Rex, standard error is the terminal Rex shows: status
 	// reports written there become Rex's notifications.
 	if ctx.RexBlock != "" {
@@ -209,6 +214,21 @@ func rootFromEnv(v string) (string, error) {
 	}
 	return "", api.Usagef("%s is %s, which holds no %s folder", envRoot, abs, store.Dir).
 		WithNext("unset " + envRoot + ", or set it to the folder that holds " + store.Dir)
+}
+
+// isTerminal reports whether r is a terminal: a character device file
+// other than the null device, which reads as one and answers nothing.
+func isTerminal(r io.Reader) bool {
+	f, ok := r.(*os.File)
+	if !ok || f == nil {
+		return false
+	}
+	fi, err := f.Stat()
+	if err != nil || fi.Mode()&os.ModeCharDevice == 0 {
+		return false
+	}
+	null, err := os.Stat(os.DevNull)
+	return err != nil || !os.SameFile(fi, null)
 }
 
 // findRoot is api.FindRoot, falling back to dir when no ancestor holds

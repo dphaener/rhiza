@@ -1,13 +1,19 @@
 # init creates .rhiza with repo.json, an empty log (holding only a
 # .gitkeep, so git keeps the folder) and a .gitignore that keeps local/ (the
-# current change set) out of git.
+# current change set) out of git. With no terminal on stdin it asks
+# nothing: the project's agent is the default adapter, written to
+# rhiza.project.agent in git config.
 mkdir proj
 cd proj
 exec git init -q
+stdin $WORK/answer
 exec rhiza init
 stdout '^Initialised a Rhiza repository in .*proj \(repo [0-9A-Z]{26}\)\.$'
+stdout '^Agent: claude-code, written to rhiza.project.agent in git config\.$'
 stdout '^next: rhiza change new "<intent>"$'
 ! stderr .
+exec git config --get rhiza.project.agent
+stdout '^claude-code$'
 exists .rhiza/repo.json
 exists .rhiza/log
 exists .rhiza/log/.gitkeep
@@ -37,11 +43,39 @@ cd $WORK/fresh
 stdout '"code": "usage"'
 ! exists .rhiza
 
-# --json gives the repo ID and the absolute root.
-exec rhiza init --json
+# An unknown --agent is a usage error naming the registered adapters, and
+# creates nothing.
+! exec rhiza init --agent nope
+stderr '^rhiza: --agent "nope" is not a registered agent adapter: want one of claude-code$'
+stderr '^next: rhiza init --agent <agent>$'
+! exists .rhiza
+
+# --json gives the repo ID, the absolute root and the agent, here outside
+# a git repository: no setting is written.
+exec rhiza init --json --agent claude-code
 stdout '"repo": "[0-9A-Z]{26}"'
 stdout '"root": "/.*fresh"'
+stdout '"agent": "claude-code"'
+stdout '"saved": false'
 fold-ok
 
+# Outside a git repository the text says how to set the agent later.
+mkdir $WORK/nogit
+cd $WORK/nogit
+exec rhiza init
+stdout '^Agent: claude-code, not written: this is not a git repository\. Once it is one, run rhiza daemon set rhiza.project.agent claude-code\.$'
+
+# Inside one, --agent is written and --json says so.
+mkdir $WORK/flag
+cd $WORK/flag
+exec git init -q
+exec rhiza init --json --agent claude-code
+stdout '"agent": "claude-code"'
+stdout '"saved": true'
+exec git config --get rhiza.project.agent
+stdout '^claude-code$'
+
+-- answer --
+nope
 -- want.gitignore --
 local/

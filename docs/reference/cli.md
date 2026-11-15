@@ -523,8 +523,8 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
-- `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, or auto or owner, as the key takes (required)
+- `<key>`: The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
 Output (`--json` fields):
@@ -898,13 +898,19 @@ Exit code: set by the result, besides the shared codes.
 Create a Rhiza repository in the current folder.
 
 ```
-rhiza init
+rhiza init [--agent <agent>]
 ```
+
+Arguments and flags:
+
+- `--agent`: The agent adapter the project uses, stored in rhiza.project.agent; default the answer to a prompt on a terminal, else the registered default adapter
 
 Output (`--json` fields):
 
+- `agent` (string): The agent adapter the project uses
 - `repo` (string): The new repository's ID
 - `root` (string): The absolute path of the project root holding .rhiza
+- `saved` (boolean): Whether the agent was written to rhiza.project.agent: false outside a git repository
 
 ## rhiza land
 
@@ -1904,7 +1910,7 @@ Arguments and flags:
 - `<change>`: The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one
 - `--workflow`: The workflow: a .toml file (a path with a / or ending in .toml), else a name: your personal $XDG_CONFIG_HOME/rhiza/workflows/<name>.toml, else .rhiza/workflows/<name>.toml, else a built-in; default ship-change
 - `--permission-mode`: The permission mode of agent steps that set none; modes that bypass the agent's permission checks are refused
-- `--agent`: The agent adapter of agent steps that name none; default the built-in default adapter
+- `--agent`: The agent adapter of agent steps that name none; default the project's rhiza.project.agent, else the built-in default adapter
 - `--no-wait`: Stop at a wait step whose condition does not hold yet, instead of waiting; resume the run later
 - `--autonomous`: Run without the owner: skip the owner's gates and questions, recording each; never changes agent permissions. Resume keeps it
 - `--new`: With --workflow plan and no change set: open a draft change set with this one-line intent and start the plan run on it
@@ -2273,7 +2279,7 @@ Arguments and flags:
 
 - `<change>`: The change set: a full ID or a unique prefix of 4+ characters; default --change, else the current one
 - `--permission-mode`: The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused (required)
-- `--agent`: The agent adapter to launch; default the built-in default adapter
+- `--agent`: The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter
 - `--step`: The step the session works on, lower-case words joined by dashes; default build, which the tab title leaves out
 - `--run`: The run the launch belongs to, if any
 - `--prompt`: The agent's first prompt; default none
@@ -2617,7 +2623,7 @@ Arguments and flags:
 
 - `<invoke>`: The text the role's session starts with, as a workflow's invoke: a template over {change}, {leaf}, {attempt} and the other placeholders, such as "/my-builder Build {leaf}" (required)
 - `--role`: The role the invoke plays: builder, verifier or check; default builder
-- `--agent`: The agent adapter to launch; default the built-in default adapter
+- `--agent`: The agent adapter to launch; default the project's rhiza.project.agent, else the built-in default adapter
 - `--permission-mode`: The agent's permission mode, always explicit: one the agent accepts; modes that bypass its permission checks are refused (required)
 - `--keep`: Keep the scratch repo instead of removing it, and name it in the report
 

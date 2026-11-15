@@ -197,7 +197,7 @@ rhiza workflow check mine
 rhiza run start --workflow mine --permission-mode acceptEdits --dry-run
 ```
 
-`workflow new` writes `.rhiza/workflows/mine.toml`. `describe` shows it as a run would resolve it, and `check` reports every problem and the step it's in, and starts nothing. A name resolves to your personal `$XDG_CONFIG_HOME/rhiza/workflows/`, then the repo's `.rhiza/workflows/`, then a built-in. The step kinds and their keys are in `rhiza guide workflows`.
+`workflow new` writes `.rhiza/workflows/mine.toml`. `describe` shows it as a run would resolve it, and `check` reports every problem and the step it's in, and starts nothing. A name resolves to your personal `$XDG_CONFIG_HOME/rhiza/workflows/`, then the repo's `.rhiza/workflows/`, then a built-in. The step kinds and their keys are in `rhiza guide workflows`. [Workflow primitives](primitives.md) walks through what each piece does and how a red hands back.
 
 ## Where next
 

@@ -1,0 +1,214 @@
+{
+  "actor": "01M7E57K1GBHTF6VK8N67DJN6P",
+  "after": [
+    "01M7E5G2KD1SMKA3AF44VMEEZB"
+  ],
+  "at": "2026-11-14T23:15:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "Change set 01M79KHH (Bring-your-own docs) asks for a 'Bring your own agent' page with one worked example per level. What are the levels? (Today: conductor spawns follow `rhiza guide <role>` with no per-role invoke; invokes exist on agent steps and on leaves/checks role tables; rhiza skill check checks builder, verifier and check roles.)",
+          "reasoning": "Conductor spawns take no invoke (run spawn starts each child with 'follow rhiza guide <role>'), so a team's own role skill is reachable today only through a leaves or checks role table, which ship-change-classic has; the conduct step's prompt is the place a team's own conductor goes. A level built on a second agent adapter would describe code that does not exist (claude-code is the only adapter), so the agent in 'bring your own agent' is the team's own agent session and skill. Example files kept valid by a test follow docs/examples/workflows and TestDocsExampleWorkflows.",
+          "statement": "The Bring your own agent page has three levels, each with one worked example: a skill (a team's installed skill plays one role: rhiza skill check it, then put it in a role table's invoke in a workflow forked from ship-change-classic), a conductor (the team's own conduct skill on ship-change's conduct step, such as prompt = \"/myteam:conduct --prompt {brief}\", reading {brief}, {slice} and {handback} while the daemon's gate still checks the result) and a workflow (the team's own workflow built from the primitives). Each example is a TOML file under docs/examples/byo/ that a test keeps passing rhiza workflow check.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "byo-levels-skill-conductor-workflow",
+        "id": "01M7E5H41JVA4Q7FXBRZPF994G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7E5H41JVA4Q7FXBRXE8B9DM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H41JVA4Q7FXBRXE8B9DM",
+        "id": "01M7E5H42SXRWJMYCBE6G0CZPT",
+        "link": "01M7E5H42SXRWJMYCBE3JTF7SC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5G2JDD1FTGR5CCBAQK3XV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Change set 01M79KHH also says 'rhiza init asks which agent the project uses'. Today init is non-interactive, there is no project agent setting, and run start / session start / skill check take --agent with the built-in default adapter. How should init ask and what does the answer do?",
+          "reasoning": "Asking without storing the answer would change nothing a run does; a project setting in git config matches where the other project settings (rhiza.ship.*, rhiza.autonomy.*) live and is read the same way by run start, session start and skill check, which today fall back to adapter.Default(). Taking the default silently without a terminal keeps scripted inits and the testscripts working unchanged. Listing adapter.Names() keeps the agents-named-only-in-adapters constraint.",
+          "statement": "rhiza init takes --agent <adapter>; with no flag and a terminal on stdin it lists the registered adapters and asks, the default preselected (an empty answer takes it); with no terminal (scripts, --json) it takes the default without asking. The answer is stored in a new project setting rhiza.project.agent (git config), which run start, session start and skill check use when --agent is unset; an explicit --agent still wins. Adapter names come from the adapter registry, so nothing outside an adapter names an agent.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "init-asks-agent-setting",
+        "id": "01M7E5H441QVC30ZVTC6NC7MRW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7E5H441QVC30ZVTC4A5V573",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H441QVC30ZVTC4A5V573",
+        "id": "01M7E5H4614GPPQBTKNW5TGPHB",
+        "link": "01M7E5H4614GPPQBTKNTGKKR8J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5G2JDD1FTGR5CCBAQK3XV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Where does the hand-written primitives reference go? (docs/reference/ holds only files `rhiza docs` generates.)",
+          "reasoning": "docs/reference/ holds only files rhiza docs generates and rhiza check compares; the primitives page explains how step kinds and commands combine, which is prose rather than a key table, so it sits beside custom-workflows.md and links workflow-file.md for the keys instead of duplicating them.",
+          "statement": "The primitives reference is a hand-written docs/primitives.md: each primitive (agent, spawn, gate, push/pr, wait, merge, signoff, hook) with the step kind or command that is it, its outcomes and how a red hands back; it links the generated workflow-file reference for the keys and is linked from the README, runs-and-daemon.md and custom-workflows.md.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "primitives-doc-hand-written",
+        "id": "01M7E5H477ZR8V8PKZ09QTQ73D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7E5H477ZR8V8PKZ06CS0RWN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H477ZR8V8PKZ06CS0RWN",
+        "id": "01M7E5H48H1GDST299E9R111ZB",
+        "link": "01M7E5H48H1GDST299E6FF8VTM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5G2JDD1FTGR5CCBAQK3XV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestProjectAgent' covers the setting unset (the default adapter), set (run start's agent steps, session start and skill check take it), an explicit --agent overriding it, and daemon set refusing an unknown adapter name with the registered names in the message; go test -trimpath ./cmd/rhiza -run 'TestScripts/(project-agent|docs-reference-config|describe-golden)' passes, project-agent.txtar new, after rhiza docs regenerates docs/reference/config.md and describe-golden is -update'd if a request type changed. Touches internal/api/daemon_settings.go, internal/api/session.go, internal/api/run.go (run start's agent), internal/api/skill_check.go, docs/reference/config.md and cmd/rhiza/testdata/script/project-agent.txtar; names no agent outside internal/adapter.",
+          "statement": "A project setting rhiza.project.agent (git config, listed by rhiza daemon settings and in docs/reference/config.md) names the agent adapter the project uses; rhiza daemon set refuses a name the adapter registry does not know, listing the registered names; rhiza run start, rhiza session start and rhiza skill check use it when --agent is unset, an explicit --agent still wins, and unset keeps the registered default adapter."
+        },
+        "handle": "project-agent-setting",
+        "id": "01M7E5H49QWATQ109YQRHFGAKJ",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7E5H49QWATQ109YQMJKD8EX",
+        "op": "node.create",
+        "parent": "01M5SWT6SV13QH6EDSH7HDJFCB"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H49QWATQ109YQMJKD8EX",
+        "id": "01M7E5H4ARJJQZYRY2W8TZ6X1Q",
+        "link": "01M7E5H4ARJJQZYRY2W7B54K8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H441QVC30ZVTC4A5V573",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestInit' covers --agent writing rhiza.project.agent, an unknown --agent refused with the registered names and no .rhiza created, the prompt driven through a fake terminal (default on an empty line, a re-ask on an unknown name, a chosen name stored) and no prompt when stdin is not a terminal; go test -trimpath ./cmd/rhiza -run 'TestScripts/(init|root-init|describe-golden)' passes, init.txtar extended for --agent, the non-terminal default and the no-git case, describe-golden -update'd. Touches internal/api/init.go, internal/api/init_test.go, cmd/rhiza (only if the terminal check must live in the CLI frame), cmd/rhiza/testdata/script/init.txtar, describe-golden.txtar and docs/reference/cli.md (rhiza docs); names no agent outside internal/adapter.",
+          "statement": "rhiza init asks which agent the project uses: --agent <adapter> answers it (an unknown name is a usage error listing the registered adapters, and nothing is created); with no flag, not --json, and a terminal on stdin it prints the registered adapters with the default marked and reads one line (empty takes the default, an unknown name asks again); with no terminal it takes the default without asking; inside a git repository it writes the answer to rhiza.project.agent, outside one it writes no setting and says how to set it later with rhiza daemon set; its output and --json response name the agent."
+        },
+        "handle": "init-asks-agent",
+        "id": "01M7E5H4BW9J22TDPF2F8X6C8X",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M7E5H4BW9J22TDPF2EBN0XBA",
+        "op": "node.create",
+        "parent": "01M5SWS4PZCV2JGC4689HAND12"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4BW9J22TDPF2EBN0XBA",
+        "id": "01M7E5H4D7VFRGVF4RM9FZZ6CB",
+        "link": "01M7E5H4D7VFRGVF4RM6AAYHY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H441QVC30ZVTC4A5V573",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4BW9J22TDPF2EBN0XBA",
+        "id": "01M7E5H4EPTCJCX5SRPKYWKV8P",
+        "link": "01M7E5H4EPTCJCX5SRPGVWH7Y3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H49QWATQ109YQMJKD8EX",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in cmd/rhiza (docs_primitives_test.go, new) fails unless docs/primitives.md has a section for each of the eight primitives and names every step kind workflow.Kinds (or the step-kind list rhiza docs renders) reports; go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestScripts/(docs-commands-exist|docs-links)' passes; make self-check passes (rhiza check finds every rhiza command the page names and every link resolves). Touches docs/primitives.md (new), README.md, docs/runs-and-daemon.md, docs/custom-workflows.md and cmd/rhiza/docs_primitives_test.go.",
+          "statement": "docs/primitives.md is the primitives reference in the docs' plain style: for each of agent, spawn, gate, push/pr, wait, merge, signoff and hook it says what it does, the step kind or rhiza command that is it (agent step, rhiza run spawn, gate step, rhiza ship open-pr, wait step, rhiza ship merge, signoff step, command step and [[cleanup]]), its outcomes and how a red result hands back to an agent step (handback:<step>, handback_cap); it links docs/reference/workflow-file.md for the keys, and the README, docs/runs-and-daemon.md and docs/custom-workflows.md link it."
+        },
+        "handle": "docs-primitives",
+        "id": "01M7E5H4GA0EHHSE7MZ9778912",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M7E5H4GA0EHHSE7MZ91QF875",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4GA0EHHSE7MZ91QF875",
+        "id": "01M7E5H4HJAKJB4JB3DYE1JCFG",
+        "link": "01M7E5H4HJAKJB4JB3DWT4E8K1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H477ZR8V8PKZ06CS0RWN",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "TestDocsExampleWorkflows (cmd/rhiza/docs_examples_test.go), extended to docs/examples/byo/*.toml, fails unless all three examples (skill.toml, conductor.toml, workflow.toml) pass rhiza workflow check; a test fails unless docs/bring-your-own-agent.md includes or links each example file; go test -trimpath ./cmd/rhiza -run 'TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/docs-commands-exist' passes; make self-check passes. Touches docs/bring-your-own-agent.md (new), docs/examples/byo/ (new), README.md, docs/agents.md, docs/custom-workflows.md and cmd/rhiza/docs_examples_test.go.",
+          "statement": "docs/bring-your-own-agent.md, in the docs' plain style, shows a team bringing its own agent at three levels with one worked example each: a skill (rhiza skill check on the team's invoke, then that invoke in a role table of a workflow forked from ship-change-classic), a conductor (the team's conduct skill as ship-change's conduct prompt, reading {brief}, {slice} and {handback}, with the gate's checks it must still pass) and a workflow (the team's own steps from the primitives); it covers rhiza init --agent and rhiza.project.agent, links docs/primitives.md, and is linked from the README, docs/agents.md and docs/custom-workflows.md; each example is a file under docs/examples/byo/."
+        },
+        "handle": "docs-bring-your-own-agent",
+        "id": "01M7E5H4JPW8SNCH4HE6NJX1S6",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7E5H4JPW8SNCH4HE643V6DT",
+        "op": "node.create",
+        "parent": "01M6W5BPB34NRRKBCVME8KTGWM"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4JPW8SNCH4HE643V6DT",
+        "id": "01M7E5H4KR5QBBV82WX3SWMAZS",
+        "link": "01M7E5H4KR5QBBV82WX1TMRBNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H41JVA4Q7FXBRXE8B9DM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4JPW8SNCH4HE643V6DT",
+        "id": "01M7E5H4MS83P32SNMFAGDHPY9",
+        "link": "01M7E5H4MS83P32SNMF7NA6VTZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H4BW9J22TDPF2EBN0XBA",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7E5H4JPW8SNCH4HE643V6DT",
+        "id": "01M7E5H4NR45NSYKVDDHH9JG72",
+        "link": "01M7E5H4NR45NSYKVDDFQXBR5R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7E5H4GA0EHHSE7MZ91QF875",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M79KHHVJK2RMMC25KY63QW13",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7E5H4Q76R7HSEFVTD3J9CTQ",
+  "type": "ops",
+  "v": 1
+}

@@ -126,8 +126,11 @@ func TestSessionStartRefusals(t *testing.T) {
 			if c.exit == 2 && AsError(err).Next != "rhiza describe session.start" {
 				t.Errorf("next = %q", AsError(err).Next)
 			}
-			if len(f.rex.calls) != 0 || len(f.git.calls) != 0 {
-				t.Errorf("a refused launch ran rex %v or git %v", f.rex.calls, f.git.calls)
+			// Reading the project's agent setting is the one git call a
+			// refusal may make.
+			git := slices.DeleteFunc(slices.Clone(f.git.calls), func(c string) bool { return c == "config --get "+ProjectAgentKey })
+			if len(f.rex.calls) != 0 || len(git) != 0 {
+				t.Errorf("a refused launch ran rex %v or git %v", f.rex.calls, git)
 			}
 		})
 	}
