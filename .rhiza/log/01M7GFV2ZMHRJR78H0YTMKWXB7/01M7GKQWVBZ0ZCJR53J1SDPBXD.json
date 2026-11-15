@@ -1,0 +1,40 @@
+{
+  "actor": "01M7GKE71HGJAK727J81BAWSD7",
+  "after": [
+    "01M7GJA0T2EJSPHZQA08QTX19H"
+  ],
+  "at": "2026-11-15T22:02:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at c63ce1320, re-ran every Checks: command with exit 0: TestPropertyProjectionParity -v passed 100 draws in 6.6 s and logged two landed heads 47, rebuilds 76, pending 41, views 3926 plus each known case's count; TestParityReportNamesNode passed; -rapid.checks=3000 passed (162 s); internal/index TestPropertyIncremental -v passed (lands 141, accepts 167, rebuilds 128) and ./internal/index/... passed; go vet ./internal/api ./internal/index/... clean; rhiza ship generate and rhiza render left the tree clean. Read the diff: the test fails as vacuous (t.Errorf) when any of two landed heads, rebuilds or pending is zero; no draw is skipped (no Skip, the pending phase only returns early); a disagreement Fatalf prints view, node or link, field and both sides' values plus the drawn log, which rapid shrinks; TestParityReportNamesNode asserts the view, node, field and both values; every knownCases entry names its log shape; the generator and steps live in internal/index/indextest, used by both internal/index/property_test.go and internal/api/parity_test.go, which are its only importers (both tests), and indextest does not import internal/index; the only non-test Go code added is indextest; no stubs or TODOs."
+        },
+        "handle": "projection-parity-property-verified",
+        "id": "01M7GKQWSM12P391CFPS3BHJD3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GKQWSM12P391CFPQHEWF7J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GKQWSM12P391CFPQHEWF7J",
+        "id": "01M7GKQWTF2AAV31DCN5FBEB1M",
+        "link": "01M7GKQWTF2AAV31DCN3GA0G95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GKQWVBZ0ZCJR53J1SDPBXD",
+  "type": "ops",
+  "v": 1
+}
