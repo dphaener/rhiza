@@ -238,10 +238,13 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 			log("driver poll " + label + " " + why)
 		}
 	}
-	// Warm the answers and let the racy window pass, so the index holds
-	// its stat fingerprint. Each poll judges a verifier's Evidence too.
+	// Warm the answers and backdate the log past the racy window, so the
+	// index holds its stat fingerprint; the second poll waits out the
+	// debounce too, so it catches up and stores the fingerprint itself.
+	// Each poll judges a verifier's Evidence too.
 	f.poll(t, "driver-leaf-a")
-	time.Sleep(2200 * time.Millisecond)
+	backdateLog(t, g.root)
+	time.Sleep(2 * pollDebounce)
 	f.poll(t, "driver-leaf-a")
 	// An idle driver polls the leaves, answers and session status and
 	// judges no Evidence: a leaf's Evidence is read only once a verifier
@@ -267,15 +270,16 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 		// The catch-up of an entry lists the whole log, as any reader
 		// opening the index does (the index's own cost, timed by its
 		// budget): another reader does it here. Until the folder's
-		// change is two seconds old (the racy window) every open lists
-		// the log again, so a second open after that stores the stats.
+		// modification time is two seconds old (the racy window;
+		// backdateLog sets it back) every open lists the log again, so a
+		// second open after that stores the stats.
 		for range 2 {
 			x, err := index.Open(g.root, g.indexPath)
 			if err != nil {
 				t.Fatal(err)
 			}
 			x.Close()
-			time.Sleep(2200 * time.Millisecond)
+			backdateLog(t, g.root)
 		}
 	})
 	if *f.reads != 0 {
