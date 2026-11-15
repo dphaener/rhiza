@@ -66,6 +66,12 @@ Projection milestone and closing milestone 38, with the owner
 - derived-from [m38-ci-at-a98fd40](../evidence/m38-ci-at-a98fd40.md)
 - derived-from [m38-closed-cold-interim](../decision/m38-closed-cold-interim.md)
 - derived-from [m38-ci-target-carried](../decision/m38-ci-target-carried.md)
+- derived-from [projection-scope-approved](../decision/projection-scope-approved.md)
+- derived-from [strict-engine-is-spec](../decision/strict-engine-is-spec.md)
+- derived-from [projection-planned-autonomously](../decision/projection-planned-autonomously.md)
+- derived-from [projection-targets](../decision/projection-targets.md)
+- derived-from [projection-build-order](../decision/projection-build-order.md)
+- derived-from [projection-no-index-fallback](../decision/projection-no-index-fallback.md)
 
 ## History
 

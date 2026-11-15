@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T20:54:20Z",
+  "body": {
+    "intent": "The interim model is deleted: writes take their model and base versions from the projection under the strict rules, api/model.go's newModel, newModelSets and their apply rules, Ctx.readLog and every IndexPath branch go, and a worktree with no usable index cache reads through a throwaway index, so there is one read path and one set of model rules. Evidence: about a dozen ops branch on IndexPath (write.go:189, read.go:180/197/222, inbox.go:602, ship.go:359, run_model_cache.go:88, repair.go:161) and three clear it (daemon_projects.go:46, question.go:182, web_actions.go:108).",
+    "kind": "intention",
+    "sources": [
+      "01M7GFKXXSA2X33A59YM6YTRYY"
+    ],
+    "title": "One read path"
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFTKCAK0GY3PPDRWK1YR76",
+  "type": "open",
+  "v": 2
+}

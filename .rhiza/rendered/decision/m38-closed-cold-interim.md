@@ -28,6 +28,7 @@ Milestone 38 closes with its cold make test at 423 s as an interim result: @m38-
 
 - decided-by [milestone-38](../intent/milestone-38.md)
 - decided-by [m38-cold](../intent/milestone-38/m38-cold.md)
+- decided-by [m39-cold](../intent/milestone-39/m39-cold.md)
 
 ## History
 

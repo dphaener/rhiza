@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T20:54:15Z",
+  "body": {
+    "intent": "Every read goes through one projection interface behind workspace, whose only implementation is the index with dry-run pending entries laid over it: status and its hook, the inbox, render, change ls and the daemon fold stop folding the whole log, and workspace reads the log at most once per call. Evidence: status.go:123, render.go:99, change.go:669, inbox.go:619 and daemon_fold.go:197 call changeset.FoldLog; inboxGateRead clears IndexPath; workspace.log() rereads the disk on every call; status 2.0 s and inbox 2.3 s on this repo.",
+    "kind": "intention",
+    "sources": [
+      "01M7GFKXXSA2X33A59YM6YTRYY"
+    ],
+    "title": "Reads from the projection"
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFTDY50TAHVDP68A7T3774",
+  "type": "open",
+  "v": 2
+}

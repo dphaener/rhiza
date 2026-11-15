@@ -24,6 +24,7 @@ The CI median target (3 minutes over the last 10 PR runs) moves into milestone 3
 
 - decided-by [milestone-38](../intent/milestone-38.md)
 - decided-by [m38-ci](../intent/milestone-38/m38-ci.md)
+- decided-by [m39-ci](../intent/milestone-39/m39-ci.md)
 
 ## History
 

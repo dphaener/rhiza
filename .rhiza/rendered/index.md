@@ -1081,6 +1081,14 @@
   - [m38-warm](intent/milestone-38/m38-warm.md)
   - [m38-ci](intent/milestone-38/m38-ci.md)
   - [m38-nothing-lost](intent/milestone-38/m38-nothing-lost.md)
+- [milestone-39](intent/milestone-39.md)
+  - [m39-cold](intent/milestone-39/m39-cold.md)
+  - [m39-ci](intent/milestone-39/m39-ci.md)
+  - [m39-reads-fast](intent/milestone-39/m39-reads-fast.md)
+  - [m39-check-fast](intent/milestone-39/m39-check-fast.md)
+  - [m39-parity](intent/milestone-39/m39-parity.md)
+  - [m39-one-read-path](intent/milestone-39/m39-one-read-path.md)
+  - [m39-nothing-lost](intent/milestone-39/m39-nothing-lost.md)
 
 ## Constraints
 
@@ -1780,6 +1788,11 @@
 - [primitives-doc-hand-written](decision/primitives-doc-hand-written.md)
 - [printout-reads-transcript-when-unjournaled](decision/printout-reads-transcript-when-unjournaled.md)
 - [private-github-repo](decision/private-github-repo.md)
+- [projection-build-order](decision/projection-build-order.md)
+- [projection-no-index-fallback](decision/projection-no-index-fallback.md)
+- [projection-planned-autonomously](decision/projection-planned-autonomously.md)
+- [projection-scope-approved](decision/projection-scope-approved.md)
+- [projection-targets](decision/projection-targets.md)
 - [propose-intent-only](decision/propose-intent-only.md)
 - [qa-exemption-in-intent](decision/qa-exemption-in-intent.md)
 - [question-node-shape](decision/question-node-shape.md)
@@ -1971,6 +1984,7 @@
 - [stdin-guides-ruling](decision/stdin-guides-ruling.md)
 - [step-output-tail-cap](decision/step-output-tail-cap.md)
 - [step-path-any-depth](decision/step-path-any-depth.md)
+- [strict-engine-is-spec](decision/strict-engine-is-spec.md)
 - [structured-messages-journaled](decision/structured-messages-journaled.md)
 - [supervised-on-the-mac](decision/supervised-on-the-mac.md)
 - [supervision-is-a-capability](decision/supervision-is-a-capability.md)
@@ -11638,6 +11652,8 @@
 - [note-01m78hd4w8mbj2](note/note-01m78hd4w8mbj2.md)
 - [note-01m78s7bvr15xf](note/note-01m78s7bvr15xf.md)
 - [note-01m7ewms48pkfg](note/note-01m7ewms48pkfg.md)
+- [note-01m7gfvw1dnvz0](note/note-01m7gfvw1dnvz0.md)
+- [note-01m7gfvwtz3mcd](note/note-01m7gfvwtz3mcd.md)
 - [note-scheduled-triggers-file](note/note-scheduled-triggers-file.md)
 
 ## Retired

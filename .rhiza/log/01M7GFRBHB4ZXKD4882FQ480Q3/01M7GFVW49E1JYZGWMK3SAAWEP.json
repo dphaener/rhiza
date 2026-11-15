@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFVME7XE28H058SEW72473"
+  ],
+  "at": "2026-11-15T20:55:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Parked for after milestone 39 (owner: \"Yes\" to these coming later): move the application code out of internal/api. The daemon (daemon*.go, 6.4k lines; runDaemon 366 lines at daemon.go:94, daemonPoll1 267 at :1005), the run engine (run*.go, 10.6k), shipping (ship*.go, 5.1k) and the web handlers (web_*.go, which make internal/api import internal/web and tui/launcher) go into domain packages that depend on the projection interface this milestone defines, so api is the transport-independent registry again. It waits for that interface. Survey: ~/orchestrator/architecture-survey-2026-11-15.md, sections 1 and 4."
+        },
+        "handle": "note-01m7gfvw1dnvz0",
+        "id": "01M7GFVW1DNVZ003XNJF7J4FET",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GFVW1DNVZ003XNJCDK57VS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFVW1DNVZ003XNJCDK57VS",
+        "id": "01M7GFVW2NK7JNFGTRHPK62RM1",
+        "link": "01M7GFVW2NK7JNFGTRHP73TTM4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT007N7A6EPR12Z16GECM",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFRBHB4ZXKD4882FQ480Q3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFVW49E1JYZGWMK3SAAWEP",
+  "type": "ops",
+  "v": 1
+}
