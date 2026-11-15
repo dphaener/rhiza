@@ -64,9 +64,10 @@ reason. Other notes are ignored; `tools/release marks` prints what it reads.
 
 ```bash
 make            # build ./rhiza in the repo root
-make check      # everything CI runs (fmt-check + vet + test + self-check)
+make check      # what CI runs but make test-budgets (fmt-check + vet + test + self-check)
 make self-check # rhiza check on this repo, with this commit's build
-make test       # go test ./...
+make test       # go test ./..., the timing budgets skipped
+make test-budgets # the timing budgets alone (opt-in; CI's budgets job runs it)
 make fmt        # gofmt every Go file in place
 make install    # build into ~/bin (PREFIX=... to override)
 make update     # make install, then rewrite the Rex script and reload Rex
@@ -108,10 +109,11 @@ change done.
 Outside a run, run the full suite through `make test` (or `make check`), not a bare
 `go test ./...`: it builds with `-trimpath`, so packages another worktree
 already tested at the same code are cache hits, and it runs cmd/rhiza's
-scripts (and the timing budgets) under a machine-wide lock (`flock`,
-Linux), so parallel runs' suites queue for the CPU-heavy part instead of
-thrashing. "Waiting for another make test" means yours is queued. Scope
-ad-hoc runs to the package you changed.
+scripts under a machine-wide lock (`flock`, Linux), so parallel runs'
+suites queue for the CPU-heavy part instead of thrashing. "Waiting for another make test" means yours is queued. Scope
+ad-hoc runs to the package you changed. `make test` skips the timing
+budgets: they run only in the opt-in `make test-budgets` (alone, under the
+same lock), which CI's budgets job runs on every pull request.
 
 This repo's pre-push check setting is `rhiza.ship.prePushCheck`
 (`git config rhiza.ship.prePushCheck 'make self-check'`, or
