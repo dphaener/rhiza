@@ -1,0 +1,30 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GG0GGAYH8V14NYX5ZE8C6G"
+  ],
+  "at": "2026-11-15T20:57:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|Run|SelfPath|TUI)' passes, with a new test (TestRunConcurrentDirs) that calls run() from two goroutines on two scratch repos with different working directories and environments and shows each answers for its own repo; go test -race -trimpath -count=1 ./cmd/rhiza -run '^TestRunConcurrentDirs$' is clean; go vet ./cmd/rhiza is clean. Failure case: a working directory that does not exist still fails with the 'working directory' error. The binary's behaviour is unchanged: go test -trimpath ./cmd/rhiza -run 'TestScripts/tui' passes. Touches cmd/rhiza/main.go, ctx.go, tui.go and their tests. Must not change any command's output, flags or exit codes.",
+          "statement": "cmd/rhiza's run() depends on no process-wide state: it takes its working directory and its own binary's path as parameters instead of reading os.Getwd (ctx.go:42) and os.Args[0] (selfPath, ctx.go:421), tui.go opens a project's folder by passing it instead of os.Chdir, and nothing on the call path sets environment variables or package variables, so two run() calls can proceed at once in one process"
+        },
+        "handle": "cli-no-process-globals",
+        "id": "01M7GG0GD7S0MZQ888A1CZA5T3",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7GG0GD7S0MZQ888A108TB0C",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GG19HDQA2B8GWTBYYGYG11",
+  "type": "ops",
+  "v": 1
+}
