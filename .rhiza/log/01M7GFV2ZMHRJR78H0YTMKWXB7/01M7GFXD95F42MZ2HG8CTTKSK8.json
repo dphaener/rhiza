@@ -1,0 +1,116 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFV2ZMHRJR78H0YTR1H91X"
+  ],
+  "at": "2026-11-15T20:55:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '^TestPropertyProjectionParity$' -v runs at least 100 draws in under 20 s and reports, on a disagreement, the shrunk log, the view, the node and each side's value. Failure case: TestParityReportNamesNode feeds the comparison two models that differ in one node's field and expects the report to name the view, the node and both values. It is not a timing budget: make test runs it (it is not behind the budgets' skip list). Reuse the generator of internal/index/property_test.go by moving it to a test-only helper package both use (for example internal/index/indextest), not by copying it. Touches internal/api/parity_test.go (new), the moved generator and internal/index/property_test.go's imports. Must not change non-test code other than the moved generator package, which only tests import; a disagreement it finds is not fixed here: it goes into a table of known cases the test reports and tolerates by name, which the next leaf, parity-cases-strict, empties.",
+          "statement": "A rapid property test in internal/api, TestPropertyProjectionParity, draws random logs and checks that for the as-is view and every change set's write view, the interim model (newModel), the index's write model (writeIndex.model, over an index under t.TempDir()) and a fresh strict fold (changeset.FoldLog, then internal/model's AsIs and WhatIf) give the same nodes, fields, links and base versions; its draws include two landed heads on one target, a rebase that drops entry files after the index has seen them (so the index rebuilds), and dry-run pending entries laid over the index"
+        },
+        "handle": "projection-parity-property",
+        "id": "01M7GFXD16Z7ENTKT3FN11PWCX",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "id": "01M7GFXD2AJ4EPZTVMWD8YPBY0",
+        "link": "01M7GFXD2AJ4EPZTVMWBZVHV1J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "id": "01M7GFXD322148NYH1WB5ARX1Z",
+        "link": "01M7GFXD322148NYH1W768NJ1Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '^(TestPropertyProjectionParity|TestParity)' passes with the known-cases table empty and no skipped draws, at -rapid.checks=1000 as well as the default. Each case found has its own TestParity<Case> test with the smallest log that shows it, and a note on this leaf (rhiza note add parity-cases-strict ...) naming the log shape, both results and which side changed; when the harness finds no case beyond the named one, the note says so. Failure case: the regression test for the named case fails on the code before the fix (show it in the commit's Checks: block by running it at the parent commit). Touches internal/api/model.go, internal/api/write_indexed.go and their tests. Must not change internal/model or internal/index rules (the strict engine is the spec) and must not change a --json shape; a case that would change user-visible output on this repo's own log is raised as a question blocking this leaf instead.",
+          "statement": "Every case where the parity test finds the interim model or write_indexed.go's hybrid disagreeing with the strict engine is fixed on the non-strict side, starting with the one write_indexed.go's model comment names (the interim model keeps a node whose create no longer applies, the strict what-if drops it), and each case has a named regression test and a note on this leaf"
+        },
+        "handle": "parity-cases-strict",
+        "id": "01M7GFXD4EACNHW154CR85Q738",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7GFXD4EACNHW154CMM64NH3",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD4EACNHW154CMM64NH3",
+        "id": "01M7GFXD5CR6RDKWC515KY7KJE",
+        "link": "01M7GFXD5CR6RDKWC5142BFC1C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD4EACNHW154CMM64NH3",
+        "id": "01M7GFXD6CMVNP9HAC9MD9HAQN",
+        "link": "01M7GFXD6CMVNP9HAC9K5KG7CF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api passes (go test -trimpath -count=1 -shuffle=on ./internal/api twice, with different seeds); go test -list '.*' ./internal/api counts no fewer tests than before. Profile in the commit's Checks: block: go test -trimpath -count=1 -cpuprofile $TMPDIR/api.prof ./internal/api, then go tool pprof -top -cum $TMPDIR/api.prof, before and after, showing store.ReadLog's share of CPU falls (both numbers given). Failure case: a test that counts folds through Ctx.readLog and now sees none is changed to assert on the index instead, not deleted. Touches internal/api/init_test.go and the _test.go files that relied on the fallback. Must not change non-test code (a fix it needs belongs to @{01M7GFXD4EACNHW154CMM64NH3}) and must not share one index between parallel tests.",
+          "statement": "internal/api's tests run on the index, as production does: testCtx (internal/api/init_test.go) gives each Ctx an IndexPath under the test's t.TempDir(), and only the tests that exercise the no-index fallback on purpose clear it, each with a comment saying so"
+        },
+        "handle": "api-tests-on-index",
+        "id": "01M7GFXD744PD29P5BQCAM7KZF",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7GFXD744PD29P5BQAMF1287",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD744PD29P5BQAMF1287",
+        "id": "01M7GFXD7YZQ0VRQHKCRZ5TDZT",
+        "link": "01M7GFXD7YZQ0VRQHKCRK9V63M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD744PD29P5BQAMF1287",
+        "id": "01M7GFXD8H6PM7S8S8S30M00C4",
+        "link": "01M7GFXD8H6PM7S8S8S0Z3V9DX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD4EACNHW154CMM64NH3",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFXD95F42MZ2HG8CTTKSK8",
+  "type": "ops",
+  "v": 1
+}
