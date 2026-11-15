@@ -1,0 +1,86 @@
+{
+  "actor": "01M7EXM49F9QJV4C1ZEA4RMZ3J",
+  "after": [
+    "01M7EX3D2DS3EQ6CPYWM27FRRX"
+  ],
+  "at": "2026-11-15T06:21:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 27088b322 with a scratch build (go build -o $TMPDIR/rhiza-qa ./cmd/rhiza), rhiza run start --foreground on a wait step (timeout 2s, interval 1s, condition logs each check, never holds): with RHIZA_TEST_CLOCK_SCALE unset, empty, abc, 0, -5 and 1.5 each timed out 'did not hold within 2s' after exactly 3 checks in 2.06-2.09 s wall (RealClock, unchanged); at 1000, 40 checks in 2.11 s. At 1000: a 10m/30s wait whose condition holds after 1 s of real time passed after 18 checks in 1.10 s; a never-holding 10m/30s and 2m/30s wait timed out in 3.09/3.16 s (3 s real floor); a 100ms/30ms wait took 5 checks and 0.17 s on both clocks (sleeps under 50 ms unscaled). go test -count=1 -race ./internal/run -run 'TestScaledClock|TestTimedOut|TestWait|TestClock' ok."
+        },
+        "handle": "scaled-test-clock-env-qa-1",
+        "id": "01M7EXVMNTGBHBRXN155WMZM3F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EXVMNTGBHBRXN154N9QHR7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EXVMNTGBHBRXN154N9QHR7",
+        "id": "01M7EXVMPP54DQQ54W6YZMDW5E",
+        "link": "01M7EXVMPP54DQQ54W6WPZCMVH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 27088b322 with the scratch build: rhiza ship deploy against a refused deploy URL (rhiza.ship.deployTimeout 3s, RHIZA_DEPLOY_INTERVAL=1s) reported 'after 3 polls over 3s' in 2.12 s wall with the scale unset and 2.11 s with abc (timing unchanged), and the same 3 polls in 0.21 s at scale 1000 (deadline on the clock it sleeps on). go test -count=1 -p 2 ./internal/api -run 'TestRunClock|TestTypePointer|TestShipDeploy|TestSpawnSleep|TestRetry|TestSessionMessage|TestRun' ok in 10.9 s."
+        },
+        "handle": "api-waits-on-run-clock-qa-1",
+        "id": "01M7EXVMQKAZM3S0NDF41M1A7T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EXVMQKAZM3S0NDF2NN79YT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EXVMQKAZM3S0NDF2NN79YT",
+        "id": "01M7EXVMRDCY17285NW9FPN4MH",
+        "link": "01M7EXVMRDCY17285NW6ZGGK2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 27088b322: go test -count=1 -p 2 -v ./cmd/rhiza -run 'TestScripts/(run-ship-conflict-fix|run-ship-conflict-fix-more|run-ship-ci-fix|run-ship-main-dispatch-fail|arbiter-agent-tabs|plan-workflow-ci-infra-wait|session-message-busy|wait-timeout)$' all PASS together: conflict-fix 25.3 s, conflict-fix-more 29.3 s, ci-fix 25.8, main-dispatch-fail 7.0, arbiter-agent-tabs 3.5, plan-workflow-ci-infra-wait 7.0, session-message-busy 0.6, wait-timeout 4.4. The split's two scripts hold the same 94 distinct exec/stdout/stderr/exists lines as the old run-ship-conflict-fix. By hand with the built binary, the wait-timeout workflow gives 3 checks on RealClock and 40 at scale 1000."
+        },
+        "handle": "scripts-run-on-scaled-clock-qa-1",
+        "id": "01M7EXVMS6B9403CTNWEQD7VSY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EXVMS6B9403CTNWB7W1S4Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EXVMS6B9403CTNWB7W1S4Z",
+        "id": "01M7EXVMT1R2H5P5AG2PTXT5XT",
+        "link": "01M7EXVMT1R2H5P5AG2NZJHWJF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ERPV9B2R3ZE8V900RBXASQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M7ETR00Z3GQQF8N6WEZBGEC4",
+  "id": "01M7EXVMTWSBGZZXGWPREG38FQ",
+  "type": "ops",
+  "v": 1
+}

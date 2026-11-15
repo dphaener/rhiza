@@ -53,6 +53,7 @@ Planning the test-perf milestone with the owner
 - derived-from [fast-suite-proposal-approved](../decision/fast-suite-proposal-approved.md)
 - derived-from [fast-suite-measuring-commands](../decision/fast-suite-measuring-commands.md)
 - derived-from [fast-suite-build-order](../decision/fast-suite-build-order.md)
+- derived-from [scaled-test-clock](../decision/scaled-test-clock.md)
 
 ## History
 

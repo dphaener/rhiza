@@ -106,6 +106,10 @@ const (
 	// daemon's minFree guard never reads the host's disk. A script that
 	// wants another figure sets RHIZA_TEST_FREE_BYTES itself.
 	testFreeBytes = "1099511627776"
+	// testClockScale is the scale of every script's clock (internal/run's
+	// ScaledClock): a wait's sleep of d takes d/1000 of real time, at
+	// least 50 ms.
+	testClockScale = "1000"
 )
 
 func setup(env *testscript.Env) error {
@@ -120,6 +124,10 @@ func setup(env *testscript.Env) error {
 	env.Setenv("RHIZA_TEST_LOAD1", "0")
 	env.Setenv("RHIZA_TEST_LOAD5", "0")
 	env.Setenv("RHIZA_TEST_MEM_AVAILABLE", testFreeBytes)
+	// Every script's waits run on the scaled clock, so a builtin
+	// workflow's 30 s poll or 2 min backoff costs milliseconds. A script
+	// that wants RealClock clears it with `env RHIZA_TEST_CLOCK_SCALE=`.
+	env.Setenv(runpkg.ClockScaleEnv, testClockScale)
 	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
 	// script can set PATH to it alone and hide the host's programs (e.g.
 	// systemctl) from rhiza.

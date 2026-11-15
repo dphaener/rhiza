@@ -251,11 +251,7 @@ func spawnCheck(rr reviewRun, role, flag string) (string, int, error) {
 
 // spawnSleep waits one poll.
 func spawnSleep(ctx *Ctx) {
-	if ctx.Sleep != nil {
-		ctx.Sleep(spawnPoll)
-		return
-	}
-	time.Sleep(spawnPoll)
+	ctxSleep(ctx)(spawnPoll)
 }
 
 // childOutcome is a child session's outcome once its process has exited:

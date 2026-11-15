@@ -1,0 +1,40 @@
+{
+  "actor": "01M7EVM0K91R2706Q314X719PA",
+  "after": [
+    "01M7EV5R5DDYSQ9B1N01DC15VX"
+  ],
+  "at": "2026-11-15T05:43:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ad1e4ffd2, under the machine-tests lock and systemd-run cap: go test -count=1 -p 2 -trimpath ./internal/api -run 'TestRunClock|TestTypePointer|TestShipDeploy|TestSpawnSleep|TestRetry' -v exit 0 (TestRunClockFromEnv: RealClock unset/0/abc, ScaledClock at 1000; TestTypePointerScaledClockWaitsForRealWork sends after >=1s real on a 10 min timeout; TestTypePointerScaledClockTimeoutKeepsRealTime fails 'did not reach its prompt within 1s' after 1-3 s real; TestShipDeployScaledClockKeepsPollCount: scaled clock polls 10 times like the RealClock rule, in under 3 s real; TestSpawnSleepClock and TestRetryDefaultSleepClock: spawnSleep, retryGH and retryRex default sleeps go on the scaled clock when the variable is set and real time when it is unset). go test -count=1 -p 2 -trimpath ./internal/api -run 'TestSessionMessage|TestRun' exit 0 in 1.9 s with no 'still polls' Fatal, and existing tests unmodified (only run_clock_test.go added). go vet ./internal/api, rhiza ship generate and rhiza render exit 0. The diff touches only the listed files. It changes no production interval; the remaining time.Sleep/AfterFunc uses are in daemon, profile and watchdog code the leaf excludes; and there are no TODOs."
+        },
+        "handle": "api-waits-on-run-clock-verified",
+        "id": "01M7EVPBJTP2EY8SN5NMKT01RJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EVPBJTP2EY8SN5NJM9Z8VW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EVPBJTP2EY8SN5NJM9Z8VW",
+        "id": "01M7EVPBMT4MTN3KPVDX3SP0GC",
+        "link": "01M7EVPBMT4MTN3KPVDTE1RK5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M7ETR00Z3GQQF8N6WEZBGEC4",
+  "id": "01M7EVPBP1BJBKHV2S2AEMMAMS",
+  "type": "ops",
+  "v": 1
+}

@@ -887,12 +887,9 @@ var rexTabWaits = []time.Duration{time.Second, 3 * time.Second, 9 * time.Second}
 // retryRex runs open, and reruns it after each wait of rexTabWaits while it
 // fails (Rex not answering, or no window ID returned). After the last
 // retry it fails with Rex's last error. ctx.Sleep sleeps; nil is
-// time.Sleep.
+// runClock's Sleep.
 func retryRex(ctx *Ctx, open func() (session.Tab, error)) (session.Tab, error) {
-	sleep := ctx.Sleep
-	if sleep == nil {
-		sleep = time.Sleep
-	}
+	sleep := ctxSleep(ctx)
 	tab, err := open()
 	for _, wait := range rexTabWaits {
 		if err == nil {

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7EV41TK55XYYYWEYRT75GWF",
+  "after": [
+    "01M7ES8QJ2SSXN8G3J74RT3K6J"
+  ],
+  "at": "2026-11-15T05:34:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5afc8275d, under flock and the systemd-run cap: go test -count=1 -race -p 2 -trimpath ./internal/run -run 'TestScaledClock|TestTimedOut|TestWait' exit 0 (9.4s; all 19 tests pass, incl. TestWaitTimesOut, TestWaitSleepsOnlyToDeadline, TestWaitBackoffStopsAtTimeout unchanged on fakeClock); go vet ./internal/run exit 0. Diff read: clock.go's Sleep waits max(d/n, min(d,50ms)) and adds only skipped time to Now under a mutex (scaled-sleep-real-poll-floor, scaled-clock-now-skips-sleeps); Wait.TimedOut is exact on non-scaled clocks and adds the min(timeout,3s) real floor on ScaledClock; engine wait() uses it and sleeps its interval past the deadline. Tests cover Sleep(30s) in [50ms,100ms) with Now +30s, Sleep(50ms) ~50ms, 50ms of real time ~50ms of Now, concurrency under -race, ''/unset/0/-5/1.5/abc giving RealClock, the 10m/1s timeout floors, fake/RealClock exact, engine wait passing after 1s real and timing out in [3s,4s). RealClock, the nil-Clock default, workflow intervals and engine_test.go untouched; no TODOs. The full-package run, rhiza ship generate and rhiza render from Checks were not re-run: the brief limits the run to the named tests, and a verifier does not write files."
+        },
+        "handle": "scaled-test-clock-env-verified",
+        "id": "01M7EV5R3QC3QA9SKP4AZ4GXQP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EV5R3QC3QA9SKP48P61QD4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EV5R3QC3QA9SKP48P61QD4",
+        "id": "01M7EV5R4GDA50C3XDB6ZKT95T",
+        "link": "01M7EV5R4GDA50C3XDB5ZH9M4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M7ETR00Z3GQQF8N6WEZBGEC4",
+  "id": "01M7EV5R5DDYSQ9B1N01DC15VX",
+  "type": "ops",
+  "v": 1
+}

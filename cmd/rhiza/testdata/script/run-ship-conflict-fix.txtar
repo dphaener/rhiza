@@ -19,17 +19,8 @@
 # Case 3: a rebase that fails on a push origin refuses, with no conflict and
 # no failing local gate, ends the run at rebase-gate-failed (after
 # rebase-triage) and no fixer starts.
-# Case 4: a fourth conflict, after two fixes before land and one after,
-# fails the run at conflict-triage-landed and rebase-merge-gate-failed.
-# Case 5: autonomous, the fixer finds a design clash: it leaves the merge in
-# progress and asks in its session; the run adds the question to its change
-# set, the arbiter decides it, the same session gets the answer, commits
-# the merge, and the run pushes and merges, with one fixer session.
-# Case 6: not autonomous, the same question: the run reads blocked at
-# conflict-fix with kind question and nothing is pushed while it waits; the
-# owner's answer lets the same session finish.
-# Case 7: a fixer that says done without committing the merge fails the
-# step's until: the run fails and nothing is pushed.
+# Cases 4 to 7 are in run-ship-conflict-fix-more.txtar, with the same
+# fakes, so that neither script runs past the per-script budget.
 #
 # The fakes are run-ship-ci-fix.txtar's. gh reports CONFLICTING while the
 # PR's head lacks origin's main, and pushes prepared commits to main from
@@ -140,100 +131,6 @@ stdout '^- rebase-gate-failed \(visit 1\): fail'
 ! stdout '^- conflict-fix'
 ! exists $WORK/fixes.log
 
-# Case 4: a fourth conflict fails the run.
-exec sh -c 'rm -f $WORK/refuse; printf "%s\n" "*=m1" "Land the change set and record its CI=m3" > $WORK/triggers; printf "%s\n" - - m4 > $WORK/fixer-pushes'
-cd $WORK
-exec sh $WORK/setup.sh
-cd repo
-exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
-stdout '"signoff_waiting": true'
-exec git -C $WORK/other push -q origin m2:main
-exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground --json; echo exit=$?'
-stdout '"signoff_waiting": true'
-exec sh -c 'cd $WORK/repo.ship-it && rhiza run approve --foreground; echo exit=$?'
-stdout '^Run \S+ failed$'
-exec rhiza run status
-stdout '^- conflict-fix \(visit 2\)'
-stdout '^- conflict-fix-landed \(visit 1\)'
-stdout '^- conflict-triage-landed \(visit 2\): fail, then rebase-merge-gate-failed'
-stdout '^- rebase-merge-gate-failed \(visit 1\): fail'
-! stdout '^- gate-fix-merge'
-! stdout '^- conflict-fix-landed \(visit 2\)'
-exec rhiza run status --json
-stdout '"state": "failed"'
-exec sh -c 'wc -l < $WORK/fixes.log'
-stdout '^3$'
-! grep '^pr merge' $WORK/gh.log
-
-# Case 5: autonomous, a design clash is asked, arbitrated and resolved.
-exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; echo > $WORK/stop'
-cd $WORK
-exec sh $WORK/setup.sh
-cd repo
-exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --autonomous; echo exit=$?'
-stdout '^Run \S+ succeeded$'
-stderr 'step conflict-fix: blocked on question'
-stderr 'step conflict-fix: session [0-9a-f-]+ asked question question-[0-9a-f]{8}-1 \([0-9A-Z]{26}\); the arbiter answers it'
-stderr 'step conflict-fix: arbiter pass on question [0-9A-Z]{26}: answered by clash-ruling'
-exec rhiza run status
-stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
-! stdout '^- conflict-fix \(visit 2\)'
-exec sh -c 'wc -l < $WORK/clash.log'
-stdout '^1$'
-exec sh -c 'wc -l < $WORK/fixes.log'
-stdout '^1$'
-exec sh -c 'grep "\"type\":\"asked\"" .git/rhiza/runs/*.jsonl | grep "\"step\":\"conflict-fix\"" | grep -c "Design clash"'
-stdout '^1$'
-exec sh -c 'grep -c "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
-stdout '^1$'
-exec cat $WORK/typed.log
-stdout -count=1 '^send-key -b block:b1 enter$'
-exec grep '^pr merge' $WORK/gh.log
-exec git -C $WORK/origin.git log main --format=%s
-stdout 'Ship it \(#7\)'
-
-# Case 6: not autonomous, the run waits blocked, and pushes nothing.
-exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo clash > $WORK/fixer-mode; echo bg > $WORK/bg; rm -f $WORK/stop'
-cd $WORK
-exec sh $WORK/setup.sh
-cd repo
-env REX_BLOCK=block:root
-env REX_SESSION=session:s1
-exec rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual &
-exec sh -c 'i=0; while [ $i -lt 800 ]; do rhiza run status | grep -q "^Run .* blocked$" && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
-exec rhiza run status --json
-stdout '"state": "blocked"'
-stdout '"kind": "question"'
-stdout 'Design clash'
-exec rhiza run status
-stdout '^- Current step: conflict-fix$'
-! exists $WORK/fixes.log
-! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
-exec rhiza ls --kind question --json
-! stdout 'Design clash'
-exec sh -c 'echo > $WORK/answer'
-wait
-exec rhiza run status
-stdout '^- conflict-fix \(visit 1\): pass, then render-pr'
-exec sh -c 'wc -l < $WORK/clash.log'
-stdout '^1$'
-env REX_BLOCK=
-env REX_SESSION=
-
-# Case 7: done without committing the merge fails the until.
-exec sh -c 'printf "%s\n" "*=m1" > $WORK/triggers; : > $WORK/fixer-pushes; echo nocommit > $WORK/fixer-mode; rm -f $WORK/bg $WORK/answer'
-cd $WORK
-exec sh $WORK/setup.sh
-cd repo
-exec sh -c 'rhiza run start --foreground --workflow ship-change-classic 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual; echo exit=$?'
-stdout '^Run \S+ failed$'
-exec rhiza run status
-stdout '^- conflict-fix \(visit 1\): fail'
-stdout 'until did not hold'
-! stdout '^- render-pr \(visit 2\)'
-! exists $WORK/fixes.log
-! exec git -C $WORK/origin.git merge-base --is-ancestor main cs/ship-it
-! grep '^pr merge' $WORK/gh.log
 -- setup.sh --
 #!/bin/sh
 # A fresh bare origin that refuses pushes while $WORK/refuse exists, a repo

@@ -25,6 +25,7 @@ import (
 	"unicode"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -343,21 +344,21 @@ func typePointer(ctx *Ctx, st *session.Store, sid, line string, timeout time.Dur
 		return 0, Errorf("cannot send a message: this caller runs no programs")
 	}
 	clock := runClock
-	start := clock.Now()
+	w := run.BeginWait(clock)
 	last, told := "", ""
 	for {
 		rec, err := st.Read(sid)
 		if err != nil {
-			return clock.Now().Sub(start), Errorf("read session %s: %v", sid, err)
+			return w.Elapsed(), Errorf("read session %s: %v", sid, err)
 		}
 		if rec.Status.Exited() {
-			return clock.Now().Sub(start), Conflictf("session %s exited before it reached its prompt", sid).
+			return w.Elapsed(), Conflictf("session %s exited before it reached its prompt", sid).
 				WithNext("rhiza session show " + sid)
 		}
 		if rec.Tab.Block == "" {
-			return clock.Now().Sub(start), Conflictf("session %s has no open tab", sid).WithNext("rhiza session show " + sid)
+			return w.Elapsed(), Conflictf("session %s has no open tab", sid).WithNext("rhiza session show " + sid)
 		}
-		waited := clock.Now().Sub(start)
+		waited := w.Elapsed()
 		rep, _ := session.Resolve(rec)
 		if rep.State == session.StateIdle {
 			return waited, sendPointer(ctx, rec, line)
@@ -369,11 +370,17 @@ func typePointer(ctx *Ctx, st *session.Store, sid, line string, timeout time.Dur
 				fmt.Fprintf(ctx.Stderr, "rhiza: waiting for session %s: %s; %s\n", sid, last, waitingHint(rep, sid, timeout))
 			}
 		}
-		if waited >= timeout {
+		if w.TimedOut(timeout) {
 			return waited, Conflictf("session %s did not reach its prompt within %s (last status: %s)", sid, timeout, last).
 				WithNext("rhiza session show " + sid)
 		}
-		clock.Sleep(min(messagePoll, timeout-waited))
+		// Sleep at most to the deadline; past it (the scaled clock's
+		// real-time floor), sleep the whole poll.
+		d := messagePoll
+		if left := timeout - waited; left > 0 {
+			d = min(d, left)
+		}
+		clock.Sleep(d)
 	}
 }
 

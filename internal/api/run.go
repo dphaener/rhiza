@@ -92,9 +92,24 @@ const (
 	runBlocked = "blocked"
 )
 
-// runClock is the clock run.start and run.resume poll by; tests replace
-// it to drive a session's status between polls.
-var runClock run.Clock = run.RealClock{}
+// runClock is the clock a run's waits go by: run.start and run.resume
+// polls, the spawn poll, session waits, the default ctx.Sleep and ship
+// deploy. It is RealClock unless RHIZA_TEST_CLOCK_SCALE chooses
+// internal/run's scaled clock; tests replace it to drive a session's
+// status between polls.
+var runClock = defaultRunClock()
+
+// defaultRunClock is the clock run.ClockScaleEnv chooses.
+func defaultRunClock() run.Clock { return run.ClockFromEnv() }
+
+// ctxSleep is how ctx sleeps: ctx.Sleep, or runClock's Sleep when it is
+// nil (time.Sleep on RealClock).
+func ctxSleep(ctx *Ctx) func(time.Duration) {
+	if ctx.Sleep != nil {
+		return ctx.Sleep
+	}
+	return runClock.Sleep
+}
 
 // workflowsDir is where named workflows live, under the project root.
 const workflowsDir = store.Dir + "/workflows"

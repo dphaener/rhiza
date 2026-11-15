@@ -905,7 +905,7 @@ func (r *running) wait(step workflow.Step, env []string) result {
 	if interval <= 0 {
 		interval = workflow.DefaultInterval
 	}
-	began := c.Now()
+	w := BeginWait(c)
 	last := ""
 	prev, sleep := "", interval
 	for polls := 1; ; polls++ {
@@ -937,8 +937,8 @@ func (r *running) wait(step workflow.Step, env []string) result {
 		if r.e.NoWait {
 			return result{stopped: "waiting: " + step.Until}
 		}
-		elapsed := c.Now().Sub(began)
-		if elapsed >= step.Timeout {
+		elapsed := w.Elapsed()
+		if w.TimedOut(step.Timeout) {
 			d := fmt.Sprintf("did not hold within %s", step.Timeout)
 			if last != "" {
 				d += ": " + last
@@ -954,7 +954,12 @@ func (r *running) wait(step workflow.Step, env []string) result {
 		}
 		prev = last
 		// Sleep at most to the deadline, so the last check falls on it.
-		c.Sleep(min(sleep, step.Timeout-elapsed))
+		// Past it (a scaled clock's real-time floor), sleep the interval.
+		d := sleep
+		if left := step.Timeout - elapsed; left > 0 {
+			d = min(d, left)
+		}
+		c.Sleep(d)
 	}
 }
 
