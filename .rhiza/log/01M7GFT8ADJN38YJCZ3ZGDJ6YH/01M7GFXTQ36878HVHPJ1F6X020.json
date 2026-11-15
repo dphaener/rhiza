@@ -1,0 +1,73 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFT8ADJN38YJCZ3ZHQ072C"
+  ],
+  "at": "2026-11-15T20:56:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Profile first, before any code change, and again after: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza, then in this repo's main checkout RHIZA_CPUPROFILE=$TMPDIR/check.prof $TMPDIR/rhiza-x check and go tool pprof -top -cum $TMPDIR/rhiza-x $TMPDIR/check.prof; the commit's Checks: block gives /usr/bin/time -f '%e s' for both builds and the cumulative shares of decode (store.ReadLog), changeset.FoldLog, as-is and what-if building and the render comparison, before and after. Tests: go test -trimpath -count=1 ./internal/check passes, and a new test (TestWhatIfOnceMatches) over a log with a landed base, two in-flight change sets where one depends on the other, and one whose ops no longer apply shows that check's problems and rendered-file findings equal those of the old double WhatIf path. Failure case: an in-flight change set whose what-if has problems reports each problem once, not twice. Touches internal/check/check.go and its tests. Must not change what check reports or its --json shape.",
+          "statement": "rhiza check builds the as-is model once (model.AsIsState) and each in-flight change set's what-if view once from that seed (model.WhatIfFrom), and the in-flight problems pass (internal/check/check.go:384) and the rendered-file pass (:456) share those views, instead of calling model.WhatIf twice per in-flight change set"
+        },
+        "handle": "check-whatif-once",
+        "id": "01M7GFXTMA9VHC2FAQB50N4B5N",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "id": "01M7GFXTMWCZJDBPMM1F11KH7C",
+        "link": "01M7GFXTMWCZJDBPMM1BG41SZ1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/store passes, and a new test (TestReadEntriesParallelSame) over a log of a few hundred entries with an unreadable file, an entry that does not decode and an entry whose ID does not match its path shows the parallel result deep-equals the serial one; go test -race -trimpath -count=1 ./internal/store -run ReadEntries is clean. Measure in the commit's Checks: block: /usr/bin/time -f '%e s' $TMPDIR/rhiza-x check in this repo's main checkout, before and after, built as in @{01M7GFXTMA9VHC2FAQB33P1KA1}; with both leaves, within 5 s on the 4-core VM. Failure case: with GOMAXPROCS=1 it decodes on one worker and still returns the same Log. Touches internal/store/read.go and its tests. Must not add a dependency or change the order or content of Problems.",
+          "statement": "store.ReadEntries (internal/store/read.go:97) decodes entry files on up to four workers (bounded by GOMAXPROCS), the way the index's listing already stats folders in parallel, and returns the same Log as the serial decode: the same entries and problems in the same order"
+        },
+        "handle": "read-entries-parallel",
+        "id": "01M7GFXTNFE5TRP176PYRRYN5T",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7GFXTNFE5TRP176PWG9TATG",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXTNFE5TRP176PWG9TATG",
+        "id": "01M7GFXTP1CG99QAYNRQWZJVW2",
+        "link": "01M7GFXTP1CG99QAYNRNXHPQFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXTNFE5TRP176PWG9TATG",
+        "id": "01M7GFXTPM2Y18FY98GX4WH0C9",
+        "link": "01M7GFXTPM2Y18FY98GTD84H0T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFXTQ36878HVHPJ1F6X020",
+  "type": "ops",
+  "v": 1
+}
