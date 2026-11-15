@@ -1,0 +1,121 @@
+{
+  "actor": "01M7ERMQXWA26P5PZRHKQKY2V2",
+  "after": [
+    "01M7ERBQY3WHE24117CSKC7PRE"
+  ],
+  "at": "2026-11-15T04:51:04Z",
+  "body": {
+    "drop": [
+      "01M7EQC3G811QJGK7SM5YT15SM",
+      "01M7EQC3GS1VQEF1S3DJAV4HRS",
+      "01M7EQC3HCV8FDPNT2EAZF2JZM",
+      "01M7EQT8ZNF6S5EZ03WWEPA51D"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -race ./internal/run -run 'TestScaledClock|TestTimedOut|TestWait' shows: at scale 1000 Sleep(30*time.Second) returns within 100 ms of real time and Now has advanced at least 30 s; real time spent outside Sleep (a 50 ms time.Sleep between two Now calls) advances Now by about 50 ms, not 50 s; Sleep(time.Microsecond) still waits at least 1 ms; Sleep and Now called from several goroutines pass under -race; with RHIZA_TEST_CLOCK_SCALE unset or empty the chosen clock is RealClock; the timeout helper on the scaled clock reports a 10 min timeout not yet passed after 30 s of virtual time but under 3 s of real time, and passed once both hold, reports a 1 s timeout passed only after 1 s of real time, and on RealClock and on an injected fake clock (engine_test.go's fakeClock) reports exactly elapsed >= timeout at once, with no real-time wait; the existing TestWaitTimesOut (6 polls, 5 sleeps), TestWaitSleepsOnlyToDeadline (sleeps [3s 2s]) and TestWaitBackoffStopsAtTimeout pass unchanged on fakeClock; an engine wait step with a 10 min timeout, on the scaled clock, whose condition holds only after 1 s of real time passes with outcome pass, and one whose condition never holds times out within 4 s of real time; failure cases: values 0, -5, 1.5 and abc each give RealClock and no panic. Touches internal/run/engine.go or a new internal/run/clock.go and their _test.go. Must not change RealClock, the Engine's nil-Clock default, any workflow's poll or backoff value, or the existing engine_test.go wait tests' expectations.",
+          "statement": "internal/run has a scaled Clock, chosen by RHIZA_TEST_CLOCK_SCALE=<n>, whose Sleep(d) waits d/n of real time (never less than 1 ms) and whose Now is the wall clock plus the time its Sleeps skipped, safe for concurrent use, and a timeout helper that a wait uses to decide its timeout passed: on the scaled clock, the timeout has passed on the clock's Now and at least the smaller of the timeout and 3 s of real time has passed since the wait began; on any other Clock (RealClock, or a fake clock a unit test injects) the helper reports exactly elapsed >= timeout on that clock's Now, with no real-time floor; the engine's wait() decides its step timeout with it and, on the scaled clock past its deadline inside the floor, sleeps its interval rather than zero; with the variable unset, empty or not a positive integer the engine keeps RealClock."
+        },
+        "handle": "scaled-test-clock-env",
+        "id": "01M7EQC3EBD206T6TR66YZGWDB",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestRunClock|TestTypePointer' shows runClock is RealClock with the variable unset and the scaled clock with it set, and on the scaled clock a typePointer wait under the default 10 min timeout for a session that reaches its prompt only after 1 s of real time sends its message, while a 1 s timeout on a session that never reaches it fails only after at least 1 s of real time; go test -trimpath ./internal/api -run 'TestSessionMessage|TestRun' passes with the existing tests on useClock's scriptClock unchanged: session_message_test.go's 1 s timeout cases still fail with 'did not reach its prompt within 1s' without real-time waiting, and no scripted clock Fatals 'the script has ended but the run still polls'. Touches internal/api/run.go, run_spawn.go, api.go, ship.go, session.go, session_message.go, ship_deploy.go and their tests. Must not change a production interval, a workflow .toml, the daemon, feed and session-limit tickers, or the expectations of existing internal/api tests on injected clocks.",
+          "statement": "When RHIZA_TEST_CLOCK_SCALE is set, every wait a run makes in internal/api goes by the scaled clock: runClock is chosen from the variable (run.start and run.resume polls, wait conditions and backoff, session_run.go and session_message.go waits), the spawn poll in run_spawn.go, the default ctx.Sleep in api.go, ship.go and session.go, and ship_deploy.go's interval and its deadline; each of these that has a timeout decides it with internal/run's timeout helper, so on the scaled clock a wait on another process's real work keeps at least the smaller of its timeout and 3 s of real time, while on RealClock or a fake clock a test injects (useClock's scriptClock) it keeps exactly the rule of today."
+        },
+        "handle": "api-waits-on-run-clock",
+        "id": "01M7ERPV4AJ3CJ76RBPTN455TA",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "id": "01M7ERPV55653AV247NQNPYXCT",
+        "link": "01M7ERPV55653AV247NMHNWY9F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "id": "01M7ERPV6B5HY84EA0PRDS1WW2",
+        "link": "01M7ERPV6B5HY84EA0PRDC8BN5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "id": "01M7ERPV7GBTXXDBGHZWDQHXDM",
+        "link": "01M7ERPV7GBTXXDBGHZRGVDZFP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQT8V4D1RPDFHF8NJ02NSK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -v ./cmd/rhiza -run 'TestScripts/(run-ship-conflict-fix|run-ship-ci-fix|run-ship-main-dispatch-fail|arbiter-agent-tabs|plan-workflow-ci-infra-wait|session-message-busy)$' passes with each of the first five scripts' elapsed under 30 s (2026-11-15: 195, 173, 130, 108 and 96 s); failure case: a script that clears it (env RHIZA_TEST_CLOCK_SCALE=) runs on RealClock, shown by a short wait-timeout script in cmd/rhiza/testdata/script, run with go test -trimpath ./cmd/rhiza -run 'TestScripts/wait-timeout'. Speedup measure (orchestrator, quiet VM): go clean -testcache && /usr/bin/time -f '%e s' go test -trimpath ./cmd/rhiza, against 639 s. Touches cmd/rhiza/main_test.go and the new wait-timeout script. Must not change a production interval, a workflow .toml, or the daemon, feed and session-limit tickers.",
+          "statement": "cmd/rhiza/main_test.go's Setup sets RHIZA_TEST_CLOCK_SCALE to 1000 for every script, so the builtin workflows' 30 s polls and 2 min backoff cost milliseconds in scripts; a script that clears it runs on RealClock."
+        },
+        "handle": "scripts-run-on-scaled-clock",
+        "id": "01M7ERPV9B2R3ZE8V9043XTM2P",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7ERPV9B2R3ZE8V900RBXASQ",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV9B2R3ZE8V900RBXASQ",
+        "id": "01M7ERPVB0A10JCYAFFP7M28YE",
+        "link": "01M7ERPVB0A10JCYAFFP2XKBPH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ERPV4AJ3CJ76RBPT5DMSV0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV9B2R3ZE8V900RBXASQ",
+        "id": "01M7ERPVBYDKDTW64WADK86SBP",
+        "link": "01M7ERPVBYDKDTW64WAAPT489E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7ERPV9B2R3ZE8V900RBXASQ",
+        "id": "01M7ERPVD662AVD4WXZCAX2ZA5",
+        "link": "01M7ERPVD662AVD4WXZA21HQ2W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQT8V4D1RPDFHF8NJ02NSK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ERPVH7Z66PPRKJKMANS93W",
+  "type": "ops",
+  "v": 1
+}
