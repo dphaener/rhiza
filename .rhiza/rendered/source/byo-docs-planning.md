@@ -1,0 +1,37 @@
+# byo-docs-planning
+
+source · `01M7E5G2JDD1FTGR5CCBAQK3XV`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+72d9435a596529ca2f06ac7597742b1a98d05419b82ddde823053a0779db3b5d
+
+## session
+
+65707294-5efe-4bad-9813-01a1dc53ae72
+
+## summary
+
+On 2026-11-14 the conductor of run 01M7E56MGTY4M60XZNEG2A6537 planned change set 01M79KHH (Bring-your-own docs) with no owner present. Reading the code: conductor spawns (rhiza run spawn) start each child with 'follow rhiza guide <role>' and take no invoke; invokes exist on agent steps (ship-change's conduct step) and on leaves/checks role tables (ship-change-classic); rhiza skill check checks builder, verifier and check roles; rhiza init is non-interactive and there is no project agent setting, while run start, session start and skill check take --agent with the registered default adapter (claude-code, the only one); docs/reference/ holds only files rhiza docs generates. Three choices were put to the arbiter, who took the recommended option each time: the levels are skill (an installed skill plays one role), conductor (a team's own conduct skill on ship-change's conduct step, reading {brief}, {slice} and {handback}) and workflow (a team's own workflow from the primitives), each a worked example TOML under docs/examples/byo/ kept valid by a test; rhiza init asks with --agent or a terminal prompt over the registered adapters and stores the answer in a new project setting rhiza.project.agent that run start, session start and skill check use when --agent is unset; the primitives reference is a hand-written docs/primitives.md.
+
+## title
+
+Bring-your-own docs planning (autonomous)
+
+## Links
+
+### In
+
+- derived-from [byo-levels-skill-conductor-workflow](../decision/byo-levels-skill-conductor-workflow.md)
+- derived-from [init-asks-agent-setting](../decision/init-asks-agent-setting.md)
+- derived-from [primitives-doc-hand-written](../decision/primitives-doc-hand-written.md)
+
+## History
+
+- `01M79KHHVJK2RMMC25KY63QW13` Bring-your-own docs: the primitives reference and a Bring your own agent page with one worked example per level, and rhiza init asks which agent the project uses
