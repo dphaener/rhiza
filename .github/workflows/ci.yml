@@ -24,7 +24,9 @@ concurrency:
 # them into the single verdict Ship and branch protection read. `changes`
 # decides first: a pull request with no path outside .rhiza/ changed since its
 # last green commit (or since its base, with none) runs only `model`, everything else (and every dispatched run) runs the
-# Go jobs.
+# Go jobs. Each Go job restores the newest build and module cache that
+# go-cache.yml saved from main, and saves none itself; setup-go's own cache is
+# off.
 jobs:
   changes:
     runs-on: ubuntu-26.04
@@ -80,11 +82,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run self-check
       run: make self-check
@@ -104,11 +116,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run lint
       run: make lint
@@ -129,11 +151,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run scripts
       run: make test-scripts SHARD=${{ matrix.shard }}
@@ -154,11 +186,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run api
       run: make test-api SHARD=${{ matrix.shard }}
@@ -175,11 +217,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run rest
       run: make test-rest
@@ -196,11 +248,21 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
+      id: go
       uses: actions/setup-go@v7
       with:
         go-version-file: go.mod
-        cache: true
-        cache-dependency-path: go.sum
+        cache: false
+
+    - name: Restore the Go cache main saved
+      uses: actions/cache/restore@v6
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-
 
     - name: Run budgets
       run: make test-budgets

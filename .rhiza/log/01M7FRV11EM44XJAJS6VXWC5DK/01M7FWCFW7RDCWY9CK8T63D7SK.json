@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FWAHH6A694NF15ZMBP7F3W",
+  "after": [
+    "01M7FW0S83CR84Q8VBA5RP6EX7"
+  ],
+  "at": "2026-11-15T15:14:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4bf1a438b: go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^(TestMakeTestShardTargets|TestMakeTestTimeout)$' passes (both PASS), both pinning the regex that names TestInboxGateQuestionsBudget and TestRootIdlePollBudget. make -n test-budgets runs -run with the 7-name regex over BUDGET_PKGS (both new tests live in internal/api); make -n test and test-rest -skip it, make -n test-api SHARD=1/2 drops them via grep -Ev. grep -rl 'budgetLock(t)' ... | grep -o 'func Test[A-Za-z]*' lists TestBudget, TestCatchUpBudget, TestInboxGateQuestionsBudget, TestReadBudget, TestReadBudgetApply, TestRootIdlePollBudget: all in BUDGET_TESTS. go test -list '.*' ./internal/api | grep -c '^Test' = 762, internal/ and tools/ untouched (tools/gate does not copy the regex). Diff touches only Makefile, cmd/rhiza/makeupdate_test.go and .rhiza records; no TODOs."
+        },
+        "handle": "every-budget-opt-in-verified",
+        "id": "01M7FWCFSXEMWWHCW62DNS0X99",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FWCFSXEMWWHCW62BW8PV2A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FWCFSXEMWWHCW62BW8PV2A",
+        "id": "01M7FWCFV0ET68MRYB9ZEGX49M",
+        "link": "01M7FWCFV0ET68MRYB9WKSBH2F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14V71K8ZJGQ2P4NXF2FG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7FWCFW7RDCWY9CK8T63D7SK",
+  "type": "ops",
+  "v": 1
+}

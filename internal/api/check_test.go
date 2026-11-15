@@ -14,7 +14,9 @@ import (
 )
 
 // fakeGit answers git calls from a table keyed by the space-joined
-// arguments; any other call fails. It records every call.
+// arguments; any other call fails. It records every call. The settings'
+// one git config snapshot, unless the table holds it, is made from the
+// table's "config --get rhiza.<key>" entries.
 type fakeGit struct {
 	out   map[string]string
 	calls []string
@@ -25,6 +27,17 @@ func (g *fakeGit) run(args ...string) (string, error) {
 	g.calls = append(g.calls, k)
 	if out, ok := g.out[k]; ok {
 		return out, nil
+	}
+	if len(args) == 4 && args[0] == "config" && args[1] == "-z" && args[2] == "--get-regexp" {
+		cfg := map[string]string{}
+		for key, v := range g.out {
+			if name, ok := strings.CutPrefix(key, "config --get "); ok {
+				cfg[name] = strings.TrimSuffix(v, "\n")
+			}
+		}
+		if out, err, ok := gitConfigFake(cfg, args); ok {
+			return out, err
+		}
 	}
 	return "", errors.New("exit status 1")
 }

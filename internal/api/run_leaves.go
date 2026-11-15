@@ -627,7 +627,11 @@ func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, erro
 // real index is then updated for paths alone, so they show as committed
 // while every other staged or unstaged change stays as it was. The copies
 // of main-checkout writes that liveRunMirror left untracked in the
-// worktree (mirroredPaths) go in the same commit.
+// worktree (mirroredPaths) go in the same commit. When that
+// compare-and-swap is refused because another commit landed on HEAD
+// meanwhile, it builds the commit again on the new HEAD, keeping both, at
+// most commitOnlyTries times in all; then, or on any other failure, it
+// fails with git's error.
 func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 	mirrored, err := r.mirroredPaths()
 	if err != nil {
@@ -638,6 +642,42 @@ func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 			paths = append(paths, p)
 		}
 	}
+	for try := 1; ; try++ {
+		commit, err := r.commitOnHead(paths, msg)
+		if err == nil {
+			if _, err := r.worktreeGit(append([]string{"update-index", "--add", "--"}, paths...)...); err != nil {
+				return "", err
+			}
+			return commit, nil
+		}
+		var moved headMovedError
+		if !errors.As(err, &moved) || try >= commitOnlyTries {
+			return "", err
+		}
+	}
+}
+
+// commitOnlyTries is how many times commitOnly builds its commit before
+// it gives up on a HEAD that keeps moving.
+const commitOnlyTries = 5
+
+// commitOnlyHeadRead, when set, runs between commitOnly's read of HEAD
+// and its update-ref, with the worktree: a test's way to land a racing
+// commit in that window. Tests that set it do not run in parallel.
+var commitOnlyHeadRead func(worktree string)
+
+// headMovedError is update-ref's refusal of commitOnly's swap because
+// HEAD no longer was the commit it built on.
+type headMovedError struct{ err error }
+
+func (e headMovedError) Error() string { return e.err.Error() }
+func (e headMovedError) Unwrap() error { return e.err }
+
+// commitOnHead is one try of commitOnly: it commits paths on HEAD as it
+// reads it now, through a temporary index, and moves HEAD to the commit
+// only if HEAD is still that commit. A refusal because HEAD moved is a
+// headMovedError.
+func (r *stepRunner) commitOnHead(paths []string, msg string) (string, error) {
 	old, err := r.Head()
 	if err != nil {
 		return "", err
@@ -666,10 +706,13 @@ func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if _, err := r.worktreeGit("update-ref", "-m", "commit: "+strings.SplitN(msg, "\n", 2)[0], "HEAD", commit, old); err != nil {
-		return "", err
+	if hook := commitOnlyHeadRead; hook != nil {
+		hook(r.worktree)
 	}
-	if _, err := r.worktreeGit(append([]string{"update-index", "--add", "--"}, paths...)...); err != nil {
+	if _, err := r.worktreeGit("update-ref", "-m", "commit: "+strings.SplitN(msg, "\n", 2)[0], "HEAD", commit, old); err != nil {
+		if now, herr := r.Head(); herr == nil && now != old {
+			return "", headMovedError{err}
+		}
 		return "", err
 	}
 	return commit, nil

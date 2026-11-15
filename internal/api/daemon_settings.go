@@ -287,11 +287,65 @@ func removedSettingNotes(ctx *Ctx, reg rootcfg.Config) []string {
 	return notes
 }
 
+// rhizaConfig is one snapshot of the repo's rhiza.* git config keys, keyed
+// by canonical name, read once per settings read: never cached across calls,
+// since the daemon re-reads settings every poll and daemon set writes them
+// while processes run.
+type rhizaConfig map[string]string
+
+// readRhizaConfig reads every rhiza.* key from git config in one call. No
+// git, no keys or a failing git all read as an empty snapshot, as a failed
+// git config --get read as unset.
+func readRhizaConfig(ctx *Ctx) rhizaConfig {
+	if ctx.Git == nil {
+		return nil
+	}
+	out, err := ctx.Git("config", "-z", "--get-regexp", `^rhiza\.`)
+	if err != nil {
+		return nil
+	}
+	return parseRhizaConfig(out)
+}
+
+// parseRhizaConfig reads git config -z output: each entry is the key, a
+// newline and the value, ended by NUL; a key with no value has no newline.
+// A later value of a key wins, as git config --get's last value does.
+func parseRhizaConfig(out string) rhizaConfig {
+	c := rhizaConfig{}
+	for _, e := range strings.Split(out, "\x00") {
+		if e == "" {
+			continue
+		}
+		k, v, _ := strings.Cut(e, "\n")
+		c[canonicalConfigKey(k)] = v
+	}
+	return c
+}
+
+// canonicalConfigKey is key as git compares it: the section and the
+// variable name lowercased, a subsection (whatever lies between them) kept
+// as written, since git matches it case-sensitively.
+func canonicalConfigKey(key string) string {
+	i, j := strings.IndexByte(key, '.'), strings.LastIndexByte(key, '.')
+	if i < 0 || i == j {
+		return strings.ToLower(key)
+	}
+	return strings.ToLower(key[:i]) + key[i:j] + strings.ToLower(key[j:])
+}
+
+// get is key's value in the snapshot, false when it is unset.
+func (c rhizaConfig) get(key string) (string, bool) {
+	v, ok := c[canonicalConfigKey(key)]
+	return v, ok
+}
+
 // settingsOf reads every setting from git config, a flag in flags (key to
-// value) winning. A bad value in config is a usage error naming the key.
+// value) winning. A bad value in config is a usage error naming the key. It
+// runs git config once, looking each key up in that snapshot.
 func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 	var out []Setting
 	_, cfg, haveRoot := rootOf(ctx)
+	conf := readRhizaConfig(ctx)
 	for _, d := range settingDefs {
 		s := Setting{Key: d.key, Value: d.def, Default: d.def, Source: SettingDefault, Scope: d.scope()}
 		if !d.project && haveRoot {
@@ -305,8 +359,8 @@ func settingsOf(ctx *Ctx, flags map[string]string) ([]Setting, error) {
 		}
 		// A machine key not in rhiza.toml still reads an older git config
 		// value; a project key reads only git config.
-		if s.Source == SettingDefault && ctx.Git != nil {
-			if v, err := ctx.Git("config", "--get", d.key); err == nil {
+		if s.Source == SettingDefault {
+			if v, ok := conf.get(d.key); ok {
 				if v = strings.TrimSpace(v); v != "" {
 					if err := d.validate(v); err != nil {
 						return nil, Usagef("git config %s is %q: %v", d.key, v, err)

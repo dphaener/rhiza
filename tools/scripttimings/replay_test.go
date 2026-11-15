@@ -16,7 +16,7 @@ func replayFixture(t *testing.T, name string) (string, error) {
 	}
 	defer f.Close()
 	var out bytes.Buffer
-	err = run([]string{"replay"}, f, &out, nil, nil)
+	err = run([]string{"replay"}, f, &out, nil, nil, nil)
 	return out.String(), err
 }
 
@@ -29,9 +29,55 @@ func TestReplayPass(t *testing.T) {
 	}
 	want := "ok  \tgithub.com/x/rhiza/cmd/rhiza\t16.9s\n" +
 		"script-time\talpha\t4.21\n" +
-		"script-time\tbravo\t12.5\n"
+		"script-time\tbravo\t12.5\n" +
+		"test-time\tTestScripts\t16.8\n"
 	if got != want {
 		t.Errorf("output =\n%q\nwant\n%q", got, want)
+	}
+}
+
+// A package of top-level tests (make test-api): the failed test's text, the
+// package's FAIL lines, then a test-time line per passing top-level test
+// only (no subtest, no failed or skipped test), and a non-zero exit.
+func TestReplayTestTimes(t *testing.T) {
+	got, err := replayFixture(t, "api.json")
+	if !errors.Is(err, ErrReplayFailed) {
+		t.Fatalf("err = %v, want ErrReplayFailed\n%s", err, got)
+	}
+	want := "=== RUN   TestBravo\n" +
+		"    api_test.go:12: want 1, got 2\n" +
+		"--- FAIL: TestBravo (1.20s)\n" +
+		"FAIL\n" +
+		"FAIL\tgithub.com/x/rhiza/internal/api\t16.1s\n" +
+		"test-time\tTestAlpha\t3.5\n" +
+		"test-time\tTestDelta\t0.25\n" +
+		"test-time\tTestGone\t2\n" +
+		"test-time\tTestReadBudget\t9\n"
+	if got != want {
+		t.Errorf("output =\n%s\nwant\n%s", got, want)
+	}
+
+	// The lines parse back to what the go test -json gives directly.
+	fromLog, err := ParseTestTimeLines(strings.NewReader(got))
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := os.Open("testdata/api.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	fromJSON, err := ParseTopTestJSON(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(fromLog) != 4 || len(fromJSON) != len(fromLog) {
+		t.Fatalf("from the log %v, from the json %v", fromLog, fromJSON)
+	}
+	for n, v := range fromJSON {
+		if fromLog[n] != v {
+			t.Errorf("%s: %v from the log, %v from the json", n, fromLog[n], v)
+		}
 	}
 }
 
@@ -104,7 +150,7 @@ func TestReplayKilled(t *testing.T) {
 func TestReplayNoPackageEnd(t *testing.T) {
 	for _, in := range []string{"", "signal: killed\n"} {
 		var out bytes.Buffer
-		err := run([]string{"replay"}, strings.NewReader(in), &out, nil, nil)
+		err := run([]string{"replay"}, strings.NewReader(in), &out, nil, nil, nil)
 		if !errors.Is(err, ErrReplayFailed) {
 			t.Errorf("input %q: err = %v, want ErrReplayFailed", in, err)
 		}
@@ -112,7 +158,7 @@ func TestReplayNoPackageEnd(t *testing.T) {
 			t.Errorf("input %q: output = %q", in, out.String())
 		}
 	}
-	if err := run([]string{"replay", "x"}, strings.NewReader(""), &bytes.Buffer{}, nil, nil); err == nil {
+	if err := run([]string{"replay", "x"}, strings.NewReader(""), &bytes.Buffer{}, nil, nil, nil); err == nil {
 		t.Error("replay with an argument ran")
 	}
 }

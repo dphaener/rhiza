@@ -184,10 +184,12 @@ func autoUpdateRepo(t *testing.T, value, module string) (*Ctx, func() []string) 
 	var ran []string
 	ctx.Git = func(args ...string) (string, error) {
 		switch {
-		case len(args) == 2 && args[0] == "rev-parse" && args[1] == "--git-common-dir":
+		case len(args) == 3 && args[0] == "rev-parse" && args[1] == "--path-format=absolute" && args[2] == "--git-common-dir":
 			return common + "\n", nil
-		case len(args) == 3 && args[0] == "config" && args[2] == "rhiza.daemon.autoUpdate" && value != "":
-			return value + "\n", nil
+		case args[0] == "config" && value != "":
+			if out, err, ok := gitConfigFake(map[string]string{"rhiza.daemon.autoUpdate": value}, args); ok {
+				return out, err
+			}
 		}
 		return "", errors.New("unexpected git " + strings.Join(args, " "))
 	}

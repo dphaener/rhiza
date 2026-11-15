@@ -624,8 +624,8 @@ func orphanLogEntries(ctx *Ctx) []string {
 		return nil
 	}
 	gitDir, err1 := ctx.Git("rev-parse", "--absolute-git-dir")
-	common, err2 := ctx.Git("rev-parse", "--path-format=absolute", "--git-common-dir")
-	if err1 != nil || err2 != nil || filepath.Clean(strings.TrimSpace(gitDir)) != filepath.Clean(strings.TrimSpace(common)) {
+	common, err2 := gitCommonDir(ctx)
+	if err1 != nil || err2 != nil || filepath.Clean(strings.TrimSpace(gitDir)) != common {
 		return nil
 	}
 	orphans, _ := classifyUntrackedLog(ctx.Git)

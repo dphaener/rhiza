@@ -1,0 +1,27 @@
+{"Time":"2026-11-15T10:00:00Z","Action":"start","Package":"github.com/x/rhiza/internal/api"}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha","Output":"=== RUN   TestAlpha\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha/sub"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha/sub","Output":"=== RUN   TestAlpha/sub\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha/sub","Output":"--- PASS: TestAlpha/sub (3.10s)\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha/sub","Elapsed":3.1}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha","Output":"--- PASS: TestAlpha (3.50s)\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha","Elapsed":3.5}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestBravo"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestBravo","Output":"=== RUN   TestBravo\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestBravo","Output":"    api_test.go:12: want 1, got 2\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestBravo","Output":"--- FAIL: TestBravo (1.20s)\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"fail","Package":"github.com/x/rhiza/internal/api","Test":"TestBravo","Elapsed":1.2}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestCharlie"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestCharlie","Output":"=== RUN   TestCharlie\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Test":"TestCharlie","Output":"--- SKIP: TestCharlie (0.00s)\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"skip","Package":"github.com/x/rhiza/internal/api","Test":"TestCharlie","Elapsed":0}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestDelta"}
+{"Time":"2026-11-15T10:00:00Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestDelta","Elapsed":0.25}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestGone"}
+{"Time":"2026-11-15T10:00:00Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestGone","Elapsed":2}
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestReadBudget"}
+{"Time":"2026-11-15T10:00:00Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestReadBudget","Elapsed":9}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Output":"FAIL\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"output","Package":"github.com/x/rhiza/internal/api","Output":"FAIL\tgithub.com/x/rhiza/internal/api\t16.1s\n"}
+{"Time":"2026-11-15T10:00:00Z","Action":"fail","Package":"github.com/x/rhiza/internal/api","Elapsed":16.1}

@@ -84,7 +84,7 @@ func TestMakeTestTimeout(t *testing.T) {
 	// The suite runs with the timing budgets skipped; every go test keeps
 	// the 20m timeout and closes the lock's descriptor, so no leftover
 	// process can hold it.
-	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestInboxGateQuestionsBudget|TestRootIdlePollBudget)$"
 	skip := "go test -trimpath -timeout 20m -skip '" + budgets + "' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	// Only cmd/rhiza's scripts get -parallel (NPROC=4: 8); the other
@@ -219,25 +219,32 @@ func commandsBlock(doc string) (string, bool) {
 // TestMakeTestShardTargets checks the per-job test targets CI runs in
 // parallel: each go test line keeps -trimpath and either skips the timing
 // budgets or runs only them; test-api's shards partition internal/api's
-// listed tests, budgets excluded; test-budgets prints the read-budget timings;
-// test-scripts passes the scripts' -parallel, test-rest and test-budgets none.
+// listed tests, budgets excluded, and a bad SHARD is refused; test-budgets
+// prints the read-budget timings; test-scripts passes the scripts'
+// -parallel, test-rest and test-budgets none.
 func TestMakeTestShardTargets(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
 	}
-	make := func(args ...string) string {
+	makeRun := func(env []string, args ...string) (string, error) {
 		t.Helper()
 		// --no-print-directory: under a parent make (CI runs make
 		// test-rest) the child would add Entering/Leaving directory lines.
 		cmd := exec.Command("make", append([]string{"--no-print-directory"}, args...)...)
 		cmd.Dir = "../.."
+		cmd.Env = append(os.Environ(), env...)
 		out, err := cmd.CombinedOutput()
+		return string(out), err
+	}
+	make := func(args ...string) string {
+		t.Helper()
+		out, err := makeRun(nil, args...)
 		if err != nil {
 			t.Fatalf("make %s: %v\n%s", strings.Join(args, " "), err, out)
 		}
-		return string(out)
+		return out
 	}
-	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestInboxGateQuestionsBudget|TestRootIdlePollBudget)$"
 	lock := "TEST_LOCK=/locks/rhiza-test.lock"
 
 	// test-scripts pipes go test -json through tools/scripttimings replay
@@ -286,7 +293,71 @@ func TestMakeTestShardTargets(t *testing.T) {
 		}
 	}
 
-	// test-api: GO_TEST=echo prints the arguments each shard would pass.
+	// test-api: a fake go test records the arguments each shard passes in
+	// FAKE_ARGS and prints the go test -json stream in FAKE_JSON, then exits
+	// FAKE_EXIT. make test-api pipes it through tools/scripttimings replay.
+	dir := t.TempDir()
+	fakeGo := dir + "/fakego"
+	if err := os.WriteFile(fakeGo, []byte("#!/bin/sh\nprintf '%s\\n' \"$*\" >\"$FAKE_ARGS\"\ncat \"$FAKE_JSON\"\nexit \"$FAKE_EXIT\"\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	const (
+		apiPkg  = `"Package":"github.com/x/rhiza/internal/api"`
+		apiPass = `{"Action":"start",` + apiPkg + "}\n" +
+			`{"Action":"run",` + apiPkg + `,"Test":"TestA"}` + "\n" +
+			`{"Action":"output",` + apiPkg + `,"Test":"TestA","Output":"=== RUN   TestA\n"}` + "\n" +
+			`{"Action":"pass",` + apiPkg + `,"Test":"TestA","Elapsed":1.5}` + "\n" +
+			`{"Action":"output",` + apiPkg + `,"Output":"ok  \tgithub.com/x/rhiza/internal/api\t1.6s\n"}` + "\n" +
+			`{"Action":"pass",` + apiPkg + `,"Elapsed":1.6}` + "\n"
+		apiFail = `{"Action":"start",` + apiPkg + "}\n" +
+			`{"Action":"run",` + apiPkg + `,"Test":"TestB"}` + "\n" +
+			`{"Action":"output",` + apiPkg + `,"Test":"TestB","Output":"--- FAIL: TestB (0.10s)\n"}` + "\n" +
+			`{"Action":"fail",` + apiPkg + `,"Test":"TestB","Elapsed":0.1}` + "\n" +
+			`{"Action":"output",` + apiPkg + `,"Output":"FAIL\tgithub.com/x/rhiza/internal/api\t0.2s\n"}` + "\n" +
+			`{"Action":"fail",` + apiPkg + `,"Elapsed":0.2}` + "\n"
+		apiBuild = `{"Action":"build-output","ImportPath":"github.com/x/rhiza/internal/api","Output":"internal/api/x.go:1:1: undefined: nope\n"}` + "\n" +
+			`{"Action":"build-fail","ImportPath":"github.com/x/rhiza/internal/api"}` + "\n" +
+			`{"Action":"start",` + apiPkg + "}\n" +
+			`{"Action":"output",` + apiPkg + `,"Output":"FAIL\tgithub.com/x/rhiza/internal/api [build failed]\n"}` + "\n" +
+			`{"Action":"fail",` + apiPkg + `,"Elapsed":0}` + "\n"
+		apiKilled = `{"Action":"start",` + apiPkg + "}\n" +
+			`{"Action":"run",` + apiPkg + `,"Test":"TestC"}` + "\n" +
+			`{"Action":"output",` + apiPkg + `,"Test":"TestC","Output":"=== RUN   TestC\n"}` + "\n"
+	)
+	fakeEnv := func(name, stream, exit string) []string {
+		t.Helper()
+		js := dir + "/" + name + ".json"
+		if err := os.WriteFile(js, []byte(stream), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return []string{"FAKE_ARGS=" + dir + "/" + name + ".args", "FAKE_JSON=" + js, "FAKE_EXIT=" + exit}
+	}
+
+	// make test-api keeps go test's exit status through the pipe: it fails
+	// on a failed test, a failed build, a killed go test (no package end) and
+	// a non-zero go test exit whatever its stream says; it passes, printing
+	// the test-time lines, only when both pass.
+	for _, c := range []struct {
+		name, stream, exit string
+		ok                 bool
+		want               string
+	}{
+		{"pass", apiPass, "0", true, "ok  \tgithub.com/x/rhiza/internal/api\t1.6s\ntest-time\tTestA\t1.5\n"},
+		{"failed test", apiFail, "1", false, "--- FAIL: TestB (0.10s)\n"},
+		{"failed test, go test exit 0", apiFail, "0", false, "--- FAIL: TestB (0.10s)\n"},
+		{"failed build", apiBuild, "1", false, "undefined: nope"},
+		{"killed", apiKilled, "137", false, "no package end event"},
+		{"passing stream, go test exit 1", apiPass, "1", false, "test-time\tTestA\t1.5\n"},
+	} {
+		out, err := makeRun(fakeEnv("status", c.stream, c.exit), "test-api", "SHARD=1/2", "GO_TEST="+fakeGo)
+		if (err == nil) != c.ok {
+			t.Errorf("test-api with %s: err = %v, want ok %v:\n%s", c.name, err, c.ok, out)
+		}
+		if !strings.Contains(out, c.want) {
+			t.Errorf("test-api with %s: output has no %q:\n%s", c.name, c.want, out)
+		}
+	}
+
 	list := exec.Command("go", "test", "-trimpath", "-list", "^Test", "./internal/api")
 	list.Dir = "../.."
 	listed, err := list.Output()
@@ -304,9 +375,17 @@ func TestMakeTestShardTargets(t *testing.T) {
 	}
 	got := map[string]int{}
 	for _, shard := range []string{"1/2", "2/2"} {
-		out := make("test-api", "SHARD="+shard, "GO_TEST=echo")
-		if !strings.Contains(out, "-trimpath") || !strings.HasSuffix(strings.TrimSpace(out), "./internal/api") {
-			t.Errorf("test-api %s line lacks -trimpath or the package:\n%s", shard, out)
+		env := fakeEnv("shard", apiPass, "0")
+		if out, err := makeRun(env, "test-api", "SHARD="+shard, "GO_TEST="+fakeGo); err != nil {
+			t.Fatalf("make test-api SHARD=%s: %v\n%s", shard, err, out)
+		}
+		args, err := os.ReadFile(strings.TrimPrefix(env[0], "FAKE_ARGS="))
+		if err != nil {
+			t.Fatal(err)
+		}
+		out := string(args)
+		if !strings.Contains(out, "-trimpath") || !strings.Contains(out, " -json ") || !strings.HasSuffix(strings.TrimSpace(out), "./internal/api") {
+			t.Errorf("test-api %s line lacks -trimpath, -json or the package:\n%s", shard, out)
 		}
 		_, after, ok := strings.Cut(out, "-run ")
 		if !ok {
@@ -328,6 +407,18 @@ func TestMakeTestShardTargets(t *testing.T) {
 	for name := range got {
 		if !want[name] {
 			t.Errorf("shards run %s, which go test -list does not show (or is a budget test)", name)
+		}
+	}
+
+	// A shard outside 1 <= i <= n is refused before go test runs.
+	for _, bad := range []string{"0/2", "3/2", "1/0"} {
+		env := fakeEnv("bad", apiPass, "0")
+		out, err := makeRun(env, "test-api", "SHARD="+bad, "GO_TEST="+fakeGo)
+		if err == nil || !strings.Contains(out, "want i/n with 1 <= i <= n") {
+			t.Errorf("make test-api SHARD=%s: err = %v, want the i/n refusal:\n%s", bad, err, out)
+		}
+		if _, err := os.Stat(strings.TrimPrefix(env[0], "FAKE_ARGS=")); err == nil {
+			t.Errorf("make test-api SHARD=%s ran go test", bad)
 		}
 	}
 

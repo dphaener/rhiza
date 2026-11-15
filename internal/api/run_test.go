@@ -148,10 +148,10 @@ func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
 			if e := AsError(err); !strings.Contains(e.Message, `step "build"`) || !strings.Contains(e.Message, c.message) {
 				t.Errorf("message %q lacks the step or %q", e.Message, c.message)
 			}
-			// Reading settings (git config --get) stands in for the daemon's mode.
+			// Reading settings (git config) stands in for the daemon's mode.
 			var gitCalls []string
 			for _, c := range f.git.calls {
-				if !strings.HasPrefix(fmt.Sprint(c), "[config --get ") && !strings.HasPrefix(fmt.Sprint(c), "config --get ") {
+				if s := fmt.Sprint(c); !strings.HasPrefix(s, "config --get ") && s != "config -z --get-regexp ^rhiza\\." {
 					gitCalls = append(gitCalls, fmt.Sprint(c))
 				}
 			}

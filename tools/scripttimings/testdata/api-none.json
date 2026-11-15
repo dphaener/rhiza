@@ -1,0 +1,4 @@
+{"Time":"2026-11-15T10:00:00Z","Action":"run","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha"}
+{"Time":"2026-11-15T10:00:01Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha/sub","Elapsed":1}
+{"Time":"2026-11-15T10:00:02Z","Action":"fail","Package":"github.com/x/rhiza/internal/api","Test":"TestAlpha","Elapsed":2}
+{"Time":"2026-11-15T10:00:03Z","Action":"pass","Package":"github.com/x/rhiza/internal/api","Elapsed":3}

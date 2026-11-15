@@ -16,6 +16,7 @@ No test is deleted or skipped to get there: the number of tests go test -list '.
 ### In
 
 - serves change set `01M7EQ3AKCN5WTRED0VFN3JJD5` (Read budgets are opt-in benchmarks: the timing budgets (TestReadBudget, TestReadBudgetApply, TestBudget in internal/index and internal/slice, TestCatchUpBudget, TestDriverPollIsCheap, TestGeneratedModel) leave make test for an opt-in make test-budgets that CI's budgets job runs, and the tests that wait out the index's 2 s racy window backdate mtimes with os.Chtimes instead of sleeping 2.2 s. Evidence: the budget phase is 188 s even warm.)
+- relates-to [m38-nothing-lost-at-ab67d485](../../evidence/m38-nothing-lost-at-ab67d485.md) — Evidence that m38-nothing-lost holds at ab67d485c
 
 ## History
 

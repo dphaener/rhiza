@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
@@ -539,16 +540,26 @@ func startStep(r SessionStartRequest) (string, error) {
 }
 
 // gitCommonDir is the absolute git common dir of ctx.Root: the main
-// checkout's .git, whichever worktree Root is in.
+// checkout's .git, whichever worktree Root is in. Git is asked once per
+// Root, as rev-parse --path-format=absolute --git-common-dir (git's own
+// symlink-resolved path, the form --absolute-git-dir prints), and the
+// cleaned answer is kept on ctx for every later call; a failure is not kept.
 func gitCommonDir(ctx *Ctx) (string, error) {
 	if ctx.Git == nil {
 		return "", Errorf("sessions need git: they live in the git common dir")
 	}
-	out, err := ctx.Git("rev-parse", "--git-common-dir")
+	memo := ctx.commonDirMemo()
+	commonDirMu.Lock()
+	d, ok := memo[ctx.Root]
+	commonDirMu.Unlock()
+	if ok {
+		return d, nil
+	}
+	out, err := ctx.Git("rev-parse", "--path-format=absolute", "--git-common-dir")
 	if err != nil {
 		return "", Errorf("sessions need a git repository: %v", err)
 	}
-	d := strings.TrimSpace(out)
+	d = strings.TrimSpace(out)
 	if !filepath.IsAbs(d) {
 		root, err := filepath.Abs(ctx.Root)
 		if err != nil {
@@ -556,7 +567,55 @@ func gitCommonDir(ctx *Ctx) (string, error) {
 		}
 		d = filepath.Join(root, d)
 	}
-	return filepath.Clean(d), nil
+	d = filepath.Clean(d)
+	commonDirMu.Lock()
+	memo[ctx.Root] = d
+	commonDirMu.Unlock()
+	return d, nil
+}
+
+// GitCommonDir is gitCommonDir for callers outside the package, such as
+// the CLI's test-mode ID offset: the same kept answer.
+func GitCommonDir(ctx *Ctx) (string, error) { return gitCommonDir(ctx) }
+
+// shareCommonDir keeps for the checkout to the common dir of the checkout
+// from, ctx.Root: to is a worktree this process added from from's
+// repository, so a copy of ctx moved to it does not ask git again. A from
+// other than ctx.Root, or one git cannot answer for, shares nothing.
+func shareCommonDir(ctx *Ctx, from, to string) {
+	if from != ctx.Root {
+		return
+	}
+	d, err := gitCommonDir(ctx)
+	if err != nil {
+		return
+	}
+	memo := ctx.commonDirMemo()
+	commonDirMu.Lock()
+	memo[to] = d
+	commonDirMu.Unlock()
+}
+
+// commonDirMu guards every Ctx's commonDirs: the pointer and the map, which
+// copies of a Ctx share and the daemon's goroutines read together.
+var commonDirMu sync.Mutex
+
+// commonDirMemo is ctx's map from Root to its kept git common dir, made on
+// first use.
+func (ctx *Ctx) commonDirMemo() map[string]string {
+	commonDirMu.Lock()
+	defer commonDirMu.Unlock()
+	if ctx.commonDirs == nil {
+		ctx.commonDirs = &commonDirs{byRoot: map[string]string{}}
+	}
+	return ctx.commonDirs.byRoot
+}
+
+// commonDirs holds the git common dirs a Ctx and its copies were answered,
+// by Root: a copy that moves Root to another checkout (and its Git with it)
+// asks again.
+type commonDirs struct {
+	byRoot map[string]string
 }
 
 // newSessionID draws a UUID v4 from ids. The ID's random part comes first,

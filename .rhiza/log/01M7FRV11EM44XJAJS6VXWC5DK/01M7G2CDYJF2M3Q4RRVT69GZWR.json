@@ -1,0 +1,40 @@
+{
+  "actor": "01M7G22DXH4G0H1ZXTX18SFYP5",
+  "after": [
+    "01M7G1PYY4S51FX9MK9XQ41C9K"
+  ],
+  "at": "2026-11-15T16:59:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 915b93774, under the machine lock with RHIZA_/SHIP_/REX_ unset: go test -trimpath -p 2 -count=1 ./internal/api -run '^TestCommitOnlyHeadMoved' passed (TestCommitOnlyHeadMoved: hook-injected commit between HEAD read and update-ref; CommitEvidence succeeds, Evidence commit's parent is the racing commit, both on the branch, racer.txt intact, Evidence paths committed and real index clean; TestCommitOnlyHeadMovedEveryTry: fails after 5 tries with update-ref's error). go test -trimpath -p 2 ./internal/api -run 'CommitEvidence|CommitOnly|RunLeaves' passed, -run 'EvidenceCommit|LeafCommit' -count=1 passed, go vet ./internal/api clean, go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/^headless-run-agent-tabs$' passed all three runs (run once), rhiza ship generate staged 0 files, rhiza render exit 0. The diff touches only internal/api/run_leaves.go, its test and the builder's .rhiza entries; no stubs or TODOs."
+        },
+        "handle": "evidence-commit-survives-moved-head-verified",
+        "id": "01M7G2CDW5GKSZ0519FHAQ3NKS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G2CDW5GKSZ0519FDCH910Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G2CDW5GKSZ0519FDCH910Q",
+        "id": "01M7G2CDXAVPA3J3SXP3CM85XE",
+        "link": "01M7G2CDXAVPA3J3SXNZKS9D5F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14Q1YV5YWP0RN8R7A8XA",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7G2CDYJF2M3Q4RRVT69GZWR",
+  "type": "ops",
+  "v": 1
+}

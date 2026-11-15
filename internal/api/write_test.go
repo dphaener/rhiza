@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -880,8 +881,10 @@ func linkEndHandle(prefix string, e check.End) string {
 // link type and every pair of end kinds, change sets included: a pair the
 // table allows is never refused as a kind mismatch, and any other is a
 // usage error naming both kinds that writes nothing.
-// Each link is tried in its own fresh copy of linkEndpoints, so no link
-// reads the ones before it.
+// Each link type runs in its own parallel subtest. A link the table allows
+// is tried in its own fresh copy of linkEndpoints, so no link reads the ones
+// before it; the links it refuses share one copy per type, since a refused
+// link writes nothing (and one wrongly allowed fails the test anyway).
 func TestLinkEndpointKinds(t *testing.T) {
 	t.Parallel()
 	scratch := t.TempDir()
@@ -902,42 +905,64 @@ func TestLinkEndpointKinds(t *testing.T) {
 		}
 		return other.String()
 	}
-	n := 0
-	for _, lt := range op.LinkTypes() {
-		for _, from := range check.Ends() {
-			for _, to := range check.Ends() {
-				r := LinkRequest{From: ref("x", from), Type: string(lt), To: ref("y", to), Note: "n"}
-				if lt == op.LinkExempts {
-					r.Decision = "x-decision"
-				}
-				req, err := json.Marshal(r)
+	var checked atomic.Int64
+	// The group returns once every parallel per-type subtest has.
+	t.Run("types", func(t *testing.T) {
+		for i, lt := range op.LinkTypes() {
+			t.Run(string(lt), func(t *testing.T) {
+				t.Parallel()
+				typeDir := filepath.Join(scratch, strconv.Itoa(i))
+				refused, err := linkEndpoints.copyTo(filepath.Join(typeDir, "refused"))
 				if err != nil {
 					t.Fatal(err)
 				}
-				n++
-				dir := filepath.Join(scratch, strconv.Itoa(n))
-				ctx, err := linkEndpoints.copyTo(dir)
-				if err != nil {
-					t.Fatal(err)
-				}
-				_, err = callOp(t, ctx, "link", string(req))
-				if rmErr := os.RemoveAll(dir); rmErr != nil {
-					t.Fatal(rmErr)
-				}
-				mismatch := err != nil && strings.Contains(err.Error(), "does not go from")
-				switch {
-				case check.Allowed(lt, from, to) && mismatch:
-					t.Errorf("%s from %s to %s is allowed, but refused: %v", lt, from, to, err)
-				case !check.Allowed(lt, from, to) && !mismatch:
-					t.Errorf("%s from %s to %s is not allowed, but got %v", lt, from, to, err)
-				case mismatch:
-					want := fmt.Sprintf("link type %q does not go from %s to %s", lt, from, to)
-					if ExitCode(err) != 2 || !strings.Contains(err.Error(), want) {
-						t.Errorf("%s from %s to %s: %v (exit %d), want usage %q", lt, from, to, err, ExitCode(err), want)
+				n := 0
+				for _, from := range check.Ends() {
+					for _, to := range check.Ends() {
+						r := LinkRequest{From: ref("x", from), Type: string(lt), To: ref("y", to), Note: "n"}
+						if lt == op.LinkExempts {
+							r.Decision = "x-decision"
+						}
+						req, err := json.Marshal(r)
+						if err != nil {
+							t.Fatal(err)
+						}
+						allowed := check.Allowed(lt, from, to)
+						ctx, dir := refused, ""
+						if allowed {
+							n++
+							dir = filepath.Join(typeDir, strconv.Itoa(n))
+							if ctx, err = linkEndpoints.copyTo(dir); err != nil {
+								t.Fatal(err)
+							}
+						}
+						_, err = callOp(t, ctx, "link", string(req))
+						if dir != "" {
+							if rmErr := os.RemoveAll(dir); rmErr != nil {
+								t.Fatal(rmErr)
+							}
+						}
+						checked.Add(1)
+						mismatch := err != nil && strings.Contains(err.Error(), "does not go from")
+						switch {
+						case allowed && mismatch:
+							t.Errorf("%s from %s to %s is allowed, but refused: %v", lt, from, to, err)
+						case !allowed && !mismatch:
+							t.Errorf("%s from %s to %s is not allowed, but got %v", lt, from, to, err)
+						case mismatch:
+							want := fmt.Sprintf("link type %q does not go from %s to %s", lt, from, to)
+							if ExitCode(err) != 2 || !strings.Contains(err.Error(), want) {
+								t.Errorf("%s from %s to %s: %v (exit %d), want usage %q", lt, from, to, err, ExitCode(err), want)
+							}
+						}
 					}
 				}
-			}
+			})
 		}
+	})
+	ends := len(check.Ends())
+	if got, want := checked.Load(), int64(len(op.LinkTypes())*ends*ends); got != want {
+		t.Errorf("checked %d cases, want %d (link types x ends x ends)", got, want)
 	}
 }
 

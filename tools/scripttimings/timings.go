@@ -19,10 +19,18 @@ import (
 const (
 	DefaultFile    = "cmd/rhiza/testdata/script-timings.tsv"
 	DefaultScripts = "cmd/rhiza/testdata/script"
+	// DefaultTestsFile and DefaultTestsPkg are merge-tests' file and the
+	// package whose top-level tests it lists.
+	DefaultTestsFile = "internal/api/testdata/test-timings.tsv"
+	DefaultTestsPkg  = "./internal/api"
 )
 
 // ScriptTimePrefix opens a script-time line, script-time<TAB><name><TAB><seconds>.
 const ScriptTimePrefix = "script-time\t"
+
+// TestTimePrefix opens a test-time line, test-time<TAB><test><TAB><seconds>:
+// the time of one passing top-level test.
+const TestTimePrefix = "test-time\t"
 
 // NewScriptSeconds is the time given to a script that has neither a fresh nor
 // a previous time: the same 1 second every script was seeded with.
@@ -32,9 +40,18 @@ const NewScriptSeconds = 1.0
 // and no script-time line: nothing to merge, so the file is left alone.
 var ErrNoTimes = errors.New("no passing TestScripts subtest and no script-time line in the input")
 
+// ErrNoTestTimes is ErrNoTimes for top-level tests: the input holds no passing
+// top-level test and no test-time line.
+var ErrNoTestTimes = errors.New("no passing top-level test and no test-time line in the input")
+
 // FormatScriptTime renders one script-time line (no newline).
 func FormatScriptTime(name string, seconds float64) string {
 	return ScriptTimePrefix + name + "\t" + formatSeconds(seconds)
+}
+
+// FormatTestTime renders one test-time line (no newline).
+func FormatTestTime(name string, seconds float64) string {
+	return TestTimePrefix + name + "\t" + formatSeconds(seconds)
 }
 
 // ParseScriptTimeLines reads script-time lines out of a log. In a gh run view
@@ -42,23 +59,36 @@ func FormatScriptTime(name string, seconds float64) string {
 // script-time field is found anywhere in the line rather than at its start.
 // Other lines are ignored; a script timed twice keeps its longest time.
 func ParseScriptTimeLines(r io.Reader) (map[string]float64, error) {
+	return parseTimeLines(r, ScriptTimePrefix, ErrNoTimes)
+}
+
+// ParseTestTimeLines reads test-time lines out of a log, as
+// ParseScriptTimeLines reads script-time lines.
+func ParseTestTimeLines(r io.Reader) (map[string]float64, error) {
+	return parseTimeLines(r, TestTimePrefix, ErrNoTestTimes)
+}
+
+// parseTimeLines reads the lines carrying prefix, <name><TAB><seconds> after
+// it, returning none when there are none.
+func parseTimeLines(r io.Reader, prefix string, none error) (map[string]float64, error) {
+	kind := strings.TrimSuffix(prefix, "\t")
 	times := map[string]float64{}
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
 	for sc.Scan() {
 		line := strings.TrimRight(sc.Text(), "\r")
-		i := strings.Index(line, ScriptTimePrefix)
+		i := strings.Index(line, prefix)
 		if i < 0 {
 			continue
 		}
-		fields := strings.Split(line[i+len(ScriptTimePrefix):], "\t")
+		fields := strings.Split(line[i+len(prefix):], "\t")
 		if len(fields) != 2 {
-			return nil, fmt.Errorf("malformed script-time line %q", line)
+			return nil, fmt.Errorf("malformed %s line %q", kind, line)
 		}
 		name := fields[0]
 		secs, err := parseSeconds(strings.TrimSpace(fields[1]))
 		if err != nil || !validName(name) {
-			return nil, fmt.Errorf("malformed script-time line %q", line)
+			return nil, fmt.Errorf("malformed %s line %q", kind, line)
 		}
 		times[name] = math.Max(times[name], secs)
 	}
@@ -66,7 +96,7 @@ func ParseScriptTimeLines(r io.Reader) (map[string]float64, error) {
 		return nil, err
 	}
 	if len(times) == 0 {
-		return nil, ErrNoTimes
+		return nil, none
 	}
 	return times, nil
 }
@@ -106,6 +136,33 @@ func ParseTestJSON(r io.Reader) (map[string]float64, error) {
 	}
 	if len(times) == 0 {
 		return nil, ErrNoTimes
+	}
+	return times, nil
+}
+
+// ParseTopTestJSON reads the passing top-level tests of a go test -json
+// stream with their elapsed seconds, as ParseTestJSON reads the scripts:
+// subtests, failed, skipped and unfinished tests are left out.
+func ParseTopTestJSON(r io.Reader) (map[string]float64, error) {
+	times := map[string]float64{}
+	sc := bufio.NewScanner(r)
+	sc.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
+	for sc.Scan() {
+		line := bytes.TrimSpace(sc.Bytes())
+		if len(line) == 0 || line[0] != '{' {
+			continue
+		}
+		var ev testEvent
+		if json.Unmarshal(line, &ev) != nil || ev.Action != "pass" || !validName(ev.Test) {
+			continue
+		}
+		times[ev.Test] = math.Max(times[ev.Test], ev.Elapsed)
+	}
+	if err := sc.Err(); err != nil {
+		return nil, err
+	}
+	if len(times) == 0 {
+		return nil, ErrNoTestTimes
 	}
 	return times, nil
 }
@@ -161,6 +218,21 @@ func Merge(prev, fresh map[string]float64, scripts []string) map[string]float64 
 	return out
 }
 
+// MergeTests gives each test its fresh time, else its previous one. A test
+// with neither is left out (the shards weigh a missing test at the median),
+// and names not in tests are dropped.
+func MergeTests(prev, fresh map[string]float64, tests []string) map[string]float64 {
+	out := make(map[string]float64, len(tests))
+	for _, s := range tests {
+		if v, ok := fresh[s]; ok {
+			out[s] = v
+		} else if v, ok := prev[s]; ok {
+			out[s] = v
+		}
+	}
+	return out
+}
+
 // Format renders a timings file: name<TAB>seconds lines sorted by name.
 func Format(times map[string]float64) []byte {
 	names := make([]string, 0, len(times))
@@ -207,22 +279,45 @@ func MergeFile(path, dir string, fresh map[string]float64) (int, error) {
 		return 0, err
 	}
 	merged := Merge(prev, fresh, scripts)
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".script-timings-*")
+	return len(merged), writeFile(path, Format(merged))
+}
+
+// MergeTestsFile merges fresh times into the file at path for tests (the
+// package's top-level tests) and writes it back atomically, returning how
+// many tests it lists. On any error the file is left unchanged.
+func MergeTestsFile(path string, tests []string, fresh map[string]float64) (int, error) {
+	if len(fresh) == 0 {
+		return 0, ErrNoTestTimes
+	}
+	if len(tests) == 0 {
+		return 0, errors.New("no tests to time")
+	}
+	prev, err := ReadFile(path)
 	if err != nil {
 		return 0, err
 	}
+	merged := MergeTests(prev, fresh, tests)
+	return len(merged), writeFile(path, Format(merged))
+}
+
+// writeFile replaces path with data through a temporary file beside it.
+func writeFile(path string, data []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".script-timings-*")
+	if err != nil {
+		return err
+	}
 	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(Format(merged)); err != nil {
+	if _, err := tmp.Write(data); err != nil {
 		tmp.Close()
-		return 0, err
+		return err
 	}
 	if err := tmp.Close(); err != nil {
-		return 0, err
+		return err
 	}
 	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
-		return 0, err
+		return err
 	}
-	return len(merged), os.Rename(tmp.Name(), path)
+	return os.Rename(tmp.Name(), path)
 }
 
 func parseSeconds(s string) (float64, error) {

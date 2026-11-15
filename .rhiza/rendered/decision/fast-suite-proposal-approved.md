@@ -33,6 +33,7 @@ The milestone is planned as the orchestrator proposed it on 2026-11-15: the targ
 
 ### In
 
+- relates-to [idle-and-gate-budgets-opt-in](idle-and-gate-budgets-opt-in.md) — Applies its opt-in budgets ruling to two budgets #590 missed
 - decided-by [milestone-38](../intent/milestone-38.md)
 - decided-by [m38-cold](../intent/milestone-38/m38-cold.md)
 - decided-by [m38-warm](../intent/milestone-38/m38-warm.md)

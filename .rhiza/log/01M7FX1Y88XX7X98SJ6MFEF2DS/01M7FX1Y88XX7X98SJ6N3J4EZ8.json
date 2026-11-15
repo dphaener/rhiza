@@ -1,0 +1,15 @@
+{
+  "actor": "01M7FWF8XM5RN6FP7N9T8GFHVE",
+  "after": [],
+  "at": "2026-11-15T15:26:18Z",
+  "body": {
+    "intent": "TestDaemonIdlePollSkipsFold is flaky under load: it runs in parallel and checks the package-global planReadCount/planFoldCount deltas, so other parallel internal/api tests' folds count against it (seen 2026-11-15: 'idle poll folded 7 in-flight change sets' in a full go test -p 2 ./internal/api run; it passes alone). Count per fixture or run it serially.",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7FX1Y88XX7X98SJ6MFEF2DS",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7FX1Y88XX7X98SJ6N3J4EZ8",
+  "type": "open",
+  "v": 1
+}

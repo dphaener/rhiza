@@ -1,5 +1,5 @@
-// Package ciworkflow holds the test that pins the shape of Rhiza's own CI
-// workflow file.
+// Package ciworkflow holds the tests that pin the shape of Rhiza's own CI
+// workflow files: ci.yml and go-cache.yml.
 package ciworkflow
 
 import (
@@ -47,7 +47,13 @@ func value(lines []line, indent int, key string) (string, bool) {
 
 func parse(t *testing.T) []line {
 	t.Helper()
-	data, err := os.ReadFile("../../.github/workflows/ci.yml")
+	return parseFile(t, "ci.yml")
+}
+
+// parseFile reads the workflow file name under .github/workflows.
+func parseFile(t *testing.T, name string) []line {
+	t.Helper()
+	data, err := os.ReadFile("../../.github/workflows/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,9 +172,6 @@ func TestCIJobsAndMatrices(t *testing.T) {
 		if v, _ := value(j, 4, "run"); !strings.Contains(strings.Join(texts(j), "\n"), "run: "+run) {
 			t.Errorf("job %s: no step running %q (%q)", name, run, v)
 		}
-		if !has(j, "cache: true") || !has(j, "cache-dependency-path: go.sum") {
-			t.Errorf("job %s: setup-go must set cache: true and cache-dependency-path: go.sum", name)
-		}
 		if shard, ok := shards[name]; ok {
 			s := block(j, 4, "strategy")
 			if !has(s, "fail-fast: false") {
@@ -230,9 +233,6 @@ func TestCIModelJobRunsOnlyOnModelChanges(t *testing.T) {
 			t.Errorf("model job: no step running %q", run)
 		}
 	}
-	if !has(j, "cache: true") {
-		t.Error("model job: setup-go must set cache: true")
-	}
 }
 
 func TestCICheckAggregatesEveryJob(t *testing.T) {
@@ -258,6 +258,149 @@ func TestCICheckAggregatesEveryJob(t *testing.T) {
 		if !strings.Contains(body, want) {
 			t.Errorf("check lacks %q", want)
 		}
+	}
+}
+
+// goCacheKey and goCachePrefix are the key go-cache.yml saves the Go build
+// and module caches under, and the prefix ci.yml's jobs restore by.
+const (
+	goCachePrefix = "go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-"
+	goCacheKey    = goCachePrefix + "${{ github.sha }}"
+)
+
+// step returns the lines of the step (a "- " item at indent 4) whose uses:
+// or name: line has the given text, the item's own line included.
+func step(lines []line, text string) []line {
+	for i, l := range lines {
+		if l.indent != 4 || !strings.HasPrefix(l.text, "- ") {
+			continue
+		}
+		item := []line{{6, strings.TrimPrefix(l.text, "- ")}}
+		for _, n := range lines[i+1:] {
+			if n.indent <= 4 {
+				break
+			}
+			item = append(item, n)
+		}
+		for _, n := range item {
+			if n.indent == 6 && n.text == text {
+				return item
+			}
+		}
+	}
+	return nil
+}
+
+// checkCacheStep fails unless the step's with: block lists exactly the Go
+// build and module caches, the key goCacheKey and the restore-keys prefix.
+func checkCacheStep(t *testing.T, where string, s []line) {
+	t.Helper()
+	with := block(s, 6, "with")
+	body := strings.Join(texts(with), "\n")
+	for _, want := range []string{"path: |\n~/.cache/go-build\n~/go/pkg/mod\n", "key: " + goCacheKey, "restore-keys: |\n" + goCachePrefix} {
+		if !strings.Contains(body, want) {
+			t.Errorf("%s: cache step lacks %q:\n%s", where, want, body)
+		}
+	}
+}
+
+// setupGoCacheOff fails unless the job sets up Go with id go (whose
+// go-version output the cache key names) and setup-go's own cache off.
+func setupGoCacheOff(t *testing.T, where string, j []line) {
+	t.Helper()
+	s := step(j, "uses: actions/setup-go@v7")
+	if s == nil {
+		t.Fatalf("%s: no actions/setup-go@v7 step", where)
+	}
+	if !has(s, "id: go") {
+		t.Errorf("%s: setup-go step has no id: go", where)
+	}
+	with := block(s, 6, "with")
+	if v, _ := value(with, 8, "cache"); v != "false" {
+		t.Errorf("%s: setup-go cache = %q; want false", where, v)
+	}
+	if _, ok := value(with, 8, "cache-dependency-path"); ok {
+		t.Errorf("%s: setup-go still sets cache-dependency-path", where)
+	}
+}
+
+func TestCIGoJobsRestoreMainsCacheAndSaveNone(t *testing.T) {
+	for _, name := range []string{"model", "lint", "scripts", "api", "rest", "budgets"} {
+		j := jobBlock(t, name)
+		where := "job " + name
+		setupGoCacheOff(t, where, j)
+		restore := step(j, "uses: actions/cache/restore@v6")
+		if restore == nil {
+			t.Errorf("%s: no actions/cache/restore@v6 step", where)
+		} else {
+			checkCacheStep(t, where, restore)
+		}
+		body := strings.Join(texts(j), "\n")
+		for _, save := range []string{"uses: actions/cache@", "uses: actions/cache/save@"} {
+			if strings.Contains(body, save) {
+				t.Errorf("%s: %s saves a cache; jobs in ci.yml save none", where, save)
+			}
+		}
+		if strings.Contains(body, "cache: true") {
+			t.Errorf("%s: a step still turns a cache on", where)
+		}
+	}
+}
+
+func TestGoCacheWarmsFromMain(t *testing.T) {
+	lines := parseFile(t, "go-cache.yml")
+	on := block(lines, 0, "on")
+	if on == nil {
+		t.Fatal("go-cache.yml has no on: block")
+	}
+	var triggers []string
+	for _, l := range on {
+		if l.indent == on[0].indent {
+			triggers = append(triggers, strings.TrimSuffix(strings.SplitN(l.text, ":", 2)[0], ":"))
+		}
+	}
+	if strings.Join(triggers, ",") != "push,workflow_dispatch" {
+		t.Errorf("go-cache.yml triggers = %v; want exactly push and workflow_dispatch", triggers)
+	}
+	if v, _ := value(block(on, on[0].indent, "push"), on[0].indent+2, "branches"); v != "[ main ]" {
+		t.Errorf("go-cache.yml push branches = %q; want [ main ]", v)
+	}
+
+	jobs := block(lines, 0, "jobs")
+	var names []string
+	for _, l := range jobs {
+		if l.indent == 2 {
+			names = append(names, strings.TrimSuffix(l.text, ":"))
+		}
+	}
+	if len(names) != 1 {
+		t.Fatalf("go-cache.yml jobs = %v; want exactly one", names)
+	}
+	j := block(jobs, 2, names[0])
+	if step(j, "uses: actions/checkout@v7") == nil {
+		t.Error("go-cache.yml: no actions/checkout@v7 step")
+	}
+	setupGoCacheOff(t, "go-cache.yml", j)
+	cache := step(j, "uses: actions/cache@v6")
+	if cache == nil {
+		t.Fatal("go-cache.yml: no actions/cache@v6 step")
+	}
+	checkCacheStep(t, "go-cache.yml", cache)
+
+	// The cache step comes before the builds, so its post step saves what
+	// they compiled; the builds compile the way ci.yml's jobs do.
+	var order []string
+	for _, l := range j {
+		switch {
+		case l.text == "- uses: actions/cache@v6" || l.text == "uses: actions/cache@v6":
+			order = append(order, "cache")
+		case strings.HasPrefix(l.text, "run: "):
+			order = append(order, strings.TrimPrefix(l.text, "run: "))
+		}
+	}
+	want := []string{"cache", "go build -trimpath ./...", "go test -trimpath -run '^$' ./...", "go vet ./..."}
+	if strings.Join(order, "|") != strings.Join(want, "|") {
+		t.Errorf("go-cache.yml steps = %q; want %q", order, want)
 	}
 }
 

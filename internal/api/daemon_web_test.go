@@ -40,20 +40,22 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 	ports := make(chan string)
 	hosts := make(chan string)
 	ctx.Git = func(args ...string) (string, error) {
-		if len(args) == 2 && args[0] == "rev-parse" {
+		if len(args) == 3 && args[0] == "rev-parse" && args[2] == "--git-common-dir" {
 			return common + "\n", nil
 		}
-		if len(args) == 3 && args[0] == "config" && args[2] == web.HostKey {
+		if len(args) == 4 && args[0] == "config" && args[2] == "--get-regexp" {
+			// One settings read: the host, then the port, the disk guard off.
+			cfg := map[string]string{"rhiza.daemon.minFree": "0"}
 			if h := <-hosts; h != "" {
-				return h + "\n", nil
+				cfg[web.HostKey] = h
 			}
-		}
-		if len(args) == 3 && args[0] == "config" && args[2] == web.PortKey {
 			if p := <-ports; p != "" {
-				return p + "\n", nil
+				cfg[web.PortKey] = p
 			}
+			out, err, _ := gitConfigFake(cfg, args)
+			return out, err
 		}
-		if v, ok := noDiskReads(args); ok {
+		if v, ok := noDiskReads(args, nil); ok {
 			return v, nil
 		}
 		return "", errors.New("unset")
@@ -168,7 +170,7 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 	ctx.Getenv = func(string) string { return "" }
 	git := ctx.Git
 	ctx.Git = func(args ...string) (string, error) {
-		if v, ok := noDiskReads(args); ok {
+		if v, ok := noDiskReads(args, git); ok {
 			return v, nil
 		}
 		return git(args...)
@@ -197,7 +199,17 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 // guard off), for a daemon test that must run without RHIZA_TEST_NOW and so
 // cannot pin its free disk: with it off, the daemon never reads the free
 // space at all.
-func noDiskReads(args []string) (string, bool) {
+//
+// The settings' one snapshot read is git's (nil: none) with minFree 0 last,
+// so it wins.
+func noDiskReads(args []string, git func(...string) (string, error)) (string, bool) {
+	if len(args) == 4 && args[0] == "config" && args[1] == "-z" && args[2] == "--get-regexp" {
+		var out string
+		if git != nil {
+			out, _ = git(args...)
+		}
+		return out + "rhiza.daemon.minfree\n0\x00", true
+	}
 	if len(args) == 3 && args[0] == "config" {
 		switch args[2] {
 		case "rhiza.daemon.minFree":

@@ -98,7 +98,7 @@ func daemonRepo(t *testing.T) (*Ctx, string) {
 	underRoot(t, ctx)
 	common := t.TempDir()
 	ctx.Git = func(args ...string) (string, error) {
-		if len(args) == 2 && args[0] == "rev-parse" && args[1] == "--git-common-dir" {
+		if len(args) == 3 && args[0] == "rev-parse" && args[1] == "--path-format=absolute" && args[2] == "--git-common-dir" {
 			return common + "\n", nil
 		}
 		return "", errors.New("unexpected git " + args[0])

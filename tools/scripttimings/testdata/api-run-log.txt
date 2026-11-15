@@ -1,0 +1,7 @@
+api (1/2)	Set up job	2026-11-15T10:00:00.0000000Z Current runner version: '2.320.0'
+api (1/2)	Run api	2026-11-15T10:01:05.2000000Z test-time	TestAlpha	3.5
+api (1/2)	Run api	2026-11-15T10:01:05.3000000Z --- FAIL: TestBravo (1.20s)
+api (2/2)	Run api	2026-11-15T10:01:06.3000000Z test-time	TestDelta	0.25
+api (2/2)	Run api	2026-11-15T10:01:06.4000000Z test-time	TestGone	2
+scripts (1/4)	Run scripts	2026-11-15T10:01:07.5000000Z script-time	alpha	4.21
+scripts (1/4)	Run scripts	2026-11-15T10:01:07.6000000Z test-time	TestScripts	40

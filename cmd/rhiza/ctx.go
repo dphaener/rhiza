@@ -122,7 +122,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	if nowEnv == "" && seedEnv == "" {
 		return ctx, nil
 	}
-	n := testOffset(ctx.Root)
+	n := testOffset(ctx)
 	if nowEnv != "" {
 		t, err := time.Parse(time.RFC3339, nowEnv)
 		if err != nil {
@@ -147,8 +147,9 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 // .rhiza/repo.json exists, plus the session records. A session start writes
 // its entries into another worktree's log, so without the records two
 // launches in a row would draw the same IDs.
-func testOffset(root string) int {
-	n := countEntryFiles(root) + countSessionFiles(root)
+func testOffset(ctx *api.Ctx) int {
+	root := ctx.Root
+	n := countEntryFiles(root) + countSessionFiles(ctx)
 	if fi, err := os.Stat(filepath.Join(root, store.Dir, store.RepoFile)); err == nil && !fi.IsDir() {
 		n++
 	}
@@ -169,16 +170,13 @@ func countEntryFiles(root string) int {
 }
 
 // countSessionFiles counts the *.json files in the session folder of
-// root's git repository, skipping names that start with "."; 0 if there is
-// no git repository or no session.
-func countSessionFiles(root string) int {
-	out, err := gitIn(root)("rev-parse", "--git-common-dir")
+// ctx.Root's git repository, skipping names that start with "."; 0 if there
+// is no git repository or no session. The common dir it asks for is kept on
+// ctx, so the operation that follows does not ask git again.
+func countSessionFiles(ctx *api.Ctx) int {
+	dir, err := api.GitCommonDir(ctx)
 	if err != nil {
 		return 0
-	}
-	dir := strings.TrimSpace(out)
-	if !filepath.IsAbs(dir) {
-		dir = filepath.Join(root, dir)
 	}
 	matches, _ := filepath.Glob(filepath.Join(session.Dir(dir), "*.json"))
 	n := 0
