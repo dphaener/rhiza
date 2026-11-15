@@ -1,0 +1,386 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQ1R2KMQD7C8T4AH58FW25"
+  ],
+  "at": "2026-11-15T04:25:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "38",
+          "statement": "The test suite is fast: on the 4-core VM a cold make test finishes within 4 minutes and a warm one within 60 s, and the median CI run on a pull request finishes within 3 minutes, with no test skipped and no coverage lost (2026-11-15: cold 854 s wall for 972 CPU-s, warm 254 s, CI median 283 s)."
+        },
+        "handle": "milestone-38",
+        "id": "01M7EQ74Z9CZ12B122F6YP9JDS",
+        "key": "zzzzzzzy",
+        "kind": "intent",
+        "node": "01M7EQ74Z9CZ12B122F4WW6M6C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A cold make test on the 4-core VM, with nothing else running, finishes within 4 minutes of wall time (2026-11-15: 854 s). Measure: go clean -testcache && /usr/bin/time -f '%e s' make test."
+        },
+        "handle": "m38-cold",
+        "id": "01M7EQ74ZYGCCHY4QW26DRW7P2",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "op": "node.create",
+        "parent": "01M7EQ74Z9CZ12B122F4WW6M6C"
+      },
+      {
+        "fields": {
+          "statement": "A warm make test (run again right after a passing one, with no change) finishes within 60 s of wall time on the 4-core VM (2026-11-15: 254 s). Measure: make test, then /usr/bin/time -f '%e s' make test."
+        },
+        "handle": "m38-warm",
+        "id": "01M7EQ750SRBDSEFNF1BWFD43T",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "op": "node.create",
+        "parent": "01M7EQ74Z9CZ12B122F4WW6M6C"
+      },
+      {
+        "fields": {
+          "statement": "The median wall time of the last 10 completed CI runs on pull requests that changed code is within 3 minutes (2026-11-15: median 283 s over 12 runs; the budgets job alone took a median 233 s). Measure: gh run list --workflow CI --event pull_request --status completed --limit 10 --json createdAt,updatedAt, and the median of updatedAt minus createdAt."
+        },
+        "handle": "m38-ci",
+        "id": "01M7EQ751KQQ9VCJN2CPVMYKDP",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "op": "node.create",
+        "parent": "01M7EQ74Z9CZ12B122F4WW6M6C"
+      },
+      {
+        "fields": {
+          "statement": "No test is deleted or skipped to get there: the number of tests go test -list '.*' ./... lists across packages, and the number of cmd/rhiza/testdata/script/*.txtar files (396), do not drop below their count at commit 88516d956, except tests moved to opt-in benchmarks, which still run in CI's budgets job. Measure: go test -list '.*' ./... | grep -c '^Test' and ls cmd/rhiza/testdata/script/*.txtar | wc -l, on 88516d956 and on main."
+        },
+        "handle": "m38-nothing-lost",
+        "id": "01M7EQ752DW9BDSP53JQFKP869",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "op": "node.create",
+        "parent": "01M7EQ74Z9CZ12B122F4WW6M6C"
+      },
+      {
+        "fields": {
+          "options": [
+            "targets as proposed, or tighter or looser",
+            "budgets opt-in in CI's budgets job, or kept in make test",
+            "projection rewrite in this milestone, or out of scope",
+            "gate bug first, or the milestone first"
+          ],
+          "quote": "those  are all fine. continue without me",
+          "quote_where": "owner, 2026-11-15T02:44:54Z, reply to the proposal's four questions (targets; budgets opt-in; projection in or out; gate bug first)",
+          "statement": "The milestone is planned as the orchestrator proposed it on 2026-11-15: the targets as written (cold make test within 4 minutes, warm within 60 s on the 4-core VM, median PR CI run within 3 minutes, nothing skipped, no coverage lost); the read budgets move out of make test into an opt-in run that CI's budgets job runs; the projection rewrite of internal/api's FoldLog model stays out of scope, with only parallel tests and snapshot fixtures here; and the gate bug is fixed before the milestone starts. The five change sets run on the conductor default with the orchestrator arbitrating."
+        },
+        "handle": "fast-suite-proposal-approved",
+        "id": "01M7EQ7534CRTCC8BW8A5P6AN2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQ7534CRTCC8BW89A04P8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ7534CRTCC8BW89A04P8G",
+        "id": "01M7EQ753VRJFK0WJBYYTB9B8B",
+        "link": "01M7EQ753VRJFK0WJBYWW2GSSG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74Z9CZ12B122F4WW6M6C",
+        "id": "01M7EQ754FFAB0X7QC9MF1B6F4",
+        "link": "01M7EQ754FFAB0X7QC9KJRZBAZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "id": "01M7EQ7553Y3RK928V6T8TZYTC",
+        "link": "01M7EQ7553Y3RK928V6S9RWP65",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "id": "01M7EQ755SC5KHYNM9HMRHJ4CK",
+        "link": "01M7EQ755SC5KHYNM9HM5S33V7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "id": "01M7EQ756F9QRHY4GK4TWP2EE2",
+        "link": "01M7EQ756F9QRHY4GK4SGMPR2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "id": "01M7EQ7573H1Y8WQ31CNF3673Z",
+        "link": "01M7EQ7573H1Y8WQ31CJP7Q332",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The owner approved the targets but not how to check them; a done point needs one runnable measure, and a fixed commit gives the test count a baseline that does not move with main.",
+          "statement": "Each done point is measured by the command its statement names, on the 4-core VM with no other test run going, against the 2026-11-15 baseline in /home/rhiza/tmp/claude-1000/perf-data; the test count baseline is commit 88516d956, the main this plan was made on",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fast-suite-measuring-commands",
+        "id": "01M7EQ757PJTZR13E5VEYRPZSA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQ757PJTZR13E5VE26D63E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ757PJTZR13E5VE26D63E",
+        "id": "01M7EQ758ANA7VZJ8TTDA87RY5",
+        "link": "01M7EQ758ANA7VZJ8TTAWREC7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "id": "01M7EQ7590WP2HJZEZQ007TGPS",
+        "link": "01M7EQ7590WP2HJZEZPYR5DYB0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ757PJTZR13E5VE26D63E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "id": "01M7EQ759PWNY7FZKHQVHR2P51",
+        "link": "01M7EQ759PWNY7FZKHQS7C33WZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ757PJTZR13E5VE26D63E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "id": "01M7EQ75ADEB967RKPZDCZT0V6",
+        "link": "01M7EQ75ADEB967RKPZBMAFBTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ757PJTZR13E5VE26D63E",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "id": "01M7EQ75B6PKHATT732PGWCYQF",
+        "link": "01M7EQ75B6PKHATT732KEGX655",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ757PJTZR13E5VE26D63E",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The proposal ordered the change sets by payoff; a depends-on link is real only where one needs another's output, and a timing file recorded before the clock change would weight the shards by sleeps that no longer happen.",
+          "statement": "The five change sets build in the proposal's order of payoff: virtual clock, opt-in budgets, parallel weighted scripts, parallel internal/api tests, cheap start and boundary TestFit; only the weighted shards depend on another, the virtual clock, because their timing file must record script times after the clock change",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "fast-suite-build-order",
+        "id": "01M7EQ75C7E0GZVKHFSRRRWC8C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQ75C7E0GZVKHFSNEK2FAE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ75C7E0GZVKHFSNEK2FAE",
+        "id": "01M7EQ75D1FR6ZPQQ8T3XA564A",
+        "link": "01M7EQ75D1FR6ZPQQ8T1E3WTN1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74Z9CZ12B122F4WW6M6C",
+        "id": "01M7EQ75DWRJNPA4ZMTWQNREDZ",
+        "link": "01M7EQ75DWRJNPA4ZMTTW7QFNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ75C7E0GZVKHFSNEK2FAE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ2DHBZE64PPPZ36GQ599V",
+        "id": "01M7EQ75F2B3HB14XANYN47NVR",
+        "link": "01M7EQ75F2B3HB14XANTXSEVD4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ2DHBZE64PPPZ36GQ599V",
+        "id": "01M7EQ75G36VTG8XC1AHPYB97C",
+        "link": "01M7EQ75G36VTG8XC1ADRQPYPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+        "id": "01M7EQ75H9XSTQ3NEEXG4WAH0Y",
+        "link": "01M7EQ75H9XSTQ3NEEXEDMS8V9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+        "id": "01M7EQ75JK0H8FBWJ3EXSM18J5",
+        "link": "01M7EQ75JK0H8FBWJ3ESW6NPCQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+        "id": "01M7EQ75KP2QV40PHW7CB89JFS",
+        "link": "01M7EQ75KP2QV40PHW7AHW1FFH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3K7PW2XYR684CXSX74TG",
+        "id": "01M7EQ75MSVAA6XBSJEJ3R6P0X",
+        "link": "01M7EQ75MSVAA6XBSJEGPPKFKJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3K7PW2XYR684CXSX74TG",
+        "id": "01M7EQ75NXPHRDSR0C8DQ4256N",
+        "link": "01M7EQ75NXPHRDSR0C8B8QA0EP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+        "id": "01M7EQ75Q30B5HCNY4QE5W377S",
+        "link": "01M7EQ75Q30B5HCNY4QDCFE423",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+        "id": "01M7EQ75R5QX4C6GGHT63EHJ9M",
+        "link": "01M7EQ75R5QX4C6GGHT3HDXN1D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ42Y1M8ENZCQ202D761JM",
+        "id": "01M7EQ75S81X4H2CSXXGN8YT5H",
+        "link": "01M7EQ75S81X4H2CSXXG8E8JAH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ42Y1M8ENZCQ202D761JM",
+        "id": "01M7EQ75TB4QDYJ5C21HY2EXGV",
+        "link": "01M7EQ75TB4QDYJ5C21GEYBZ05",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3K7PW2XYR684CXSX74TG",
+        "id": "01M7EQ765BYEEMKYM6GWR81AQN",
+        "link": "01M7EQ765BYEEMKYM6GRVAX21P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ2DHBZE64PPPZ36GQ599V",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+        "id": "01M7EQ766Z29RG1BAAAGPY9MQC",
+        "link": "01M7EQ766Z29RG1BAAADF4796P",
+        "note": "01M6J89D79MC3GB2P5EKFNDZ3G (timing budgets measure in quiet) landed as a no-op over 01M6HR3VBT4D, which runs the budgets alone after the suite inside make test; this change set takes them out of make test into the opt-in test-budgets that CI's budgets job runs, and its Decision supersedes budgets-run-alone. Related, not superseded: that change set is landed and its quiet-measure goal still holds in test-budgets.",
+        "op": "link.create",
+        "to": "01M6J89D79MC3GB2P5EKFNDZ3G",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M7EQ19FNS1VDXT4750YX89RD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQ768A9NC8Q86WATHTGBEG",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,164 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQ3K7Q5B6YWD2JP48SGY00"
+  ],
+  "at": "2026-11-15T04:28:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The measured -parallel 12 ran with 0 failures, but the VM OOM-crashed on 2026-11-14 when parallel suites spawned about 1,600 script children, and the owner has 4 cores and at most 24 GB to give. Once scripts stop sleeping (the scaled clock) they are CPU-bound, so more than twice the cores adds memory and children, not speed; 8 keeps one suite well inside a 6 GB, 300-task scope.",
+          "statement": "cmd/rhiza's scripts run at -parallel of twice the CPU count, at most 8, unless RHIZA_TEST_SCRIPT_PARALLEL names another positive number; on the 4-core VM that is 8",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "script-parallel-bound",
+        "id": "01M7EQE6332J8WHCG6GTVFVW1X",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQE6332J8WHCG6GRHJXZA1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE6332J8WHCG6GRHJXZA1",
+        "id": "01M7EQE63WZMSPSTDVWQGBV9ZH",
+        "link": "01M7EQE63WZMSPSTDVWMMAN7HV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "make -n test and make -n test-scripts SHARD=1/4 show -parallel 8 on a 4-core machine and -parallel 3 with RHIZA_TEST_SCRIPT_PARALLEL=3; go test -trimpath ./cmd/rhiza -run '^TestMakeTestShardTargets$' covers both; failure case: RHIZA_TEST_SCRIPT_PARALLEL=0 or abc falls back to the default rather than passing -parallel 0. Speedup and memory measure (orchestrator, quiet VM): go clean -testcache && systemd-run --user --scope -p MemoryMax=6G -p TasksMax=300 -- /usr/bin/time -f '%e s %M KB' go test -trimpath ./cmd/rhiza passes without hitting either cap, faster than at -parallel 4. Touches Makefile, cmd/rhiza/makeupdate_test.go. Must not raise the cap above 8 or drop the machine-wide test lock.",
+          "statement": "make test and make test-scripts run cmd/rhiza's scripts at a -parallel of twice the CPU count capped at 8, or RHIZA_TEST_SCRIPT_PARALLEL when it is a positive integer, instead of go test's default of GOMAXPROCS."
+        },
+        "handle": "scripts-parallel-bounded",
+        "id": "01M7EQE64JDCYTPPV13887PNSS",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7EQE64JDCYTPPV1369XDSNM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE64JDCYTPPV1369XDSNM",
+        "id": "01M7EQE657AAMRQA400C88RHD0",
+        "link": "01M7EQE657AAMRQA40092QP01T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE6332J8WHCG6GRHJXZA1",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/scripttimings turns a go test -json fixture of TestScripts subtests into the sorted name and seconds lines, keeping the previous time for a script that failed or did not run; failure case: input with no passing TestScripts subtest exits non-zero and leaves the file unchanged; the checked-in file has a line for every cmd/rhiza/testdata/script/*.txtar, recorded after the scaled clock landed. Touches tools/scripttimings/, Makefile, cmd/rhiza/testdata/script-timings.tsv. Must not add a module dependency.",
+          "statement": "cmd/rhiza/testdata/script-timings.tsv, checked in, holds each script's recorded wall time (name, tab, seconds, sorted by name), and make script-timings regenerates it from a go test -json run of TestScripts through a small Go tool under tools/scripttimings."
+        },
+        "handle": "script-timings-file",
+        "id": "01M7EQE65YZAMRMTAKKMA3XGZK",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "id": "01M7EQE66MV30617V2HH6FZFJY",
+        "link": "01M7EQE66MV30617V2HEG6TB75",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run '^TestScriptOrder$' shows: given timings, scripts come in descending seconds, ties and scripts missing from the file by name, and every *.txtar exactly once; failure case: a malformed timings line (no tab, or seconds not a number) fails with the file's line number. Touches cmd/rhiza/main_test.go and a new cmd/rhiza/order_test.go. Must not change any script's content or environment.",
+          "statement": "TestScripts hands testscript its scripts longest first by script-timings.tsv, scripts missing from the file after them by name, so the longest scripts never start last and hold the run's tail."
+        },
+        "handle": "scripts-longest-first",
+        "id": "01M7EQE67BJPY5ER3PJFPVTWJW",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "id": "01M7EQE682JCSR5NAV855HFJYJ",
+        "link": "01M7EQE682JCSR5NAV831AE6C0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "id": "01M7EQE68VC5G99Z0GQE2YD1R2",
+        "link": "01M7EQE68VC5G99Z0GQB2TQVRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run '^(TestScriptShard|TestScriptShardEnvError)$' shows the shards disjoint and covering every script, and with the checked-in timings each shard's total within 15% of the mean; failure case: RHIZA_TEST_SHARD=0/4, 5/4 and 1/0 are still refused. The test-scripts-sharded capability's statement says the split is weighted. Measure (orchestrator, after 5 PRs): gh run view <run> --json jobs shows the four scripts jobs within 60 s of each other (2026-11-15: 61-239 s). Touches cmd/rhiza/main_test.go, cmd/rhiza/shard_test.go. Must not change the shard env format or the CI matrix.",
+          "statement": "RHIZA_TEST_SHARD=i/n splits cmd/rhiza's scripts by recorded time instead of round-robin by name: each script, longest first by script-timings.tsv (a missing one weighted at the median), goes to the shard with the least total so far, so CI's four script shards take about the same time."
+        },
+        "handle": "script-shards-weighted",
+        "id": "01M7EQE69J35XJW25SPFMZ5P0K",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7EQE69J35XJW25SPBZBH1MS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE69J35XJW25SPBZBH1MS",
+        "id": "01M7EQE6A7RVK1G80F630286JP",
+        "link": "01M7EQE6A7RVK1G80F618MT836",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE69J35XJW25SPBZBH1MS",
+        "id": "01M7EQE6AXYTTP2B01BW4NYYWC",
+        "link": "01M7EQE6AXYTTP2B01BRXVT6A9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M6Q5HHTX26CPP16DNQDCX3TR",
+        "handle": null,
+        "id": "01M7EQE6BN9Q1SMJ2XRJG5NYKY",
+        "node": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "op": "node.update",
+        "set": {
+          "statement": "TestScripts runs one shard of cmd/rhiza's scripts when RHIZA_TEST_SHARD=i/n is set (1-based): the scripts assigned to shard i when each, longest first by cmd/rhiza/testdata/script-timings.tsv, goes to the shard with the least recorded time so far, passed as testscript Files; unset, it runs every script, longest first (@{01M7EQE69J35XJW25SPBZBH1MS})."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQE6CC436JS3H5QDGJ7V1H",
+  "type": "ops",
+  "v": 1
+}

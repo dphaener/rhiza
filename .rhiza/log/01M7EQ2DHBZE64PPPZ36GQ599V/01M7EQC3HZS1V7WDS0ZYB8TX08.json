@@ -1,0 +1,107 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQ2DHBZE64PPPZ3A564RNM"
+  ],
+  "at": "2026-11-15T04:27:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The brief allows a virtual or a scaled clock. Scripts poll for work other processes do (fake agents, background rhiza commands), which needs some real time to happen; a clock whose Sleep returns at once turns each such poll into a busy loop on a shared 4-core VM that has already been OOM-crashed once, while a scaled clock with a floor keeps every poll a real, cheap wait.",
+          "statement": "Testscripts get a scaled clock, not one where Sleep returns at once: each Sleep(d) waits d divided by a scale in real time (at least 1 ms) while Now advances by the whole d, so waits, polls, backoffs and timeouts keep their order and count but cost about a thousandth of their wall time; production keeps RealClock",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scaled-test-clock",
+        "id": "01M7EQC3D2KVVGGH3Y15TR7R41",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "id": "01M7EQC3DPS4TQFWS994VR6Y4J",
+        "link": "01M7EQC3DPS4TQFWS990ZZFM3M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestScaledClock shows: at scale 1000 Sleep(30*time.Second) returns within 100 ms of real time and Now has advanced at least 30 s; Sleep(time.Microsecond) still waits at least 1 ms; with RHIZA_TEST_CLOCK_SCALE unset or empty the chosen clock is RealClock; failure cases: values 0, -5, 1.5 and abc each give RealClock and no panic. Touches internal/run/engine.go or a new internal/run/clock.go and its _test.go. Must not change RealClock, the Engine's nil-Clock default or any workflow's poll or backoff value.",
+          "statement": "internal/run has a scaled Clock, chosen by RHIZA_TEST_CLOCK_SCALE=<n>, whose Sleep(d) waits d/n of real time (never less than 1 ms) and whose Now runs n times faster than the wall clock from its start; with the variable unset, empty or not a positive integer the engine keeps RealClock."
+        },
+        "handle": "scaled-test-clock-env",
+        "id": "01M7EQC3EBD206T6TR66YZGWDB",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "id": "01M7EQC3F0A8WPJXNWE2RFVYNY",
+        "link": "01M7EQC3F0A8WPJXNWE0EZTSE1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "id": "01M7EQC3FNQQG1JVWZ4MV8CDQA",
+        "link": "01M7EQC3FNQQG1JVWZ4K4Y6PTA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -v ./cmd/rhiza -run 'TestScripts/(run-ship-conflict-fix|run-ship-ci-fix|run-ship-main-dispatch-fail|arbiter-agent-tabs|plan-workflow-ci-infra-wait)$' passes with each script's elapsed under 30 s (2026-11-15: 195, 173, 130, 108 and 96 s); go test -trimpath ./internal/api -run 'TestRunClock' shows runClock is RealClock with the variable unset and the scaled clock with it set; failure case: a script that clears it (env RHIZA_TEST_CLOCK_SCALE=) runs on RealClock, shown by a short wait-timeout script in cmd/rhiza/testdata/script. Speedup measure (orchestrator, quiet VM): go clean -testcache && /usr/bin/time -f '%e s' go test -trimpath ./cmd/rhiza, against 639 s. Touches internal/api/run.go, run_spawn.go, api.go, ship.go, session.go, ship_deploy.go, their tests, and cmd/rhiza/main_test.go. Must not change a production interval, a workflow .toml, or the daemon, feed and session-limit tickers.",
+          "statement": "When RHIZA_TEST_CLOCK_SCALE is set, every wait a run makes goes by the scaled clock: internal/api's runClock (run.start and run.resume polls, wait conditions and backoff), the spawn poll in run_spawn.go, the default ctx.Sleep in api.go, ship.go and session.go, and ship_deploy.go's interval; cmd/rhiza/main_test.go's Setup sets it to 1000 for every script, so the builtin workflows' 30 s polls and 2 min backoff cost milliseconds in scripts."
+        },
+        "handle": "scripts-wait-on-scaled-clock",
+        "id": "01M7EQC3G811QJGK7SM5YT15SM",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQC3G811QJGK7SM5EC18KM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQC3G811QJGK7SM5EC18KM",
+        "id": "01M7EQC3GS1VQEF1S3DJAV4HRS",
+        "link": "01M7EQC3GS1VQEF1S3DF6G8WKD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3D2KVVGGH3Y139X7EAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQC3G811QJGK7SM5EC18KM",
+        "id": "01M7EQC3HCV8FDPNT2EAZF2JZM",
+        "link": "01M7EQC3HCV8FDPNT2EA1RNTKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQC3HZS1V7WDS0ZYB8TX08",
+  "type": "ops",
+  "v": 1
+}

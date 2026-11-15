@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T04:23:22Z",
+  "body": {
+    "intent": "Cheap process start and boundary TestFit: a rhiza process no longer pays go-runewidth's eager init at start (22 ms of 39 ms, across 6,600+ starts in scripts), and internal/slice TestFit tests the fit's state boundaries instead of sweeping every token budget (42 s).",
+    "kind": "intention",
+    "sources": [
+      "01M7EQ1R1FB9Z9TGZW6575TKF2"
+    ],
+    "title": "Cheap start, boundary TestFit"
+  },
+  "change_set": "01M7EQ42Y1M8ENZCQ202D761JM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQ42Y1M8ENZCQ2060R6W4Y",
+  "type": "open",
+  "v": 2
+}

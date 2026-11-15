@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T04:22:27Z",
+  "body": {
+    "intent": "Scripts wait on a virtual clock: cmd/rhiza's testscripts run the engine and the api's run polls on a virtual clock, so the builtin workflows' 30 s polls, 2 min backoff and 2 s spawn polls cost no wall time in tests, while production keeps RealClock and its timing unchanged. Evidence: run-ship-ci-fix takes 165 s wall for 18 s CPU; scripts sleep about 90% of the time (~450 s of a cold make test).",
+    "kind": "intention",
+    "sources": [
+      "01M7EQ1R1FB9Z9TGZW6575TKF2"
+    ],
+    "title": "Scripts on a virtual clock"
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQ2DHBZE64PPPZ3A564RNM",
+  "type": "open",
+  "v": 2
+}
