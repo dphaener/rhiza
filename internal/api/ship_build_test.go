@@ -321,3 +321,194 @@ func TestLandRenderHeadBuild(t *testing.T) {
 		}
 	})
 }
+
+// checkHeadFixture is a fresh repo whose environment names the head build
+// bin (and its build command build, when set), run from the rhiza PATH
+// resolves. Its programs are logged: the build command writes bin, and bin
+// records its argv and prints report (exiting with exitErr).
+func checkHeadFixture(t *testing.T, build string, writeBin bool, report string, exitErr error) (ctx *Ctx, bin string, calls *[]string) {
+	t.Helper()
+	ctx = initCtx(t)
+	renderOK(t, ctx)
+	ctx.Git = (&fakeGit{out: map[string]string{}}).run
+	bin = filepath.Join(t.TempDir(), "rhiza-head")
+	if writeBin {
+		if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	calls = new([]string)
+	ctx.Getenv = func(k string) string {
+		switch k {
+		case envShipRhiza:
+			return bin
+		case envShipBuild:
+			return build
+		}
+		return ""
+	}
+	ctx.Self = filepath.Join(t.TempDir(), "rhiza-installed")
+	onPath := ctx.Self
+	ctx.LookPath = func(file string) (string, error) {
+		if file != "rhiza" {
+			return "", errors.New(file + ": not found")
+		}
+		return onPath, nil
+	}
+	ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if dir != ctx.Root {
+			t.Errorf("%s ran in %s, not %s", name, dir, ctx.Root)
+		}
+		switch {
+		case name == "sh" && len(args) == 2 && args[1] == build:
+			*calls = append(*calls, "build")
+			return nil, os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755)
+		case name == bin:
+			for _, kv := range env {
+				if strings.HasPrefix(kv, envShipRhiza+"=") {
+					t.Errorf("the head's environment has %s", kv)
+				}
+			}
+			*calls = append(*calls, name+" "+strings.Join(args, " "))
+			return []byte(report), exitErr
+		}
+		return nil, errors.New(name + " " + strings.Join(args, " ") + ": unexpected call")
+	}
+	return ctx, bin, calls
+}
+
+func TestCheckHeadBuild(t *testing.T) {
+	const okReport = `{"ok":true,"base":"","findings":[{"severity":"warn","rule":"append-only","message":"from the head"}]}`
+	const failReport = `{"ok":false,"base":"","findings":[{"severity":"fail","rule":"render","path":"docs/reference/x.md","message":"head says stale"}]}`
+	wantCalls := func(t *testing.T, calls *[]string, w ...string) {
+		t.Helper()
+		if got := strings.Join(*calls, "|"); got != strings.Join(w, "|") {
+			t.Errorf("calls = %s, want %s", got, strings.Join(w, "|"))
+		}
+	}
+	inProcess := func(t *testing.T, resp any) {
+		t.Helper()
+		r := resp.(CheckResponse)
+		if !r.OK || r.Skipped != "not a git work tree" {
+			t.Errorf("check = %+v, want the in-process report", r)
+		}
+	}
+
+	t.Run("named head: check execs it with the request's flags and reports its ok report", func(t *testing.T) {
+		ctx, bin, calls := checkHeadFixture(t, "", true, okReport, nil)
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := resp.(CheckResponse)
+		if !r.OK || r.ExitCode() != 0 || len(r.Findings) != 1 || r.Findings[0].Message != "from the head" {
+			t.Errorf("check = %+v", r)
+		}
+		resp, err = callOp(t, ctx, "check", `{"base":"main","skip_reference":true,"branch_newer_format":true}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !resp.(CheckResponse).OK {
+			t.Errorf("check = %+v", resp)
+		}
+		wantCalls(t, calls, bin+" check --json", bin+" check --json --base main --skip-reference --branch-newer-format")
+	})
+
+	t.Run("a head that exits 1 on a fail finding: its report, check's usual exit", func(t *testing.T) {
+		ctx, bin, calls := checkHeadFixture(t, "", true, failReport, errors.New("exit status 1"))
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := resp.(CheckResponse)
+		if r.OK || r.ExitCode() == 0 || len(r.Findings) != 1 || r.Findings[0].Message != "head says stale" {
+			t.Errorf("check = %+v", r)
+		}
+		if out := human(t, r); !strings.Contains(out, "head says stale") {
+			t.Errorf("human:\n%s", out)
+		}
+		wantCalls(t, calls, bin+" check --json")
+	})
+
+	t.Run("unset: in-process", func(t *testing.T) {
+		ctx, _, calls := checkHeadFixture(t, "", true, okReport, nil)
+		ctx.Getenv = func(string) string { return "" }
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inProcess(t, resp)
+		wantCalls(t, calls)
+	})
+
+	t.Run("the running binary is the head: in-process", func(t *testing.T) {
+		ctx, bin, calls := checkHeadFixture(t, "", true, okReport, nil)
+		ctx.Self = bin
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inProcess(t, resp)
+		wantCalls(t, calls)
+	})
+
+	t.Run("missing with a build command: built first", func(t *testing.T) {
+		ctx, bin, calls := checkHeadFixture(t, "make head", false, okReport, nil)
+		if _, err := callOp(t, ctx, "check", `{}`); err != nil {
+			t.Fatal(err)
+		}
+		wantCalls(t, calls, "build", bin+" check --json")
+	})
+
+	t.Run("missing with no build command: an error naming the head build", func(t *testing.T) {
+		ctx, bin, calls := checkHeadFixture(t, "", false, okReport, nil)
+		_, err := callOp(t, ctx, "check", `{}`)
+		if err == nil || !strings.Contains(err.Error(), "PR head's build") || !strings.Contains(err.Error(), bin) {
+			t.Fatalf("err = %v", err)
+		}
+		wantCalls(t, calls)
+	})
+
+	t.Run("a head that prints no report: an error naming the head build", func(t *testing.T) {
+		for _, out := range []string{"", "not json", `{"error":{"code":"usage","message":"unknown flag"}}`} {
+			ctx, bin, calls := checkHeadFixture(t, "", true, out, errors.New("exit status 2"))
+			_, err := callOp(t, ctx, "check", `{}`)
+			if err == nil || !strings.Contains(err.Error(), "PR head's build "+bin) || !strings.Contains(err.Error(), "no check report") {
+				t.Errorf("%q: err = %v", out, err)
+			}
+			wantCalls(t, calls, bin+" check --json")
+		}
+	})
+
+	t.Run("a running binary that is not the PATH rhiza (self-check's fresh build): in-process, no build", func(t *testing.T) {
+		ctx, _, calls := checkHeadFixture(t, "make head", false, okReport, nil)
+		ctx.Self = filepath.Join(t.TempDir(), "rhiza")
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inProcess(t, resp)
+		wantCalls(t, calls)
+	})
+
+	t.Run("no rhiza on PATH: in-process", func(t *testing.T) {
+		ctx, _, calls := checkHeadFixture(t, "", true, okReport, nil)
+		ctx.LookPath = func(string) (string, error) { return "", errors.New("not found") }
+		resp, err := callOp(t, ctx, "check", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inProcess(t, resp)
+		wantCalls(t, calls)
+	})
+
+	t.Run("runCheck called directly: in-process with the head named", func(t *testing.T) {
+		ctx, _, calls := checkHeadFixture(t, "make head", true, okReport, nil)
+		resp, err := runCheck(ctx, CheckRequest{SkipReference: true, BranchNewerFormat: true})
+		if err != nil {
+			t.Fatal(err)
+		}
+		inProcess(t, resp)
+		wantCalls(t, calls)
+	})
+}

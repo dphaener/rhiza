@@ -245,7 +245,9 @@ func prePushHeadCheck(ctx *Ctx, tmp, cmd string) (CheckResponse, []string, error
 	if out, err := ctx.Exec("sh", []string{"-c", cmd}, tmp, env); err != nil {
 		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head with %s (%s): %v", envShipBuild, cmd, err)}, out), nil
 	}
-	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, nil)
+	// Without SHIP_HEAD_RHIZA (headChildEnv): the head's check checks
+	// itself, never execs the run's head build.
+	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, headChildEnv())
 	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
 		if err == nil {
 			err = jerr
