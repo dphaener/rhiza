@@ -1,0 +1,196 @@
+{
+  "actor": "01M7F2ZFCH3XETVPK9A6WPV47G",
+  "after": [
+    "01M7EXMXTJSC8XF9JB4D8Q7SKE"
+  ],
+  "at": "2026-11-15T07:52:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -run \"^($(grep -L newSessionFixture internal/api/session*_test.go internal/api/web*_test.go internal/api/inbox*_test.go internal/api/rex*_test.go internal/api/plan_test.go internal/api/lifecycle_test.go | xargs grep -ho '^func Test[A-Za-z0-9_]*' | cut -c6- | paste -sd'|'))\\$\" (every test in the session_, web_, inbox_ and rex_ _test.go files that do not call newSessionFixture, plus plan_test.go and lifecycle_test.go: 34 files, 139 top-level tests on 2026-11-15) passes twice in a row with different shuffle seeds; go vet ./internal/api is clean. Failure case: go test -trimpath -race -count=1 ./internal/api with the same -run pattern reports no data race, and a test of these files that swaps a package variable, calls t.Setenv or t.Chdir, sets its own XDG_CACHE_HOME or touches run-tmp (inbox_gate_budget_test.go, web_actions_test.go and the like) stays serial with a comment saying why. Touches only those 34 files. Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before. Must not change non-test code.",
+          "statement": "The tests in internal/api's session_, web_, inbox_ and rex_ _test.go files that do not call newSessionFixture, and in plan_test.go and lifecycle_test.go, call t.Parallel() when independent; a test that swaps a package variable (runClock, daemonTicker, daemonReexec and the like), calls t.Setenv or t.Chdir, uses run temp folders, or reads shared machine state stays serial, and a comment on each such test says why it must."
+        },
+        "handle": "api-tests-parallel-rest",
+        "id": "01M7EX7WX9045E0A4MDCTYH1PF",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7EX7WX9045E0A4MD9RZV4A5",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' -run \"^($(ls internal/api/*_test.go | grep -v -e /session -e /web -e /inbox -e /rex -e /plan_test -e /lifecycle_test -e /daemon_ -e /run_ -e /ship_ -e /watchdog_ -e /health_ -e /usage_ -e /feed_ | xargs grep -L newSessionFixture | xargs grep -ho '^func Test[A-Za-z0-9_]*' | cut -c6- | paste -sd'|'))\\$\" (every test in the internal/api _test.go files outside the session, runtime and api-tests-parallel-rest sets: model_, change_, write_, read_, check_, lineage_, guide_, ci_ and the rest, 52 files and 196 top-level tests on 2026-11-15) passes twice in a row with different shuffle seeds; go vet ./internal/api is clean. Failure case: go test -trimpath -race -count=1 ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' with the same -run pattern reports no data race, and a test of these files that swaps a package variable, calls t.Setenv or t.Chdir, sets its own XDG_CACHE_HOME or touches run-tmp (slice_test.go and the like) stays serial with a comment saying why. Touches only those files (budget_test.go's TestMain belongs to api-tests-parallel-session). Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before. Must not change non-test code.",
+          "statement": "The tests in the internal/api _test.go files that neither api-tests-parallel-session, api-tests-parallel-runtime nor api-tests-parallel-rest covers (model_, change_, write_, read_, check_, lineage_, guide_, ci_ and the rest) call t.Parallel() when independent; a test that swaps a package variable, calls t.Setenv or t.Chdir, uses run temp folders, or reads shared machine state stays serial, and a comment on each such test says why it must."
+        },
+        "handle": "api-tests-parallel-model",
+        "id": "01M7F32H400Z0D8A1WY4XHFHH8",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' passes twice in a row with different shuffle seeds; go vet ./internal/api is clean. Failure case: go test -trimpath -race -count=1 ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' reports no data race; a cross-group race or shuffle failure is fixed by making that test serial with a comment saying why, or by fixing its shared state. Speedup measure (orchestrator, quiet VM): /usr/bin/time -f '%e s' go test -trimpath -count=1 ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' within 150 s (2026-11-15: 388 s). May touch any internal/api _test.go file. Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before. Must not change non-test code.",
+          "statement": "With every internal/api test group parallelised and the snapshot fixtures in, the whole internal/api package passes shuffled, under -race and within the 150 s wall-time target, any cross-group failure fixed in whichever _test.go file it shows up in."
+        },
+        "handle": "api-tests-parallel-finish",
+        "id": "01M7F32H4Y94GASPX3XCE457Q4",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7F32H4Y94GASPX3X98497EV",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "id": "01M7F32H5TVZQREXXMB6C4M4A7",
+        "link": "01M7F32H5TVZQREXXMB4HN0EHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXM06AB6QZ61P3AB0K9BCN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "id": "01M7F32H6KTHHQEG2JTTC0ZJPK",
+        "link": "01M7F32H6KTHHQEG2JTQ0DEPAB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "id": "01M7F32H7CFEYMA3HF1SCAQRQ2",
+        "link": "01M7F32H7CFEYMA3HF1PXFRW4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EWKKW3H9XAN03K0XQ2ERQB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32H8JVZ3DTV5Y8JZTG7GS",
+        "link": "01M7F32H8JVZ3DTV5Y8HS56RA8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXM06AB6QZ61P3AB0K9BCN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HAE8FRKZZNDJVVJEPWQ",
+        "link": "01M7F32HAE8FRKZZNDJVAKE97R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HC0PKMSJ0GARATHHXBT",
+        "link": "01M7F32HC0PKMSJ0GAR9JB4VRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EWKKW3H9XAN03K0XQ2ERQB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EX7WX9045E0A4MD9RZV4A5",
+        "id": "01M7F32HE0ZA124811VHH0Q91E",
+        "link": "01M7F32HE0ZA124811VG57V3X2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EXM06AB6QZ61P3AB0K9BCN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "id": "01M7F32HFHP3Z848JRHDABAME5",
+        "link": "01M7F32HFHP3Z848JRHC7ZDT21",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WW01FJ4NQPJ2GPYEZNX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "id": "01M7F32HGN5S6TV57QTC8NNTJ4",
+        "link": "01M7F32HGN5S6TV57QT9JWRBXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WWQZT7JZK1MD30V9086",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HHXPCDBTYJ0X6R4VHR7",
+        "link": "01M7F32HHXPCDBTYJ0X6BTYTAX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WW01FJ4NQPJ2GPYEZNX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HK3GC05VN172W89PJCP",
+        "link": "01M7F32HK3GC05VN172SD5FH2V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WWQZT7JZK1MD30V9086",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HM4CJKKJ8DHYK3CBJYV",
+        "link": "01M7F32HM4CJKKJ8DHYH5P2Z00",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WX9045E0A4MD9RZV4A5",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HNXPTKEYEZ3X6MHR13B",
+        "link": "01M7F32HNXPTKEYEZ3X6FEE1B4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7F32H400Z0D8A1WY3GKTD3S",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7F32H4Y94GASPX3X98497EV",
+        "id": "01M7F32HPVYXW18F0F1EVMZBEY",
+        "link": "01M7F32HPVYXW18F0F1DPBTXE5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7F32HQY7TYFFAR6QZ4BA22Y",
+  "type": "ops",
+  "v": 1
+}
