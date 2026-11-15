@@ -106,6 +106,7 @@ events | send | send-key)
 	;;
 esac
 dir=
+started=
 while [ $# -gt 0 ]; do
 	if [ "$1" = -c ]; then
 		dir=$2
@@ -113,10 +114,13 @@ while [ $# -gt 0 ]; do
 	if [ "$1" = -- ]; then
 		shift
 		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		started=1
 		break
 	fi
 	shift
 done
+# A call that starts no command waits for no agent.
+[ -n "$started" ] || exit 1
 i=0
 until [ -f "$WORK/ready" ]; do
 	i=$((i + 1))
