@@ -1,0 +1,44 @@
+{
+  "actor": "01M7FTTB5G4Y0GGH4MVJR1XYZ8",
+  "after": [
+    "01M7FTE8SKFBH8Z4MZHWZMX6C6"
+  ],
+  "at": "2026-11-15T14:48:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "757 of run-ship-conflict-fix-more's 3,874 git children are rev-parse --git-common-dir, about 2.6 per rhiza process (287), and 133 of bugfix-workflow-autonomous's 481. A checkout's common dir does not change during one process, so keeping it is safe. orphanLogEntries (check.go) asks for the same checkout's common dir with --path-format=absolute on every rhiza check and model commit-untracked and compares it with rev-parse --absolute-git-dir, so it takes the kept answer too. The kept answer is asked with --path-format=absolute rather than made absolute with filepath.Abs(ctx.Root) as gitCommonDir does today: filepath.Abs keeps a symlinked root's path (macOS /var -> /private/var, a symlinked checkout) while git resolves it, so a kept Abs-joined path would no longer equal --absolute-git-dir in a main checkout and orphanLogEntries would silently report nothing. Sessions and countSessionFiles' glob name the same folder either way. Only run_leaves.go's openCheckout, which asks in the build worktree through worktreeGit, answers for another directory and stays as it is.",
+          "statement": "A rhiza process asks git for a checkout's common dir once, as git rev-parse --path-format=absolute --git-common-dir (git's own absolute, symlink-resolved path, the form rev-parse --absolute-git-dir prints), and keeps the cleaned answer on its Ctx; cmd/rhiza's test-mode ID offset (countSessionFiles), internal/api's gitCommonDir and orphanLogEntries in internal/api/check.go share it",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "common-dir-asked-once",
+        "id": "01M7FT14HETCZ40CS5HFX3TQ8J",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7FT14HETCZ40CS5HDTBR8KM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "A new test with a counting Git (go test -trimpath -p 2 -count=1 ./internal/api -run '^TestGitCommonDirOnce$') shows two gitCommonDir calls on one Ctx making one git call, rev-parse --path-format=absolute --git-common-dir, and returning the same absolute, cleaned path, from the main checkout and from a worktree, and orphanLogEntries after a gitCommonDir call on the same Ctx making no further --git-common-dir call; a second test (go test -trimpath -p 2 -count=1 ./internal/api -run '^TestOrphanLogSymlinkRoot$') with a real git repo whose main checkout is reached through a symlinked directory (Ctx.Root the symlinked path) shows the kept common dir equal to rev-parse --absolute-git-dir and orphanLogEntries still listing an untracked orphan log entry; go test -trimpath -p 2 ./internal/api -run 'Session|Orphan|Untracked' and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/^(session-run|session-start|apply|run-amend|check-orphan-log|model-commit-untracked)$' pass, IDs unchanged (the scripts' deterministic IDs still match). Measure: strace -f -e trace=execve on go test -run 'TestScripts/^run-ship-conflict-fix-more$' ./cmd/rhiza counts at most one rev-parse --git-common-dir per rhiza child, rhiza check children included (2026-11-15: 757 for 287). Touches internal/api/session.go, internal/api/api.go (Ctx), internal/api/check.go (orphanLogEntries), cmd/rhiza/ctx.go and their tests.",
+          "statement": "A rhiza process runs git rev-parse --git-common-dir at most once for its checkout, with --path-format=absolute so git resolves symlinks: the test-mode ID offset, every gitCommonDir call and rhiza check's orphan-log test (orphanLogEntries) reuse the first answer, and orphanLogEntries still finds orphans in a main checkout reached through a symlink."
+        },
+        "handle": "common-dir-once",
+        "id": "01M7FT14KGB9BV6KWFB4BXW6YY",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7FT14KGB9BV6KWFB238MDPT",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7FTVX0ZQMPFTNFGC2S5AV9W",
+  "type": "ops",
+  "v": 1
+}
