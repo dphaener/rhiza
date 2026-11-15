@@ -210,16 +210,18 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 		c, ok := f.sets[cs]
 		return ok && changeConducts(ctx.Root, c.Open)
 	}
+	// One as-is view for every candidate's model.
+	base := newModelBase(list)
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
-		return ok && len(changeLeaves(newModelSets(list, cs), c.Ops)) > 0
+		return ok && len(changeLeaves(base.model(cs), c.Ops)) > 0
 	}, sched)
 	for _, c := range list {
-		if c.State == changeset.StateProposed && len(changeLeaves(newModelSets(list, c.ID), c.Ops)) > 0 {
+		if c.State == changeset.StateProposed && len(changeLeaves(base.model(c.ID), c.Ops)) > 0 {
 			f.proposed = append(f.proposed, c.ID.String())
 		}
 	}
-	m0 := newModelSets(list, id.ID{})
+	m0 := base.model(id.ID{})
 	if ovs := gmodel.Overlaps(list); len(ovs) > 0 {
 		f.overlaps = overlapItems(ovs, m0)
 	}

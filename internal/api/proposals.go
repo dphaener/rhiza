@@ -81,6 +81,8 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 		return nil
 	}
 	var proposed []string
+	// One as-is view of the whole log for every proposal's model.
+	var base *modelBase
 	for cs, st := range fold.states {
 		if st != changeset.StateProposed {
 			continue
@@ -89,11 +91,16 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 		if !ok {
 			continue
 		}
-		sets := fold.list
-		if sets == nil {
-			sets = []changeset.ChangeSet{c}
+		var m Model
+		if fold.list == nil {
+			m = newModelSets([]changeset.ChangeSet{c}, cs)
+		} else {
+			if base == nil {
+				base = newModelBase(fold.list)
+			}
+			m = base.model(cs)
 		}
-		if len(changeLeaves(newModelSets(sets, cs), c.Ops)) > 0 {
+		if len(changeLeaves(m, c.Ops)) > 0 {
 			proposed = append(proposed, cs.String())
 		}
 	}

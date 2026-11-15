@@ -372,7 +372,7 @@ type viewFacts struct {
 	// skipped an op on it.
 	skipped map[id.ID][]error
 	// heads is the number of heads each target has over the ops the
-	// interim model counts for Version: the landed ones and those of the
+	// index's write model counts for Version: the landed ones and those of the
 	// current change set's in-flight dependencies.
 	heads map[id.ID]int
 	// history is each target's strict history in the view.
@@ -457,20 +457,21 @@ func (f *viewFacts) skippedBy(t id.ID, sentinel error) bool {
 }
 
 // knownCase is a disagreement the harness has found and tolerates until
-// the leaves that fix it (parity-interim-from-strict for the interim side,
-// parity-write-index-from-strict for the index's) empty this table. Name
-// names the log shape that gives it; match recognises a disagreement of
-// that shape.
+// the leaf that fixes it (parity-write-index-from-strict, for the index's
+// write model) empties this table. The interim model takes its views from
+// the strict engine (parity-interim-from-strict), so no case names it: any
+// disagreement of the interim side fails. Name names the log shape that
+// gives it; match recognises a disagreement of that shape.
 type knownCase struct {
 	name  string
 	match func(f *viewFacts, d disagreement) bool
 }
 
-// skippedCase is the known case of a non-strict side applying an op on the
-// target that the strict engine skips with sentinel.
+// skippedCase is the known case of the index's write model applying an op
+// on the target that the strict engine skips with sentinel.
 func skippedCase(name string, sentinel error) knownCase {
 	return knownCase{name: name, match: func(f *viewFacts, d disagreement) bool {
-		return d.SideB == sideStrict && f.skippedBy(d.Target, sentinel)
+		return d.SideA == sideIndex && d.SideB == sideStrict && f.skippedBy(d.Target, sentinel)
 	}}
 }
 
@@ -484,32 +485,17 @@ var knownCases = []knownCase{
 				!f.cs.IsZero() && f.cur.IsZero() &&
 				slices.ContainsFunc(f.ops(f.cs), func(o op.Op) bool { return o.Target() == d.Target })
 		}},
-	{name: "an op of the current change set on a target before the target's create: the interim model leaves it out of Pending",
+	skippedCase("an op whose base is not in the target's strict history (model.ErrBase): the index applies it, the strict engine skips it", gmodel.ErrBase),
+	skippedCase("an op on a retired target, or a create or move under a retired parent (model.ErrRetired): the index applies it, the strict engine skips it", gmodel.ErrRetired),
+	skippedCase("a create of an ID already taken (model.ErrExists): the index applies it, the strict engine skips it", gmodel.ErrExists),
+	skippedCase("an op on a target, parent, endpoint or decision not in the view (model.ErrMissing): the index applies it, the strict engine skips it", gmodel.ErrMissing),
+	skippedCase("a create or move under a parent whose kind has no children (model.ErrParent): the index applies it, the strict engine skips it", gmodel.ErrParent),
+	skippedCase("a move that makes a node its own ancestor (model.ErrCycle): the index applies it, the strict engine skips it", gmodel.ErrCycle),
+	{name: "a dependency's op on the target after the current change set's op in strict apply order: the index applies every dependency's ops before the current change set's",
 		match: func(f *viewFacts, d disagreement) bool {
-			if d.Field != "pending" || f.cur.IsZero() {
+			if d.SideA != sideIndex {
 				return false
 			}
-			created := false
-			for _, o := range f.ops(f.cur) {
-				if o.Target() != d.Target {
-					continue
-				}
-				if o.Type == op.TypeNodeCreate || o.Type == op.TypeLinkCreate {
-					created = true
-				} else if !created {
-					return true
-				}
-			}
-			return false
-		}},
-	skippedCase("an op whose base is not in the target's strict history (model.ErrBase): the strict engine skips it", gmodel.ErrBase),
-	skippedCase("an op on a retired target, or a create or move under a retired parent (model.ErrRetired): the strict engine skips it", gmodel.ErrRetired),
-	skippedCase("a create of an ID already taken (model.ErrExists): the strict engine skips it", gmodel.ErrExists),
-	skippedCase("an op on a target, parent, endpoint or decision not in the view (model.ErrMissing): the strict engine skips it", gmodel.ErrMissing),
-	skippedCase("a create or move under a parent whose kind has no children (model.ErrParent): the strict engine skips it", gmodel.ErrParent),
-	skippedCase("a move that makes a node its own ancestor (model.ErrCycle): the strict engine skips it", gmodel.ErrCycle),
-	{name: "a dependency's op on the target after the current change set's op in strict apply order: the non-strict sides apply every dependency's ops before the current change set's",
-		match: func(f *viewFacts, d disagreement) bool {
 			mine := false
 			for _, r := range f.history[d.Target] {
 				switch {
@@ -521,13 +507,10 @@ var knownCases = []knownCase{
 			}
 			return false
 		}},
-	{name: "two heads on one target: the interim rule takes the largest head and sets Conflict, the strict one the last op applied and a conflict only on an overlapping stale write",
+	{name: "two heads on one target: the index's rule takes the largest head and sets Conflict, the strict one the last op applied and a conflict only on an overlapping stale write",
 		match: func(f *viewFacts, d disagreement) bool {
-			return d.SideB == sideStrict && (d.Field == "version" || d.Field == "conflict") && f.heads[d.Target] > 1
-		}},
-	{name: "two heads on one target: the interim model applies the branches depth first in op ID order, the strict engine in change set apply order, so a field both branches write can differ",
-		match: func(f *viewFacts, d disagreement) bool {
-			return d.SideA == sideInterim && d.SideB == sideStrict && f.heads[d.Target] > 1
+			return d.SideA == sideIndex && d.SideB == sideStrict && (d.Field == "version" || d.Field == "conflict") &&
+				f.heads[d.Target] > 1
 		}},
 }
 
@@ -713,4 +696,78 @@ func TestParityReportNamesNode(t *testing.T) {
 			t.Errorf("report %q lacks %q", got, want)
 		}
 	}
+}
+
+// parityOf is the parity log of b's entries, for a test that compares the
+// interim model with the strict engine without an index.
+func parityOf(t *testing.T, b *logBuilder) parityLog {
+	t.Helper()
+	sets, problems := changeset.FoldLog(store.Log{Entries: b.entries})
+	if len(problems) > 0 {
+		t.Fatalf("fold problems: %v", problems)
+	}
+	p := parityLog{entries: b.entries, sets: sets, target: map[id.ID]id.ID{}}
+	for _, cs := range sets {
+		for _, o := range cs.Ops {
+			p.target[o.ID] = o.Target()
+		}
+	}
+	return p
+}
+
+// interimAgrees fails t on any disagreement between the interim model and
+// the strict engine on the write view of cs, Pending aside.
+func interimAgrees(t *testing.T, p parityLog, cs id.ID) {
+	t.Helper()
+	strict, _, _ := strictView(p, cs)
+	for _, d := range compareViews(viewName(cs), sideInterim, interimView(p, cs), sideStrict, strict, false) {
+		t.Errorf("%s\nlog:\n%s", d, p)
+	}
+}
+
+// TestParityCreateNoLongerApplies: a draft creates a node under a landed
+// parent that a later landed change set retires. The strict what-if skips
+// the create (model.ErrRetired), so the draft's write view has no such
+// node; the interim model kept it until it took its view from the strict
+// engine.
+func TestParityCreateNoLongerApplies(t *testing.T) {
+	b := newLogBuilder(t)
+	parent := b.create(op.KindCapability, "parent", nil)
+	b.landed(parent)
+	child := b.create(op.KindCapability, "child", nil)
+	child.Parent = parent.Node
+	draft := b.draft(child)
+	b.landed(op.Op{ID: b.id(), Type: op.TypeNodeRetire, Node: parent.Node, Base: parent.ID, Reason: "gone"})
+
+	if n, ok := b.model(draft).Node(child.Node); ok {
+		t.Errorf("write view of the draft holds node %s (%s), whose create no longer applies", n.ID, n.Handle)
+	}
+	interimAgrees(t, parityOf(t, b), draft)
+}
+
+// TestParityDisjointHeads: two landed updates of one node, both on its
+// create, write different fields. The strict engine merges them with no
+// conflict and takes the last one applied as the version; the interim
+// model's head rule set Conflict on the two heads (Decision
+// parity-version-rule).
+func TestParityDisjointHeads(t *testing.T) {
+	b := newLogBuilder(t)
+	c := b.create(op.KindCapability, "fork", statement("a"))
+	b.landed(c)
+	u1 := b.update(c.Node, c.ID, statement("b"))
+	b.landed(u1)
+	u2 := b.update(c.Node, c.ID, map[string]json.RawMessage{"acceptance": json.RawMessage(`"x"`)})
+	b.landed(u2)
+
+	n, ok := b.model(id.ID{}).Node(c.Node)
+	if !ok {
+		t.Fatalf("as-is lacks node %s", c.Node)
+	}
+	if n.Conflict || n.Version != u2.ID {
+		t.Errorf("conflict %v version %s, want false %s", n.Conflict, n.Version, u2.ID)
+	}
+	if string(n.Fields["statement"]) != `"b"` || string(n.Fields["acceptance"]) != `"x"` {
+		t.Errorf("fields %v, want both updates' fields", n.Fields)
+	}
+	interimAgrees(t, parityOf(t, b), id.ID{})
 }
