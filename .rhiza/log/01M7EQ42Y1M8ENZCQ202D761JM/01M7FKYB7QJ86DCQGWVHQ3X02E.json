@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FKV258RZR9Z9T6E00251F8",
+  "after": [
+    "01M7EY23VVM4BHVGQAMTWA0T9M"
+  ],
+  "at": "2026-11-15T12:47:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at a9a119bcc: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza exit 0; GODEBUG=inittrace=1 rhiza-x version | grep runewidth shows 'init github.com/mattn/go-runewidth @2.4 ms, 0.030 ms clock, 48 bytes, 3 allocs' (88516d956 build: 23 ms clock, 56472 bytes); git diff main -- go.mod changes only go-runewidth v0.0.27 -> v0.0.31 // indirect, no replace directive; go.sum swaps only the two runewidth lines; go mod why -m names cmd/rhiza, charmbracelet/colorprofile, charmbracelet/x/ansi; go mod verify: all modules verified; go test -trimpath -p 2 ./internal/tui/... ok (9 packages). 200-start loop /usr/bin/time, alternated under the machine lock: 88516d956 build (detached worktree under $TMPDIR) 7.28 s, 7.40 s; this build 2.20 s, 2.53 s. Diff touches only go.mod, go.sum and the builder's actor record; no stubs or TODOs."
+        },
+        "handle": "cheap-process-start-verified",
+        "id": "01M7FKYB5M2FGSWJ043SVMGXMK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FKYB5M2FGSWJ043QX25T4Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FKYB5M2FGSWJ043QX25T4Z",
+        "id": "01M7FKYB6PQJ1FXAK1WCP73GXZ",
+        "link": "01M7FKYB6PQJ1FXAK1WA3BA3WP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQF5XD1RT48N8TWXXJAXT3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ42Y1M8ENZCQ202D761JM",
+  "for": "01M7FKHSZ0D42ZSBZ0F78386RP",
+  "id": "01M7FKYB7QJ86DCQGWVHQ3X02E",
+  "type": "ops",
+  "v": 1
+}

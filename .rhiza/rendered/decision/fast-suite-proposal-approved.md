@@ -41,6 +41,8 @@ The milestone is planned as the orchestrator proposed it on 2026-11-15: the targ
 - decided-by [scaled-test-clock-env](../capability/rhiza/integrity/self-check/scaled-test-clock-env.md)
 - decided-by [budget-tests-backdate-mtimes](../capability/rhiza/integrity/self-check/budget-tests-backdate-mtimes.md)
 - decided-by [api-snapshot-fixtures](../capability/rhiza/integrity/self-check/api-snapshot-fixtures.md)
+- decided-by [cheap-process-start](../capability/rhiza/integrity/self-check/cheap-process-start.md)
+- decided-by [testfit-boundaries](../capability/rhiza/integrity/self-check/testfit-boundaries.md)
 - decided-by [api-tests-parallel-session](../capability/rhiza/integrity/self-check/api-tests-parallel-session.md)
 - decided-by [api-tests-parallel-runtime](../capability/rhiza/integrity/self-check/api-tests-parallel-runtime.md)
 - decided-by [api-tests-parallel-rest](../capability/rhiza/integrity/self-check/api-tests-parallel-rest.md)

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FMC8S3CT7N9WW9HVRXCSCA",
+  "after": [
+    "01M7FKYB7QJ86DCQGWVHQ3X02E"
+  ],
+  "at": "2026-11-15T12:56:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at c9e38ec85. I re-ran the Checks: block and the acceptance under the machine lock. /usr/bin/time go test -trimpath -count=1 -p 2 ./internal/slice -run '^TestFit$' exited 0 in 1.48 s wall (the limit is 5 s). go test -trimpath -count=1 -p 2 ./internal/slice exited 0 (16.6 s). TestCheckOrder passes. Its 'skips a state' and 'goes back a state' cases each check the exact error text, which names the budget and both states. Coverage: new.out came from HEAD and old.out from a detached worktree of 88516d956 under $TMPDIR, which I removed afterwards. Of 48 internal/slice/budget.go blocks, 39 are covered in old.out and none of them is missing from new.out. budget.go is unchanged between 88516d956 and HEAD. The only code file in the diff is internal/slice/budget_test.go; the rest is the builder's .rhiza actor record. No assertion was loosened: the state closure keeps the over/tokens-within-budget and never-cut-sections checks on every probed budget, including the bisection probes. Order and every-state-reached still hold, and the order check now also catches a skipped state between neighbouring budgets. The footer subtest finds the first briefing budget by bisection, keeps its three assertions and adds a not-over, exactly-two-cut check. TestFitWithin's comment no longer says TestFit sweeps every budget. go vet passes, gofmt is clean, and there are no TODOs."
+        },
+        "handle": "testfit-boundaries-verified",
+        "id": "01M7FMFF3XATHGH8PQ6WS4H4S9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FMFF3XATHGH8PQ6TYQR599",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FMFF3XATHGH8PQ6TYQR599",
+        "id": "01M7FMFF4JJRXTKET5NTV61Y6V",
+        "link": "01M7FMFF4JJRXTKET5NQAMZYR4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQF5ZRFYQWZJCW8CKY1S8V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ42Y1M8ENZCQ202D761JM",
+  "for": "01M7FKHSZ0D42ZSBZ0F78386RP",
+  "id": "01M7FMFF57JTBXK1RGQEFV66NY",
+  "type": "ops",
+  "v": 1
+}
