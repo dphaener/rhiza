@@ -84,7 +84,7 @@ func TestMakeTestTimeout(t *testing.T) {
 	// The suite runs with the timing budgets skipped; every go test keeps
 	// the 20m timeout and closes the lock's descriptor, so no leftover
 	// process can hold it.
-	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestInboxGateQuestionsBudget|TestRootIdlePollBudget)$"
 	skip := "go test -trimpath -timeout 20m -skip '" + budgets + "' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	// Only cmd/rhiza's scripts get -parallel (NPROC=4: 8); the other
@@ -237,7 +237,7 @@ func TestMakeTestShardTargets(t *testing.T) {
 		}
 		return string(out)
 	}
-	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestInboxGateQuestionsBudget|TestRootIdlePollBudget)$"
 	lock := "TEST_LOCK=/locks/rhiza-test.lock"
 
 	// test-scripts pipes go test -json through tools/scripttimings replay

@@ -34,7 +34,7 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 # job, on every pull request) runs them, alone and one package at a time.
 # Run beside cmd/rhiza's scripts they measured their neighbours (PR #210
 # failed twice, then passed, on one SHA).
-BUDGET_TESTS = ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$$
+BUDGET_TESTS = ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestInboxGateQuestionsBudget|TestRootIdlePollBudget)$$
 BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 
 # -trimpath keeps each worktree's absolute path out of the compiled
