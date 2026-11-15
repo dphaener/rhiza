@@ -439,6 +439,121 @@ func TestEvidenceCommit(t *testing.T) {
 	}
 }
 
+// raceEvidence writes the verifier's Evidence for leaf (an add and a
+// link) and returns the paths of those two entries.
+func raceEvidence(t *testing.T, r *stepRunner, ctx *Ctx, ada id.ID) []string {
+	t.Helper()
+	v := *ctx
+	v.Actor = ada
+	ev := mustWrite(t, &v, "add", `{"kind":"evidence","handle":"leaf-a-ok","fields":["statement=leaf-a works","result=PASS"]}`)
+	ln := mustWrite(t, &v, "link", `{"from":"leaf-a-ok","type":"verifies","to":"leaf-a"}`)
+	return []string{
+		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ev.Entry),
+		fmt.Sprintf(".rhiza/log/%s/%s.json", r.change, ln.Entry),
+	}
+}
+
+// setCommitOnlyHeadRead sets the commitOnly hook for this test alone. Its
+// callers do not run in parallel, so no other test sees it.
+func setCommitOnlyHeadRead(t *testing.T, hook func(worktree string)) {
+	t.Helper()
+	commitOnlyHeadRead = hook
+	t.Cleanup(func() { commitOnlyHeadRead = nil })
+}
+
+// Another session committing on the run worktree's HEAD between
+// commitOnly's read of HEAD and its update-ref does not fail the Evidence
+// commit: it is built again on the new HEAD, so both commits are on the
+// branch, the racing commit's files are intact and the real index shows
+// the Evidence entries committed.
+func TestCommitOnlyHeadMoved(t *testing.T) {
+	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
+	evidence := raceEvidence(t, r, ctx, ada)
+	old := git("rev-parse", "HEAD")
+	var racer string
+	calls := 0
+	setCommitOnlyHeadRead(t, func(wt string) {
+		calls++
+		if calls > 1 {
+			return
+		}
+		if err := os.WriteFile(filepath.Join(wt, "racer.txt"), []byte("racing commit\n"), 0o644); err != nil {
+			t.Error(err)
+			return
+		}
+		git("add", "racer.txt")
+		git("commit", "-q", "-m", "racing commit")
+		racer = git("rev-parse", "HEAD")
+	})
+
+	c, err := r.CommitEvidence(leaf, "S-v")
+	if err != nil {
+		t.Fatalf("CommitEvidence with HEAD moved: %v", err)
+	}
+	if calls != 2 {
+		t.Errorf("commitOnly built its commit %d times, want 2", calls)
+	}
+	if racer == "" || racer == old {
+		t.Fatalf("the hook made no racing commit (HEAD %s)", racer)
+	}
+	if head := git("rev-parse", "HEAD"); head != c {
+		t.Fatalf("HEAD = %s, want the Evidence commit %s", head, c)
+	}
+	if parents := git("rev-list", "--parents", "-n1", c); parents != c+" "+racer {
+		t.Errorf("Evidence commit parents = %q, want the racing commit %s", parents, racer)
+	}
+	if log := git("rev-list", old+"..HEAD"); log != c+"\n"+racer {
+		t.Errorf("commits on the branch since %s = %q, want the Evidence commit and the racing one", old, log)
+	}
+	if body := git("show", c+":racer.txt"); body != "racing commit" {
+		t.Errorf("racer.txt in the Evidence commit = %q", body)
+	}
+	if files := git("show", "--name-only", "--format=", racer); files != "racer.txt" {
+		t.Errorf("racing commit's files = %q, want racer.txt", files)
+	}
+	files := strings.Split(git("show", "--name-only", "--format=", c), "\n")
+	for _, p := range evidence {
+		if !slices.Contains(files, p) {
+			t.Errorf("Evidence commit's files %v lack %s", files, p)
+		}
+	}
+	if slices.Contains(files, "racer.txt") {
+		t.Errorf("Evidence commit rewrote racer.txt: %v", files)
+	}
+	if s := git(append([]string{"status", "--porcelain", "--untracked-files=all", "--", "racer.txt"}, evidence...)...); s != "" {
+		t.Errorf("status of the Evidence entries and racer.txt = %q, want them committed", s)
+	}
+	if d := git("diff", "--cached", "--name-only"); d != "" {
+		t.Errorf("real index differs from HEAD: %q", d)
+	}
+}
+
+// A HEAD that moves on every try fails the Evidence commit after
+// commitOnlyTries tries with update-ref's error, HEAD left at the last
+// racing commit.
+func TestCommitOnlyHeadMovedEveryTry(t *testing.T) {
+	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
+	raceEvidence(t, r, ctx, ada)
+	calls := 0
+	setCommitOnlyHeadRead(t, func(string) {
+		calls++
+		git("commit", "-q", "--allow-empty", "-m", fmt.Sprintf("racing commit %d", calls))
+	})
+	_, err := r.CommitEvidence(leaf, "S-v")
+	if err == nil {
+		t.Fatal("CommitEvidence succeeded with HEAD moving on every try")
+	}
+	if calls != commitOnlyTries || commitOnlyTries != 5 {
+		t.Errorf("tries = %d (commitOnlyTries %d), want 5", calls, commitOnlyTries)
+	}
+	if !strings.Contains(err.Error(), "update-ref") {
+		t.Errorf("err = %v, want update-ref's error", err)
+	}
+	if subject := git("log", "-1", "--format=%s"); subject != "racing commit 5" {
+		t.Errorf("HEAD's subject = %q, want the last racing commit", subject)
+	}
+}
+
 // With no Evidence of the verifier's own actor, nothing is committed.
 func TestEvidenceCommitNone(t *testing.T) {
 	t.Parallel()
