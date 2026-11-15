@@ -239,10 +239,12 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 		}
 	}
 	// Warm the answers and backdate the log past the racy window, so the
-	// index holds its stat fingerprint. Each poll judges a verifier's
-	// Evidence too.
+	// index holds its stat fingerprint; the second poll waits out the
+	// debounce too, so it catches up and stores the fingerprint itself.
+	// Each poll judges a verifier's Evidence too.
 	f.poll(t, "driver-leaf-a")
 	backdateLog(t, g.root)
+	time.Sleep(2 * pollDebounce)
 	f.poll(t, "driver-leaf-a")
 	// An idle driver polls the leaves, answers and session status and
 	// judges no Evidence: a leaf's Evidence is read only once a verifier
