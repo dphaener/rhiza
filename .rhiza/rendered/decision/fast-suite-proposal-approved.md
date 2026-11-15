@@ -38,6 +38,7 @@ The milestone is planned as the orchestrator proposed it on 2026-11-15: the targ
 - decided-by [m38-warm](../intent/milestone-38/m38-warm.md)
 - decided-by [m38-ci](../intent/milestone-38/m38-ci.md)
 - decided-by [m38-nothing-lost](../intent/milestone-38/m38-nothing-lost.md)
+- decided-by [scaled-test-clock-env](../capability/rhiza/integrity/self-check/scaled-test-clock-env.md)
 
 ## History
 
