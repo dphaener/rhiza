@@ -100,8 +100,22 @@ func init() {
 		Summary:  "Check the log, the links and the rendered markdown",
 		Request:  reflect.TypeFor[CheckRequest](),
 		Response: reflect.TypeFor[CheckResponse](),
-		Run:      runCheck,
+		Run:      runCheckOp,
 	})
+}
+
+// runCheckOp is the check operation (the CLI and api call check): in a run
+// whose environment names the PR head's build, from the rhiza PATH
+// resolves, the head build checks (checkViaHead); otherwise runCheck checks
+// in-process. The in-process callers (the pre-push check, run code-check,
+// health) call runCheck itself.
+func runCheckOp(ctx *Ctx, req any) (any, error) {
+	if !ctx.DryRun {
+		if resp, ok, err := checkViaHead(ctx, req.(CheckRequest)); err != nil || ok {
+			return resp, err
+		}
+	}
+	return runCheck(ctx, req)
 }
 
 // runCheck checks the repository in ctx.Root. Check writes nothing, so

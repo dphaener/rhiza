@@ -1,0 +1,40 @@
+{
+  "actor": "01M7EKVFKNGNK6D0AQEKFSX63T",
+  "after": [
+    "01M7EJ8ZC3V6J3SJQXESME575Z"
+  ],
+  "at": "2026-11-15T03:57:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 21f24b894 in a detached worktree. go test -p 2 -trimpath ./internal/api -run 'TestCheckHeadBuild|TestLandRenderHeadBuild|TestShipHeadBuildOnDemand|TestShipPrePushCheck': exit 0. TestCheckHeadBuild covers each acceptance point: a named head runs as check --json with --base, --skip-reference and --branch-newer-format passed through; an ok report, and a fail report with exit status 1, are reported with check's usual exit; unset or self-named head runs in-process with no exec; a missing head with SHIP_HEAD_BUILD set is built first; a missing head with no build command, or output that is no report, errors and names the head build; a running binary that is not the PATH rhiza runs in-process with no build; runCheck called directly runs in-process. go test -p 2 -trimpath ./internal/api (full package, 750 tests): exit 0 in 416s under machine load; two earlier runs hit the 240s cap with no failures, TestReadBudget alone taking 105s. go test -p 2 -trimpath ./cmd/rhiza -run 'TestScripts/(ship-land-branch-build|run-ship-land-conflict|docs-reference-stale|ship-local-gate|ship-gate-head-check)$': exit 0; the new ship-gate-head-check script shows plain rhiza check failing on an edited docs/reference/cli.md, the head-gate run passing with head.log holding check --json, and the plain-gate run failing on command 1 rhiza check. make self-check: exit 0. SHIP_HEAD_RHIZA=$TMPDIR/no-head-rhiza SHIP_HEAD_BUILD= make self-check: exit 0, no head built. rhiza ship generate and rhiza render: exit 0, no changes. Diff read against the Decisions gate-check-via-head and gate-check-head-fallback: the check op's entry (runCheckOp) redirects only outside dry-run; the in-process runCheck callers are unchanged; the child runs with headChildEnv. ship-rhiza.toml's comment now names check. Beyond the listed files: ship_prepush.go passes headChildEnv to the pre-push head check (a recursion guard), and ship_build.go adds nil ctx.Git guards; both are small and in scope. No stubs or TODOs."
+        },
+        "handle": "gate-check-head-build-verified",
+        "id": "01M7ENMBSPQ54J23X07Q0F5GMJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ENMBSPQ54J23X07PZ1NBCV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ENMBSPQ54J23X07PZ1NBCV",
+        "id": "01M7ENMBTBMVTYW8VVHM9A54BR",
+        "link": "01M7ENMBTBMVTYW8VVHHBVXTCV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EHQ2K4VECK48QNRCE286P5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EHHAG3CTRQCJCWSG2W7BTZ",
+  "for": "01M7EJGE40MDT3GDSX5SQWSW3G",
+  "id": "01M7ENMBV2QTGMBS36FHJPEBM1",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,79 @@
+# A gate step's plain rhiza check, in a run whose workflow [env] names the
+# PR head's build (SHIP_HEAD_RHIZA), checks with that build: rhiza check
+# execs its check --json in the same directory and reports its report. So
+# a branch that adds a CLI flag, and documents it in docs/reference as its
+# own rhiza docs writes, passes the gate the running (older, installed)
+# rhiza would fail on the generated-reference comparison. With no head
+# build named, the gate's rhiza check runs in-process and fails.
+#
+# head/rhiza stands for the branch's build: it logs its argv and the folder
+# it ran in to head.log and prints an ok check report.
+
+chmod 755 head/rhiza
+
+mkdir repo
+cd repo
+exec git init -q
+exec rhiza init
+exec rhiza render
+exec rhiza docs
+exec rhiza check
+
+# The branch documents a flag this build does not have: plain rhiza check
+# fails on the generated-reference comparison.
+exec sh -c 'sed -i "s/^- \`--skip-reference\`:/- \`--strict\`: Fail on warnings too\n&/" docs/reference/cli.md'
+exec grep -c '^- `--strict`' docs/reference/cli.md
+stdout '^1$'
+! exec rhiza check
+stdout 'docs/reference/cli.md'
+stdout 'differs from what rhiza docs writes'
+
+exec rhiza change new 'Add strict' --title 'Add strict' --json
+mkdir .rhiza/workflows
+exec sh -c 'sed "s|@WORK@|$WORK|" ../head-gate.toml > .rhiza/workflows/head-gate.toml'
+cp ../plain-gate.toml .rhiza/workflows/plain-gate.toml
+exec rhiza render
+exec git add -A
+exec git commit -qm 'Add strict'
+
+# With the head build named, the gate's rhiza check runs the head's check
+# --json in the run's worktree and passes.
+exec rhiza run start --foreground --workflow head-gate
+exec rhiza run status
+stdout '^- gate \(visit 1\): pass'
+exec cat $WORK/head.log
+stdout -count=1 '^repo.add-strict check --json$'
+
+# With none named, the gate's rhiza check runs in-process and fails on
+# command 1.
+rm $WORK/head.log
+! exec rhiza run start --foreground --workflow plain-gate
+exec rhiza run status
+stdout '^- gate \(visit 1\): fail'
+stdout 'command 1 `rhiza check`: exit 1'
+exec sh -c 'cat $(rhiza run status | sed -n "s/.*full output: \\(\\S*\\).*/\\1/p")'
+stdout 'docs/reference/cli.md'
+stdout 'differs from what rhiza docs writes'
+! exists $WORK/head.log
+
+-- head/rhiza --
+#!/bin/sh
+echo "$(basename "$(pwd -P)") $*" >> "$WORK/head.log"
+echo '{"ok":true,"base":"","findings":[]}'
+-- head-gate.toml --
+name = "head-gate"
+
+[env]
+SHIP_HEAD_RHIZA = "@WORK@/head/rhiza"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check"]
+on.pass = "done"
+-- plain-gate.toml --
+name = "plain-gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check"]
+on.pass = "done"

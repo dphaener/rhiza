@@ -73,7 +73,7 @@ const shipBuiltAtSuffix = ".built-at"
 // with no record is trusted as a step's own build.
 func shipStampBuild(ctx *Ctx) {
 	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
-	if bin == "" {
+	if bin == "" || ctx.Git == nil {
 		return
 	}
 	head, err := ctx.Git("rev-parse", "HEAD")
@@ -88,7 +88,7 @@ func shipStampBuild(ctx *Ctx) {
 // record for (a workflow step built it) is not stale.
 func shipBuildStale(ctx *Ctx, bin string) bool {
 	built, err := os.ReadFile(bin + shipBuiltAtSuffix)
-	if err != nil {
+	if err != nil || ctx.Git == nil {
 		return false
 	}
 	head, err := ctx.Git("rev-parse", "HEAD")
@@ -339,4 +339,75 @@ func runViaHead(ctx *Ctx, op string) ([]byte, bool, error) {
 		return nil, false, err
 	}
 	return out, true, nil
+}
+
+// selfIsPathRhiza reports whether the running binary is the rhiza that PATH
+// resolves, as a plain rhiza in a run's gate step is. A build run by its
+// path (make self-check's fresh build in a temp folder) is not.
+func selfIsPathRhiza(ctx *Ctx) bool {
+	if ctx.Self == "" || ctx.LookPath == nil {
+		return false
+	}
+	p, err := ctx.LookPath("rhiza")
+	if err != nil {
+		return false
+	}
+	if p == ctx.Self {
+		return true
+	}
+	a, err := os.Stat(ctx.Self)
+	if err != nil {
+		return false
+	}
+	b, err := os.Stat(p)
+	if err != nil {
+		return false
+	}
+	return os.SameFile(a, b)
+}
+
+// checkViaHead runs rhiza check with the head build the run's environment
+// names (SHIP_HEAD_RHIZA), as check --json in ctx.Root with the request's
+// flags, so the gate's plain rhiza check judges docs/reference and the
+// docs-command rule by the branch's own registry. It reports false, with
+// nothing run, when the environment names no build, the build is the
+// running binary, or the running binary is not the rhiza PATH resolves:
+// the caller checks in-process. The head's report is read from its
+// standard output even when it exits non-zero on failing findings; a
+// missing or unbuildable head, or output that is no check report, is an
+// error naming the head build.
+func checkViaHead(ctx *Ctx, r CheckRequest) (CheckResponse, bool, error) {
+	var rep CheckResponse
+	bin := strings.TrimSpace(ctxGetenv(ctx)(envShipRhiza))
+	if bin == "" || headIsSelf(ctx, bin) || !selfIsPathRhiza(ctx) {
+		return rep, false, nil
+	}
+	bin, err := shipHeadBuild(ctx, shipTarget{})
+	if err != nil {
+		return rep, false, Errorf("check with the PR head's build (%s): %v", envShipRhiza, err)
+	}
+	if headIsSelf(ctx, bin) {
+		return rep, false, nil
+	}
+	args := []string{"check", "--json"}
+	if r.Base != "" {
+		args = append(args, "--base", r.Base)
+	}
+	if r.SkipReference {
+		args = append(args, "--skip-reference")
+	}
+	if r.BranchNewerFormat {
+		args = append(args, "--branch-newer-format")
+	}
+	out, err := ctx.Exec(bin, args, ctx.Root, headChildEnv())
+	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
+		if err == nil {
+			err = jerr
+			if err == nil {
+				err = fmt.Errorf("no check report")
+			}
+		}
+		return CheckResponse{}, false, Errorf("check with the PR head's build %s (%s) gave no check report: %s", bin, envShipRhiza, headFailure(out, err))
+	}
+	return rep, true, nil
 }
