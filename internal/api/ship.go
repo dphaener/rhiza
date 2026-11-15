@@ -605,12 +605,9 @@ func transientGH(err error) bool {
 
 // retryGH runs call, and reruns it after each wait of ghWaits while it
 // fails with a transient GitHub error. After the last retry it fails with
-// the last error. ctx.Sleep sleeps; nil is time.Sleep.
+// the last error. ctx.Sleep sleeps; nil is runClock's Sleep.
 func retryGH(ctx *Ctx, call func() ([]byte, error)) ([]byte, error) {
-	sleep := ctx.Sleep
-	if sleep == nil {
-		sleep = time.Sleep
-	}
+	sleep := ctxSleep(ctx)
 	out, err := call()
 	for _, wait := range ghWaits {
 		if !transientGH(err) {

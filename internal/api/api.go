@@ -134,8 +134,9 @@ type Ctx struct {
 	DryRun bool
 	// Now is the clock.
 	Now func() time.Time
-	// Sleep waits for d; nil is time.Sleep. Tests inject it so retries
-	// with backoff do not wait.
+	// Sleep waits for d; nil is runClock's Sleep (time.Sleep unless
+	// RHIZA_TEST_CLOCK_SCALE puts it on the scaled clock). Tests inject it
+	// so retries with backoff do not wait.
 	Sleep func(d time.Duration)
 	// Classify reads a failed command's output and reports whether the
 	// failure is transient (worth one rerun). Nil, or any answer but a

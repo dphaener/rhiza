@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/run"
 )
 
 func init() {
@@ -82,7 +84,9 @@ func runShipDeploy(ctx *Ctx, _ any) (any, error) {
 		}
 	}
 	resp := ShipDeployResponse{URL: url, Timeout: timeout.String()}
-	deadline := time.Now().Add(timeout)
+	// The deadline goes by the clock the loop sleeps on, so a scaled
+	// clock keeps the poll count of RealClock.
+	w := run.BeginWait(runClock)
 	for {
 		resp.Polls++
 		resp.Last = deployProbe(url)
@@ -93,10 +97,10 @@ func runShipDeploy(ctx *Ctx, _ any) (any, error) {
 		if ctx.Stderr != nil {
 			fmt.Fprintf(ctx.Stderr, "deploy check %d: %s\n", resp.Polls, resp.Last)
 		}
-		if !time.Now().Add(interval).Before(deadline) {
+		if w.Elapsed()+interval >= timeout {
 			return resp, nil
 		}
-		time.Sleep(interval)
+		runClock.Sleep(interval)
 	}
 }
 
