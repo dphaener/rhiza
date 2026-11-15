@@ -1,0 +1,149 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFTKCAK0GY3PPDRWK1YR76"
+  ],
+  "at": "2026-11-15T20:57:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api passes, and TestPropertyProjectionParity passes with write views drawn from the projection only. A test shows a write in a change set that depends on an in-flight change set records the base version the strict what-if view gives, on a log where the interim rule would give another (one of the cases @{01M7GFXD4EACNHW154CMM64NH3} recorded, or a new one if it recorded none). Failure case: a write whose target the strict view has dropped (its parent's create gone) is refused with the not-found error, not written against a node the interim model kept. go test -trimpath ./cmd/rhiza -run 'TestScripts/(write|apply|add|set)' passes. Touches internal/api/write.go, write_indexed.go, read.go, ship.go, run_model_cache.go, repair.go and their tests. Must not delete newModel yet (the last leaf does) and must not change any --json shape.",
+          "statement": "Every write takes its model and the base versions it records from the projection under the strict rules, replacing write_indexed.go's hybrid (strict as-is rows with in-flight ops laid on as the interim model applies them), and the reads, ship, run-model-cache and repair paths that branch on IndexPath (write.go:189, read.go:180, :197 and :222, ship.go:359, run_model_cache.go:88, repair.go:161) take the projection path unconditionally"
+        },
+        "handle": "writes-from-projection",
+        "id": "01M7GFZT6S9W93CH78BFG9BT3G",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "id": "01M7GFZT7QH2W3XTJYJD5XD2KS",
+        "link": "01M7GFZT7QH2W3XTJYJ9FJFVQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '(Question|WebAction|DaemonProject)' passes. A test per site shows the read of the other root answers from that root's index (its index file exists afterwards under the user cache folder of the test's HOME) and gives the same answer as before. Failure case: another root whose log does not read gives the same error or empty answer as today. Touches internal/api/daemon_projects.go, question.go, web_actions.go and their tests. Must not change which root an op reads.",
+          "statement": "An op that reads another root (a project under the daemon in daemon_projects.go, a run worktree in question.go:182 and web_actions.go:108) opens that root's own projection, as the inbox's gate read does, instead of clearing IndexPath and folding that root's log"
+        },
+        "handle": "other-roots-own-projection",
+        "id": "01M7GFZT8RBC63C71V0DJK36XG",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "id": "01M7GFZT9EEHZ0ST606YXZHZ9X",
+        "link": "01M7GFZT9EEHZ0ST606X488S11",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestNewCtx' passes, with a new test where HOME and XDG_CACHE_HOME are unset (index.DefaultPath fails) showing Ctx.IndexPath points into a temporary folder that is gone after the call. A new script, cmd/rhiza/testdata/script/index-throwaway.txtar, runs rhiza status, rhiza show and an rhiza add with a read-only cache folder and gets the same output as with a writable one. Failure case: a temporary folder that cannot be created either fails the call with an error naming both paths. Touches cmd/rhiza/ctx.go, its tests and the new script. Must not change the default index location.",
+          "statement": "When a root's index path cannot be found or its index cannot be created (no user cache folder, a read-only cache), cmd/rhiza's context (ctx.go:116) gives the call a throwaway index in a temporary folder, removed when the call ends, so every call reads through the projection and none falls back to folding the log"
+        },
+        "handle": "throwaway-index-fallback",
+        "id": "01M7GFZTA52SPV1ZK9DQ69C68J",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "id": "01M7GFZTAZSK9ZEYDWW171701V",
+        "link": "01M7GFZTAZSK9ZEYDWVXK1MVHT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0E7FBH3Q4JN308G3VYX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "grep -nE 'func newModel|newModelSets|IndexPath (!=|==) \"\"|readLog' internal/api/*.go prints nothing; go vet ./internal/api is clean; go test -trimpath -count=1 ./internal/api passes; go test -trimpath -count=1 ./internal/api -run '^TestPropertyProjectionParity$' -rapid.checks=1000 passes. go test -list '.*' ./... | grep -c '^Test' and ls cmd/rhiza/testdata/script/*.txtar | wc -l are no lower than at a98fd4051 (1,948 and 398); a deleted test is named in the commit message with the parity case or test that now covers it. Failure case: a call with a damaged index file still rebuilds it and answers, with no fold fallback left to hide a projection bug (TestProjectionRebuildsDamaged). Touches internal/api/model.go, api.go, workspace.go and the _test.go files of the deleted code. Must not change any --json shape or rendered file (make self-check passes).",
+          "statement": "The interim model is gone: internal/api/model.go's newModel, newModelSets, chain and their apply rules, Ctx.readLog, the remaining IndexPath branches and the tests of that code only are deleted, and the parity test compares the projection with a fresh strict fold alone"
+        },
+        "handle": "interim-model-deleted",
+        "id": "01M7GFZTBT1GB2DR05VBB3TX7H",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7GFZTCM2PVC7R6YFWS9CZBA",
+        "link": "01M7GFZTCM2PVC7R6YFT238THD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7GFZTDFTXJ00F9YM9QRYAZK",
+        "link": "01M7GFZTDFTXJ00F9YM5VQWZZW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7GFZTE95NE304D7M1Q9YQF0",
+        "link": "01M7GFZTE95NE304D7KYGVY0JW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7GFZTF0QC9E7JGHS27BCC12",
+        "link": "01M7GFZTF0QC9E7JGHRYCMN5A2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7GFZTFRQEMY5TJTMHGFE9XC",
+        "link": "01M7GFZTFRQEMY5TJTME9RSN9R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFZTGGGAGFS5NRAPT5ER9K",
+  "type": "ops",
+  "v": 1
+}
