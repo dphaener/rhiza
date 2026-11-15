@@ -4,7 +4,7 @@
 // internal/api/testdata/test-timings.tsv, the same for internal/api's
 // top-level tests.
 //
-// It has three modes, as subcommands. merge (make script-timings) reads fresh
+// It has four modes, as subcommands. merge (make script-timings) reads fresh
 // times from a CI run's scripts jobs (-run <id>, through gh run view --log,
 // which carries script-time lines) or from a go test -json file of
 // TestScripts (-json <file>), and merges them into the previous file. replay
@@ -15,7 +15,10 @@
 // (make test-api). merge-tests (make api-timings) is merge for those: fresh
 // times from test-time lines (-run) or a go test -json file (-json), merged
 // into the file for the package's top-level tests (go test -list) that -skip
-// does not match.
+// does not match. shard (make test-api) reads test names on stdin and prints
+// the ones shard -shard i/n takes, split by the file's times: longest first,
+// each to the shard with the least total so far, ties to the lower shard, a
+// test missing from the file weighted at the median.
 package main
 
 import (
@@ -69,7 +72,7 @@ func goTestList(pkg string) ([]string, error) {
 // stdout.
 func run(args []string, stdin io.Reader, stdout, stderr io.Writer, runLog func(id string) (io.Reader, error), listTests func(pkg string) ([]string, error)) error {
 	if len(args) == 0 {
-		return errors.New("usage: scripttimings merge (-run <id> | -json <file>) [-file <tsv>] [-scripts <dir>]\n       scripttimings merge-tests (-run <id> | -json <file>) [-file <tsv>] [-pkg <pkg>] [-skip <regexp>]\n       scripttimings replay < go-test.json")
+		return errors.New("usage: scripttimings merge (-run <id> | -json <file>) [-file <tsv>] [-scripts <dir>]\n       scripttimings merge-tests (-run <id> | -json <file>) [-file <tsv>] [-pkg <pkg>] [-skip <regexp>]\n       scripttimings replay < go-test.json\n       scripttimings shard -shard <i/n> [-file <tsv>] < test-names")
 	}
 	switch args[0] {
 	case "merge":
@@ -81,8 +84,10 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, runLog func(i
 			return errors.New("replay: takes no arguments; pipe go test -json into it")
 		}
 		return Replay(stdin, stdout)
+	case "shard":
+		return shard(args[1:], stdin, stdout, stderr)
 	default:
-		return fmt.Errorf("unknown mode %q (want merge, merge-tests or replay)", args[0])
+		return fmt.Errorf("unknown mode %q (want merge, merge-tests, replay or shard)", args[0])
 	}
 }
 

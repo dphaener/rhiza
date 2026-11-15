@@ -219,8 +219,9 @@ func commandsBlock(doc string) (string, bool) {
 // TestMakeTestShardTargets checks the per-job test targets CI runs in
 // parallel: each go test line keeps -trimpath and either skips the timing
 // budgets or runs only them; test-api's shards partition internal/api's
-// listed tests, budgets excluded; test-budgets prints the read-budget timings;
-// test-scripts passes the scripts' -parallel, test-rest and test-budgets none.
+// listed tests, budgets excluded, and a bad SHARD is refused; test-budgets
+// prints the read-budget timings; test-scripts passes the scripts'
+// -parallel, test-rest and test-budgets none.
 func TestMakeTestShardTargets(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
@@ -406,6 +407,18 @@ func TestMakeTestShardTargets(t *testing.T) {
 	for name := range got {
 		if !want[name] {
 			t.Errorf("shards run %s, which go test -list does not show (or is a budget test)", name)
+		}
+	}
+
+	// A shard outside 1 <= i <= n is refused before go test runs.
+	for _, bad := range []string{"0/2", "3/2", "1/0"} {
+		env := fakeEnv("bad", apiPass, "0")
+		out, err := makeRun(env, "test-api", "SHARD="+bad, "GO_TEST="+fakeGo)
+		if err == nil || !strings.Contains(out, "want i/n with 1 <= i <= n") {
+			t.Errorf("make test-api SHARD=%s: err = %v, want the i/n refusal:\n%s", bad, err, out)
+		}
+		if _, err := os.Stat(strings.TrimPrefix(env[0], "FAKE_ARGS=")); err == nil {
+			t.Errorf("make test-api SHARD=%s ran go test", bad)
 		}
 	}
 

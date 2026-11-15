@@ -151,8 +151,11 @@ test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skip
 
 .PHONY: test-api
 test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budgets excluded
-# The tests come from go test -list, budgets dropped, and the shard takes
-# every n-th of them (round-robin) as an anchored -run regex. go test -json
+# The tests come from go test -list, budgets dropped, and tools/scripttimings
+# shard splits them by internal/api/testdata/test-timings.tsv as the scripts
+# shards are split: longest first, each to the shard with the least total so
+# far, ties to the lower shard, a test missing from the file weighted at the
+# median. The shard's tests run as an anchored -run regex. go test -json
 # is piped through tools/scripttimings replay, as in test-scripts: go test's
 # text for what did not pass, the package's FAIL or ok line, then a test-time
 # line per passing top-level test (make api-timings RUN=<id> reads them
@@ -161,10 +164,11 @@ test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budge
 	case "$$i$$n" in *[!0-9]*|'') echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1;; esac; \
 	if [ "$$i" -lt 1 ] || [ "$$i" -gt "$$n" ]; then echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1; fi; \
 	names=$$(go test -trimpath -list '^Test' ./internal/api | grep '^Test' | grep -Ev '$(SKIP_BUDGETS)' | LC_ALL=C sort) || exit 1; \
-	re=$$(printf '%s\n' "$$names" | awk -v i="$$i" -v n="$$n" 'NR % n == i % n { printf "%s%s", sep, $$0; sep = "|" }'); \
-	if [ -z "$$re" ]; then echo "shard $(SHARD) of internal/api has no tests"; exit 0; fi; \
 	replay=$$(mktemp) && st=$$(mktemp) || exit 1; \
 	go build -trimpath -o "$$replay" ./tools/scripttimings || { rm -f "$$replay" "$$st"; exit 1; }; \
+	picked=$$(printf '%s\n' "$$names" | "$$replay" shard -shard '$(SHARD)') || { rm -f "$$replay" "$$st"; exit 1; }; \
+	re=$$(printf '%s\n' "$$picked" | awk 'NF { printf "%s%s", sep, $$0; sep = "|" }'); \
+	if [ -z "$$re" ]; then echo "shard $(SHARD) of internal/api has no tests"; rm -f "$$replay" "$$st"; exit 0; fi; \
 	{ $(GO_TEST) $(TEST_FLAGS) -json -run "^($$re)\$$" ./internal/api; echo $$? >"$$st"; } \
 		| "$$replay" replay; \
 	rstatus=$$?; \
