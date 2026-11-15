@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/quiettest"
@@ -62,9 +61,9 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 		t.Fatal(err)
 	}
 	// The first read after the append catches the index up. Until the
-	// folder's change is two seconds old (the index's racy window) every
-	// open lists the log again, so one more read after that stores the
-	// fresh stats; the timed reads are the ones that follow.
+	// folder's modification time is two seconds old (the index's racy
+	// window; backdateLog sets it back) every open lists the log again, so
+	// one more read after that stores the fresh stats; the timed reads are the ones that follow.
 	warm := testCtx(g.root)
 	warm.IndexPath = g.indexPath
 	warm.ChangeRef = s.Draft.String()
@@ -72,7 +71,7 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 		if _, err := callOp(t, warm, "change.show", `{}`); err != nil {
 			t.Fatal(err)
 		}
-		time.Sleep(2200 * time.Millisecond)
+		backdateLog(t, g.root)
 	}
 	for _, c := range []struct {
 		name string

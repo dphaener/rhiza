@@ -45,13 +45,14 @@ func TestReadBudgetApply(t *testing.T) {
 		}
 		return d, err
 	}
-	// The first write may record an actor; two more, a racy window apart,
-	// leave the index's stats fresh.
+	// The first write may record an actor; two more, each folder backdated
+	// past the racy window after it (backdateLog), leave the index's stats
+	// fresh.
 	for i := range 3 {
 		if _, err := apply(i); err != nil {
 			t.Fatal(err)
 		}
-		time.Sleep(2200 * time.Millisecond)
+		backdateLog(t, g.root)
 	}
 	// Load from outside the test run comes in spikes: the write fails only
 	// if every attempt's median own time is over the budget, and is
@@ -66,7 +67,7 @@ func TestReadBudgetApply(t *testing.T) {
 				t.Fatal(err)
 			}
 			laps = append(laps, d)
-			time.Sleep(2200 * time.Millisecond)
+			backdateLog(t, g.root)
 		}
 		tm := quiettest.Summarize(laps)
 		line := fmt.Sprintf("apply one write attempt %d: %v", attempt, tm)
