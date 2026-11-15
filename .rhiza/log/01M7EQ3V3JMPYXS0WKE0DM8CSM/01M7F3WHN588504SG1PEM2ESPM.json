@@ -1,0 +1,40 @@
+{
+  "actor": "01M7F3QGQK6EM1NMBBAF6YB7GR",
+  "after": [
+    "01M7F32HQY7TYFFAR6QZ4BA22Y"
+  ],
+  "at": "2026-11-15T08:06:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 1238b49e0 (flock + capped scope, -p 2, session env unset): the acceptance's -run pattern (214 tests in the files calling newSessionFixture) passed with -shuffle=on seed 1794729880646191513 and again with seed 12345 (214 PASS each, exit 0); the same run with -race exited 0 with no DATA RACE; go vet ./internal/api exit 0; go test -list '.*' ./internal/api lists 756 Test funcs, and git grep counts 756 top-level Test funcs at both HEAD^ and HEAD (the diff removes only the fixture's t.Setenv lines, no test). newSessionFixture has no t.Setenv; TestMain in budget_test.go MkdirTemps rhiza-api-cache-, sets XDG_CACHE_HOME, sweeps stale ones and RemoveAlls it before exit (no rhiza-api-cache-* left in /tmp, ~/.cache/rhiza/run-tmp unchanged at 3 entries). 21 tests stay serial, each with a 'Serial:' comment (runClock/beforeDoneMark swap, t.Setenv, run-tmp folders); TestAdvisorBrief delegates to the parallel TestArbiterBrief, commented. Only _test.go files and .rhiza actor/log/render files changed."
+        },
+        "handle": "api-tests-parallel-session-verified",
+        "id": "01M7F3WHK81G5DEZSAPKD84SDQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7F3WHK81G5DEZSAPKBY1HP5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F3WHK81G5DEZSAPKBY1HP5",
+        "id": "01M7F3WHM6Y760PX0Q5T2CP9DW",
+        "link": "01M7F3WHM6Y760PX0Q5PBBBJ7Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WW01FJ4NQPJ2GPYEZNX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M7F2ZFCH3XETVPK9A6WPV47G",
+  "id": "01M7F3WHN588504SG1PEM2ESPM",
+  "type": "ops",
+  "v": 1
+}
