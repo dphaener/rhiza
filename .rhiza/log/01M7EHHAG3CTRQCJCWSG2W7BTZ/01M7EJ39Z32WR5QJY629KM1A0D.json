@@ -1,0 +1,58 @@
+{
+  "actor": "01M7EJ0ZM9YQA3TYH0VKP3MY2V",
+  "after": [
+    "01M7EHQAJZW136882H20DJPV7Y"
+  ],
+  "at": "2026-11-15T02:55:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The gate step runs its commands with sh -c in the run worktree (stepRunner.CommandOutput), so rhiza there is the installed binary, while the step's environment already carries the workflow's [env] (stepEnv), SHIP_HEAD_RHIZA included. conductor-land-render-head-build solved the same problem for land and render inside the operations with runViaHead, and ship open-pr's pre-push check builds the head for its check (prePushHeadCheck). Changing the builtin's gate command to a shell fallback such as ${SHIP_HEAD_RHIZA:-rhiza} would skip the on-demand build (shipHeadBuild) and put Rhiza-repo knowledge into the generic builtin. Redirecting inside runCheck itself would also redirect the pre-push check's in-process call in its temporary checkout, which already has its own head path, so the redirect goes at the operation's entry.",
+          "statement": "rhiza check itself runs through the run's head build, as rhiza land and rhiza render already do (runViaHead): when the environment names SHIP_HEAD_RHIZA, it is not the running binary, and the running binary is the rhiza PATH resolves (as in the gate's plain rhiza check; a fresh build run by path, such as make self-check's, checks in-process), the check operation execs that build's check --json in the same directory with the request's flags (--base, --skip-reference, --branch-newer-format) and reports its result. The builtin ship-change gate's commands stay as they are (plain rhiza check), so every workflow whose [env] names a head build gets it with no workflow change. Only the check operation (CLI and api call) does this; the in-process callers of runCheck (the pre-push check, run code-check, health) keep their own behaviour.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "gate-check-via-head",
+        "id": "01M7EHQ2F94B5FTJF7JKQGSYCA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EHQ2F94B5FTJF7JGPVWXCJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "reasoning": "The orchestrator's hint asks for a fallback to the installed rhiza only when no head build exists. Land and render already treat a named-but-unbuildable head as an error (conductor-land-render-head-build), and checking with the installed binary in that case would bring back exactly the false docs/reference failures this change set fixes, or worse a false pass. shipRunHead returns an error on any non-zero exit, but check exits 1 on findings, so the report must be parsed from the child's stdout as prePushHeadCheck does.",
+          "statement": "rhiza check falls back to the running (installed) rhiza only when no head build is named: SHIP_HEAD_RHIZA unset, naming the running binary, or a running binary that is not the rhiza PATH resolves (make self-check's fresh build, which must check with this commit's build). A named head that is missing is built on demand under SHIP_HEAD_BUILD (shipHeadBuild); a missing head with SHIP_HEAD_BUILD empty, a failed build, or a head whose output is not a check report fails the check with an error naming the head build, never a silent in-process check. A head report with failing findings exits non-zero, so check reads its --json report even when the child exits non-zero and reports those findings with check's usual exit.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "gate-check-head-fallback",
+        "id": "01M7EHQ2GQYWMFNQZH5A7NQ7W9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EHQ2GQYWMFNQZH58BD3X26",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestCheckHeadBuild shows, with SHIP_HEAD_RHIZA naming a fake head that records its argv: rhiza check invoking it as check --json with --base, --skip-reference and --branch-newer-format passed through when set, and returning the fake's report, an ok one and one with a fail finding that the fake prints while exiting 1; with SHIP_HEAD_RHIZA unset, or naming the running binary, check running in-process with no exec; with the head missing and SHIP_HEAD_BUILD set, the build running first; with it missing and SHIP_HEAD_BUILD empty, or the fake printing no report, check failing with an error naming the head build; with SHIP_HEAD_RHIZA naming the fake and the running binary not the file PATH's rhiza resolves to (a self-check build in a temp folder), check running in-process with no exec and no build, even with SHIP_HEAD_BUILD set; and runCheck called directly (as the pre-push check and run code-check call it) running in-process with SHIP_HEAD_RHIZA set. go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-gate-head-check$' passes a new testscript: a repo whose docs/reference was written by rhiza docs and then edited to document a CLI flag this build does not have (a branch that adds the flag), where plain rhiza check fails on the generated-reference comparison; a workflow run whose gate step runs rhiza check, with SHIP_HEAD_RHIZA naming a fake head build that logs its argv and prints an ok check report, passes the gate and the log shows check --json; the same run with SHIP_HEAD_RHIZA unset fails the gate on command 1 rhiza check. go test -trimpath ./internal/api -run 'TestLandRenderHeadBuild|TestShipHeadBuildOnDemand|TestShipPrePushCheck' still passes, make self-check passes, and SHIP_HEAD_RHIZA=$TMPDIR/no-head-rhiza SHIP_HEAD_BUILD= make self-check passes too (its fresh build checks in-process instead of failing on the missing head). Touches internal/api/check.go, internal/api/ship_build.go, internal/api/ship_build_test.go, cmd/rhiza/testdata/script/ship-gate-head-check.txtar and .rhiza/workflows/ship-rhiza.toml.",
+          "statement": "In a run whose environment names SHIP_HEAD_RHIZA, rhiza check (the CLI and api call check) runs the PR head's build instead of checking in-process: it gets the binary from shipHeadBuild (built on demand under SHIP_HEAD_BUILD) and execs its check --json in the same directory with the request's --base, --skip-reference and --branch-newer-format, only when the running binary is the rhiza that PATH resolves (the same file as exec.LookPath(\"rhiza\"), as the gate's plain rhiza check is) and is not that build, and reports the child's check report (read from its stdout even when it exits non-zero on failing findings) with check's usual output and exit; so the conductor default's gate step (plain rhiza check) judges docs/reference and the docs-command rule by the branch's own registry, and a change set that adds a CLI command, flag or setting no longer fails the gate and hands back to conduct in a loop. With SHIP_HEAD_RHIZA unset, naming the running binary, or a running binary that is not the PATH rhiza, check runs in-process as today: so make self-check's fresh build in its temp folder ($dir/rhiza check, run by builders, fixers and tools/gate under the workflow [env]) still checks the repo with this commit's build, with no exec and no head build; a missing head with SHIP_HEAD_BUILD empty, a failed build, or output that is no check report fails with an error naming the head build. The pre-push check, run code-check and health keep calling runCheck in-process. .rhiza/workflows/ship-rhiza.toml's comment says the head build serves check as well as land and render."
+        },
+        "handle": "gate-check-head-build",
+        "id": "01M7EHQ2K4VECK48QNRE6VFZTA",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7EHQ2K4VECK48QNRCE286P5",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      }
+    ]
+  },
+  "change_set": "01M7EHHAG3CTRQCJCWSG2W7BTZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EJ39Z32WR5QJY629KM1A0D",
+  "type": "ops",
+  "v": 1
+}
