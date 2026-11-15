@@ -42,6 +42,7 @@ After that, read what you need:
 - [Runs and the daemon](docs/runs-and-daemon.md): letting Rhiza start agents for you and keep several going while you're away. This is the part that needs Rex and Claude Code; the model itself doesn't.
 - [Writing a custom workflow](docs/custom-workflows.md): changing what a run does.
 - [Workflow primitives](docs/primitives.md): the eight pieces every workflow is made of, and how a red result hands back to an agent.
+- [Bring your own agent](docs/bring-your-own-agent.md): your team's own skills as one role, as the conductor or as a whole workflow.
 - [Skipping the full CI round for model-only changes](docs/ci-since-last-green.md): a CI recipe for any project.
 - Reference, generated from the code: the [CLI](docs/reference/cli.md), [config](docs/reference/config.md) and [workflow file](docs/reference/workflow-file.md).
 

@@ -65,6 +65,7 @@ These are in the guide too. They're what you're relying on, so they're worth kno
 
 ## Where next
 
+- [Bring your own agent](bring-your-own-agent.md) covers running your team's own skills in a run: as one role, as the conductor or as a whole workflow, and picking the project's agent with `rhiza init --agent`.
 - [Change sets](concepts/change-sets.md) explains the states the loop moves a change through.
 - [Decisions, sources and why](concepts/why.md) covers questions and quotes.
 - `rhiza guide ls` lists every topic the agents read.

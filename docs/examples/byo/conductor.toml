@@ -1,0 +1,90 @@
+# Bring your own agent, level 2: a conductor.
+#
+# A fork of ship-change (rhiza workflow new myteam-conduct --from
+# ship-change) whose conduct step runs the team's own conduct skill,
+# /myteam:conduct, instead of Rhiza's. The skill reads the run's context
+# files: {brief} (the contract and the change set), {slice} (the model
+# around it) and, on a hand-back, {handback} (what went red and why).
+# Everything after conduct is the built-in's, so the daemon's gate still
+# checks the result: every leaf has Evidence from a verifier who didn't
+# build it, each declared check recorded a round with no open blocker or
+# major finding, rhiza check passes and so does the local gate.
+name = "myteam-conduct"
+handback_cap = 3
+
+[step.conduct]
+kind = "agent"
+invoke = "/myteam:conduct --prompt {brief} --slice {slice}"
+handback = "/myteam:conduct --handback {handback} --prompt {brief} --slice {slice}"
+until = "true"
+until_when = "done"
+on.pass = "gate"
+
+[[step.conduct.check]]
+name = "plan"
+
+[[step.conduct.check]]
+name = "code"
+
+[[step.conduct.check]]
+name = "qa"
+
+[step.gate]
+kind = "gate"
+commands = [
+  "rhiza run build-check",
+  "rhiza run review-check",
+  "rhiza check",
+  "rhiza ship gate",
+]
+stall = "70m"
+on.pass = "signoff"
+on.fail = "handback:conduct"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "handback:conduct"
+
+[step.push]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-ci"
+on.fail = "handback:conduct"
+
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled --no-rebase"
+timeout = "2h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "merge"
+on.timeout = "handback:conduct"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "main-ci"
+on.fail = "handback:conduct"
+
+[step.main-ci]
+kind = "wait"
+until = "rhiza ship check --main"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "close-out"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+on.pass = "ship"
+
+[step.ship]
+kind = "command"
+run = "rhiza ship command"
+on.pass = "deploy-check"
+
+[step.deploy-check]
+kind = "command"
+run = "rhiza ship deploy"
