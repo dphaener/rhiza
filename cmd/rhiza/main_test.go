@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"sync"
@@ -56,40 +57,77 @@ func TestScripts(t *testing.T) {
 	})
 }
 
-// shardFiles lists the scripts in dir that shard (RHIZA_TEST_SHARD, "i/n",
-// 1-based) selects, as paths for testscript's Files. An empty shard returns
-// nil, and testscript then runs every script in Dir.
-func shardFiles(dir, shard string) ([]string, error) {
-	if shard == "" {
-		return nil, nil
-	}
-	names, err := filepath.Glob(filepath.Join(dir, "*.txtar"))
-	if err != nil {
-		return nil, err
-	}
-	return shardNames(names, shard)
-}
-
-// shardNames returns the names whose index in the sorted list, mod n, is
-// i-1, for shard "i/n": round-robin, so the shards are disjoint and together
-// cover every name.
-func shardNames(names []string, shard string) ([]string, error) {
+// shardNames returns the files shard (RHIZA_TEST_SHARD, "i/n", 1-based)
+// selects, split by the seconds in times so the n shards take about as long:
+// each file, longest first, goes to the shard with the least total so far,
+// ties to the lower shard. A file times does not list weighs the median of
+// the timed files' seconds (1 when none is timed), for placement only. The shards
+// are disjoint and together cover every file; shard i comes back in
+// longestFirst's order.
+func shardNames(files []string, times map[string]float64, shard string) ([]string, error) {
 	var i, n int
 	var rest string
-	k, err := fmt.Sscanf(shard, "%d/%d%s", &i, &n, &rest)
-	_ = err
+	k, _ := fmt.Sscanf(shard, "%d/%d%s", &i, &n, &rest)
 	if k != 2 || n < 1 || i < 1 || i > n {
 		return nil, fmt.Errorf("RHIZA_TEST_SHARD=%q: want i/n with 1 <= i <= n", shard)
 	}
-	sorted := append([]string(nil), names...)
-	sort.Strings(sorted)
+	median := medianTime(files, times)
+	weight := func(f string) (float64, bool) {
+		if s, ok := times[scriptName(f)]; ok {
+			return s, true
+		}
+		return median, false
+	}
+	// Longest first by weight; on equal weight a timed file goes first, then
+	// by name, so the placement is the same on every machine.
+	order := slices.Clone(files)
+	sort.SliceStable(order, func(a, b int) bool {
+		wa, okA := weight(order[a])
+		wb, okB := weight(order[b])
+		if wa != wb {
+			return wa > wb
+		}
+		if okA != okB {
+			return okA
+		}
+		return scriptName(order[a]) < scriptName(order[b])
+	})
+	totals := make([]float64, n)
 	out := []string{}
-	for idx, name := range sorted {
-		if idx%n == i-1 {
-			out = append(out, name)
+	for _, f := range order {
+		least := 0
+		for s := 1; s < n; s++ {
+			if totals[s] < totals[least] {
+				least = s
+			}
+		}
+		w, _ := weight(f)
+		totals[least] += w
+		if least == i-1 {
+			out = append(out, f)
 		}
 	}
-	return out, nil
+	return longestFirst(out, times), nil
+}
+
+// medianTime is the median of the seconds times gives files, or 1 when none
+// of them is timed, so untimed scripts still spread across the shards.
+func medianTime(files []string, times map[string]float64) float64 {
+	vs := []float64{}
+	for _, f := range files {
+		if v, ok := times[scriptName(f)]; ok {
+			vs = append(vs, v)
+		}
+	}
+	if len(vs) == 0 {
+		return 1
+	}
+	sort.Float64s(vs)
+	m := len(vs) / 2
+	if len(vs)%2 == 1 {
+		return vs[m]
+	}
+	return (vs[m-1] + vs[m]) / 2
 }
 
 // Every script starts with a fixed clock and ID seed, so its output bytes

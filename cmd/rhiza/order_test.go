@@ -19,24 +19,23 @@ import (
 // line (make script-timings rewrites it).
 const scriptTimingsFile = "testdata/script-timings.tsv"
 
-// scriptFiles lists the scripts in dir that shard selects (every script when
-// shard is empty), longest first by the times in timingsPath. It orders the
-// list testscript is handed, not the start: testscript runs each script as a
+// scriptFiles lists the scripts in dir that shard (RHIZA_TEST_SHARD, "i/n")
+// selects, every script when shard is empty, longest first by the times in
+// timingsPath; shardNames splits them by those times. It orders the list
+// testscript is handed, not the start: testscript runs each script as a
 // parallel subtest, and the -parallel slots go to the woken subtests in no
 // fixed order.
 func scriptFiles(dir, shard, timingsPath string) ([]string, error) {
-	files, err := shardFiles(dir, shard)
+	files, err := filepath.Glob(filepath.Join(dir, "*.txtar"))
 	if err != nil {
 		return nil, err
-	}
-	if files == nil {
-		if files, err = filepath.Glob(filepath.Join(dir, "*.txtar")); err != nil {
-			return nil, err
-		}
 	}
 	times, err := readScriptTimings(timingsPath)
 	if err != nil {
 		return nil, err
+	}
+	if shard != "" {
+		return shardNames(files, times, shard)
 	}
 	return longestFirst(files, times), nil
 }
@@ -178,8 +177,9 @@ func TestScriptOrder(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		// Round-robin 1/2 of a..f is a, c, e.
-		if want := []string{"e", "c", "a"}; !slices.Equal(names(got), want) {
+		// b, d, f weigh the median, 3. Placed e(5)→1, c(3)→2, b→2, d→1,
+		// f→2, a(1)→1: shard 1 is e, d, a, run timed first, then d.
+		if want := []string{"e", "a", "d"}; !slices.Equal(names(got), want) {
 			t.Fatalf("shard 1/2 = %v, want %v", names(got), want)
 		}
 	})
