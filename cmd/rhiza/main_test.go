@@ -42,17 +42,13 @@ func TestMain(m *testing.M) {
 var update = flag.Bool("update", false, "rewrite the archive files that cmp compares against")
 
 func TestScripts(t *testing.T) {
-	dir := "testdata/script"
-	files, err := shardFiles(dir, os.Getenv("RHIZA_TEST_SHARD"))
+	// Longest first by script-timings.tsv (order_test.go). testscript reads
+	// Files only when Dir is empty.
+	files, err := scriptFiles("testdata/script", os.Getenv("RHIZA_TEST_SHARD"), scriptTimingsFile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// testscript reads Files only when Dir is empty.
-	if files != nil {
-		dir = ""
-	}
 	testscript.Run(t, testscript.Params{
-		Dir:           dir,
 		Files:         files,
 		Setup:         setup,
 		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock, "edit-sessions": editSessions},
