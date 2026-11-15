@@ -63,7 +63,8 @@ func changeShowBudget(t *testing.T, g generated, log func(string)) {
 	// The first read after the append catches the index up. Until the
 	// folder's modification time is two seconds old (the index's racy
 	// window; backdateLog sets it back) every open lists the log again, so
-	// one more read after that stores the fresh stats; the timed reads are the ones that follow.
+	// one more read after that stores the fresh stats; the timed reads are
+	// the ones that follow.
 	warm := testCtx(g.root)
 	warm.IndexPath = g.indexPath
 	warm.ChangeRef = s.Draft.String()

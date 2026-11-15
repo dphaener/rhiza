@@ -57,10 +57,11 @@ TEST_LOCK ?= $(dir $(shell go env GOCACHE))rhiza-test.lock
 
 test: ## Run the test suite but the timing budgets (make test-budgets runs those)
 # The timing budgets are skipped here; make test-budgets runs them. go
-# test's exit status is make's. The packages other than cmd/rhiza run in the background, their output
-# held in a file and printed once cmd/rhiza is done, so the two never
-# interleave. The shell holds the lock on fd 9 (lock, unlock); every go test
-# gets 9>&-, so no process a test leaves behind can keep holding it.
+# test's exit status is make's. The packages other than cmd/rhiza run in
+# the background, their output held in a file and printed once cmd/rhiza
+# is done, so the two never interleave. The shell holds the lock on fd 9
+# (lock, unlock); every go test gets 9>&-, so no process a test leaves
+# behind can keep holding it.
 	@lockfile='$(TEST_LOCK)'; \
 	lock() { \
 		if [ -n "$$lockfile" ] && command -v flock >/dev/null 2>&1 && (: >>"$$lockfile") 2>/dev/null; then \

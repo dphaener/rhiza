@@ -14,8 +14,13 @@ import (
 // back: past the index's two-second racy window, as a 2.2 s sleep did.
 const backdateAge = 2200 * time.Millisecond
 
+// racyWindow mirrors the index's unexported racyWindow
+// (internal/index/listing.go): a folder whose modification time is older
+// than this is no longer racy.
+const racyWindow = 2 * time.Second
+
 // backdateLog sets the modification time of every folder in root's log
-// that changed within backdateAge back to backdateAge ago, as if the
+// still inside the index's racy window back to backdateAge ago, as if the
 // test had slept past the index's racy window (pattern:
 // internal/index/freshness_test.go). Older folders keep their times, so
 // a stat fingerprint the index stored over them stays the same, as it
@@ -29,7 +34,9 @@ func backdateLog(t *testing.T, root string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	old := time.Now().Add(-backdateAge)
+	now := time.Now()
+	old := now.Add(-backdateAge)
+	cutoff := now.Add(-racyWindow)
 	for _, de := range des {
 		if !de.IsDir() {
 			continue
@@ -39,7 +46,7 @@ func backdateLog(t *testing.T, root string) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if fi.ModTime().Before(old) {
+		if fi.ModTime().Before(cutoff) {
 			continue
 		}
 		if err := os.Chtimes(dir, old, old); err != nil {

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7EZ77EQRQET18394SRPM9B8",
+  "after": [
+    "01M7ETM9VNJ1RCQDAFZCB4AKX4"
+  ],
+  "at": "2026-11-15T06:46:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 857f53e67, re-ran the Checks block: go test -trimpath -p 2 ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets|TestMakeUpdateDryRun)$' exit 0 (all three PASS); failure case in a scratch worktree with the budget phase (Timing budgets echo, lock \"the timing budgets\", go test -run BUDGET_TESTS) restored to make test's recipe: TestMakeTestTimeout FAILs with 'make -n test runs the timing budgets', exit 1; make -n test exit 0, shows go test with -skip of the budget regex for both phases, no -run of it, no Timing budgets phase; make -n test-budgets exit 0, runs -count=1 -p 1 -run '^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$' ./internal/api ./internal/index ./internal/slice under the lock and prints the timings; go test -list of that regex over the three packages finds every name (TestGeneratedModel dropped per drop-generated-model-budget; no func TestGeneratedModel exists in the repo); make help exit 0, check reads 'Run what CI runs but make test-budgets (the timing budgets)'; grep -n 'everything CI runs' Makefile AGENTS.md README.md exit 1; grep make test-budgets .github/workflows/ci.yml exit 0 (line 206); rhiza ship generate exit 0 (0 changed); rhiza render exit 0. Diff read: only Makefile, AGENTS.md, README.md, cmd/rhiza/makeupdate_test.go and the builder's .rhiza log/actor files change; no budget limit touched, no TODOs. Speedup measure skipped per brief (orchestrator's)."
+        },
+        "handle": "budgets-out-of-make-test-verified",
+        "id": "01M7EZ9DX9N6H244KS0W0WE7HB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EZ9DX9N6H244KS0V49E6BQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EZ9DX9N6H244KS0V49E6BQ",
+        "id": "01M7EZ9DY3D5ZQKD3F9HJK4HT5",
+        "link": "01M7EZ9DY3D5ZQKD3F9FPM1HXB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQDFY7GKPF549RAPQE285W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M7EYSHE4NN7D7B7MFK7DX3RZ",
+  "id": "01M7EZ9DZEM7HK1F9K42FRPXA9",
+  "type": "ops",
+  "v": 1
+}

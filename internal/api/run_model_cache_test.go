@@ -239,7 +239,8 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 		}
 	}
 	// Warm the answers and backdate the log past the racy window, so the
-	// index holds its stat fingerprint. Each poll judges a verifier's Evidence too.
+	// index holds its stat fingerprint. Each poll judges a verifier's
+	// Evidence too.
 	f.poll(t, "driver-leaf-a")
 	backdateLog(t, g.root)
 	f.poll(t, "driver-leaf-a")
