@@ -15,6 +15,7 @@ the orchestrator's, as the owner's proxy (standing instruction 'act on my behalf
 ### In
 
 - decided-by [budgets-measure-in-quiet](../capability/rhiza/views/fast-reads/budgets-measure-in-quiet.md)
+- supersedes [budgets-opt-in](budgets-opt-in.md)
 
 ## History
 

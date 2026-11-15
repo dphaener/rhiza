@@ -25,6 +25,10 @@ agent of milestone-1 task 1 (shipit plan), accepted by the owner
 - derived-from [plan-task-1](../source/plan-task-1.md)
 - derived-from [task-interviews](../source/task-interviews.md)
 
+### In
+
+- supersedes [makefile-targets-check-minus-budgets](makefile-targets-check-minus-budgets.md) — restated per Decision check-is-ci-minus-budgets
+
 ## History
 
 - `01M5SWRR9E9G71HBT66132P6Z8` Task 1's plan decisions (PR #1, merge 5a4b716), accepted by the owner
