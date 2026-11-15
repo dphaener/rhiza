@@ -1,0 +1,250 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFKXY8YKA5C93K4SWEVM63"
+  ],
+  "at": "2026-11-15T20:51:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "command": "make test, then /usr/bin/time -v make test",
+          "head": "a98fd4051798cc3f48643d530cb70ae53dde2e05",
+          "result": "0:40.65 wall, 126% CPU, exit 0",
+          "statement": "At a98fd4051 (milestone 38 finished, #595), a warm make test on the 4-core VM took 40.65 s of wall time (25.9 user + 25.6 sys CPU-s, 126% CPU, exit 0), within @{01M7EQ750SRBDSEFNF18FJ9HQT}'s 60 s (2026-11-15 baseline: 254 s). Measured by the orchestrator: make test, then /usr/bin/time -v make test (perf-data/after2/time-warm.txt).",
+          "status": "verified"
+        },
+        "handle": "m38-warm-at-a98fd40",
+        "id": "01M7GFN0VG0ZSCYVTK17WGZ29J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GFN0VG0ZSCYVTK14CSGJV8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN0VG0ZSCYVTK14CSGJV8",
+        "id": "01M7GFN0W9Z4DCXMBT3SY04TCK",
+        "link": "01M7GFN0W9Z4DCXMBT3P6PT79Y",
+        "note": "Evidence that m38-warm is met at a98fd4051",
+        "op": "link.create",
+        "to": "01M7EQ750SRBDSEFNF18FJ9HQT",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN0VG0ZSCYVTK14CSGJV8",
+        "id": "01M7GFN0WYT0Z25ZYGTNWW5F88",
+        "link": "01M7GFN0WYT0Z25ZYGTJD8DV17",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "command": "go test -list '.*' ./... | grep -c '^Test'; ls cmd/rhiza/testdata/script/*.txtar | wc -l",
+          "head": "a98fd4051798cc3f48643d530cb70ae53dde2e05",
+          "result": "tests 1,892 -> 1,948; scripts 395 -> 398",
+          "statement": "At a98fd4051, go test -list '.*' ./... lists 1,948 tests and cmd/rhiza/testdata/script holds 398 txtar files, against 1,892 and 395 at the base 88516d956: no drop, so @{01M7EQ752DW9BDSP53JN8H9BJC} holds. Measured by the orchestrator with the done point's commands on both commits.",
+          "status": "verified"
+        },
+        "handle": "m38-nothing-lost-at-a98fd40",
+        "id": "01M7GFN0XKEXST5V9EDAA6Q7MW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GFN0XKEXST5V9ED7PS729A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN0XKEXST5V9ED7PS729A",
+        "id": "01M7GFN0YKAZWMHXYFB79SPBYV",
+        "link": "01M7GFN0YKAZWMHXYFB6RB3QR0",
+        "note": "Evidence that m38-nothing-lost holds at a98fd4051",
+        "op": "link.create",
+        "to": "01M7EQ752DW9BDSP53JN8H9BJC",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN0XKEXST5V9ED7PS729A",
+        "id": "01M7GFN0ZEX9P27M5YQ8PFEK74",
+        "link": "01M7GFN0ZEX9P27M5YQ81V9WHE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "command": "go clean -testcache && /usr/bin/time -v make test",
+          "head": "a98fd4051798cc3f48643d530cb70ae53dde2e05",
+          "result": "7:03.51 wall, 967 CPU-s, 228% CPU, exit 0; target 4:00 not met",
+          "statement": "At a98fd4051, a cold make test (go clean -testcache first) on the 4-core VM with nothing else running took 423.5 s of wall time for 967 CPU-s (569.7 user + 397.2 sys, 228% CPU, exit 0): over @{01M7EQ74ZYGCCHY4QW22JZJ5SH}'s 4 minutes (2026-11-15 baseline: 854 s wall for 972 CPU-s), so milestone 38 cut waiting, not work. Measured by the orchestrator (raw: perf-data/cold-quiet/make-test.log). The target moves to milestone 39.",
+          "status": "failing"
+        },
+        "handle": "m38-cold-at-a98fd40",
+        "id": "01M7GFN10445Y7HTCAD08EDAR9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GFN10445Y7HTCACYTHHDG5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN10445Y7HTCACYTHHDG5",
+        "id": "01M7GFN117HQ14YHMSCXVNY7N7",
+        "link": "01M7GFN117HQ14YHMSCT5E6153",
+        "note": "Evidence that m38-cold is not met at a98fd4051 (interim result)",
+        "op": "link.create",
+        "to": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN10445Y7HTCACYTHHDG5",
+        "id": "01M7GFN11WYAAP9E3C0J2QG34H",
+        "link": "01M7GFN11WYAAP9E3C0EQAC1X1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "command": "gh run list --workflow CI --event pull_request --status completed --limit 10 --json createdAt,updatedAt",
+          "head": "a98fd4051798cc3f48643d530cb70ae53dde2e05",
+          "result": "8 runs since #588, median 181 s; too few to call",
+          "statement": "Since #588 only 8 PR CI runs completed, fewer than the 10 @{01M7EQ751KQQ9VCJN2CPF1DWYP} measures: 165, 73, 325, 197, 228, 83, 212 and 80 s, a median of 181 s (just over 3 minutes). Too few runs to call, so the done point is neither met nor missed; the target moves to milestone 39. Measured by the orchestrator with the done point's gh run list command.",
+          "status": "unverified"
+        },
+        "handle": "m38-ci-at-a98fd40",
+        "id": "01M7GFN12PW139S5GSAEH37C04",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GFN12PW139S5GSACMMS9SM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN12PW139S5GSACMMS9SM",
+        "id": "01M7GFN13CBNE4PWP8NSQYX9XW",
+        "link": "01M7GFN13CBNE4PWP8NP7PG1C3",
+        "note": "Evidence that m38-ci could not be called at a98fd4051 (too few runs)",
+        "op": "link.create",
+        "to": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "type": "relates-to"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN12PW139S5GSACMMS9SM",
+        "id": "01M7GFN14249RMV8T02369E2SZ",
+        "link": "01M7GFN14249RMV8T02073JMG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Close milestone 38 with cold at about 7 minutes as an interim result, and move the cold target into the new milestone?",
+          "quote": "Close it",
+          "quote_where": "owner, 2026-11-15 chat, answer to question 4",
+          "statement": "Milestone 38 closes with its cold make test at 423 s as an interim result: @{01M7EQ750SRBDSEFNF18FJ9HQT} (41 s) and @{01M7EQ752DW9BDSP53JN8H9BJC} are met, @{01M7EQ74ZYGCCHY4QW22JZJ5SH} is not, and the 4-minute cold target moves into milestone 39 (Reads come from the projection) as a done point of its own"
+        },
+        "handle": "m38-closed-cold-interim",
+        "id": "01M7GFN14QDB7NEZR0588Y5G3Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFN14QDB7NEZR0567GPQF0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN14QDB7NEZR0567GPQF0",
+        "id": "01M7GFN15CH9QY76VSEHF6A7QZ",
+        "link": "01M7GFN15CH9QY76VSEGS97J44",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74Z9CZ12B122F4WW6M6C",
+        "id": "01M7GFN1622XME99Q4BD5XD3ZB",
+        "link": "01M7GFN1622XME99Q4B964NEFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN14QDB7NEZR0567GPQF0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74ZYGCCHY4QW22JZJ5SH",
+        "id": "01M7GFN1702ZSP0CFBPHV8DMKF",
+        "link": "01M7GFN1702ZSP0CFBPH3B0N6J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN14QDB7NEZR0567GPQF0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "Only 8 PR CI runs completed since #588 (median 181 s), fewer than the 10 the done point measures, so it can be neither checked nor called missed. The owner's answer to question 4 covered the cold target; the CI median is driven by the same suite cost, so it moves with it rather than holding milestone 38 open or closing it on an unmeasured point.",
+          "statement": "The CI median target (3 minutes over the last 10 PR runs) moves into milestone 39 with the cold target, and milestone 38 closes without calling @{01M7EQ751KQQ9VCJN2CPF1DWYP}",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "m38-ci-target-carried",
+        "id": "01M7GFN17MMTB8MDMXXCQRDNGP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFN17MMTB8MDMXX9AP1N8X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFN17MMTB8MDMXX9AP1N8X",
+        "id": "01M7GFN18DFRFTK5ZWDM37CVCA",
+        "link": "01M7GFN18DFRFTK5ZWDM297XTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ74Z9CZ12B122F4WW6M6C",
+        "id": "01M7GFN196C437MSRECDC52R3T",
+        "link": "01M7GFN196C437MSRECC1SZDSB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN17MMTB8MDMXX9AP1N8X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQ751KQQ9VCJN2CPF1DWYP",
+        "id": "01M7GFN19TVDKGVCMPWA6S08FE",
+        "link": "01M7GFN19TVDKGVCMPW8F2Z0EQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN17MMTB8MDMXX9AP1N8X",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFKNYD37Y9T9SAE3Z0JDZX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFN1AF97PZ4WER22KQ8DZT",
+  "type": "ops",
+  "v": 1
+}

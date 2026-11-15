@@ -16,6 +16,8 @@ The test suite is fast: on the 4-core VM a cold make test finishes within 4 minu
 
 - decided-by [fast-suite-proposal-approved](../decision/fast-suite-proposal-approved.md)
 - decided-by [fast-suite-build-order](../decision/fast-suite-build-order.md)
+- decided-by [m38-closed-cold-interim](../decision/m38-closed-cold-interim.md)
+- decided-by [m38-ci-target-carried](../decision/m38-ci-target-carried.md)
 
 ### In
 

@@ -18,6 +18,7 @@ A warm make test (run again right after a passing one, with no change) finishes 
 - serves change set `01M7EQ3AKCN5WTRED0VFN3JJD5` (Read budgets are opt-in benchmarks: the timing budgets (TestReadBudget, TestReadBudgetApply, TestBudget in internal/index and internal/slice, TestCatchUpBudget, TestDriverPollIsCheap, TestGeneratedModel) leave make test for an opt-in make test-budgets that CI's budgets job runs, and the tests that wait out the index's 2 s racy window backdate mtimes with os.Chtimes instead of sleeping 2.2 s. Evidence: the budget phase is 188 s even warm.)
 - serves change set `01M7EQ42Y1M8ENZCQ202D761JM` (Cheap process start and boundary TestFit: a rhiza process no longer pays go-runewidth's eager init at start (22 ms of 39 ms, across 6,600+ starts in scripts), and internal/slice TestFit tests the fit's state boundaries instead of sweeping every token budget (42 s).)
 - relates-to [m38-warm-at-ab67d485](../../evidence/m38-warm-at-ab67d485.md) — Evidence that m38-warm is met at ab67d485c
+- relates-to [m38-warm-at-a98fd40](../../evidence/m38-warm-at-a98fd40.md) — Evidence that m38-warm is met at a98fd4051
 
 ## History
 

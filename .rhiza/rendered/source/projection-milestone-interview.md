@@ -1,0 +1,72 @@
+# projection-milestone-interview
+
+source · `01M7GFKXXSA2X33A59YM6YTRYY`
+
+## quotes
+
+```json
+[
+  {
+    "by": "owner",
+    "text": "what is the projection?",
+    "where": "2026-11-15 chat, after the milestone 38 measurements"
+  },
+  {
+    "by": "owner",
+    "text": "how would that affect the overall performance?",
+    "where": "2026-11-15 chat, after the milestone 38 measurements"
+  },
+  {
+    "by": "owner",
+    "text": "i feel like we have some refactoring and architectural improvement opportunities right now that we may want to take advantage of.",
+    "where": "2026-11-15 chat, after the orchestrator's command timings"
+  },
+  {
+    "by": "owner",
+    "text": "Yes",
+    "where": "2026-11-15 chat, question 1: Scope: 1–4 in this milestone, 5 and 6 later?"
+  },
+  {
+    "by": "owner",
+    "text": "Ok",
+    "where": "2026-11-15 chat, question 2: When the parity test finds a disagreement, the strict engine (internal/model, which the index uses) is the spec?"
+  },
+  {
+    "by": "owner",
+    "text": "Autonomous",
+    "where": "2026-11-15 chat, question 3: Plan in chat or autonomous?"
+  },
+  {
+    "by": "owner",
+    "text": "Close it",
+    "where": "2026-11-15 chat, question 4: Close milestone 38 with cold at about 7 minutes as an interim result, and move the cold target into the new milestone?"
+  }
+]
+```
+
+## raw_sha256
+
+33caeba87d84938786983efe8f722e265cdf4d468b48d18e155e097debb05c9e
+
+## summary
+
+2026-11-15, after milestone 38's change sets merged. The orchestrator reported milestone 38's measurements at a98fd40: a clean cold make test on a quiet box took 423 s wall for 967 CPU-s (570 user + 397 sys, 228% CPU) against the 4-minute target (baseline 854 s for 972 CPU-s, so milestone 38 cut waiting, not work); a warm make test took 41 s (target 60 s, met); nothing was lost (1,948 tests and 398 txtar files against 1,892 and 395); there were too few PR CI runs since #588 to call the CI median. The owner asked what the projection is and how it would affect performance. The orchestrator measured this repo's log (24,560 entries, 127 MB): rhiza status 2.0 s, rhiza inbox 2.3 s, rhiza check 15.3 s, rhiza version 14 ms. The owner saw refactoring and architectural opportunities, so the orchestrator ran a read-only architecture survey (~/orchestrator/architecture-survey-2026-11-15.md). Its main finding: much of the projection already exists as internal/index, which production writes and many reads use; the interim model (internal/api/model.go newModel) that folds the whole log survives as a fallback and is what internal/api's tests run on; the model rules are implemented three times (the interim model, the strict engine in internal/model, and a hybrid in write_indexed.go); status (also the hook op), render, change ls, the inbox fallback, the daemon fold and check still fold the whole log; check rebuilds the as-is model about 96 times (model.WhatIf twice per in-flight change set) over a serial decode; cmd/rhiza's scripts re-execute the test binary for every rhiza line (about 5,330), though AGENTS.md says they run in-process. The orchestrator proposed a milestone, 'Reads come from the projection', of four change sets in this order: a parity harness with internal/api tests on the index; check without the repeated what-if rebuilds; finishing the projection (one projection interface, the index its only implementation with pending entries overlaid, the interim model deleted, status, render, change ls and the daemon fold moved onto it); and rhiza run in-process in the scripts. Two items come later: moving the daemon, run, ship and web application code out of internal/api, and investigating what fills the 127 MB log. The owner agreed to that scope, agreed that the strict engine is the spec when the parity test finds a disagreement, chose autonomous planning, and closed milestone 38 with the cold time as an interim result, its target moving to the new milestone. Left to the orchestrator as arbiter: the new milestone's command-latency and check targets and the measuring commands.
+
+## title
+
+Projection milestone and closing milestone 38, with the owner
+
+## Links
+
+### In
+
+- derived-from [m38-warm-at-a98fd40](../evidence/m38-warm-at-a98fd40.md)
+- derived-from [m38-nothing-lost-at-a98fd40](../evidence/m38-nothing-lost-at-a98fd40.md)
+- derived-from [m38-cold-at-a98fd40](../evidence/m38-cold-at-a98fd40.md)
+- derived-from [m38-ci-at-a98fd40](../evidence/m38-ci-at-a98fd40.md)
+- derived-from [m38-closed-cold-interim](../decision/m38-closed-cold-interim.md)
+- derived-from [m38-ci-target-carried](../decision/m38-ci-target-carried.md)
+
+## History
+
+- `01M7GFKNYD37Y9T9SAE3Z0JDZX` Close milestone 38, the test suite is fast. Owner, 2026-11-15, after the orchestrator measured a98fd40 (cold make test 423 s wall for 967 CPU-s on a quiet box, warm 41 s, 1,948 tests and 398 txtar files, too few PR CI runs since #588 to call the median): "Close it", with the cold time as an interim result and the cold target moving to the projection milestone.
