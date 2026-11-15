@@ -1,0 +1,33 @@
+{
+  "actor": "01M7GG8RSK524M8EQD9AEKYV3K",
+  "after": [
+    "01M7GFXTQ36878HVHPJ1F6X020"
+  ],
+  "at": "2026-11-15T21:04:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "3014df041ff17734dfb31f0c5c4006ba5a04b0961c962834dfc8e9b45afe3e17",
+          "session": "ea75812d-c986-498a-88e5-01a1e1043949",
+          "summary": "Autonomous plan run (no owner). The arbiter asked that the builder take the profile and allowed one profiled rhiza check now. That profile was taken on 2026-11-15 in the main checkout (24,560 entries, 127 MB). rhiza check took 13.8 s wall, with 18.5 s of CPU samples. model.WhatIf was 46% of the samples (check's in-flight problems pass 23%, its in-flight links pass 25%), model.asIs 26%, Model.clone in finishModel 14%. store.ReadLog was 7% (ReadEntries 6.4%, entry.Decode 4.3%), changeset.FoldLog 3%, textRefs 6%, the render comparison 2.4%. The repeated what-if builds are therefore the main cost, and the parallel decode can save about a second at most. No in-memory constructor of model.Seed exists today: only internal/index builds one, from its stored rows (loadSeed), so check needs a model function that builds the Seed from the change sets. Design choices were made by the planner and are recorded as assumed.",
+          "title": "Planning check without what-if rebuilds, autonomous, with a profile"
+        },
+        "handle": "check-whatif-profile-plan",
+        "id": "01M7GGD0KJ19CHX2Y4WWTMHPNF",
+        "key": null,
+        "kind": "source",
+        "node": "01M7GGD0KJ19CHX2Y4WSGQK1ER",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GGD0MB484S306JXSD9QQQG",
+  "type": "ops",
+  "v": 1
+}

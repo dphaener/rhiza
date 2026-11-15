@@ -1,0 +1,57 @@
+{
+  "actor": "01M7GGSPN04NY2QJHEMQQKAY25",
+  "after": [
+    "01M7GGEC8WSCZ6Y8C6NEDQ90VK"
+  ],
+  "at": "2026-11-15T21:12:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests: go test -trimpath -p 2 -count=1 ./internal/model ./internal/check passes. A new TestAsIsSeedWhatIfFrom in internal/model, over a log with a landed base, two in-flight change sets where one depends on the other, one in-flight change set whose ops no longer apply and a duplicate handle, shows that AsIsSeed's Model and problems equal AsIs's, that ToBeFrom over its seed equals ToBe (model and problems), and that WhatIfFrom over its seed equals WhatIf (model and problems) for every in-flight change set. All of ToBeFrom and the WhatIfFrom calls run over one shared seed, and the results are compared only after every call has run, and the seed is compared with a fresh AsIsSeed after them: each must still be equal. A new TestWhatIfOnceMatches in internal/check, over the same shape of log plus an in-flight link whose ends its type does not allow, shows check's in-flight findings listed exactly. Failure case: an in-flight change set whose what-if has problems, and a bad in-flight link, are each reported once, not twice. Profile, before any code change and again after: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza, then in this repo's main checkout RHIZA_CPUPROFILE=$TMPDIR/check.prof $TMPDIR/rhiza-x check and go tool pprof -top -cum $TMPDIR/rhiza-x $TMPDIR/check.prof. The commit's Checks: block gives /usr/bin/time -f '%e s' for both builds, and the cumulative shares of store.ReadLog, changeset.FoldLog, model.WhatIf/WhatIfFrom, model.asIs and checker.render before and after. After the change, model.WhatIf and model.ToBe no longer appear under check.Run, and model.asIs is called once per check. Touches internal/model/seed.go, internal/check/check.go and their tests. Must not change what check reports, its order or its --json shape.",
+          "statement": "rhiza check builds the as-is view once, with model.AsIsSeed (internal/model/seed.go, new: the as-is Model, its problems and a model.Seed built in memory), and both the to-be view, with a new model.ToBeFrom(seed, sets) replacing checker.model's model.ToBe call (internal/check/check.go:378), and each in-flight change set's what-if, with model.WhatIfFrom, from that one seed; the in-flight problems pass (checker.model, :384) and the in-flight links pass (checker.inFlightLinks, :456) share those what-if views instead of each calling model.WhatIf. Seed.builder (internal/model/seed.go:120) copies each node's and link's value (its History and Fields) and aspects into the builder records, so building views from one seed never changes the seed or an earlier view"
+        },
+        "handle": "check-whatif-once",
+        "id": "01M7GFXTMA9VHC2FAQB50N4B5N",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 -count=1 ./internal/store passes. A new TestReadEntriesParallelSame, over a log of a few hundred entries with an unreadable file, an entry that does not decode and an entry whose ID does not match its path, shows the parallel result deep-equals the serial one. go test -race -trimpath -p 2 -count=1 ./internal/store -run ReadEntries is clean. Failure case: with GOMAXPROCS=1 it decodes on one worker and still returns the same Log. Measure, with @{01M7GFXTMA9VHC2FAQB33P1KA1} already in: build $TMPDIR/rhiza-x as in @{01M7GFXTMA9VHC2FAQB33P1KA1} and record in the commit's Checks: block /usr/bin/time -f '%e s' $TMPDIR/rhiza-x check in this repo's main checkout, after one warming run, before and after this leaf, and store.ReadLog's cumulative pprof share. After this leaf, check takes at most 5 s on the quiet 4-core VM, milestone 39's target (@{01M7GFT0BD4S1H8G036DW7ND7S}). Touches internal/store/read.go and its tests. Must not add a dependency or change the order or content of Entries or Problems.",
+          "statement": "store.ReadEntries (internal/store/read.go:97) decodes entry files on up to four workers (bounded by GOMAXPROCS), the way the index's listing already stats folders in parallel, and returns the same Log as the serial decode: the same entries and problems in the same order"
+        },
+        "handle": "read-entries-parallel",
+        "id": "01M7GFXTNFE5TRP176PYRRYN5T",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7GFXTNFE5TRP176PWG9TATG",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "reasoning": "No other change set in milestone 39 takes on check's time, so this change set carries projection-targets' 5 s figure as it stands rather than a looser one of its own. The 2026-11-15 profile (13.8 s wall) puts model.WhatIf at 46% of samples and model.asIs at 26%, while the decode (store.ReadLog) is 7%: building the as-is once (with the to-be from the same seed) and each what-if once carries most of the gain, and the parallel decode adds the rest. Ordering the decode leaf second lets one measurement show the combined result; if check still misses 5 s, the leaf fails and the gap is raised, not the target loosened.",
+          "statement": "The time target for this change set is milestone 39's target for check (projection-targets): rhiza check on this repo's main checkout within 5 s, measured with /usr/bin/time after one warming run on the quiet 4-core VM, after both leaves. read-entries-parallel is built after check-whatif-once so its measurement covers both",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "check-time-target",
+        "id": "01M7GGEBY7QNREZ2HWEWMZDYG0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGEBY7QNREZ2HWET34N8K7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GGVRE0AVGRP6BNV6G04EB6",
+  "type": "ops",
+  "v": 1
+}
