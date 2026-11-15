@@ -1,0 +1,40 @@
+{
+  "actor": "01M7EP6ZMK5W1SSRMYM1M3Y4V4",
+  "after": [
+    "01M7ENMBV2QTGMBS36FHJPEBM1"
+  ],
+  "at": "2026-11-15T04:10:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza to a scratch bin put first on PATH, in a fresh git repo with a fake head (logs argv and cwd, prints a given report). rhiza check with SHIP_HEAD_RHIZA=fake execed 'check --json' in the repo root (also from a subdir) and printed its ok report, exit 0; --base/--skip-reference/--branch-newer-format passed through; rhiza check --json and api call check gave identical bytes; a fail report with child exit 1 printed the fail finding, exit 1; garbage output, a missing head with SHIP_HEAD_BUILD empty, and a failing build each errored naming SHIP_HEAD_RHIZA/the head build, exit 1; a missing head with SHIP_HEAD_BUILD set was built then run. In-process with no exec: env unset, SHIP_HEAD_RHIZA naming the PATH binary, and the same build run by a path off PATH (even with a failing SHIP_HEAD_BUILD); a symlinked PATH rhiza still used the head. go test ./internal/api -run 'TestCheckHeadBuild|TestLandRenderHeadBuild|TestShipHeadBuildOnDemand|TestShipPrePushCheck' and TestScripts/ship-gate-head-check pass; make self-check and SHIP_HEAD_RHIZA=$TMPDIR/no-head-rhiza SHIP_HEAD_BUILD= make self-check both pass from a clean detached checkout of HEAD. Only finding: the missing/failed-head error tail mentions land/render/push (minor)."
+        },
+        "handle": "gate-check-head-build-qa-1",
+        "id": "01M7EPCH3HTW8QJ2N8E61MRH04",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7EPCH3HTW8QJ2N8E4NP571J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EPCH3HTW8QJ2N8E4NP571J",
+        "id": "01M7EPCH48G8K7CQ9NT6PVQ8TA",
+        "link": "01M7EPCH48G8K7CQ9NT3HJW7VF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EHQ2K4VECK48QNRCE286P5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EHHAG3CTRQCJCWSG2W7BTZ",
+  "for": "01M7EJGE40MDT3GDSX5SQWSW3G",
+  "id": "01M7EPCH51DG9KE83XD4DMQZQV",
+  "type": "ops",
+  "v": 1
+}
