@@ -1,0 +1,73 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFTS0NVWBXF3CQZDPXP9TP"
+  ],
+  "at": "2026-11-15T20:57:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|Run|SelfPath|TUI)' passes, with a new test (TestRunConcurrentDirs) that calls run() from two goroutines on two scratch repos with different working directories and environments and shows each answers for its own repo; go test -race -trimpath -count=1 ./cmd/rhiza -run '^TestRunConcurrentDirs$' is clean; go vet ./cmd/rhiza is clean. Failure case: a working directory that does not exist still fails with the 'working directory' error. The binary's behaviour is unchanged: go test -trimpath ./cmd/rhiza -run 'TestScripts/(tui|daemon-self)' passes. Touches cmd/rhiza/main.go, ctx.go, tui.go and their tests. Must not change any command's output, flags or exit codes.",
+          "statement": "cmd/rhiza's run() depends on no process-wide state: it takes its working directory and its own binary's path as parameters instead of reading os.Getwd (ctx.go:42) and os.Args[0] (selfPath, ctx.go:421), tui.go opens a project's folder by passing it instead of os.Chdir, and nothing on the call path sets environment variables or package variables, so two run() calls can proceed at once in one process"
+        },
+        "handle": "cli-no-process-globals",
+        "id": "01M7GG0GD7S0MZQ888A1CZA5T3",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7GG0GD7S0MZQ888A108TB0C",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GD7S0MZQ888A108TB0C",
+        "id": "01M7GG0GDY53AEHDYCS9EEC98B",
+        "link": "01M7GG0GDY53AEHDYCS695DM57",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza passes, with every script under cmd/rhiza/testdata/script run; the scripts that still use the binary are named in one list in cmd/rhiza/main_test.go with the reason for each. Measure in the commit's Checks: block, on a quiet VM: /usr/bin/time -f '%e s %S sys' go test -trimpath -count=1 ./cmd/rhiza before and after, and the number of rhiza processes started (a counter the real-binary path increments) before and after (2026-11-15: about 5,330 rhiza lines). Failure case: a script whose fake bin/ command calls rhiza back and is left off the list fails with a message naming the list. AGENTS.md's Tests bullet ('They run in-process via testscript.Main') and agents/developing.md:21 are corrected to say what holds. Touches cmd/rhiza/main_test.go, the txtar files that need adjusting, AGENTS.md and agents/developing.md. Must not delete or skip a script (ls cmd/rhiza/testdata/script/*.txtar | wc -l is unchanged) or weaken a script's assertions.",
+          "statement": "cmd/rhiza's testscripts run each rhiza line in-process, as a script command that calls run() with the script's working directory, environment and standard streams, and only the scripts that need a process (a fake bin/ command that calls rhiza back, or rhiza run in the background with &) get a real rhiza binary, built once per test binary, on PATH; AGENTS.md's Tests section says which lines run in-process and which run the binary"
+        },
+        "handle": "scripts-rhiza-in-process",
+        "id": "01M7GG0GEKJBGGNZNT0HEBDYKW",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "id": "01M7GG0GF39R53XENQS7F6C3RY",
+        "link": "01M7GG0GF39R53XENQS5PZNNYQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "id": "01M7GG0GFQ0JSFT473Z1E3SFQX",
+        "link": "01M7GG0GFQ0JSFT473Z14PPA41",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GG0GGAYH8V14NYX5ZE8C6G",
+  "type": "ops",
+  "v": 1
+}

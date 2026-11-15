@@ -1,0 +1,18 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T20:54:09Z",
+  "body": {
+    "intent": "rhiza check builds the as-is model once and each in-flight change set's what-if once (model.AsIsState and model.WhatIfFrom), shared between its two passes, and store.ReadEntries decodes the log on several cores, so check on this repo takes seconds, not 15. Evidence: check calls model.WhatIf twice per in-flight change set (internal/check/check.go:384 and :456), about 96 as-is rebuilds, over a serial decode of 127 MB (internal/store/read.go:97); not yet profiled.",
+    "kind": "intention",
+    "sources": [
+      "01M7GFKXXSA2X33A59YM6YTRYY"
+    ],
+    "title": "Check without what-if rebuilds"
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFT8ADJN38YJCZ3ZHQ072C",
+  "type": "open",
+  "v": 2
+}

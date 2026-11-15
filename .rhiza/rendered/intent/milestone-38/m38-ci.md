@@ -12,6 +12,7 @@ The median wall time of the last 10 completed CI runs on pull requests that chan
 
 - decided-by [fast-suite-proposal-approved](../../decision/fast-suite-proposal-approved.md)
 - decided-by [fast-suite-measuring-commands](../../decision/fast-suite-measuring-commands.md)
+- decided-by [m38-ci-target-carried](../../decision/m38-ci-target-carried.md)
 
 ### In
 
@@ -19,6 +20,7 @@ The median wall time of the last 10 completed CI runs on pull requests that chan
 - serves change set `01M7EQ3AKCN5WTRED0VFN3JJD5` (Read budgets are opt-in benchmarks: the timing budgets (TestReadBudget, TestReadBudgetApply, TestBudget in internal/index and internal/slice, TestCatchUpBudget, TestDriverPollIsCheap, TestGeneratedModel) leave make test for an opt-in make test-budgets that CI's budgets job runs, and the tests that wait out the index's 2 s racy window backdate mtimes with os.Chtimes instead of sleeping 2.2 s. Evidence: the budget phase is 188 s even warm.)
 - serves change set `01M7EQ3K7PW2XYR684CXSX74TG` (Parallel scripts, longest first, weighted CI shards: cmd/rhiza's scripts run at a -parallel bounded by cores and memory, start longest first, and CI's script shards split by a checked-in timing file instead of round-robin by name. Evidence: scripts use ~1.2 cores at -parallel 4; at -parallel 12 they take 381 s instead of 639 s with 0 failures; CI shards took 61-239 s.)
 - serves change set `01M7EQ3V3JMPYXS0WKE0DM8CSM` (internal/api tests run in parallel: independent tests call t.Parallel and share snapshot fixtures instead of rebuilding the model per test; projection replacing FoldLog stays out of scope. Evidence: 749 tests, no t.Parallel in the repo, 58% of CPU in store.ReadLog because each write re-reads the log; ~180 s.)
+- relates-to [m38-ci-at-a98fd40](../../evidence/m38-ci-at-a98fd40.md) — Evidence that m38-ci could not be called at a98fd4051 (too few runs)
 
 ## History
 

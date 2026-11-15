@@ -1,0 +1,39 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFVW49E1JYZGWMK3SAAWEP"
+  ],
+  "at": "2026-11-15T20:55:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Parked for after milestone 39 (owner: \"Yes\" to these coming later): investigate what fills the log. This repo's .rhiza/log is 127 MB for 24,560 entries, about 5 KB an entry; which entry types and fields (findings, sources, transcripts, run records) fill it decides whether an index's first build and rhiza check can ever be fast, and whether entries should be smaller. Investigation first, measured with the sizes per entry type and field; no change set until it is done."
+        },
+        "handle": "note-01m7gfvwtz3mcd",
+        "id": "01M7GFVWTZ3MCD9JM3CDFGS0N1",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GFVWTZ3MCD9JM3CAXMYZZN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFVWTZ3MCD9JM3CAXMYZZN",
+        "id": "01M7GFVWWGK6KPTBWJZENF90ZH",
+        "link": "01M7GFVWWGK6KPTBWJZD5KG05D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT007N7A6EPR12Z16GECM",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFRBHB4ZXKD4882FQ480Q3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFVWXKA4WV1RYHGKT4ND75",
+  "type": "ops",
+  "v": 1
+}

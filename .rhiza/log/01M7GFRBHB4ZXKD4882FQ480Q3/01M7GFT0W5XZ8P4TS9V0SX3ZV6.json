@@ -1,0 +1,381 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFRBHB4ZXKD4882J4ERCZ3"
+  ],
+  "at": "2026-11-15T20:54:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "39",
+          "statement": "Reads come from the projection: Rhiza's reads and writes come from the incremental index (the projection) instead of folding the whole log, under one set of model rules with the strict engine in internal/model as the spec, so everyday commands stay fast as the log grows and the test suite stops paying for full-log rebuilds and per-line process starts (2026-11-15, 24,560 entries, 127 MB: rhiza status 2.0 s, rhiza inbox 2.3 s, rhiza check 15.3 s; cold make test 423 s)."
+        },
+        "handle": "milestone-39",
+        "id": "01M7GFT007N7A6EPR12Z1RXW0Z",
+        "key": "zzzzzzzz",
+        "kind": "intent",
+        "node": "01M7GFT007N7A6EPR12Z16GECM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A cold make test on the 4-core VM, with nothing else running, finishes within 4 minutes of wall time, carried from @{01M7EQ74ZYGCCHY4QW22JZJ5SH} (2026-11-15 at a98fd4051: 423 s wall for 967 CPU-s). Measure: go clean -testcache && /usr/bin/time -f '%e s' make test."
+        },
+        "handle": "m39-cold",
+        "id": "01M7GFT00Y8WRA6RMC832TNHRR",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M7GFT00Y8WRA6RMC81YYM31E",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "The median wall time of the last 10 completed CI runs on pull requests that changed code is within 3 minutes, carried from @{01M7EQ751KQQ9VCJN2CPF1DWYP} (2026-11-15: 8 runs since #588, median 181 s). Measure: gh run list --workflow CI --event pull_request --status completed --limit 10 --json createdAt,updatedAt, and the median of updatedAt minus createdAt."
+        },
+        "handle": "m39-ci",
+        "id": "01M7GFT01P2FVWJ2J324MJRN6F",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M7GFT01P2FVWJ2J324EFT8N9",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "rhiza status and rhiza inbox each answer within 200 ms warm on this repo's own log (2026-11-15 at 24,560 entries: 2.0 s and 2.3 s). Measure, in the main checkout with nothing else running: run each once, then /usr/bin/time -f '%e s' rhiza status and /usr/bin/time -f '%e s' rhiza inbox."
+        },
+        "handle": "m39-reads-fast",
+        "id": "01M7GFT02J9RW50MCR2AQ8TN5F",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M7GFT02J9RW50MCR273H3X2P",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "rhiza check finishes within 5 s on this repo (2026-11-15: 15.3 s). Measure, in the main checkout with nothing else running: run it once, then /usr/bin/time -f '%e s' rhiza check."
+        },
+        "handle": "m39-check-fast",
+        "id": "01M7GFT039RM7ZP4FVPRA4RTVE",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M7GFT039RM7ZP4FVPP57TB46",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "A parity property test shows that the projection and a fresh strict fold of the log (changeset.FoldLog, then internal/model's views) agree on random logs, including two landed heads on one target, a rebase that drops entry files, and dry-run pending entries; it runs in make test, not only in the opt-in budgets. Measure: go test -trimpath -count=1 ./internal/api -run '^TestPropertyProjectionParity$' -v passes, and make test's output lists it."
+        },
+        "handle": "m39-parity",
+        "id": "01M7GFT044X4B4XPAZEH7P18NM",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M7GFT044X4B4XPAZEFYDY26G",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "The interim model is deleted and there is one read path: internal/api has no newModel or newModelSets, no branch on whether IndexPath is set, and no readLog hook on Ctx. Measure: grep -nE 'func newModel|newModelSets|IndexPath (!=|==) \"\"|readLog' internal/api/*.go prints nothing."
+        },
+        "handle": "m39-one-read-path",
+        "id": "01M7GFT04Y5R6MNQED0WSE9WP1",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M7GFT04Y5R6MNQED0VHBWX11",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "statement": "No test is deleted or skipped to get there: the number of tests go test -list '.*' ./... lists and the number of cmd/rhiza/testdata/script/*.txtar files do not drop below their counts at a98fd4051 (1,948 and 398); a test of deleted interim-model code counts only when a parity case replaces it. Measure: go test -list '.*' ./... | grep -c '^Test' and ls cmd/rhiza/testdata/script/*.txtar | wc -l, on a98fd4051 and on main."
+        },
+        "handle": "m39-nothing-lost",
+        "id": "01M7GFT05YPQ76T9QVSDYJQQ6J",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M7GFT05YPQ76T9QVSC0XS2KG",
+        "op": "node.create",
+        "parent": "01M7GFT007N7A6EPR12Z16GECM"
+      },
+      {
+        "fields": {
+          "question": "Scope: 1–4 in this milestone, 5 and 6 later?",
+          "quote": "Yes",
+          "quote_where": "owner, 2026-11-15 chat, answer to question 1",
+          "statement": "Milestone 39 holds four change sets, in this order: a parity harness with internal/api's tests on the index; rhiza check without the repeated what-if rebuilds; finishing the projection (one projection interface, the index its only implementation with pending entries overlaid, the reads moved onto it and the interim model deleted); and rhiza run in-process in cmd/rhiza's scripts. Moving the daemon, run, ship and web application code out of internal/api, and finding what fills the 127 MB log, come later"
+        },
+        "handle": "projection-scope-approved",
+        "id": "01M7GFT06MX3HQ7M70CMSMXBM5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "id": "01M7GFT07QVZ2JRW2M3Y0WBCH6",
+        "link": "01M7GFT07QVZ2JRW2M3W3F80B3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "When the parity test finds a disagreement, the strict engine (internal/model, which the index uses) is the spec?",
+          "quote": "Ok",
+          "quote_where": "owner, 2026-11-15 chat, answer to question 2",
+          "statement": "Where the parity test finds the model rules disagree, the strict engine in internal/model (the rules the index stores) is the spec: the other side (the interim model in internal/api/model.go or the hybrid in write_indexed.go) changes to match, and each case is recorded"
+        },
+        "handle": "strict-engine-is-spec",
+        "id": "01M7GFT08KZFZSZTD7G3R9DSHP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "id": "01M7GFT09CH6Y5VMDB76BS95KZ",
+        "link": "01M7GFT09CH6Y5VMDB74ZR61JM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Plan in chat or autonomous?",
+          "quote": "Autonomous",
+          "quote_where": "owner, 2026-11-15 chat, answer to question 3",
+          "statement": "Milestone 39 is planned autonomously: the orchestrator writes its change sets and leaves from the architecture survey and the owner's answers, deciding what is left as arbiter, without a further interview"
+        },
+        "handle": "projection-planned-autonomously",
+        "id": "01M7GFT0A4PH0CG1P11MMEB5B7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT0A4PH0CG1P11JQGQEP8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT0A4PH0CG1P11JQGQEP8",
+        "id": "01M7GFT0AS7HFTKN21KP994SHW",
+        "link": "01M7GFT0AS7HFTKN21KM06XCBZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "rhiza version starts in 14 ms, so 200 ms leaves room to open the index and read a few rows, which is all status and inbox need once they stop folding the 127 MB log; a looser target would let a hidden fold survive. check must read and decode the whole log and compare the rendered files, so it cannot be a few rows: with the as-is built once instead of about 96 times and the decode spread over 4 cores, 5 s is a third of today's 15.3 s and stays below the minutes self-check, the gate and pre-push spend elsewhere. Each command is one a reviewer can rerun.",
+          "statement": "Milestone 39's own targets are rhiza status and rhiza inbox within 200 ms warm and rhiza check within 5 s on this repo's log, each measured with /usr/bin/time after one warming run in the main checkout on a quiet VM; the parity test runs in make test; the interim model's removal is measured by a grep that prints nothing; and no test is lost against a98fd4051",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "projection-targets",
+        "id": "01M7GFT0BD4S1H8G036HS8CZXQ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "id": "01M7GFT0C2QQKPQJ19CPS6QB5X",
+        "link": "01M7GFT0C2QQKPQJ19CKH5PWGF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Moving status, inbox, render, change ls and the daemon fold onto the projection is about six leaves of medium risk, and deleting the interim model touches the write path and every IndexPath branch; one PR holding both would be the largest of the milestone and hard to review or revert. Split, the first leaves the old path in place as a fallback while the reads move, and the second deletes it once nothing reads it. The parity harness is the projection's safety net, so the projection waits for it; check reads the whole log either way and the scripts change only the test harness, so both can build beside it. Notes keep the later work visible on the milestone without a draft that a backlog rule could pick up early.",
+          "statement": "Finishing the projection is two change sets: first every read moves onto one projection interface, then the interim model and the IndexPath branches are deleted. So milestone 39 builds five change sets: parity harness, check without rebuilds, reads from the projection, one read path, rhiza in-process in scripts. Reads from the projection depends on the parity harness, and one read path on reads from the projection; check and the in-process scripts depend on nothing. The two later items are notes on milestone 39, not draft change sets",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "projection-build-order",
+        "id": "01M7GFT0CRDWZ6R37AKSHGD9NX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT0CRDWZ6R37AKS2H5QPN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT0CRDWZ6R37AKS2H5QPN",
+        "id": "01M7GFT0DGHJ9JK2BXMAJWGZV7",
+        "link": "01M7GFT0DGHJ9JK2BXM6VGYRYC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Today cmd/rhiza/ctx.go leaves IndexPath empty when index.DefaultPath fails, and every op then folds the log through the interim model; deleting that model needs another answer. Failing the command would break a repo that works today, which is a breaking change; a throwaway index keeps the output identical and the code single.",
+          "statement": "When a worktree's index cannot be opened or created (no user cache folder, a read-only cache), a command builds a throwaway index in a temporary folder for that one call and reads through it, so there is still one read path and no fold fallback; the cost is a full build on that call",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "projection-no-index-fallback",
+        "id": "01M7GFT0E7FBH3Q4JN344Q7GDC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GFT0E7FBH3Q4JN308G3VYX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT0E7FBH3Q4JN308G3VYX",
+        "id": "01M7GFT0EZW67JG7JGBT0P2Z7Q",
+        "link": "01M7GFT0EZW67JG7JGBRQ1D1C0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFKXXSA2X33A59YM6YTRYY",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT007N7A6EPR12Z16GECM",
+        "id": "01M7GFT0FN4RSWQA8V2KFENKEV",
+        "link": "01M7GFT0FN4RSWQA8V2H8AFPP2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT007N7A6EPR12Z16GECM",
+        "id": "01M7GFT0GAQD70S551D90QWHSE",
+        "link": "01M7GFT0GAQD70S551D5ZPPG0M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT007N7A6EPR12Z16GECM",
+        "id": "01M7GFT0GZHT808T760Q3Q4MTG",
+        "link": "01M7GFT0GZHT808T760P1A5YN7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0A4PH0CG1P11JQGQEP8",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT007N7A6EPR12Z16GECM",
+        "id": "01M7GFT0HRRQ9Y7WHGCJ94NF9C",
+        "link": "01M7GFT0HRRQ9Y7WHGCEF6CKA2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0CRDWZ6R37AKS2H5QPN",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT00Y8WRA6RMC81YYM31E",
+        "id": "01M7GFT0JQY64E66VY5JF36MPW",
+        "link": "01M7GFT0JQY64E66VY5F6NMHTY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN14QDB7NEZR0567GPQF0",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT01P2FVWJ2J324EFT8N9",
+        "id": "01M7GFT0KK6RYCSMBWBXEQ2D53",
+        "link": "01M7GFT0KK6RYCSMBWBSSQGEZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFN17MMTB8MDMXX9AP1N8X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT02J9RW50MCR273H3X2P",
+        "id": "01M7GFT0MEHF83G89PJCQX7XTH",
+        "link": "01M7GFT0MEHF83G89PJ8WF6P4E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT039RM7ZP4FVPP57TB46",
+        "id": "01M7GFT0NS6FP3E07NA684R6EB",
+        "link": "01M7GFT0NS6FP3E07NA2JBQWN8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT044X4B4XPAZEFYDY26G",
+        "id": "01M7GFT0PWARBGYQ5E7TDHR7V3",
+        "link": "01M7GFT0PWARBGYQ5E7R61RGM5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT044X4B4XPAZEFYDY26G",
+        "id": "01M7GFT0QP40M763A0XQ3873V7",
+        "link": "01M7GFT0QP40M763A0XKZJBX40",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT04Y5R6MNQED0VHBWX11",
+        "id": "01M7GFT0RWR3GKHHS80KY7D69B",
+        "link": "01M7GFT0RVXBY6WTDV2WD91GCQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFT05YPQ76T9QVSC0XS2KG",
+        "id": "01M7GFT0T2RZY9Z2N9EN6RH4SQ",
+        "link": "01M7GFT0T2RZY9Z2N9EM2WJWF4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFRBHB4ZXKD4882FQ480Q3",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFT0W5XZ8P4TS9V0SX3ZV6",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T20:50:33Z",
+  "body": {
+    "intent": "Close milestone 38, the test suite is fast. Owner, 2026-11-15, after the orchestrator measured a98fd40 (cold make test 423 s wall for 967 CPU-s on a quiet box, warm 41 s, 1,948 tests and 398 txtar files, too few PR CI runs since #588 to call the median): \"Close it\", with the cold time as an interim result and the cold target moving to the projection milestone.",
+    "kind": "record",
+    "sources": [],
+    "title": "Close milestone 38"
+  },
+  "change_set": "01M7GFKNYD37Y9T9SAE3Z0JDZX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFKNYD37Y9T9SAE5JT1BRX",
+  "type": "open",
+  "v": 2
+}
