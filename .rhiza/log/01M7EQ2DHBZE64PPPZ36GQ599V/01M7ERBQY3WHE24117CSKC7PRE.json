@@ -1,0 +1,57 @@
+{
+  "actor": "01M7ER4FRTM6NXBAJ51G09CF11",
+  "after": [
+    "01M7EQT90BVW3N7G2QPS2NEQ7V"
+  ],
+  "at": "2026-11-15T04:45:00Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -race ./internal/run -run 'TestScaledClock|TestTimedOut|TestWait' shows: at scale 1000 Sleep(30*time.Second) returns within 100 ms of real time and Now has advanced at least 30 s; real time spent outside Sleep (a 50 ms time.Sleep between two Now calls) advances Now by about 50 ms, not 50 s; Sleep(time.Microsecond) still waits at least 1 ms; Sleep and Now called from several goroutines pass under -race; with RHIZA_TEST_CLOCK_SCALE unset or empty the chosen clock is RealClock; the timeout helper on the scaled clock reports a 10 min timeout not yet passed after 30 s of virtual time but under 3 s of real time, and passed once both hold, reports a 1 s timeout passed only after 1 s of real time, and on RealClock reports exactly elapsed >= timeout; an engine wait step with a 10 min timeout, on the scaled clock, whose condition holds only after 1 s of real time passes with outcome pass, and one whose condition never holds times out within 4 s of real time; failure cases: values 0, -5, 1.5 and abc each give RealClock and no panic. Touches internal/run/engine.go or a new internal/run/clock.go and their _test.go. Must not change RealClock, the Engine's nil-Clock default or any workflow's poll or backoff value.",
+          "statement": "internal/run has a scaled Clock, chosen by RHIZA_TEST_CLOCK_SCALE=<n>, whose Sleep(d) waits d/n of real time (never less than 1 ms) and whose Now is the wall clock plus the time its Sleeps skipped, safe for concurrent use, and a timeout helper that a wait uses to decide its timeout passed: the timeout has passed on the clock's Now and at least the smaller of the timeout and 3 s of real time has passed since the wait began; the engine's wait() decides its step timeout with it and, past the clock's deadline inside the floor, sleeps its interval rather than zero; with the variable unset, empty or not a positive integer the engine keeps RealClock."
+        },
+        "handle": "scaled-test-clock-env",
+        "id": "01M7EQC3EBD206T6TR66YZGWDB",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQC3EBD206T6TR63SVYR6Z",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -v ./cmd/rhiza -run 'TestScripts/(run-ship-conflict-fix|run-ship-ci-fix|run-ship-main-dispatch-fail|arbiter-agent-tabs|plan-workflow-ci-infra-wait|session-message-busy)$' passes with each of the first five scripts' elapsed under 30 s (2026-11-15: 195, 173, 130, 108 and 96 s); go test -trimpath ./internal/api -run 'TestRunClock|TestTypePointer' shows runClock is RealClock with the variable unset and the scaled clock with it set, and on the scaled clock a typePointer wait under the default 10 min timeout for a session that reaches its prompt only after 1 s of real time sends its message, while a 1 s timeout on a session that never reaches it fails only after at least 1 s of real time; failure case: a script that clears it (env RHIZA_TEST_CLOCK_SCALE=) runs on RealClock, shown by a short wait-timeout script in cmd/rhiza/testdata/script. Speedup measure (orchestrator, quiet VM): go clean -testcache && /usr/bin/time -f '%e s' go test -trimpath ./cmd/rhiza, against 639 s. Touches internal/api/run.go, run_spawn.go, api.go, ship.go, session.go, session_message.go, ship_deploy.go, their tests, and cmd/rhiza/main_test.go. Must not change a production interval, a workflow .toml, or the daemon, feed and session-limit tickers.",
+          "statement": "When RHIZA_TEST_CLOCK_SCALE is set, every wait a run makes goes by the scaled clock: internal/api's runClock (run.start and run.resume polls, wait conditions and backoff, session_run.go and session_message.go waits), the spawn poll in run_spawn.go, the default ctx.Sleep in api.go, ship.go and session.go, and ship_deploy.go's interval and its deadline; each of these that has a timeout decides it with internal/run's timeout helper, so a wait on another process's real work keeps at least the smaller of its timeout and 3 s of real time; cmd/rhiza/main_test.go's Setup sets it to 1000 for every script, so the builtin workflows' 30 s polls and 2 min backoff cost milliseconds in scripts."
+        },
+        "handle": "scripts-wait-on-scaled-clock",
+        "id": "01M7EQC3G811QJGK7SM5YT15SM",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQC3G811QJGK7SM5EC18KM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "reasoning": "Clock.Now is used only for elapsed time within one process (internal/run engine.go wait, internal/api session_message.go typePointer), so a per-process offset is enough. A Now multiplied by the scale would count real work, such as a 50 ms process start, as 50 s and fire step and message timeouts early. Adding only skipped sleep time keeps each loop's poll count as in production, but it does not by itself keep the real time another process gets: a poll that sleeps the 1 ms floor while Now skips the rest of its 250 ms interval lets a 10 min typePointer wait for a fake agent end after a few seconds of real time, and a 1 s --timeout (session-message-busy.txtar) after about 4 polls in a few ms; engine.go wait() step timeouts likewise wait on other processes. So a timeout also needs a real-time floor: the smaller of the timeout itself and 3 s, enough for a fake agent or a background rhiza command on a loaded 4-core VM while a deliberately expired step timeout in a script costs at most 3 s. On RealClock the real time since the wait began equals Now's elapsed time, so the floor never delays a production timeout. Past the clock's deadline and inside the floor, each poll sleeps its normal interval on the clock, never zero, so the loop does not spin. A loop that sleeps scaled but measures its deadline with time.Now, as ship_deploy.go does, would poll 1000 times as often. runClock is a package variable read by concurrent goroutines, so the offset needs a lock or atomic.",
+          "statement": "The scaled clock's Now is the wall clock plus the time its Sleeps skipped (each Sleep(d) adds d minus the real time it waited), not the wall clock multiplied by the scale, and it is safe for concurrent use; every loop that sleeps on it measures its deadline with the same clock's Now, and a timeout on it fires only once the timeout has passed on Now and at least the smaller of the timeout and 3 s of real time has passed since the wait began, so a wait on another process's real work keeps that much real time; on RealClock the rule is the same as today",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scaled-clock-now-skips-sleeps",
+        "id": "01M7EQT8V4D1RPDFHF8RNC55M1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQT8V4D1RPDFHF8NJ02NSK",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7EQ2DHBZE64PPPZ36GQ599V",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ERBQY3WHE24117CSKC7PRE",
+  "type": "ops",
+  "v": 1
+}
