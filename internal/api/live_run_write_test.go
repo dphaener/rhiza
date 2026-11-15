@@ -51,6 +51,7 @@ func wtLogFiles(t *testing.T, root, cs string) []string {
 // An accept made in the main checkout while the change set's run is live
 // also lands in the run's worktree, byte for byte.
 func TestLiveRunWriteReachesWorktree(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "live")
 	cs := newChange(t, f.ctx, `{"intent":"Live"}`).ChangeSet.String()
 	if _, err := callOp(t, f.ctx, "propose", `{}`); err != nil {
@@ -103,6 +104,7 @@ func assertFoldsAccepted(t *testing.T, root, cs string) {
 // only that session's actor. Run with real git, the main checkout and the
 // run's worktree linked by git worktree add.
 func TestLiveRunWriteCommittedByRunsNextCommit(t *testing.T) {
+	t.Parallel()
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	wt := filepath.Join(tmp, "repo.live")
@@ -192,6 +194,7 @@ func TestLiveRunWriteCommittedByRunsNextCommit(t *testing.T) {
 
 // A change set with no live run, and a dry run, copy nothing.
 func TestLiveRunWriteNoRunNoCopy(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "none")
 	cs := newChange(t, f.ctx, `{"intent":"Quiet"}`).ChangeSet.String()
 	if _, err := callOp(t, f.ctx, "propose", `{}`); err != nil {

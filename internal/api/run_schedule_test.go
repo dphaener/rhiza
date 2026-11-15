@@ -22,6 +22,7 @@ func writeDispatch(t *testing.T, root, body string) {
 // schedule's name, shows in run ls and run status with no change set, and
 // the command's output reaches the run's log.
 func TestScheduledRunCommandAndWorkflow(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "sched")
 	writeWorkflow(t, f.ctx.Root, "tidy", "[step.one]\nkind = \"command\"\nrun = \"tidy-up\"\n")
 	writeDispatch(t, f.ctx.Root, `
@@ -107,6 +108,7 @@ workflow = "tidy"
 
 // A scheduled run's workflow with a leaves step fails the run naming it.
 func TestScheduledRunLeavesStepFails(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "sched")
 	build, err := os.ReadFile(filepath.Join("..", "workflow", "builtin", "build.toml"))
 	if err != nil {
@@ -130,6 +132,7 @@ func TestScheduledRunLeavesStepFails(t *testing.T) {
 }
 
 func TestScheduledRunRefusals(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "sched")
 	writeDispatch(t, f.ctx.Root, "[[schedules]]\nname = \"a\"\nevery = \"1h\"\ncommand = \"true\"\n")
 	if _, err := callOp(t, f.ctx, "run.start", `{"schedule":"nope"}`); err == nil || !strings.Contains(err.Error(), `no schedule "nope"`) {
@@ -171,6 +174,7 @@ func (c *fakeCheckout) exec(name string, args []string, dir string, env []string
 // that switches branch, commits or edits a tracked file ends with its own
 // status and a warning in run status and the log naming what changed.
 func TestScheduledRunWarnsOnMainCheckoutChange(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		mutate func(*fakeCheckout)

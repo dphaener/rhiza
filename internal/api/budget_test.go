@@ -98,6 +98,19 @@ var (
 func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
+	tmpsweep.StaleTemp("rhiza-api-cache-")
+	// The user cache (run temp folders, index caches) is one temporary folder
+	// for the whole binary, never the host's ~/.cache, set once here so tests
+	// need no t.Setenv of their own and may call t.Parallel.
+	cache, err := os.MkdirTemp("", "rhiza-api-cache-")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err := os.Setenv("XDG_CACHE_HOME", cache); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	diskFreeBytes = func(dir string) (uint64, error) {
 		panic("test read the host's real free disk space for " + dir + ": pin it with pinFreeBytes(ctx) or set RHIZA_TEST_FREE_BYTES beside RHIZA_TEST_NOW")
 	}
@@ -108,6 +121,7 @@ func TestMain(m *testing.M) {
 	if genDir != "" {
 		os.RemoveAll(genDir)
 	}
+	os.RemoveAll(cache)
 	os.Exit(code)
 }
 

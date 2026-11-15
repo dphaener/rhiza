@@ -11,6 +11,9 @@ import (
 
 // A run whose process died left <runs>/<id>/gotmp behind: abandoning it
 // removes the run's folder, and leaves its journal alone.
+//
+// Serial: it sets its own XDG_CACHE_HOME and inspects the run temp
+// folders under it, which every run in the binary shares.
 func TestAbandonRemovesRunGoTmp(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	f := newSessionFixture(t, "gotmp")

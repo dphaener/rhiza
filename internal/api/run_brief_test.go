@@ -31,6 +31,7 @@ func envOf(rec session.Record, name string) (string, bool) {
 // RHIZA_HANDBACK only once handback.md exists; a session started outside a
 // run gets none.
 func TestSessionBrief(t *testing.T) {
+	t.Parallel()
 	f, r := paneRunner(t)
 	// The run's worktree holds the change set, as a real one does.
 	csID, err := id.Parse(r.change)
@@ -134,6 +135,7 @@ func TestSessionBrief(t *testing.T) {
 // An unwritable runs directory fails the start with its path and opens no
 // tab.
 func TestSessionBriefUnwritable(t *testing.T) {
+	t.Parallel()
 	f, r := paneRunner(t)
 	if err := os.MkdirAll(filepath.Join(f.common, "rhiza"), 0o755); err != nil {
 		t.Fatal(err)
@@ -155,6 +157,7 @@ func TestSessionBriefUnwritable(t *testing.T) {
 // the default slice budget cuts the Decisions section to a count, and the
 // change set's own Decisions, which the slice holds in focus.
 func TestSessionBriefDecisions(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "brief-decisions")
 	newChange(t, f.ctx, `{"intent":"Base"}`)
 	var writes []string
@@ -207,6 +210,7 @@ func TestSessionBriefDecisions(t *testing.T) {
 // brief.md lists the change set's own decisions and constraints, which the
 // slice holds in focus, each by its statement.
 func TestSessionBriefOwnDecisionsConstraints(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "brief-own")
 	cs := newChange(t, f.ctx, `{"intent":"Readable tabs"}`).ChangeSet
 	if _, err := applyFile(t, f.ctx, `{"writes":[

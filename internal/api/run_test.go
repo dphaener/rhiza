@@ -69,6 +69,7 @@ on.pass = "done"
 `
 
 func TestWorkflowFile(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	wd, err := os.Getwd()
 	if err != nil {
@@ -96,6 +97,7 @@ func TestWorkflowFile(t *testing.T) {
 }
 
 func TestRunStartWorkflowRefusals(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, workflow, body, message string
 	}{
@@ -123,6 +125,7 @@ func TestRunStartWorkflowRefusals(t *testing.T) {
 }
 
 func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, body, req string
 		exit            int
@@ -163,6 +166,7 @@ func TestRunStartAgentRefusalsBeforeWrite(t *testing.T) {
 }
 
 func TestRunStartCommandSteps(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "try-runs")
 	cs := newChange(t, f.ctx, `{"intent":"Try runs","title":"Try runs"}`).ChangeSet
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
@@ -217,6 +221,7 @@ func TestRunStartCommandSteps(t *testing.T) {
 }
 
 func TestRunStartFailedExitsNonZero(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
@@ -233,6 +238,7 @@ func TestRunStartFailedExitsNonZero(t *testing.T) {
 }
 
 func TestRunStopsAtWaitAndResumes(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "w", `
@@ -286,6 +292,7 @@ timeout = "1m"
 }
 
 func TestRunStatusAndResumeRefusals(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	_, err := callOp(t, f.ctx, "run.status", `{}`)
 	wantExit(t, err, 4)
@@ -296,6 +303,7 @@ func TestRunStatusAndResumeRefusals(t *testing.T) {
 }
 
 func TestRunStartDryRunWritesNothing(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
@@ -319,6 +327,7 @@ func TestRunStartDryRunWritesNothing(t *testing.T) {
 }
 
 func TestRunAgentStepEndsWithTheSessionExit(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		code    int
 		state   string
@@ -428,6 +437,9 @@ func rexReports(t *testing.T, out string) []map[string]string {
 // again and exited: run.status reads blocked with the tab and question
 // only while it is, and Rex gets one blocked report per block and one
 // working report per end.
+//
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunBlockedStatusAndRexReports(t *testing.T) {
 	f := newSessionFixture(t, "blocked-runs")
 	newChange(t, f.ctx, `{"intent":"X","title":"Blocked runs"}`)
@@ -561,6 +573,9 @@ func TestRunBlockedStatusAndRexReports(t *testing.T) {
 }
 
 // Without Rex nothing is written: the run still reports blocked.
+//
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunBlockedWithoutRexWritesNothing(t *testing.T) {
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
@@ -608,6 +623,7 @@ func TestRunBlockedWithoutRexWritesNothing(t *testing.T) {
 // A blocked run with no question, in a tab not yet opened, reads blocked
 // without a question line and points at the session.
 func TestRunInfoHumanBlockedWithoutQuestion(t *testing.T) {
+	t.Parallel()
 	info := RunInfo{
 		ID: "R1", State: runBlocked, Current: "build", Steps: []RunStep{},
 		Blocked: &RunBlocked{Step: "build", Session: "S1", Kind: "auth", Tab: SessionTab{Title: "x-build"}},
@@ -620,6 +636,7 @@ func TestRunInfoHumanBlockedWithoutQuestion(t *testing.T) {
 }
 
 func TestRunInfoAcceptsAndQuestions(t *testing.T) {
+	t.Parallel()
 	at := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 	st := run.State{
 		ID: "R1", Autonomous: true, Ended: true, Result: run.Succeeded,
@@ -677,6 +694,7 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 // runInfo carries each code check's lint hits, and the human status lists
 // them under the check's line.
 func TestRunInfoCodeCheckLints(t *testing.T) {
+	t.Parallel()
 	at := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 	st := run.State{ID: "R1", CodeChecks: []run.CodeCheck{{Step: "code", Outcome: run.CodeCheckPass, At: at, Lints: []run.LintHit{
 		{Node: "01NODEA", Handle: "alpha", Field: "acceptance", Kind: "path", Ref: "internal/nope.go"},
@@ -705,6 +723,7 @@ func TestRunInfoCodeCheckLints(t *testing.T) {
 }
 
 func TestRexReportEncoder(t *testing.T) {
+	t.Parallel()
 	long := strings.Repeat("é", 200) // 400 bytes
 	msg := "line one\nline two\x1b[31m\tend" + strings.Repeat("x", 3000)
 	out := string(rexReport("blocked", "question", long, msg))
@@ -748,6 +767,7 @@ func TestRexReportEncoder(t *testing.T) {
 	}
 }
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME), process-wide state.
 func TestResolveWorkflow(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -771,6 +791,7 @@ func TestResolveWorkflow(t *testing.T) {
 }
 
 func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
+	t.Parallel()
 	main, gone := t.TempDir(), filepath.Join(t.TempDir(), "gone")
 	// Git cannot run from a removed folder; the main checkout comes from
 	// the common dir, with the project's folder within it.
@@ -790,6 +811,7 @@ func TestStepRunnerDirFallsBackToMainCheckout(t *testing.T) {
 // --retry reruns the failed step and the run succeeds, the retry shown in
 // its steps and retries. A retry of the succeeded run is a conflict.
 func TestRunResumeRetry(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
@@ -867,6 +889,7 @@ func TestRunResumeRetry(t *testing.T) {
 // session, a leaves step's open leaves, a checks step's checks and its
 // unjudged fixer, each by its latest session. A stopped run never stalls.
 func TestRunStalledNow(t *testing.T) {
+	t.Parallel()
 	sessions := session.NewStore(t.TempDir())
 	old := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	now := old.Add(21 * time.Minute)
@@ -948,6 +971,7 @@ func TestRunStalledNow(t *testing.T) {
 // request's options, the response says it waits for a daemon, and a second
 // start of the same change set is refused while the first is queued.
 func TestRunStartQueuesForTheDaemon(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "try-runs")
 	cs := newChange(t, f.ctx, `{"intent":"Try runs","title":"Try runs"}`).ChangeSet
 	writeWorkflow(t, f.ctx.Root, "hello", twoCommands)
@@ -1011,6 +1035,7 @@ func writePersonal(t *testing.T, dir, name, body string) string {
 	return p
 }
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME), process-wide state.
 func TestResolveWorkflowPersonalShadows(t *testing.T) {
 	root, xdg := t.TempDir(), t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", xdg)
@@ -1053,6 +1078,7 @@ workflow = "mine"
 	}
 }
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME), process-wide state.
 func TestPersonalWorkflowsDirFallsBackToHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", "")
@@ -1067,6 +1093,7 @@ func TestPersonalWorkflowsDirFallsBackToHome(t *testing.T) {
 }
 
 func TestQueuedCheckModeStandsInDaemonMode(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	f.git.out["config --get rhiza.daemon.permissionMode"] = "manual\n"
 	for _, c := range []struct {
@@ -1090,6 +1117,7 @@ func TestQueuedCheckModeStandsInDaemonMode(t *testing.T) {
 // ship-change-classic, or a repo workflow including build), and accepted for
 // a workflow with no leaves step.
 func TestCheckShipLeaves(t *testing.T) {
+	t.Parallel()
 	const leavesStep = "[step.build]\nkind = \"leaves\"\non.pass = \"done\"\n\n[step.build.builder]\nprompt = \"b\"\n\n[step.build.verifier]\nprompt = \"v\"\n"
 	const includesBuild = "[step.build]\nkind = \"workflow\"\nworkflow = \"build\"\non.pass = \"done\"\n"
 	cases := []struct {
