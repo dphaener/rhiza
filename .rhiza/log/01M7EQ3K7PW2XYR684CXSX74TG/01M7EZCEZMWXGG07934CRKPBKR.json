@@ -1,0 +1,53 @@
+{
+  "actor": "01M7EZB36GXDMNZJ4KMYKA6F6K",
+  "after": [
+    "01M7EZ13PPE54QC1J61NQW8PGC"
+  ],
+  "at": "2026-11-15T06:47:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "make -n test and make -n test-scripts SHARD=1/4 pass -parallel 8 with NPROC=4 (the Makefile's CPU count: getconf _NPROCESSORS_ONLN unless NPROC is set), -parallel 4 with NPROC=2, -parallel 8 with NPROC=16, and -parallel 3 with RHIZA_TEST_SCRIPT_PARALLEL=3; go test -trimpath ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets)$' covers each; failure case: RHIZA_TEST_SCRIPT_PARALLEL=0, -2 or abc falls back to the NPROC default rather than passing -parallel 0 or failing make. Speedup and memory measure (orchestrator, quiet 4-core VM), through the Makefile so its -parallel applies: go clean -testcache && systemd-run --user --scope -p MemoryMax=6G -p TasksMax=300 -- /usr/bin/time -f '%e s %M KB' make test-scripts passes (at the default -parallel 8) without hitting either cap, and takes less wall time than the same command after go clean -testcache with RHIZA_TEST_SCRIPT_PARALLEL=4 make test-scripts. Touches Makefile, cmd/rhiza/makeupdate_test.go. Must not raise the default's cap above 8 or drop the machine-wide test lock.",
+          "statement": "make test and make test-scripts run cmd/rhiza's scripts at a -parallel of twice the CPU count capped at 8, or RHIZA_TEST_SCRIPT_PARALLEL when it is a positive integer, instead of go test's default of GOMAXPROCS."
+        },
+        "handle": "scripts-parallel-bounded",
+        "id": "01M7EQE64JDCYTPPV13887PNSS",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7EQE64JDCYTPPV1369XDSNM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run '^(TestScriptShard|TestScriptShardEnvError)$' shows the shards disjoint and covering every script, greedy by recorded time on a fixture of timings (longest first, each to the least-loaded shard, a missing script weighted at the median, ties to the lower shard), each shard's scripts in scripts-longest-first's order with missing scripts last by name, and with the checked-in timings each shard's total within 15% of the mean; failure case: RHIZA_TEST_SHARD=0/4, 5/4 and 1/0 are still refused. The test-scripts-sharded capability's statement says the split is weighted. Measure (orchestrator, after 5 PRs): gh run view <run> --json jobs shows the four scripts jobs within 60 s of each other (2026-11-15, run 43685514513 after the virtual clock, round-robin: 106-197 s). Touches cmd/rhiza/main_test.go, cmd/rhiza/shard_test.go. Must not change the shard env format or the CI matrix.",
+          "statement": "RHIZA_TEST_SHARD=i/n splits cmd/rhiza's scripts by recorded time instead of round-robin by name: each script, longest first by script-timings.tsv (a missing one weighted at the median for placement only), goes to the shard with the least total so far, so CI's four script shards take about the same time. Within a shard, scripts run in scripts-longest-first's order (timed scripts by descending seconds, then scripts missing from the file by name); the median weight never moves a missing script ahead of a timed one."
+        },
+        "handle": "script-shards-weighted",
+        "id": "01M7EQE69J35XJW25SPFMZ5P0K",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7EQE69J35XJW25SPBZBH1MS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE69J35XJW25SPBZBH1MS",
+        "id": "01M7EZCEY73M9HHT0Z4PXKAQKN",
+        "link": "01M7EZCEY73M9HHT0Z4MABTG41",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EZCEZMWXGG07934CRKPBKR",
+  "type": "ops",
+  "v": 1
+}

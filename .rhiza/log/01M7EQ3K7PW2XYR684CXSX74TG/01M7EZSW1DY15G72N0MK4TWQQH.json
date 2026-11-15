@@ -1,0 +1,42 @@
+{
+  "actor": "01M7EZPYJPZFDT0S851SHVPXN8",
+  "after": [
+    "01M7EZCEZMWXGG07934CRKPBKR"
+  ],
+  "at": "2026-11-15T06:55:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run '^TestScriptOrder$' shows: given timings, scripts come in descending seconds, ties and scripts missing from the file by name, and every *.txtar exactly once; failure case: a malformed timings line (no tab, or seconds not a number) fails with the file's line number. Touches cmd/rhiza/main_test.go and a new cmd/rhiza/order_test.go. Must not change any script's content or environment.",
+          "statement": "TestScripts hands testscript its Files longest first by script-timings.tsv, scripts missing from the file after them by name. This orders the list only, not the start: testscript runs each script as a t.Parallel subtest, and Go hands the -parallel slots to the woken subtests in no guaranteed order, so nothing here promises that the longest scripts start first."
+        },
+        "handle": "scripts-longest-first",
+        "id": "01M7EQE67BJPY5ER3PJFPVTWJW",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7EQE67BJPY5ER3PJFDYRKKM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "base": "01M6Q5HHTX26CPP16DNQDCX3TR",
+        "handle": null,
+        "id": "01M7EQE6BN9Q1SMJ2XRJG5NYKY",
+        "node": "01M6Q5HHTX26CPP16DNNEK7T80",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test in cmd/rhiza (go test -trimpath ./cmd/rhiza -run TestScriptShard) asserts that for n=4 the four shards are disjoint, together cover every script in testdata/script, and are the greedy split by recorded time (each script, longest first by script-timings.tsv, to the shard with the least total so far); that unset selects all scripts; and that a malformed value (0/4, 5/4, x) fails with a clear error.",
+          "statement": "TestScripts runs one shard of cmd/rhiza's scripts when RHIZA_TEST_SHARD=i/n is set (1-based): the scripts assigned to shard i when each, longest first by cmd/rhiza/testdata/script-timings.tsv, goes to the shard with the least recorded time so far, passed as testscript Files; unset, it runs every script, longest first (@{01M7EQE69J35XJW25SPBZBH1MS})."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EZSW1DY15G72N0MK4TWQQH",
+  "type": "ops",
+  "v": 1
+}
