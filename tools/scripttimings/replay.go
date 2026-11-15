@@ -29,7 +29,8 @@ var ErrReplayFailed = errors.New("go test failed")
 // go test's text for every test that did not pass (its output, ending in its
 // --- FAIL: line or a panic), in the order they finished; the package's own
 // text (its FAIL or ok line) and any build output as they arrive; then one
-// script-time line per passing TestScripts subtest, sorted by name. A passing
+// script-time line per passing TestScripts subtest and one test-time line per
+// passing top-level test (no subtest), each sorted by name. A passing
 // or skipped test's text is dropped. Lines that are not JSON pass through.
 //
 // It returns ErrReplayFailed (after writing everything) when a test, a build
@@ -44,7 +45,8 @@ func Replay(r io.Reader, out io.Writer) error {
 	started := map[string]bool{}       // packages started and not ended
 	ended := 0
 	failed := false
-	times := map[string]float64{}
+	times := map[string]float64{} // passing scripts
+	tests := map[string]float64{} // passing top-level tests
 
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
@@ -95,6 +97,8 @@ func Replay(r io.Reader, out io.Writer) error {
 			delete(text, k)
 			if name, ok := strings.CutPrefix(ev.Test, "TestScripts/"); ok && validName(name) {
 				times[name] = math.Max(times[name], ev.Elapsed)
+			} else if validName(ev.Test) {
+				tests[ev.Test] = math.Max(tests[ev.Test], ev.Elapsed)
 			}
 		case "skip":
 			delete(text, k)
@@ -132,17 +136,23 @@ func Replay(r io.Reader, out io.Writer) error {
 		failed = true
 	}
 
+	writeTimes(w, times, FormatScriptTime)
+	writeTimes(w, tests, FormatTestTime)
+	if failed {
+		return ErrReplayFailed
+	}
+	return nil
+}
+
+// writeTimes writes one line per name, sorted, rendered by format.
+func writeTimes(w *bufio.Writer, times map[string]float64, format func(string, float64) string) {
 	names := make([]string, 0, len(times))
 	for n := range times {
 		names = append(names, n)
 	}
 	sort.Strings(names)
 	for _, n := range names {
-		w.WriteString(FormatScriptTime(n, times[n]))
+		w.WriteString(format(n, times[n]))
 		w.WriteByte('\n')
 	}
-	if failed {
-		return ErrReplayFailed
-	}
-	return nil
 }

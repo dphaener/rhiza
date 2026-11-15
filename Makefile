@@ -152,14 +152,26 @@ test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skip
 .PHONY: test-api
 test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budgets excluded
 # The tests come from go test -list, budgets dropped, and the shard takes
-# every n-th of them (round-robin) as an anchored -run regex.
+# every n-th of them (round-robin) as an anchored -run regex. go test -json
+# is piped through tools/scripttimings replay, as in test-scripts: go test's
+# text for what did not pass, the package's FAIL or ok line, then a test-time
+# line per passing top-level test (make api-timings RUN=<id> reads them
+# back). go test's status goes through a file, falling back to the replay's.
 	@i='$(SHARD)'; n=$${i#*/}; i=$${i%/*}; \
 	case "$$i$$n" in *[!0-9]*|'') echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1;; esac; \
 	if [ "$$i" -lt 1 ] || [ "$$i" -gt "$$n" ]; then echo "SHARD=$(SHARD): want i/n with 1 <= i <= n" >&2; exit 1; fi; \
 	names=$$(go test -trimpath -list '^Test' ./internal/api | grep '^Test' | grep -Ev '$(SKIP_BUDGETS)' | LC_ALL=C sort) || exit 1; \
 	re=$$(printf '%s\n' "$$names" | awk -v i="$$i" -v n="$$n" 'NR % n == i % n { printf "%s%s", sep, $$0; sep = "|" }'); \
 	if [ -z "$$re" ]; then echo "shard $(SHARD) of internal/api has no tests"; exit 0; fi; \
-	$(GO_TEST) $(TEST_FLAGS) -run "^($$re)\$$" ./internal/api
+	replay=$$(mktemp) && st=$$(mktemp) || exit 1; \
+	go build -trimpath -o "$$replay" ./tools/scripttimings || { rm -f "$$replay" "$$st"; exit 1; }; \
+	{ $(GO_TEST) $(TEST_FLAGS) -json -run "^($$re)\$$" ./internal/api; echo $$? >"$$st"; } \
+		| "$$replay" replay; \
+	rstatus=$$?; \
+	status=$$(cat "$$st"); rm -f "$$replay" "$$st"; \
+	[ -n "$$status" ] || status=1; \
+	[ "$$status" != 0 ] || status=$$rstatus; \
+	exit $$status
 
 .PHONY: test-rest
 test-rest: ## Run every package but internal/api, timing budgets skipped
@@ -191,6 +203,13 @@ script-timings: ## Rewrite cmd/rhiza/testdata/script-timings.tsv from a CI run (
 # that failed or did not run keeps its time, a removed script is dropped.
 # RUN reads the scripts jobs' script-time lines with gh run view --log.
 	go run -trimpath ./tools/scripttimings merge -run '$(RUN)' -json '$(JSON)'
+
+.PHONY: api-timings
+api-timings: ## Rewrite internal/api/testdata/test-timings.tsv from a CI run (RUN=<run id>) or a go test -json file (JSON=<file>)
+# As script-timings, for internal/api's top-level tests (go test -list),
+# timing budgets left out: RUN reads the api jobs' test-time lines. A test
+# with no time yet stays out of the file.
+	go run -trimpath ./tools/scripttimings merge-tests -run '$(RUN)' -json '$(JSON)' -skip '$(BUDGET_TESTS)'
 
 .PHONY: lint
 lint: fmt-check vet self-check ## Run fmt-check, vet and self-check
