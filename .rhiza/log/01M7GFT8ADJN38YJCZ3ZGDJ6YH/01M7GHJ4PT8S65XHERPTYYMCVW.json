@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7GH63K1EJ2AHFGMVZ6N5WM2"
+  ],
+  "at": "2026-11-15T21:24:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (oversized-leaf on check-whatif-once): The leaf holds two concerns: a model-engine change (new model.AsIsSeed and model.ToBeFrom in internal/model/seed.go, and Seed.builder deep-copying each node's and link's History, Fields and aspects, which also changes the path internal/index/whatif.go:289 takes through model.WhatIfFrom) with its own TestAsIsSeedWhatIfFrom equivalence test; and rewiring three check passes (checker.model at internal/check/check.go:378/:384, checker.inFlightLinks at :456, checker.textRefs at internal/check/textrefs.go:49) onto shared what-if views with TestWhatIfOnceMatches, plus two profiled timings. The model half stands on its own (its test needs no check change) and the check half needs only its API, so they split into a model leaf and a check leaf that depends on it. The critic confirmed it: Verified against the slice and code: after two revisions check-whatif-once now carries a model-engine change (new AsIsSeed and ToBeFrom in internal/model/seed.go, plus a deep copy in Seed.builder that also changes the path internal/index/whatif.go:289 takes through WhatIfFrom) with its own model test, and a separate rewiring of three check passes (check.go:378/:384/:456, textrefs.go:49) with its own check test and two profiled timings. The model half is testable without any check change and the check half needs only its API, so the leaf holds two concerns and splits cleanly into a model leaf and a dependent check leaf. oversized-leaf is major per the plan-review severities; major stands. How should it be settled?"
+        },
+        "handle": "review-01m7gg7hsbsb356bvggqgh8yhb-r3-f1",
+        "id": "01M7GHJ4GFDFCT2RRV5ZXM8GJ4",
+        "key": null,
+        "kind": "question",
+        "node": "01M7GHJ4GE0JYYYEPT5AH36X8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GHJ4GE0JYYYEPT5AH36X8G",
+        "id": "01M7GHJ4HP0CQQK93MS0ME7EW3",
+        "link": "01M7GHJ4HP0CQQK93MRZ9BBAC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GHJ4PT8S65XHERPTYYMCVW",
+  "type": "ops",
+  "v": 1
+}
