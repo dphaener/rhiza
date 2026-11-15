@@ -20,13 +20,8 @@ func deployCtx(url, timeout string, stderr *bytes.Buffer) *Ctx {
 			return ""
 		},
 		Git: func(args ...string) (string, error) {
-			if len(args) == 3 && args[0] == "config" && args[1] == "--get" {
-				switch args[2] {
-				case DeployURLKey:
-					return url, nil
-				case DeployTimeoutKey:
-					return timeout, nil
-				}
+			if out, err, ok := gitConfigFake(map[string]string{DeployURLKey: url, DeployTimeoutKey: timeout}, args); ok && err == nil {
+				return out, nil
 			}
 			return "", http.ErrNotSupported
 		},

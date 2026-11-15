@@ -29,9 +29,9 @@ func projectAgentCtx(t *testing.T, agent string) (*Ctx, map[string]string) {
 	}
 	ctx.Git = func(args ...string) (string, error) {
 		switch {
-		case len(args) == 3 && args[0] == "config" && args[1] == "--get":
-			if v, ok := conf[args[2]]; ok {
-				return v + "\n", nil
+		case len(args) >= 3 && args[0] == "config" && (args[1] == "--get" || args[1] == "-z"):
+			if out, err, _ := gitConfigFake(conf, args); err == nil {
+				return out, nil
 			}
 			return "", errUnset
 		case len(args) == 3 && args[0] == "config":

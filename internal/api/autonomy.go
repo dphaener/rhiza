@@ -22,17 +22,19 @@ const (
 // on the value rhiza daemon settings shows. Any other value is a usage error
 // naming the key.
 func autonomyStage(ctx *Ctx, stage string) (string, error) {
+	return autonomyStageIn(readRhizaConfig(ctx), stage)
+}
+
+// autonomyStageIn is autonomyStage read from the snapshot conf.
+func autonomyStageIn(conf rhizaConfig, stage string) (string, error) {
 	key := "rhiza.autonomy." + stage
 	d, ok := findSetting(key)
 	if !ok {
 		panic("autonomyStage: no setting " + key)
 	}
 	def := d.def
-	if ctx.Git == nil {
-		return def, nil
-	}
-	out, err := ctx.Git("config", "--get", key)
-	if err != nil {
+	out, ok := conf.get(key)
+	if !ok {
 		return def, nil // unset
 	}
 	switch v := strings.TrimSpace(out); v {
@@ -50,12 +52,17 @@ func autonomyStage(ctx *Ctx, stage string) (string, error) {
 // rhiza.autonomy.<stage> setting. The run's journal records it.
 func runAutonomy(ctx *Ctx, def *workflow.Definition) ([]run.StageAutonomy, error) {
 	out := make([]run.StageAutonomy, 0, len(workflow.AutonomyStages))
+	var conf rhizaConfig // read once, at the first stage the setting decides
+	read := false
 	for _, st := range workflow.AutonomyStages {
 		if m, ok := def.Autonomy(st); ok {
 			out = append(out, run.StageAutonomy{Stage: st, Mode: m, Source: run.SourceWorkflow, Workflow: def.Name})
 			continue
 		}
-		m, err := autonomyStage(ctx, st)
+		if !read {
+			conf, read = readRhizaConfig(ctx), true
+		}
+		m, err := autonomyStageIn(conf, st)
 		if err != nil {
 			return nil, err
 		}

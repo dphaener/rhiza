@@ -108,10 +108,8 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 		if len(args) > 0 && args[0] == "for-each-ref" {
 			return f.refs, nil
 		}
-		if len(args) == 3 && args[0] == "config" && args[1] == "--get" {
-			if v, ok := f.config[args[2]]; ok {
-				return v, nil
-			}
+		if out, err, ok := gitConfigFake(f.config, args); ok && err == nil {
+			return out, nil
 		}
 		if len(args) == 3 && args[0] == "config" && args[1] == "--get-regexp" {
 			var out string

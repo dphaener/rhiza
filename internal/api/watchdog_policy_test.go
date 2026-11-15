@@ -21,10 +21,8 @@ func watchdogCtx(t *testing.T, cfg map[string]string) (*Ctx, string) {
 		t.Fatal(err)
 	}
 	return &Ctx{Wd: root, Git: func(args ...string) (string, error) {
-		if len(args) == 3 && args[0] == "config" && args[1] == "--get" {
-			if v, ok := cfg[args[2]]; ok {
-				return v + "\n", nil
-			}
+		if out, err, ok := gitConfigFake(cfg, args); ok && err == nil {
+			return out, nil
 		}
 		return "", errors.New("unset")
 	}}, root
