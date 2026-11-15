@@ -1,0 +1,215 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7GFTDY50TAHVDP68A7T3774"
+  ],
+  "at": "2026-11-15T20:56:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '^(TestProjection|TestPropertyProjectionParity)' passes, with TestPropertyProjectionParity now comparing the projection (not only writeIndex.model) against a fresh strict fold. New tests: a dry-run with pending entries sees them through the projection's overlay and leaves the index file unchanged (its stamp before and after equal); one call that asks for the model, the change sets and a change set's entries three times opens the index once and lists the log at most once (counted through a test hook). Failure case: an index file that is not a database is rebuilt and the call answers as before; an index that cannot be opened returns that error, not a silent fold. Touches internal/api/workspace.go, a new internal/api/projection.go, internal/api/write_indexed.go and their tests. Must not move any op onto it yet beyond what the tests need, and must not delete the interim model (that is the One read path change set).",
+          "statement": "internal/api has one projection interface behind workspace (change set states and folds, a change set's entries, the model of a view or of the current change set's write view, and an overlay of pending entries), whose only implementation is internal/index with dry-run pending entries laid over it, opened once per call; workspace reads the log at most once per call where it still needs the raw log"
+        },
+        "handle": "projection-interface",
+        "id": "01M7GFYXY7FTRWHX1NNQK5T90P",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "id": "01M7GFYXZ0EH4F7HHRCDC82S66",
+        "link": "01M7GFYXZ0EH4F7HHRCAV1TWRD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "id": "01M7GFYXZS7NKWXZMND9XA0DA7",
+        "link": "01M7GFYXZS7NKWXZMND8W0HVYX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run Status passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/status' passes for every status*.txtar script. A test shows status reads no log entry file (store reads counted through a test hook) on a fresh index. Measure in the commit's Checks: block: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza, then in this repo's main checkout run $TMPDIR/rhiza-x status once and /usr/bin/time -f '%e s' $TMPDIR/rhiza-x status, within 200 ms (2026-11-15: 2.0 s). Failure case: status --hook outside a repo stays silent with exit 0, and with an unreadable index it still exits 0. Touches internal/api/status.go and its tests. Must not change status's text or --json output.",
+          "statement": "rhiza status and its session-start hook (StatusRequest.Hook) count change sets by state from the projection instead of folding the whole log (internal/api/status.go:123), so the hook paid on every session start costs a few index rows"
+        },
+        "handle": "status-from-projection",
+        "id": "01M7GFYY0KNAMKMJK1MHW7XCEH",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7GFYY0KNAMKMJK1MHE68E99",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY0KNAMKMJK1MHE68E99",
+        "id": "01M7GFYY1DK28AM9DWM9DPK8GE",
+        "link": "01M7GFYY1DK28AM9DWM741KMNF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY0KNAMKMJK1MHE68E99",
+        "id": "01M7GFYY24PMR13GSQJ2J7HVRG",
+        "link": "01M7GFYY24PMR13GSQJ1QEN51G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Profile first, before any code change, and again after: RHIZA_CPUPROFILE=$TMPDIR/inbox.prof $TMPDIR/rhiza-x inbox in this repo's main checkout, then go tool pprof -top -cum; the commit's Checks: block names where the 2.3 s went and where the time goes after. go test -trimpath -count=1 ./internal/api -run Inbox passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/inbox' passes for every inbox*.txtar script. Measure: /usr/bin/time -f '%e s' $TMPDIR/rhiza-x inbox after one warming run, within 200 ms (2026-11-15: 2.3 s). Failure case: a run whose worktree is gone or whose log does not read gives the inbox item without its questions, as today, and no error. Touches internal/api/inbox.go and its tests. Must not change the inbox's items or --json shape.",
+          "statement": "rhiza inbox reads change set states from the projection also when a dry run has pending entries (internal/api/inbox.go:602 and :619), and inboxGateRead (inbox.go:1405) reads a run worktree's questions from that worktree's own projection instead of clearing IndexPath and folding its log"
+        },
+        "handle": "inbox-from-projection",
+        "id": "01M7GFYY2VQJHCVC83XSEVGB9B",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "id": "01M7GFYY3GKNYYAVYZAZNJ528G",
+        "link": "01M7GFYY3GKNYYAVYZAYBPCDWM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "id": "01M7GFYY49VBJ5E3JS1N0VAJ7B",
+        "link": "01M7GFYY49VBJ5E3JS1J2VF9X6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run Render passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/render' passes for every render*.txtar script; make self-check passes, so rhiza render on this repo writes byte-identical .rhiza/rendered/ files (git status --short .rhiza/rendered prints nothing after it). Failure case: a log with an entry that does not decode still makes render refuse with the same error as today (render-refuses-damaged-log). Measure in the commit's Checks: block: /usr/bin/time -f '%e s' $TMPDIR/rhiza-x render in this repo's main checkout, before and after. Touches internal/api/render.go and its tests. Must not change a rendered file's content.",
+          "statement": "rhiza render takes the change sets and the as-is model it renders from the projection instead of changeset.FoldLog and model.AsIs over the whole log (internal/api/render.go:99), and still refuses a damaged log"
+        },
+        "handle": "render-from-projection",
+        "id": "01M7GFYY4Z3CRG97YV48Z7XPHK",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "id": "01M7GFYY5Q8X4H2NWCANNEEV16",
+        "link": "01M7GFYY5Q8X4H2NWCAJXJTE4Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "id": "01M7GFYY6F6G8EGT07FVS2AVVM",
+        "link": "01M7GFYY6F6G8EGT07FS9ACVVR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run 'Change' passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/change' passes for every change*.txtar script. A test shows change ls on a log with a damaged entry still lists the damaged entry's problem, as today. Failure case: an entry file that vanished after the index saw it (a rebase) makes the projection rebuild, and change ls lists the remaining change sets with no stale one. Touches internal/api/change.go and its tests. Must not change change ls's text or --json output.",
+          "statement": "rhiza change ls (internal/api/change.go:669) and the other change set reads in change.go take change sets, their entries and their log problems from the projection, one read per call, instead of calling workspace.log() and changeset.FoldLog up to eight times"
+        },
+        "handle": "change-reads-from-projection",
+        "id": "01M7GFYY75HKKZF3E9JQ72THK7",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7GFYY75HKKZF3E9JKJBT985",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY75HKKZF3E9JKJBT985",
+        "id": "01M7GFYY7VWER2GSQPMSTQ4ZY7",
+        "link": "01M7GFYY7VWER2GSQPMPZ1P8G6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY75HKKZF3E9JKJBT985",
+        "id": "01M7GFYY8HV1C8WDF4T6M8GM8Q",
+        "link": "01M7GFYY8HV1C8WDF4T65NH6DG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run 'Daemon' passes; go test -trimpath ./cmd/rhiza -run 'TestScripts/daemon' passes for every daemon*.txtar script. A test over a log with a proposed change set with leaves, one without, an accepted one and overlapping in-flight change sets shows the poll's candidates, proposed list, plan skips and overlaps equal today's. Failure case: a stamp change from a vanished entry file (the index rebuilds) still gives the same candidates on the next poll. Touches internal/api/daemon_fold.go and its tests. Must not change the daemon's schedule, its journal records or any --json shape.",
+          "statement": "The daemon's poll (internal/api/daemon_fold.go:197) takes change sets from the projection instead of refolding the whole log on any stamp change, and asks the projection's what-if overlays for each candidate's leaves instead of building newModelSets once per candidate (:215-222)"
+        },
+        "handle": "daemon-fold-from-projection",
+        "id": "01M7GFYY98FH6TH6DY2H2M7PRX",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "id": "01M7GFYYA3C6RGRDRTQTYJ0VFH",
+        "link": "01M7GFYYA3C6RGRDRTQQDKAVFC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "id": "01M7GFYYAWNAAGJZV1XNBY8WCD",
+        "link": "01M7GFYYAWNAAGJZV1XJ6FP25W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7GFYYBJNGRC6VWRFMWVNSJQ",
+  "type": "ops",
+  "v": 1
+}
