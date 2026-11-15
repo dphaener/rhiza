@@ -1,0 +1,16 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [],
+  "at": "2026-11-15T04:21:50Z",
+  "body": {
+    "intent": "The test suite is fast. Owner, 2026-11-14/15, after the orchestrator measured the suite (cold make test 854 s wall for 972 CPU-s on 4 cores, warm 254 s): a cold make test within 4 minutes and a warm one within 60 s on the 4-core VM, the median PR CI run within 3 minutes, with no test skipped and no coverage lost; five change sets, the gate bug first, projection out of scope.",
+    "kind": "record",
+    "sources": [],
+    "title": "Plan the fast test suite"
+  },
+  "change_set": "01M7EQ19FNS1VDXT4750YX89RD",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQ19FNS1VDXT4753TDZJ2Y",
+  "type": "open",
+  "v": 2
+}

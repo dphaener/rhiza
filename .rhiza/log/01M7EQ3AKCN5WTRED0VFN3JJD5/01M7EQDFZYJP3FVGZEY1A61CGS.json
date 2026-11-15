@@ -1,0 +1,52 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQCN488G9BA6CGG3BCCZA8"
+  ],
+  "at": "2026-11-15T04:28:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6NP6PGTNPFRHTAP7A6A92DQ",
+        "handle": null,
+        "id": "01M7EQCMZFR2ZX8BJVR582GK36",
+        "node": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "op": "node.update",
+        "set": {
+          "acceptance": "make -n test-budgets shows the timing budgets run alone, -count=1 -p 1, one package at a time, and make -n test runs none of them (@{01M7EQDFY7GKPF549RAPQE285W})",
+          "statement": "The timing budgets are opt-in benchmarks: make test runs the suite with them skipped, and make test-budgets runs them alone, -count=1 -p 1 one package at a time, printing the read-budget timings; CI's budgets job runs make test-budgets on every pull request, so no budget test is lost."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "acceptance": "make -n test shows go test with -skip of the budget tests and no -run of them, and no budget phase; make -n test-budgets shows them run -count=1 -p 1 over the packages that hold them; every name in BUDGET_TESTS matches a test that go test -list finds (TestGeneratedModel is dropped or found); go test -trimpath ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets|TestMakeUpdateDryRun)$' passes with its expected commands updated; .github/workflows/ci.yml's budgets job still runs make test-budgets; failure case: TestMakeTestShardTargets fails when make test's recipe runs a budget test. Speedup measure (orchestrator, quiet VM): a warm /usr/bin/time -f '%e s' make test, against 254 s, with no 'Timing budgets' phase in its output. Touches Makefile, cmd/rhiza/makeupdate_test.go, AGENTS.md. Must not drop a budget test from test-budgets or change a budget limit.",
+          "statement": "make test and make check no longer run the timing budgets: the budget phase leaves make test's recipe, the budgets run only in the opt-in make test-budgets (alone, -count=1 -p 1, printing the read-budget timings), which CI's budgets job runs on every pull request, and AGENTS.md and the Makefile's comments say so."
+        },
+        "handle": "budgets-out-of-make-test",
+        "id": "01M7EQDFY7GKPF549RAQVNSSCQ",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQDFY7GKPF549RAPQE285W",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQDFY7GKPF549RAPQE285W",
+        "id": "01M7EQDFYRN0ZQCAEXE5C9T46V",
+        "link": "01M7EQDFYRN0ZQCAEXE50XBGZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQCMV704AS2328FNE7RTMV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQDFZYJP3FVGZEY1A61CGS",
+  "type": "ops",
+  "v": 1
+}

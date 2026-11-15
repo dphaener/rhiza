@@ -1,0 +1,117 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQ3AKCN5WTRED0VKAFJ365"
+  ],
+  "at": "2026-11-15T04:28:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "those  are all fine. continue without me",
+          "quote_where": "owner, 2026-11-15T02:44:54Z, answering 'Budgets as opt-in: moving read budgets out of make test means CI runs them only in its budgets job, not on every local run. OK?' among the proposal's four questions",
+          "statement": "The timing budgets leave make test: make test skips them, and they run only in the opt-in make test-budgets, alone and one package at a time, which CI's budgets job runs on every pull request; the orchestrator's proposal, approved by the owner"
+        },
+        "handle": "budgets-opt-in",
+        "id": "01M7EQCMV704AS2328FRTGFYHP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQCMV704AS2328FNE7RTMV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQCMV704AS2328FNE7RTMV",
+        "id": "01M7EQCMVRQ5E36N8YAVB6Y147",
+        "link": "01M7EQCMVRQ5E36N8YATPTXK9T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQCMV704AS2328FNE7RTMV",
+        "id": "01M7EQCMWNQSE9Z1N68AGHGBK2",
+        "link": "01M7EQCMWNQSE9Z1N689844FQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M6HR4FE2FYXS6YE0CAGNGVR8",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "acceptance": "grep -n 'time.Sleep(2' internal/api/*_test.go finds no wait for the racy window; go test -trimpath -count=1 -p 1 -run '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' ./internal/api passes with the budget limits unchanged and finishes within 60 s (2026-11-15: 160 s), measured with /usr/bin/time -f '%e s'; failure case: a test of the helper shows a folder changed now gets no stat fingerprint stored and the same folder backdated past the window does. Touches internal/api/write_budget_test.go, budget_test.go, run_model_cache_test.go, change_show_budget_test.go, watchdog_pollbehind_test.go and the shared helper. Must not change racyWindow, the index's racy check or a budget limit; if the racy check also reads a time Chtimes cannot set back (ctime), raise a question blocking this leaf instead of weakening the check.",
+          "statement": "Tests that need a file or folder older than the index's 2 s racy window (internal/index/listing.go) backdate its modification time with os.Chtimes through one shared test helper instead of sleeping 2.2 s, so TestReadBudget, TestReadBudgetApply, TestDriverPollIsCheap and the other internal/api tests that slept past the window measure and check the same things without waiting."
+        },
+        "handle": "budget-tests-backdate-mtimes",
+        "id": "01M7EQCMXHXRXDVGNJQJJ2F88G",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQCMXHXRXDVGNJQEQBADVY",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQCMXHXRXDVGNJQEQBADVY",
+        "id": "01M7EQCMYGWAEG1SDX9QRE0QM6",
+        "link": "01M7EQCMYGWAEG1SDX9KWFKH24",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6NP6PGTNPFRHTAP7A6A92DQ",
+        "handle": null,
+        "id": "01M7EQCMZFR2ZX8BJVR582GK36",
+        "node": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "op": "node.update",
+        "set": {
+          "acceptance": "make -n test shows go test with -skip of the budget tests and no -run of them, and no budget phase; make -n test-budgets shows them run -count=1 -p 1 over the packages that hold them; every name in BUDGET_TESTS matches a test that go test -list finds (TestGeneratedModel is dropped or found); go test -trimpath ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets|TestMakeUpdateDryRun)$' passes with its expected commands updated; .github/workflows/ci.yml's budgets job still runs make test-budgets; failure case: TestMakeTestShardTargets fails when make test's recipe runs a budget test. The make-test-shard-targets capability and AGENTS.md's Commands section no longer say make test runs the budgets. Speedup measure (orchestrator, quiet VM): a warm /usr/bin/time -f '%e s' make test, against 254 s, with no 'Timing budgets' phase in its output. Touches Makefile, cmd/rhiza/makeupdate_test.go, AGENTS.md.",
+          "statement": "The timing budgets are opt-in benchmarks: make test runs the suite with them skipped, and make test-budgets runs them alone, -count=1 -p 1 one package at a time, printing the read-budget timings; CI's budgets job runs make test-budgets on every pull request, so no budget test is lost."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6HR4C6TN1MN8FF6C71MZ3F2",
+        "id": "01M7EQCN1CTVRWDX4GQ6QXM7FY",
+        "link": "01M7EQCN1CTVRWDX4GQ35GBNXP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQCMV704AS2328FNE7RTMV",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M6Q5HHVN71122BKP92YBQ687",
+        "handle": null,
+        "id": "01M7EQCN2F7W1B7S176ZYWTPB5",
+        "node": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "op": "node.update",
+        "set": {
+          "statement": "The Makefile has one target per CI job: test-scripts SHARD=i/n (cmd/rhiza's scripts, budgets skipped), test-api SHARD=i/n (internal/api's top-level tests from go test -list, budgets excluded, split round-robin into an anchored -run regex), test-rest (every other package, budgets skipped), test-budgets (the timing budgets alone, -count=1 -p 1, printing the read-budget timings) and lint (fmt-check, vet, self-check); make test and make check run the full suite but the timing budgets, which only make test-budgets runs."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "id": "01M7EQCN3FS55H0D329B9S36DB",
+        "link": "01M7EQCN3FS55H0D3297JQ34RZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQCMV704AS2328FNE7RTMV",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQCN488G9BA6CGG3BCCZA8",
+  "type": "ops",
+  "v": 1
+}

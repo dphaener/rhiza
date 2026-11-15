@@ -1,0 +1,97 @@
+{
+  "actor": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "after": [
+    "01M7EQ3V3JMPYXS0WKE3YCMFW9"
+  ],
+  "at": "2026-11-15T04:29:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "58% of internal/api's CPU is store.ReadLog because every write re-reads the log, so the cheap fix without projection is to make those writes once; a copied template keeps each test isolated (no test sees another's writes), which parallel tests need, where a shared read-only model would not let tests write.",
+          "statement": "internal/api's shared fixtures are built once per test binary into a template folder and copied into each test's own temporary folder, so a test still owns and may write its repo while the model-building writes run once",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "api-fixture-templates",
+        "id": "01M7EQEPTN31N8JCPAY98XAHB1",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EQEPTN31N8JCPAY7A4ZC1B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EQEPTN31N8JCPAY7A4ZC1B",
+        "id": "01M7EQEPVAVWVS3CH6R1T7DZ0J",
+        "link": "01M7EQEPVAVWVS3CH6QYWNJTRR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ1R1FB9Z9TGZW6575TKF2",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '^TestSnapshotFixture' shows a fixture's copy folds to the same model as building it afresh, and a write in one test's copy is not seen by another's; failure case: a fixture whose build fails fails every test that asks for it with the build's error, not a missing folder. Speedup measure: go test -trimpath -count=1 -cpuprofile $TMPDIR/api.prof ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' then go tool pprof -top -cum $TMPDIR/api.prof shows store.ReadLog under 30% of CPU (2026-11-15: 58%). Touches internal/api's test helpers and the _test.go files moved onto the fixtures. Must not change non-test code, and must not replace FoldLog (projection is out of scope).",
+          "statement": "internal/api's tests get their common starting repos (the models many tests rebuild through the same writes) from snapshot fixtures: each is built once per test binary into a template and copied per test, instead of each test re-applying the writes and re-reading the log after each."
+        },
+        "handle": "api-snapshot-fixtures",
+        "id": "01M7EQEPVV46QWM31RCED06F4E",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "id": "01M7EQEPWD36BN39847YBV5S04",
+        "link": "01M7EQEPWD36BN39847THQGRN2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQEPTN31N8JCPAY7A4ZC1B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "id": "01M7EQEPX23R0FR0MHSH2ZK55F",
+        "link": "01M7EQEPX23R0FR0MHSFZ064VT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' passes twice in a row with different shuffle seeds; go vet ./internal/api is clean; failure case: go test -trimpath -race -count=1 ./internal/api -run on the tests that swap package variables shows no data race. Speedup measure (orchestrator, quiet VM): /usr/bin/time -f '%e s' go test -trimpath -count=1 ./internal/api -skip <the budgets> within 150 s (2026-11-15: 388 s). Touches internal/api/*_test.go only. Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before.",
+          "statement": "internal/api's independent tests call t.Parallel(); a test that swaps a package variable (runClock and the like), calls t.Setenv or t.Chdir, or reads shared machine state stays serial, and a comment on each such swap says why it must."
+        },
+        "handle": "api-tests-parallel",
+        "id": "01M7EQEPXRYWK194ZDV63W3EV6",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQEPXRYWK194ZDV340DVKR",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQEPXRYWK194ZDV340DVKR",
+        "id": "01M7EQEPY8BGBMM87AJVWE06GS",
+        "link": "01M7EQEPY8BGBMM87AJTSE6PNY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQ7534CRTCC8BW89A04P8G",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M5SZHHTC3JNFK5E9BPPEYDER",
+  "id": "01M7EQEPYWNA78KS08ZKF05X8E",
+  "type": "ops",
+  "v": 1
+}

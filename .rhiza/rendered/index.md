@@ -1048,6 +1048,11 @@
   - [m37-safe-actions](intent/milestone-37/m37-safe-actions.md)
   - [m37-frame](intent/milestone-37/m37-frame.md)
   - [m37-matches-design](intent/milestone-37/m37-matches-design.md)
+- [milestone-38](intent/milestone-38.md)
+  - [m38-cold](intent/milestone-38/m38-cold.md)
+  - [m38-warm](intent/milestone-38/m38-warm.md)
+  - [m38-ci](intent/milestone-38/m38-ci.md)
+  - [m38-nothing-lost](intent/milestone-38/m38-nothing-lost.md)
 
 ## Constraints
 
@@ -1432,6 +1437,9 @@
 - [failed-plan-run-covers](decision/failed-plan-run-covers.md)
 - [failed-steps-merge-resolution](decision/failed-steps-merge-resolution.md)
 - [fakes-only-in-build-and-review](decision/fakes-only-in-build-and-review.md)
+- [fast-suite-build-order](decision/fast-suite-build-order.md)
+- [fast-suite-measuring-commands](decision/fast-suite-measuring-commands.md)
+- [fast-suite-proposal-approved](decision/fast-suite-proposal-approved.md)
 - [feature-is-capability](decision/feature-is-capability.md)
 - [feed-follow-shape](decision/feed-follow-shape.md)
 - [feed-hides-actor-only](decision/feed-hides-actor-only.md)
@@ -5058,6 +5066,7 @@
 - [nested-step-paths-plan](source/nested-step-paths-plan.md)
 - [overview-fast-plan](source/overview-fast-plan.md)
 - [owner-run-gate-plan](source/owner-run-gate-plan.md)
+- [perf-milestone-interview](source/perf-milestone-interview.md)
 - [plan-captures-on-done-interview](source/plan-captures-on-done-interview.md)
 - [plan-ci-flake-reruns-interview](source/plan-ci-flake-reruns-interview.md)
 - [plan-ci-runner](source/plan-ci-runner.md)
