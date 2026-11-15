@@ -1,0 +1,45 @@
+{
+  "actor": "01M7GHBF23V91WE2SQMRZ0T9YJ",
+  "after": [
+    "01M7GGYXX2PFH0DF3EY53FWT31"
+  ],
+  "at": "2026-11-15T21:21:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "How is a disagreement the parity test finds fixed: patch each rule in model.go and write_indexed.go by hand, or derive both from the strict engine?",
+          "reasoning": "The change set's evidence is that the model rules are implemented three times; patching each case by hand keeps three copies and the next divergence. The strict views and the index's strict overlay already exist (model.WhatIfFrom, model.WhatIfDelta, index.WhatIfOverlay), so deriving from them is less code. The interim model is deleted by the milestone's projection change set, so effort spent re-implementing rules in it is thrown away. Building as-is once and seeding each what-if keeps the daemon's per-candidate cost from growing, which a plain swap to model.WhatIf would not.",
+          "statement": "A disagreement is fixed by having the non-strict side take its result from the strict engine, not by re-implementing the strict rule a third time: newModelSets builds its nodes, links, versions and conflicts from internal/model's as-is and what-if views (AsIsState once, WhatIfFrom per change set where a caller builds several), and writeIndex.buildModel lays the change set over the index's strict what-if (WhatIfOverlay's path, whatIfSets then model.WhatIfDelta over the stored seed, with its problems, through an index entry point that takes the change set as over, as WhatIfSets does, so a dry run's pending entries are laid over too) instead of writeLayer's interim apply. The daemon's per-candidate models (daemon_fold.go, proposals.go, inbox.go) must not rebuild as-is once per candidate.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-fix-derives-from-strict",
+        "id": "01M7GGERTNQMVS8C3Y5CXZNV1C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGERTNQMVS8C3Y5BVRJS1M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestPropertyProjectionParity|TestParity)' passes with the known-cases table empty and no skipped draws, at -rapid.checks=1000 as well as the default; go test -trimpath -count=1 -p 2 ./internal/api -run '^TestWrite' and go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^set$' pass. Fix by having writeIndex.buildModel lay the change set over the index's strict what-if and its problems, in place of writeLayer's interim apply (write_indexed.go:164-209) and versionOf (write_indexed.go:332), as @{01M7GGERTNQMVS8C3Y5BVRJS1M} says: index.WhatIfOverlay as it stands (overlay.go:38) folds cs from its stored entries only (whatIfSets(tx, cs, nil)) and would drop a dry run's pending entries, so the fix adds to internal/index an overlay entry point that takes the folded change set as over, as WhatIfSets(cs, over) does (whatIfSets(tx, cs, over), then model.WhatIfDelta over the stored seed and OverlayOf), and buildModel passes it the change set folded from ix.entries(w, current), pending entries included; a parity draw with dry-run pending entries matches the strict fold. Each case found on the index side has its own TestParity<Case> test with the smallest log that shows it, and a note on this leaf (rhiza note add parity-write-index-from-strict ...) naming the log shape, both results and which side changed; when the harness finds no index case beyond the named one and the version rule, the note says so. Failure case: the regression test for the named case on the write model fails on the code before the fix (show it in the commit's Checks: block by running it at the parent commit), and write_test.go's LandedConflict (two heads writing one field) still refuses set, mv and retire. Touches internal/api/write_indexed.go and its tests, and internal/index/overlay.go for that entry point only. Must not change internal/api/model.go (@{01M7GGYX1AJ24Y40XJK9GRY8P8} fixes it), internal/model or internal/index rules (the strict engine is the spec) or a --json shape. Writes no longer refusing a node whose two landed heads touch disjoint fields is the rule @{01M7GGERQMXHJ6YYC2D5HYX4ZZ} settles, not a case to raise; any other case that would change user-visible output on this repo's own log is raised as a question blocking this leaf instead.",
+          "statement": "Every case where the parity test finds write_indexed.go's write model (writeIndex.model) disagreeing with the strict engine is fixed on the index side, starting with the one its model comment names (it keeps a node whose create no longer applies, the strict what-if drops it) and the version and conflict rule of @{01M7GGERQMXHJ6YYC2D5HYX4ZZ}, and each case found on this side has a named regression test and a note on this leaf"
+        },
+        "handle": "parity-write-index-from-strict",
+        "id": "01M7GGYX9DWE3H3TZ3G1HM88F0",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GHCZKW2XNKSHN5NRKTF27V",
+  "type": "ops",
+  "v": 1
+}
