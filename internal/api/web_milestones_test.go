@@ -8,6 +8,7 @@ import (
 // The Overview names each open milestone by its statement, read from the
 // repository, so two milestones read apart.
 func TestWebMilestonesSourceNamesByStatement(t *testing.T) {
+	t.Parallel()
 	ctx, _ := daemonRepo(t)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	ctx.Record = true

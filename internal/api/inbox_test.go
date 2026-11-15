@@ -8,6 +8,7 @@ import (
 )
 
 func TestUncoveredAcceptItems(t *testing.T) {
+	t.Parallel()
 	const a, b = "01M7A1PXPS84ZD222S9ADHF0SV", "01M7A26CAT1FTRENTDNPR4XD18"
 	tests := []struct {
 		name  string

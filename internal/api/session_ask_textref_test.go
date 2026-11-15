@@ -12,6 +12,7 @@ import (
 // never refuses it, is stored as a literal @ and shown as @@word, while an
 // @<existing handle> is stored as @{<full ID>} and shown by its handle.
 func TestAddQuestionLenientRefs(t *testing.T) {
+	t.Parallel()
 	f := askFixture(t, true)
 	cs := currentOf(t, f.ctx)
 	// The question is written in the session's worktree, so the node it

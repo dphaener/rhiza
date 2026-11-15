@@ -61,6 +61,9 @@ type removeClock struct{ path string }
 func (c removeClock) Now() time.Time      { return time.Unix(0, 0) }
 func (c removeClock) Sleep(time.Duration) { os.Remove(c.path) }
 
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to, and
+// swaps the package's runClock (useClock), which every run in the binary reads.
 func TestSessionRunFreshSessionWhenTranscriptGone(t *testing.T) {
 	f, s, path := limitFixture(t)
 	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
@@ -157,6 +160,11 @@ func limitFixture(t *testing.T) (*sessionFixture, SessionInfo, string) {
 
 // An agent that stays open at its usage limit is stopped, and the session
 // resumed once the limit resets.
+//
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to, and
+// swaps the package's limitPoll and runClock (useClock), which every
+// session run in the binary reads.
 func TestSessionRunStopsAgentOpenAtLimit(t *testing.T) {
 	f, s, path := limitFixture(t)
 	old := limitPoll
@@ -186,6 +194,10 @@ func TestSessionRunStopsAgentOpenAtLimit(t *testing.T) {
 
 // A session still at its usage limit after the last pause fails: the step
 // did not finish.
+//
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to, and
+// swaps the package's runClock (useClock), which every run in the binary reads.
 func TestSessionRunFailsWhenPausesRunOut(t *testing.T) {
 	f, s, path := limitFixture(t)
 	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {
@@ -213,6 +225,9 @@ func TestSessionRunFailsWhenPausesRunOut(t *testing.T) {
 // An agent that stops at its usage limit is recorded as working, paused,
 // not idle: a run must not take it for ready at its prompt. Once it goes
 // on, its Stop is idle again.
+//
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to.
 func TestSessionHookStopAtLimitIsPaused(t *testing.T) {
 	f, s, path := limitFixture(t)
 	st := session.NewStore(session.Dir(f.common))
@@ -262,6 +277,10 @@ func (c pauseClock) Sleep(time.Duration) {
 }
 
 // While a session is paused at its usage limit its record says so.
+//
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to, and
+// swaps the package's runClock (useClock), which every run in the binary reads.
 func TestSessionRunRecordsPause(t *testing.T) {
 	f, s, path := limitFixture(t)
 	if err := os.WriteFile(path, []byte("limited"), 0o644); err != nil {

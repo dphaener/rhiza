@@ -19,6 +19,7 @@ import (
 // With the five apps linked in, as in the rhiza binary, rex install writes
 // exactly five Rex actions with their keys in the rhiza key mode.
 func TestRexInstallRegistersExactlyFiveApps(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	ctx := &api.Ctx{
 		Root: t.TempDir(),

@@ -116,6 +116,9 @@ func webGateFixture(t *testing.T) (*Ctx, id.ID, string) {
 // question.answer writes each Decision into the run's worktree, and once
 // every question the gate stopped on is answered, run.resume queues the
 // run's continuation, so the run continues as the page says.
+//
+// Serial: it calls t.Setenv (XDG_CACHE_HOME, HOME, in webGateFixture), so
+// run temp folders move, process-wide state.
 func TestWebAnswerAction(t *testing.T) {
 	queued := func(t *testing.T, common string) bool {
 		t.Helper()
@@ -188,6 +191,7 @@ func TestWebAnswerAction(t *testing.T) {
 // at /p/<project>/, approves a run waiting at its sign-off: the real
 // run.approve journals it and queues the continuation.
 func TestWebApproveAction(t *testing.T) {
+	t.Parallel()
 	signoffs := func(rs *run.Store) int {
 		return len(raceSignoffs(t, rs))
 	}
@@ -256,6 +260,7 @@ func TestWebApproveAction(t *testing.T) {
 // /p/<project>/, writes rhiza.daemon.paused and the project's
 // rhiza.project.paused through daemon.set.
 func TestWebPauseAction(t *testing.T) {
+	t.Parallel()
 	read := func(t *testing.T, ctx *Ctx, key string) string {
 		t.Helper()
 		out, err := runDaemonSettings(ctx, DaemonSettingsRequest{})

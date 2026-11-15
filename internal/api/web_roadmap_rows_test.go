@@ -15,6 +15,7 @@ var hrefRe = regexp.MustCompile(`href="(/[^"]*)"`)
 // Under a root of two projects, every row on each project's roadmap and every
 // depends-on link on those change pages opens a page in that same project.
 func TestWebRootRoadmapRowsResolve(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	names := []string{"alpha", "beta"}
 	var home *Ctx

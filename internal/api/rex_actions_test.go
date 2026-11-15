@@ -190,6 +190,9 @@ func runRexActions(t *testing.T, script, shell string) map[string]rexRan {
 // directory: through the owner's login shell, or, with settings.bin set,
 // that binary as given. No action calls rex.exec, whose detach starts
 // nothing on Rex r10.
+//
+// Serial: it registers a launcher app (launcher.Register), which every rex
+// install in the binary writes into rhiza.lua.
 func TestRexInstallActionsOpenALayerPerApp(t *testing.T) {
 	launcher.Register(launcher.App{Name: "zz-opened", Summary: "Opened"})
 	ctx, dir, _ := rexTestCtx(t)

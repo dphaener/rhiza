@@ -15,6 +15,7 @@ import (
 // resume), and its question carries the statement even when a change set
 // that serves no plan intent (the review's) created it.
 func TestInboxListsGateStoppedPlanRun(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	ctx := testCtx(root)
 	call := func(name, req string) any {
@@ -77,6 +78,7 @@ func TestInboxListsGateStoppedPlanRun(t *testing.T) {
 // A run parked at its handback_cap is an inbox item naming the step and the
 // cause, until a process journals itself after the stop (a resume).
 func TestInboxHandbackParked(t *testing.T) {
+	t.Parallel()
 	at := time.Date(2026, 11, 10, 1, 0, 0, 0, time.UTC)
 	stopped := run.HandbackParked + `step "check" went fail after 3 hand-backs to "build": tests red`
 	es := []run.Entry{

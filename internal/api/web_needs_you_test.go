@@ -10,6 +10,7 @@ import (
 // A project's needs-you count is its open questions, sign-offs, failed runs
 // and stuck runs; a hold is in no project's count.
 func TestProjectNeedsYou(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 11, 5, 12, 0, 0, 0, time.UTC)
 	at := now.Add(-3 * time.Hour)
 	journal := func(id string, es ...run.Entry) run.Journal {

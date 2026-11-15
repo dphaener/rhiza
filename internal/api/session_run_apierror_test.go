@@ -148,6 +148,9 @@ func (r *apiErrRun) apiErrored() []RunAPIError {
 	return runAPIErrorAll(state, true, r.st)
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorRepromptsAfterBackoff(t *testing.T) {
 	r := startAPIErr(t, true, "")
 	r.write("did work\nERR 403 Cloudflare")
@@ -172,6 +175,9 @@ func TestSessionRunAPIErrorRepromptsAfterBackoff(t *testing.T) {
 	r.finish()
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorCancelledByAssistantLine(t *testing.T) {
 	r := startAPIErr(t, true, "")
 	r.write("ERR boom")
@@ -184,6 +190,9 @@ func TestSessionRunAPIErrorCancelledByAssistantLine(t *testing.T) {
 	r.finish()
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorGivesUpAfterThree(t *testing.T) {
 	r := startAPIErr(t, true, "")
 	tr := "ERR 403 Cloudflare"
@@ -213,6 +222,9 @@ func TestSessionRunAPIErrorGivesUpAfterThree(t *testing.T) {
 	}
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorAgainAfterRecovery(t *testing.T) {
 	r := startAPIErr(t, true, "")
 	r.write("ERR one")
@@ -231,6 +243,9 @@ func TestSessionRunAPIErrorAgainAfterRecovery(t *testing.T) {
 	r.finish()
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorAttendedRecordsAtOnce(t *testing.T) {
 	r := startAPIErr(t, false, "")
 	r.write("ERR 403 Cloudflare")
@@ -250,6 +265,9 @@ func TestSessionRunAPIErrorAttendedRecordsAtOnce(t *testing.T) {
 	r.finish()
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads.
 func TestSessionRunAPIErrorBeforeBaseIsNothing(t *testing.T) {
 	r := startAPIErr(t, true, "ERR old\n")
 	r.write("ERR old\nstill working")
@@ -275,6 +293,10 @@ func (c lateWriteClock) Sleep(time.Duration) {
 	os.WriteFile(*c.path, []byte(c.text), 0o644)
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture) and swaps
+// limitPoll, apiErrorBackoff and sendAPIErrorMessage (startAPIErr), which
+// every session run in the binary reads, and its runClock
+// (useClock).
 func TestSessionRunAPIErrorUsageLimitKeepsPause(t *testing.T) {
 	var path string
 	useClock(t, lateWriteClock{&path, "done"})
@@ -321,6 +343,9 @@ func watchFixture(t *testing.T, autonomous bool) (w *apiErrorWatch, dir string, 
 }
 
 // A record that cannot be written is reported, and written on a later poll.
+//
+// Serial: it swaps the package's sendAPIErrorMessage and apiErrorBackoff
+// (watchFixture), which every session run in the binary reads.
 func TestAPIErrorWatchReportsFailedRecord(t *testing.T) {
 	w, dir, stderr, _ := watchFixture(t, false)
 	if err := os.Chmod(dir, 0o555); err != nil {
@@ -346,6 +371,9 @@ func TestAPIErrorWatchReportsFailedRecord(t *testing.T) {
 
 // A fourth consecutive API error goes to the inbox at once, whatever the
 // third wait.
+//
+// Serial: it swaps the package's sendAPIErrorMessage and apiErrorBackoff
+// (watchFixture), which every session run in the binary reads.
 func TestAPIErrorWatchFourthErrorAtOnce(t *testing.T) {
 	w, _, _, sent := watchFixture(t, true)
 	apiErrorBackoff = []time.Duration{0, 0, 0}
@@ -375,6 +403,9 @@ func TestAPIErrorWatchFourthErrorAtOnce(t *testing.T) {
 }
 
 // Each later wait runs from when the new error is seen, not from the send.
+//
+// Serial: it swaps the package's sendAPIErrorMessage and apiErrorBackoff
+// (watchFixture), which every session run in the binary reads.
 func TestAPIErrorWatchWaitsFromErrorSeen(t *testing.T) {
 	w, _, _, sent := watchFixture(t, true)
 	apiErrorBackoff = []time.Duration{0, time.Second, time.Second}

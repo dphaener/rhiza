@@ -14,6 +14,7 @@ import (
 // and major finding of the check's latest round has a verdict; a fixer is
 // never refused for this.
 func TestSessionDoneReviewRecords(t *testing.T) {
+	t.Parallel()
 	r, _, ctx, _, ada := evidenceCommitRunner(t)
 	common, err := gitCommonDir(ctx)
 	if err != nil {

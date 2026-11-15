@@ -80,6 +80,7 @@ func fields(t *testing.T, r AddRequest) map[string]string {
 }
 
 func TestAnswerWrites(t *testing.T) {
+	t.Parallel()
 	sid := "ABCDEF12-3456-4789-8abc-def012345678"
 	writes, err := answerWrites(sid, []adapter.Answer{pickedAnswer, typedAnswer, mixedAnswer})
 	if err != nil {
@@ -227,6 +228,7 @@ func proposedHandles(r SessionInterviewResponse) []string {
 }
 
 func TestSessionInterview(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	writeTranscript(t, f.ctx.Home, s.ID, pickedAnswer, typedAnswer, mixedAnswer)
 	cs, err := id.Parse(s.Change)
@@ -332,6 +334,7 @@ func TestSessionInterview(t *testing.T) {
 type idEntry struct{ actor, forID id.ID }
 
 func TestSessionInterviewNoAnswers(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	writeTranscript(t, f.ctx.Home, s.ID)
 	r := interview(t, f.ctx, s.ID)
@@ -344,6 +347,7 @@ func TestSessionInterviewNoAnswers(t *testing.T) {
 }
 
 func TestSessionInterviewNoTranscript(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	_, err := callOp(t, f.ctx, "session.interview", `{"id":"`+s.ID+`"}`)
 	e := AsError(err)
@@ -363,6 +367,7 @@ func TestSessionInterviewNoTranscript(t *testing.T) {
 }
 
 func TestSessionInterviewRefusals(t *testing.T) {
+	t.Parallel()
 	f, _, _ := interviewFixture(t)
 	_, err := callOp(t, f.ctx, "session.interview", `{"id":""}`)
 	wantExit(t, err, 2)
@@ -373,6 +378,7 @@ func TestSessionInterviewRefusals(t *testing.T) {
 }
 
 func TestSessionRunCapturesAnswers(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	writeTranscript(t, f.ctx.Home, s.ID, pickedAnswer, typedAnswer)
 	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
@@ -396,6 +402,7 @@ func TestSessionRunCapturesAnswers(t *testing.T) {
 }
 
 func TestSessionRunCaptureFailureIsAWarning(t *testing.T) {
+	t.Parallel()
 	f, s, _ := interviewFixture(t)
 	resp, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`)
 	if err != nil {
@@ -424,6 +431,7 @@ func TestSessionRunCaptureFailureIsAWarning(t *testing.T) {
 }
 
 func TestSessionRunDryRunCapturesNothing(t *testing.T) {
+	t.Parallel()
 	f, s, fs := interviewFixture(t)
 	writeTranscript(t, f.ctx.Home, s.ID, pickedAnswer)
 	f.ctx.DryRun = true
