@@ -1,0 +1,63 @@
+{
+  "actor": "01M7F11J4VV94S1TH3PFVT5DQJ",
+  "after": [
+    "01M7F0RZXJB3KY68NYNYRQRCMR"
+  ],
+  "at": "2026-11-15T07:18:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M6Q5HHVN71122BKP92YBQ687",
+        "handle": null,
+        "id": "01M7EQCN2F7W1B7S176ZYWTPB5",
+        "node": "01M6Q5HHVN71122BKP8ZG1DQPR",
+        "op": "node.update",
+        "set": {
+          "acceptance": "A Go test beside TestMakeTestTimeout in cmd/rhiza/makeupdate_test.go (go test -trimpath ./cmd/rhiza -run 'TestMake') runs make -n on each new target and asserts its go test line carries -trimpath and the budget skip or run regex, that test-api's shards for n=2 partition internal/api's listed tests with no budget test among them, and that test-budgets prints the timings; TestMakeTestTimeout passes with its expected commands updated so make -n test shows the budget tests skipped and no Timing budgets phase (@{01M7EQDFY7GKPF549RAPQE285W}).",
+          "statement": "The Makefile has one target per CI job: test-scripts SHARD=i/n (cmd/rhiza's scripts, budgets skipped), test-api SHARD=i/n (internal/api's top-level tests from go test -list, budgets excluded, split round-robin into an anchored -run regex), test-rest (every other package, budgets skipped), test-budgets (the timing budgets alone, -count=1 -p 1, printing the read-budget timings) and lint (fmt-check, vet, self-check); make test and make check run the full suite but the timing budgets, which only make test-budgets runs."
+        },
+        "unset": []
+      },
+      {
+        "fields": {
+          "reasoning": "check-is-ci-minus-budgets commits this change set to restating t1-d10-makefile-targets with its targets unchanged plus test-budgets, and check as everything CI runs but the timing budgets, following the owner-approved budgets-opt-in Decision. No new owner words: the target list is t1-d10's, the exception is check-is-ci-minus-budgets'.",
+          "statement": "Makefile targets: build, install (built in place into `$(PREFIX)`, default `~/bin`, never cp), test, test-budgets, vet, fmt, fmt-check, check, clean and help. `check` = everything CI runs except the timing budgets, which run only in the opt-in `make test-budgets` (CI's budgets job).",
+          "wording": "(assumed, would have escalated) restates the owner-accepted t1-d10-makefile-targets with the check clause Decision check-is-ci-minus-budgets settles"
+        },
+        "handle": "makefile-targets-check-minus-budgets",
+        "id": "01M7F13ZF4V6P9W83AV61J3804",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7F13ZF4V6P9W83AV5MVABQB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F13ZF4V6P9W83AV5MVABQB",
+        "id": "01M7F13ZJ9R8D6BV1GGJFM47MY",
+        "link": "01M7F13ZJ9R8D6BV1GGHYHKFRF",
+        "note": "restated per Decision check-is-ci-minus-budgets",
+        "op": "link.create",
+        "to": "01M5SWRRHWVZC2PG6R7EPZ82SJ",
+        "type": "supersedes"
+      },
+      {
+        "decision": null,
+        "from": "01M7F13ZF4V6P9W83AV5MVABQB",
+        "id": "01M7F13ZKZ5B4HSNYEAK18R67J",
+        "link": "01M7F13ZKZ5B4HSNYEAFG69ZRX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7ETHS5ACFFFZWV0CH3CGX7M",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M7EYSHE4NN7D7B7MFK7DX3RZ",
+  "id": "01M7F13ZQJWFF91QB0NZDQXQ38",
+  "type": "ops",
+  "v": 1
+}

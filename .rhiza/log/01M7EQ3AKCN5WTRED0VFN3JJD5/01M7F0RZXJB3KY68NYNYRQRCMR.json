@@ -1,0 +1,63 @@
+{
+  "actor": "01M7F0K396ZVMAB0PQ9D086ZV3",
+  "after": [
+    "01M7EZVJE1FEWM8N6856SMS5RB"
+  ],
+  "at": "2026-11-15T07:12:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: make -n test shows both go tests with -skip of the five-name BUDGET_TESTS regex, no -run of it, no 'Timing budgets' phase or RHIZA_BUDGET_LOG; make -n check likewise (2 skip lines, 0 budget -run); make -n test-budgets runs -count=1 -p 1 -run BUDGET_TESTS over ./internal/api ./internal/index ./internal/slice and prints the timings; go test -list finds every name (TestReadBudget, TestReadBudgetApply, TestDriverPollIsCheap in api, TestBudget and TestCatchUpBudget in index, TestBudget in slice; TestGeneratedModel exists nowhere); test-scripts/test-api/test-rest dry-runs skip the budgets; SHARD=0/2 fails cleanly; ci.yml budgets job runs make test-budgets; make help, AGENTS.md and README.md say make check is what CI runs but make test-budgets; grep 'everything CI runs' Makefile AGENTS.md README.md prints nothing; TestMakeTestTimeout, TestMakeTestShardTargets, TestMakeUpdateDryRun pass; failure case: in a scratch worktree with a budget -run added to make test's recipe, TestMakeTestTimeout fails with 'make -n test runs the timing budgets'."
+        },
+        "handle": "budgets-out-of-make-test-qa-1",
+        "id": "01M7F0RZKVFNE4MEX2Q2KH5NT2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7F0RZKVFNE4MEX2Q1S8S7PY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F0RZKVFNE4MEX2Q1S8S7PY",
+        "id": "01M7F0RZNJA81JWZT54YSJBAAF",
+        "link": "01M7F0RZNJA81JWZT54YKDP3D2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQDFY7GKPF549RAPQE285W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: grep 'time.Sleep(2200' internal/api/*_test.go finds nothing, time.Sleep(2 * pollDebounce) stays (run_model_cache_test.go:220); no internal/index change, racyWindow still 2s, no budget limit in the diff; behind the machine lock (load 3.4) /usr/bin/time go test -trimpath -count=1 -p 1 -run '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap|TestBackdateLogPassesRacyWindow)$' ./internal/api passes in 67.74 s (under 75 s; TestReadBudget 60.2 s, Apply 3.5 s, DriverPoll 1.7 s); TestBackdateLogPassesRacyWindow passes: LogStamp racy right after a write, not racy after backdateLog."
+        },
+        "handle": "budget-tests-backdate-mtimes-qa-1",
+        "id": "01M7F0RZRA7D696VSCHKXTC2H1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7F0RZRA7D696VSCHH42TWG6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F0RZRA7D696VSCHH42TWG6",
+        "id": "01M7F0RZV1MX3HY9GP17T3Y6QA",
+        "link": "01M7F0RZV1MX3HY9GP16BBRCC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQCMXHXRXDVGNJQEQBADVY",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M7EYSHE4NN7D7B7MFK7DX3RZ",
+  "id": "01M7F0RZXJB3KY68NYNYRQRCMR",
+  "type": "ops",
+  "v": 1
+}

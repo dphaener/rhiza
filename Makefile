@@ -29,10 +29,12 @@ update: install ## Rebuild into $(PREFIX), then rewrite the Rex script and reloa
 	$(PREFIX)/$(BINARY) rex install
 
 .PHONY: test
-# The timing budgets measure reads against fixed limits, so they run on
-# their own after the rest of the suite: run beside cmd/rhiza's scripts they
-# measured their neighbours (PR #210 failed twice, then passed, on one SHA).
-BUDGET_TESTS = ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$$
+# The timing budgets measure reads against fixed limits, so they are opt-in
+# benchmarks: make test skips them, and only make test-budgets (CI's budgets
+# job, on every pull request) runs them, alone and one package at a time.
+# Run beside cmd/rhiza's scripts they measured their neighbours (PR #210
+# failed twice, then passed, on one SHA).
+BUDGET_TESTS = ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$$
 BUDGET_PKGS = ./internal/api ./internal/index ./internal/slice
 
 # -trimpath keeps each worktree's absolute path out of the compiled
@@ -47,20 +49,19 @@ TEST_FLAGS = -trimpath -timeout 20m
 # machine only one worktree runs them at a time: concurrent `make test`s
 # (one per Rhiza run worktree) queue on this lock instead of thrashing. The
 # rest of the suite mostly waits on git, fsync and sleeps rather than CPU,
-# so it runs unlocked, beside the scripts. The timing budgets take the lock
-# too, so they never run beside another suite's scripts. flock(1) is
+# so it runs unlocked, beside the scripts. make test-budgets takes the lock
+# too, so the budgets never run beside another suite's scripts. flock(1) is
 # util-linux; where it is missing (macOS) nothing is locked. TEST_LOCK=
 # skips the lock.
 TEST_LOCK ?= $(dir $(shell go env GOCACHE))rhiza-test.lock
 
-test: ## Run the full test suite, then the timing budgets alone, and print the read-budget timings
-# TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
-# They print after the run whether the tests passed or failed, so CI logs
-# (and local runs) always show the numbers. go test's exit status is make's.
-# The packages other than cmd/rhiza run in the background, their output
-# held in a file and printed once cmd/rhiza is done, so the two never
-# interleave. The shell holds the lock on fd 9 (lock, unlock); every go test
-# gets 9>&-, so no process a test leaves behind can keep holding it.
+test: ## Run the test suite but the timing budgets (make test-budgets runs those)
+# The timing budgets are skipped here; make test-budgets runs them. go
+# test's exit status is make's. The packages other than cmd/rhiza run in
+# the background, their output held in a file and printed once cmd/rhiza
+# is done, so the two never interleave. The shell holds the lock on fd 9
+# (lock, unlock); every go test gets 9>&-, so no process a test leaves
+# behind can keep holding it.
 	@lockfile='$(TEST_LOCK)'; \
 	lock() { \
 		if [ -n "$$lockfile" ] && command -v flock >/dev/null 2>&1 && (: >>"$$lockfile") 2>/dev/null; then \
@@ -73,7 +74,7 @@ test: ## Run the full test suite, then the timing budgets alone, and print the r
 		fi; \
 	}; \
 	unlock() { exec 9>&-; }; \
-	log=$$(mktemp); rest=$$(mktemp); \
+	rest=$$(mktemp); \
 	go test $(TEST_FLAGS) -skip '$(BUDGET_TESTS)' $$(go list ./... | grep -v '/cmd/rhiza$$') >$$rest 2>&1 9>&- & \
 	pid=$$!; \
 	lock "the cmd/rhiza scripts"; \
@@ -82,18 +83,12 @@ test: ## Run the full test suite, then the timing budgets alone, and print the r
 	unlock; \
 	wait $$pid || status=1; \
 	cat $$rest; \
-	echo "Timing budgets, run alone after the suite"; \
-	lock "the timing budgets"; \
-	RHIZA_BUDGET_LOG=$$log go test $(TEST_FLAGS) -count=1 -p 1 -run '$(BUDGET_TESTS)' $(BUDGET_PKGS) 9>&- || status=1; \
-	unlock; \
-	echo "Read-budget timings"; \
-	if [ -s "$$log" ]; then cat "$$log"; else echo "(no timings: $$log is missing or empty)"; fi; \
-	rm -f $$log $$rest; exit $$status
+	rm -f $$rest; exit $$status
 
-# One target per CI job, so the jobs run in parallel and each is a slice of
-# what `make test` runs. Together test-scripts over every shard, test-api
-# over every shard, test-rest and test-budgets cover the same tests as
-# `make test`.
+# One target per CI job, so the jobs run in parallel. Together test-scripts
+# over every shard, test-api over every shard and test-rest cover the same
+# tests as `make test`; test-budgets adds the timing budgets, which make
+# test skips.
 #
 # SHARD is "i/n" (1-based). GO_TEST is the go test command; the tests
 # replace it to see the arguments a target would pass.
@@ -139,7 +134,10 @@ test-rest: ## Run every package but internal/api, timing budgets skipped
 	$(GO_TEST) $(TEST_FLAGS) -skip '$(BUDGET_TESTS)|^TestScripts$$' $$(go list ./... | grep -v '/internal/api$$')
 
 .PHONY: test-budgets
-test-budgets: ## Run the timing budgets alone, and print the read-budget timings
+test-budgets: ## Run the timing budgets alone (opt-in; CI runs it), and print the read-budget timings
+# TestReadBudget appends its timings to the file named by RHIZA_BUDGET_LOG.
+# They print after the run whether the tests passed or failed, so CI logs
+# (and local runs) always show the numbers. go test's exit status is make's.
 	@log=$$(mktemp); $(LOCK_SH); \
 	lock "the timing budgets"; \
 	RHIZA_BUDGET_LOG=$$log $(GO_TEST) $(TEST_FLAGS) -count=1 -p 1 -run '$(SKIP_BUDGETS)' $(BUDGET_PKGS) 9>&-; \
@@ -176,9 +174,10 @@ fmt-check: ## Fail if any Go file is unformatted
 	fi
 
 .PHONY: check
-check: fmt-check vet self-check test ## Run everything CI runs
-# The single entry point .github/workflows/ci.yml runs, so local and CI
-# runs cannot drift apart.
+check: fmt-check vet self-check test ## Run what CI runs but make test-budgets (the timing budgets)
+# The local entry point for what .github/workflows/ci.yml runs, so local and
+# CI runs cannot drift apart. The one CI run it leaves out is make
+# test-budgets, the opt-in timing budgets (CI's budgets job).
 
 .PHONY: self-check
 self-check: ## Run rhiza check on this repo with this commit's build

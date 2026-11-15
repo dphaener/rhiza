@@ -63,9 +63,9 @@ func TestMakeUpdateDryRun(t *testing.T) {
 // script suite does not hit go test's 10-minute default on CI's slow runner.
 // It also checks what keeps many worktrees' suites cheap on one machine:
 // -trimpath (a second worktree reuses the first one's builds and cached
-// results), and the machine-wide lock taken around cmd/rhiza's scripts and
-// around the timing budgets, while the other packages run unlocked beside
-// the scripts.
+// results), and the machine-wide lock taken around cmd/rhiza's scripts,
+// while the other packages run unlocked beside the scripts. The timing
+// budgets are skipped and never run: only make test-budgets runs them.
 func TestMakeTestTimeout(t *testing.T) {
 	if _, err := exec.LookPath("make"); err != nil {
 		t.Skip("make is not on PATH")
@@ -77,28 +77,35 @@ func TestMakeTestTimeout(t *testing.T) {
 		t.Fatalf("make -n test: %v\n%s", err, out)
 	}
 	got := string(out)
-	// The suite runs with the timing budgets skipped, then the budgets run
-	// alone, one package at a time; every phase keeps the 20m timeout and
-	// closes the lock's descriptor, so no leftover process can hold it.
-	skip := "go test -trimpath -timeout 20m -skip '^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$' "
+	// The suite runs with the timing budgets skipped; every go test keeps
+	// the 20m timeout and closes the lock's descriptor, so no leftover
+	// process can hold it.
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
+	skip := "go test -trimpath -timeout 20m -skip '" + budgets + "' "
 	rest := skip + "$(go list ./... | grep -v '/cmd/rhiza$') >$rest 2>&1 9>&- &"
 	scripts := skip + "./cmd/rhiza 9>&-"
-	budgets := "go test -trimpath -timeout 20m -count=1 -p 1 -run '^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$' ./internal/api ./internal/index ./internal/slice 9>&-"
 	lockScripts := `lock "the cmd/rhiza scripts"`
-	lockBudgets := `lock "the timing budgets"`
 	for _, want := range []string{
-		rest, scripts, budgets, lockScripts, lockBudgets,
+		rest, scripts, lockScripts,
 		"lockfile='/locks/rhiza-test.lock'", "flock -n 9", "Waiting for another make test",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("make -n test has no %s line:\n%s", want, got)
 		}
 	}
+	// make test runs no budget test: no -run of the budget regex, no
+	// budget phase, no lock taken for it.
+	for _, bad := range []string{
+		"-run '" + budgets + "'", "Timing budgets", `lock "the timing budgets"`, "RHIZA_BUDGET_LOG",
+	} {
+		if strings.Contains(got, bad) {
+			t.Errorf("make -n test runs the timing budgets (%s); only make test-budgets may:\n%s", bad, got)
+		}
+	}
 	// In order: the other packages start in the background, the lock is
-	// taken, the scripts run and the lock is dropped; then the budgets run
-	// under the lock again.
+	// taken, the scripts run and the lock is dropped.
 	at := func(s string) int { return strings.Index(got, s) }
-	order := []string{rest, lockScripts, scripts, "unlock;", lockBudgets, budgets}
+	order := []string{rest, lockScripts, scripts, "unlock;"}
 	for i := 1; i < len(order); i++ {
 		if at(order[i-1]) < 0 || at(order[i]) < 0 || at(order[i-1]) > at(order[i]) {
 			t.Errorf("make -n test: %q does not come before %q:\n%s", order[i-1], order[i], got)
@@ -169,7 +176,7 @@ func TestMakeTestShardTargets(t *testing.T) {
 		}
 		return string(out)
 	}
-	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap|TestGeneratedModel)$"
+	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
 	lock := "TEST_LOCK=/locks/rhiza-test.lock"
 
 	scripts := make("-n", "test-scripts", "SHARD=2/3", lock)
@@ -242,6 +249,24 @@ func TestMakeTestShardTargets(t *testing.T) {
 	for name := range got {
 		if !want[name] {
 			t.Errorf("shards run %s, which go test -list does not show (or is a budget test)", name)
+		}
+	}
+
+	// Every name in the budget regex is a test in the budget packages, so
+	// no -run or -skip carries a dead entry.
+	budgetList := exec.Command("go", "test", "-trimpath", "-list", budgets, "./internal/api", "./internal/index", "./internal/slice")
+	budgetList.Dir = "../.."
+	budgetListed, err := budgetList.Output()
+	if err != nil {
+		t.Fatalf("go test -list %s: %v", budgets, err)
+	}
+	found := map[string]bool{}
+	for _, name := range strings.Fields(string(budgetListed)) {
+		found[name] = true
+	}
+	for _, b := range strings.Split(strings.Trim(budgets, "^()$"), "|") {
+		if !found[b] {
+			t.Errorf("budget test %s is in no budget package (go test -list):\n%s", b, budgetListed)
 		}
 	}
 

@@ -48,7 +48,7 @@ After that, read what you need:
 
 ## Development
 
-`make check` runs everything CI runs. `make install` builds the `rhiza` binary into `~/bin` (set `PREFIX` to change it). `make update` does that, then runs the new binary's `rex install` to rewrite the Rex script and reload Rex. The Go module is `github.com/dphaener/rhiza`. Rhiza keeps its own log in `.rhiza/`, and the environment variables it reads start with `RHIZA_`.
+`make check` runs what CI runs but the timing budgets, which run only in the opt-in `make test-budgets` (CI's budgets job runs it on every pull request). `make install` builds the `rhiza` binary into `~/bin` (set `PREFIX` to change it). `make update` does that, then runs the new binary's `rex install` to rewrite the Rex script and reload Rex. The Go module is `github.com/dphaener/rhiza`. Rhiza keeps its own log in `.rhiza/`, and the environment variables it reads start with `RHIZA_`.
 
 ## License
 
