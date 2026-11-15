@@ -1,0 +1,40 @@
+{
+  "actor": "01M7G1G2TSADBM2WZCABFQ8D8J",
+  "after": [
+    "01M7G01F17ZPR06QJQPADNDV15"
+  ],
+  "at": "2026-11-15T16:47:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at dfca701ac. go test -trimpath -p 2 -count=1 ./internal/api -run '^TestSettingsOfOneGitRead$': exit 0 (subtests real_git, bad_value, no_keys, autonomy pass; the test counts Git calls, covers mixed-case rhiza.ship.prePushCheck, rhiza.daemon.maxRuns set twice with the last value winning, the three-part rhiza.project.watchdog.enabled with a case-different subsection kept apart, and a bad value whose usage error names the key and matches the per-key git config --get result, against fakes and a hermetic real git repo). go test -trimpath -p 2 ./internal/api -run 'Setting|WebToken|Autonomy|DaemonAutoUpdate|Health': exit 0. go test -trimpath -p 2 -timeout 8m ./internal/api: exit 0 (cache hit at the same code). go test -trimpath -p 2 -count=1 ./cmd/rhiza -run 'TestScripts/^(daemon-settings|daemon-settings-scope|daemon-load-settings|usage-settings|ship-deploy-settings|autonomy-accept-rule|stage-autonomy)$': exit 0. Measure: strace -f -qq -e trace=execve on a go test -c build of ./cmd/rhiza with -test.run 'TestScripts/^run-ship-conflict-fix-more$': PASS, 224 git config --get execs (under 400; was 1,650), 1,733 git execs in all. rhiza ship generate (scratch build): exit 0, 0 files changed; rhiza render: exit 0. Diff reviewed: settingsOf and autonomyStage/runAutonomy each read one git config -z --get-regexp ^rhiza\\. snapshot per call, no cross-call cache; only internal/api source and tests plus the builder's .rhiza log and actor record changed; no TODOs or stubs."
+        },
+        "handle": "settings-one-git-read-verified",
+        "id": "01M7G1PYV0N7S8MFY83VD5VG08",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G1PYV0N7S8MFY83TJZXAS4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G1PYV0N7S8MFY83TJZXAS4",
+        "id": "01M7G1PYWCQ0GMSZ6K417EGCPD",
+        "link": "01M7G1PYWCQ0GMSZ6K3YEDN0Z7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14FW3CF1Z9Q4GW8Q33Q4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7G1PYY4S51FX9MK9XQ41C9K",
+  "type": "ops",
+  "v": 1
+}

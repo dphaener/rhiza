@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FX6QZMVGWDZKK2SJTHD00P",
+  "after": [
+    "01M7FWCFW7RDCWY9CK8T63D7SK"
+  ],
+  "at": "2026-11-15T15:30:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c63e4ff3f: go test -trimpath -p 2 -count=1 ./tools/scripttimings exit 0 (TestReplayTestTimes: test-time lines for passing top-level tests only, parsed back from log lines and from go test -json; TestMergeTests json and run-log: failed/unrun keep time, removed dropped, budget skipped, untimed new left out; TestMergeTestsFailuresLeaveFileUnchanged; TestCheckedInTestsFileParses). go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^TestMakeTestShardTargets$' exit 0 (fake go test: make test-api fails on failed test, failed test with exit 0, build failure, killed go test exit 137, and non-zero exit with passing stream; passes only when both pass). go test -trimpath -list '^Test' ./internal/api prints 762 tests; minus the 5 BUDGET_TESTS present there, the 757 names equal internal/api/testdata/test-timings.tsv's names exactly (diff empty). go vet and gofmt clean on tools/scripttimings; no TODOs; changes stay within Makefile, tools/scripttimings, the new tsv, cmd/rhiza/makeupdate_test.go and .rhiza records."
+        },
+        "handle": "api-test-timings-verified",
+        "id": "01M7FX95TPEE71YAEG8FZAK7W7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FX95TPEE71YAEG8E00XGBH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FX95TPEE71YAEG8E00XGBH",
+        "id": "01M7FX95VVSDWBAJETGWAJR5H9",
+        "link": "01M7FX95VVSDWBAJETGTV0A9MW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT1523ZQDRWQFA9F4JW9S3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7FX95X12N27WK2Z4S4M0J67",
+  "type": "ops",
+  "v": 1
+}

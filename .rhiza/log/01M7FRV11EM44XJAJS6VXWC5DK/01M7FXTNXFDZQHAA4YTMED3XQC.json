@@ -1,0 +1,40 @@
+{
+  "actor": "01M7FXQJSH5W5HFZDHXAME5P10",
+  "after": [
+    "01M7FX95X12N27WK2Z4S4M0J67"
+  ],
+  "at": "2026-11-15T15:39:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1abcce176 I re-ran the commit's Checks and they all exit 0: go test -trimpath -p 2 -count=1 ./tools/scripttimings (TestShard covers greedy longest-first, a missing test at the median, ties to the lower shard, and disjoint/covering for n=1..4; TestShardCheckedInFileBalanced; TestShardMode refuses ''/0/2/3/2/1/0/1/2x/a/b/1), go test -trimpath -p 2 -count=1 ./cmd/rhiza -run '^TestMakeTestShardTargets$' (union of test-api's shards == go test -list minus BUDGET_TESTS; SHARD=0/2, 3/2 and 1/0 refused before go test runs), go vet ./tools/scripttimings ./cmd/rhiza, rhiza ship generate (0 changed) and rhiza render. I checked independently with the built tool on the 757 non-budget internal/api tests: shards 1/2 and 2/2 total 163.64 s each (260 and 497 tests, none missing from the TSV), with no duplicates and the union equal to the list. make test-api SHARD=0/2, 3/2 and 1/0 each exit 2 with 'want i/n with 1 <= i <= n'. The diff touches only Makefile, tools/scripttimings, cmd/rhiza/makeupdate_test.go and the builder's .rhiza records, has no .github/CI matrix change and no TODOs. The CI-timing measure is the orchestrator's, on the next code PR."
+        },
+        "handle": "api-shards-weighted-verified",
+        "id": "01M7FXTNVJX8PKKKR8QD4PA3KF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FXTNVHYXBKWCQK8CJTWCPD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FXTNVHYXBKWCQK8CJTWCPD",
+        "id": "01M7FXTNWGCGNT2TDYRRE3FRC4",
+        "link": "01M7FXTNWGCGNT2TDYRMKR61FM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT1545Y1MNAM7FRFQ2RZ1P",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7FXTNXFDZQHAA4YTMED3XQC",
+  "type": "ops",
+  "v": 1
+}

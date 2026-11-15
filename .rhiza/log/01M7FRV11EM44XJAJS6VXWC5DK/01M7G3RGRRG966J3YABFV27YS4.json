@@ -1,0 +1,247 @@
+{
+  "actor": "01M7G3HWPRMK9QD20A6RAFNB9F",
+  "after": [
+    "01M7G2QRWM6Q019572MZ271DAT"
+  ],
+  "at": "2026-11-15T17:23:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: tools/scripttimings shard over go test -list internal/api minus BUDGET_TESTS (764 tests): shards 1/2 and 2/2 disjoint, union equals the list, totals 163.62 vs 163.66 s; make test-api SHARD=0/2, 3/2, 1/0, x/2 and empty refused with want i/n; TestMakeTestShardTargets passes"
+        },
+        "handle": "api-shards-weighted-qa-1",
+        "id": "01M7G3RFXR2JZPZ7SZ67NYPZA8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RFXR2JZPZ7SZ66FBD5BM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RFXR2JZPZ7SZ66FBD5BM",
+        "id": "01M7G3RFYSVJ2N7T60F9Q9JGM3",
+        "link": "01M7G3RFYSVJ2N7T60F70TWHB7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT1545Y1MNAM7FRFQ2RZ1P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test ./tools/scripttimings passes; internal/api/testdata/test-timings.tsv lists 757 of 764 non-budget tests (7 added by this change set missing, weighted at median by shard); TestMakeTestShardTargets pins test-api exit status"
+        },
+        "handle": "api-test-timings-qa-1",
+        "id": "01M7G3RG00QH4D3MZZVEZ90RMT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RG00QH4D3MZZVEWQH3HV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RG00QH4D3MZZVEWQH3HV",
+        "id": "01M7G3RG15ED8QAA2GPMT92SH0",
+        "link": "01M7G3RG146K2B8XJH0KR8YN64",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT1523ZQDRWQFA9F4JW9S3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test ./internal/ciworkflow passes; diff shows go-cache.yml on push to main and workflow_dispatch saving ~/.cache/go-build and ~/go/pkg/mod under go-OS-goversion-sha, and every ci.yml Go job with setup-go cache false and actions/cache/restore by prefix"
+        },
+        "handle": "ci-fresh-build-cache-qa-1",
+        "id": "01M7G3RG28AH202CX18YGSFJW4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RG28AH202CX18YAZE8B9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RG28AH202CX18YAZE8B9",
+        "id": "01M7G3RG3ATH0060TA2HJ35760",
+        "link": "01M7G3RG3ATH0060TA2FBVT45F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14YKGTQ47MDNF0MCX1YB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: TestGitCommonDirOnce, TestOrphanLogSymlinkRoot and internal/api Session|Orphan|Untracked pass; scripts session-run, session-start, apply, run-amend, check-orphan-log, model-commit-untracked pass; built rhiza check from main checkout, a worktree and a symlinked root prints the same as a main-built rhiza"
+        },
+        "handle": "common-dir-once-qa-1",
+        "id": "01M7G3RG4NEE0WMK6T69JGFPNR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RG4NEE0WMK6T66GZC6QA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RG4NEE0WMK6T66GZC6QA",
+        "id": "01M7G3RG6GA9Y3565CZS5K45ZF",
+        "link": "01M7G3RG6GA9Y3565CZNDPEH2S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14KGB9BV6KWFB238MDPT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: make -n test-budgets runs BUDGET_TESTS (now incl. TestInboxGateQuestionsBudget, TestRootIdlePollBudget); make -n test and test-rest skip them; every budgetLock test is named; TestMakeTestShardTargets and TestMakeTestTimeout pass"
+        },
+        "handle": "every-budget-opt-in-qa-1",
+        "id": "01M7G3RG7RSNC42P3SRBSN4DY9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RG7RSNC42P3SR9HP9BQ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RG7RSNC42P3SR9HP9BQ3",
+        "id": "01M7G3RG9PPYM0B5HKNQS592SZ",
+        "link": "01M7G3RG9PPYM0B5HKNPKPCAPK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14V71K8ZJGQ2P4NXF2FG",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: TestCommitOnlyHeadMoved and TestCommitOnlyHeadMovedEveryTry pass, internal/api CommitEvidence|CommitOnly|RunLeaves pass, headless-run-agent-tabs passes -count=3"
+        },
+        "handle": "evidence-commit-survives-moved-head-qa-1",
+        "id": "01M7G3RGBSA22NPKARYSQ3P91A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RGBSA22NPKARYPGJYWS6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RGBSA22NPKARYPGJYWS6",
+        "id": "01M7G3RGD1X0VA967XS6NFDFGY",
+        "link": "01M7G3RGD1X0VA967XS4XKJD7G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14Q1YV5YWP0RN8R7A8XA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: bugfix-workflow-autonomous 2.1 s, plan-workflow-autonomous-left 4.1 s, plan-workflow-autonomous 2.6 s, plan-review-workflow 2.1 s run alone; the other edited plan-workflow, plan-milestone, plan-review-visit-round and arbiter-agent-tabs scripts pass by name"
+        },
+        "handle": "fake-rex-no-dead-wait-qa-1",
+        "id": "01M7G3RGED8VS0PM8EC070WGGP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RGED8VS0PM8EBXBFTJKE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RGED8VS0PM8EBXBFTJKE",
+        "id": "01M7G3RGFR91W1C718B460Y53V",
+        "link": "01M7G3RGFR91W1C718B3VJN4DE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT144PPDNCMCPTJZ31CP1Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test -v ./internal/api -run ^TestLinkEndpointKinds$ passes in 12.3 s on the VM"
+        },
+        "handle": "link-endpoint-kinds-fast-qa-1",
+        "id": "01M7G3RGH2JQENTQWW6AS5W8TC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RGH2JQENTQWW6A9BZST6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RGH2JQENTQWW6A9BZST6",
+        "id": "01M7G3RGJ6AM7GPZ5KS6RRA9W7",
+        "link": "01M7G3RGJ6AM7GPZ5KS3TPTRY1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14BJ76NCG2N32YX9190C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: script-timings.tsv has 398 lines for 398 txtar scripts, the four autonomous/review scripts at 2-4 s, run-ship-conflict-fix-more in the top ten; TestScriptShard and TestScriptOrder pass"
+        },
+        "handle": "script-timings-measured-qa-1",
+        "id": "01M7G3RGKCPQYWW1P49BCGPK1Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RGKCPQYWW1P49B431XY7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RGKCPQYWW1P49B431XY7",
+        "id": "01M7G3RGMFQACST14BJF9197RM",
+        "link": "01M7G3RGMFQACST14BJE211YB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT147E37B6A5KCR328M971",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: TestSettingsOfOneGitRead and internal/api Setting|WebToken|Autonomy|DaemonAutoUpdate|Health pass, settings scripts pass; built rhiza daemon settings --json in a repo with a mixed-case key set twice, a three-part key and maxRuns=0/notanumber gives byte-identical output, error and exit 2 as a main-built rhiza"
+        },
+        "handle": "settings-one-git-read-qa-1",
+        "id": "01M7G3RGNMB5X2696J2BFD5D0Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7G3RGNMB5X2696J287KGB91",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7G3RGNMB5X2696J287KGB91",
+        "id": "01M7G3RGPZ5PR6VT0HCHG6DFC2",
+        "link": "01M7G3RGPZ5PR6VT0HCE23P05S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7FT14FW3CF1Z9Q4GW8Q33Q4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7FRV11EM44XJAJS6VXWC5DK",
+  "for": "01M7FVHW0J3C61EBMBB2X1J1FS",
+  "id": "01M7G3RGRRG966J3YABFV27YS4",
+  "type": "ops",
+  "v": 1
+}
