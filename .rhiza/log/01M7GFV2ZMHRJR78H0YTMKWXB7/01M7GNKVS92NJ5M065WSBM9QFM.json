@@ -1,0 +1,40 @@
+{
+  "actor": "01M7GN8DJP0P0JXQ3E16CNE0XD",
+  "after": [
+    "01M7GN4NM9HC138T923DZ8VKMY"
+  ],
+  "at": "2026-11-15T22:35:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 7e9489243 in a detached checkout (diff against a735000dc). TestParityCreateNoLongerApplies copied into the parent a735000dc fails (exit 1: interim present, strict absent for the child). At 7e9489243 these pass: go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestPropertyProjectionParity|TestParity|TestModel)' (rapid 100 OK); the same parity run at -rapid.checks=1000 (rapid 1000 OK, no skipped draws); ./internal/model including TestAsIsSeedWhatIfFrom (116 what-ifs, 15 with an in-flight dependency, 228 skipped ops, 42 duplicate handles; one shared seed, compared after every call, seed DeepEqual a fresh AsIsSeed); ./internal/api -run '^(TestWrite|TestDaemonPicks|TestDaemonPlansProposals|TestDaemonCandidates|TestInbox)'; cmd/rhiza TestScripts daemon-picks, daemon-plans-proposals and set; rhiza ship generate and rhiza render with a scratch build leave the tree clean. Diff read: knownCases has no interim-side entry (every entry requires SideA index); internal/model changes only add AsIsSeed, split AsIsState's state into builder.state with the same result, and copy History, Fields and aspects in Seed.builder, adding no rule; internal/api builds no Seed by hand; daemon_fold.go and proposals.go build one modelBase for every candidate, and inbox.go's one as-is newModelSets call needs no change; write_indexed.go, internal/index and cmd are untouched, so no --json shape changed; the three leaf notes name the log shape, both results and the side that changed, and say the harness found no other interim case."
+        },
+        "handle": "parity-interim-from-strict-verified",
+        "id": "01M7GNKVPJZ3CCYBNREVVSQWEK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GNKVPJZ3CCYBNRERFZ5ZC0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GNKVPJZ3CCYBNRERFZ5ZC0",
+        "id": "01M7GNKVQYJGJGTTKK5P5M2S8N",
+        "link": "01M7GNKVQYJGJGTTKK5JY85D0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX1AJ24Y40XJK9GRY8P8",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GNKVS92NJ5M065WSBM9QFM",
+  "type": "ops",
+  "v": 1
+}
