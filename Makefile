@@ -112,10 +112,24 @@ LOCK_SH = lockfile='$(TEST_LOCK)'; \
 
 .PHONY: test-scripts
 test-scripts: ## Run shard SHARD=i/n of cmd/rhiza's scripts, timing budgets skipped
+# go test -json is piped through tools/scripttimings replay, which prints go
+# test's text for what did not pass and the package's FAIL or ok line, then a
+# script-time line per passing script, so each CI scripts job's log carries
+# its scripts' times (make script-timings RUN=<id> reads them back). The tool
+# is built before the lock is taken. sh has no pipefail, so go test's status
+# goes through a file: make fails when go test failed, else when the replay
+# did (a test failed, or go test was killed and never ended its package).
 	@$(LOCK_SH); \
+	replay=$$(mktemp) && st=$$(mktemp) || exit 1; \
+	go build -trimpath -o "$$replay" ./tools/scripttimings || { rm -f "$$replay" "$$st"; exit 1; }; \
 	lock "the cmd/rhiza scripts"; \
-	RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; \
-	status=$$?; unlock; exit $$status
+	{ RHIZA_TEST_SHARD='$(SHARD)' $(GO_TEST) $(TEST_FLAGS) -json -run '^TestScripts$$' -skip '$(SKIP_BUDGETS)' ./cmd/rhiza 9>&-; echo $$? >"$$st"; } \
+		| "$$replay" replay 9>&-; \
+	rstatus=$$?; unlock; \
+	status=$$(cat "$$st"); rm -f "$$replay" "$$st"; \
+	[ -n "$$status" ] || status=1; \
+	[ "$$status" != 0 ] || status=$$rstatus; \
+	exit $$status
 
 .PHONY: test-api
 test-api: ## Run shard SHARD=i/n of internal/api's top-level tests, timing budgets excluded

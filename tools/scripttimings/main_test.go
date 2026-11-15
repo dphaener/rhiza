@@ -66,7 +66,7 @@ func readString(t *testing.T, path string) string {
 func TestMergeFromJSON(t *testing.T) {
 	file, dir := setup(t, prevFile)
 	var out bytes.Buffer
-	if err := run([]string{"merge", "-json", "testdata/scripts.json", "-file", file, "-scripts", dir}, &out, nil); err != nil {
+	if err := run([]string{"merge", "-json", "testdata/scripts.json", "-file", file, "-scripts", dir}, nil, nil, &out, nil); err != nil {
 		t.Fatalf("merge: %v\n%s", err, out.String())
 	}
 	if got := readString(t, file); got != wantFile {
@@ -77,7 +77,7 @@ func TestMergeFromJSON(t *testing.T) {
 func TestMergeFromRunLog(t *testing.T) {
 	file, dir := setup(t, prevFile)
 	var out bytes.Buffer
-	if err := run([]string{"merge", "-run", "123", "-file", file, "-scripts", dir}, &out, fixtureLog(t)); err != nil {
+	if err := run([]string{"merge", "-run", "123", "-file", file, "-scripts", dir}, nil, nil, &out, fixtureLog(t)); err != nil {
 		t.Fatalf("merge: %v\n%s", err, out.String())
 	}
 	if got := readString(t, file); got != wantFile {
@@ -88,7 +88,7 @@ func TestMergeFromRunLog(t *testing.T) {
 func TestMergeNoPreviousFile(t *testing.T) {
 	file, dir := setup(t, "")
 	os.Remove(file)
-	if err := run([]string{"merge", "-json", "testdata/scripts.json", "-file", file, "-scripts", dir}, io.Discard, nil); err != nil {
+	if err := run([]string{"merge", "-json", "testdata/scripts.json", "-file", file, "-scripts", dir}, nil, nil, io.Discard, nil); err != nil {
 		t.Fatal(err)
 	}
 	want := "alpha\t4.21\nbravo\t12.5\ncharlie\t1\ndelta\t0.33\necho\t1\n"
@@ -122,7 +122,7 @@ func TestMergeFailuresLeaveFileUnchanged(t *testing.T) {
 			file, dir := setup(t, c.prev)
 			args := append([]string{"merge"}, c.args...)
 			args = append(args, "-file", file, "-scripts", dir)
-			err := run(args, io.Discard, c.log)
+			err := run(args, nil, nil, io.Discard, c.log)
 			if err == nil || !strings.Contains(err.Error(), c.want) {
 				t.Fatalf("err = %v, want one containing %q", err, c.want)
 			}

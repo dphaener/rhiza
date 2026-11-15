@@ -2,11 +2,14 @@
 // recorded wall time of each cmd/rhiza testscript (name, tab, seconds, sorted
 // by name), which the scripts' scheduler and the CI shards weigh by.
 //
-// Its one mode so far is merge (make script-timings): it reads fresh times
-// from a CI run's scripts jobs (-run <id>, through gh run view --log, which
-// carries script-time lines) or from a go test -json file of TestScripts
-// (-json <file>), and merges them into the previous file. Modes are
-// subcommands, so another one can sit beside merge.
+// It has two modes, as subcommands. merge (make script-timings) reads fresh
+// times from a CI run's scripts jobs (-run <id>, through gh run view --log,
+// which carries script-time lines) or from a go test -json file of
+// TestScripts (-json <file>), and merges them into the previous file. replay
+// (make test-scripts) reads go test -json on stdin and prints go test's text
+// for what did not pass, then a script-time line per passing script, so each
+// CI scripts job's log carries its scripts' times; it exits non-zero when go
+// test failed.
 package main
 
 import (
@@ -20,7 +23,7 @@ import (
 )
 
 func main() {
-	if err := run(os.Args[1:], os.Stderr, ghLog); err != nil {
+	if err := run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, ghLog); err != nil {
 		fmt.Fprintln(os.Stderr, "scripttimings:", err)
 		os.Exit(1)
 	}
@@ -37,15 +40,22 @@ func ghLog(id string) (io.Reader, error) {
 	return bytes.NewReader(b), nil
 }
 
-func run(args []string, out io.Writer, runLog func(id string) (io.Reader, error)) error {
+// run runs one mode: merge reports to stderr, replay reads stdin and writes
+// stdout.
+func run(args []string, stdin io.Reader, stdout, stderr io.Writer, runLog func(id string) (io.Reader, error)) error {
 	if len(args) == 0 {
-		return errors.New("usage: scripttimings merge (-run <id> | -json <file>) [-file <tsv>] [-scripts <dir>]")
+		return errors.New("usage: scripttimings merge (-run <id> | -json <file>) [-file <tsv>] [-scripts <dir>]\n       scripttimings replay < go-test.json")
 	}
 	switch args[0] {
 	case "merge":
-		return merge(args[1:], out, runLog)
+		return merge(args[1:], stderr, runLog)
+	case "replay":
+		if len(args) > 1 {
+			return errors.New("replay: takes no arguments; pipe go test -json into it")
+		}
+		return Replay(stdin, stdout)
 	default:
-		return fmt.Errorf("unknown mode %q (want merge)", args[0])
+		return fmt.Errorf("unknown mode %q (want merge or replay)", args[0])
 	}
 }
 

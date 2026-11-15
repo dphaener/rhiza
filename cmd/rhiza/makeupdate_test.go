@@ -179,10 +179,19 @@ func TestMakeTestShardTargets(t *testing.T) {
 	const budgets = "^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$"
 	lock := "TEST_LOCK=/locks/rhiza-test.lock"
 
+	// test-scripts pipes go test -json through tools/scripttimings replay
+	// under the lock, and keeps go test's status (sh has no pipefail, so it
+	// goes through a file), falling back to the replay's.
 	scripts := make("-n", "test-scripts", "SHARD=2/3", lock)
 	for _, want := range []string{
-		"RHIZA_TEST_SHARD='2/3' go test -trimpath -timeout 20m -run '^TestScripts$' -skip '" + budgets + "' ./cmd/rhiza 9>&-",
+		`go build -trimpath -o "$replay" ./tools/scripttimings`,
 		`lock "the cmd/rhiza scripts"`,
+		"{ RHIZA_TEST_SHARD='2/3' go test -trimpath -timeout 20m -json -run '^TestScripts$' -skip '" + budgets + `' ./cmd/rhiza 9>&-; echo $? >"$st"; }`,
+		`| "$replay" replay 9>&-`,
+		`rstatus=$?; unlock`,
+		`status=$(cat "$st")`,
+		`[ "$status" != 0 ] || status=$rstatus`,
+		`exit $status`,
 	} {
 		if !strings.Contains(scripts, want) {
 			t.Errorf("make -n test-scripts has no %s:\n%s", want, scripts)

@@ -5563,6 +5563,7 @@
 - [claude-code-0f09cac7](actor/claude-code-0f09cac7.md)
 - [claude-code-0f0ba8ef](actor/claude-code-0f0ba8ef.md)
 - [claude-code-0f195f1c](actor/claude-code-0f195f1c.md)
+- [claude-code-0f25cc4c](actor/claude-code-0f25cc4c.md)
 - [claude-code-0f2d212f](actor/claude-code-0f2d212f.md)
 - [claude-code-0f2ea4fd](actor/claude-code-0f2ea4fd.md)
 - [claude-code-0f3a03c2](actor/claude-code-0f3a03c2.md)
