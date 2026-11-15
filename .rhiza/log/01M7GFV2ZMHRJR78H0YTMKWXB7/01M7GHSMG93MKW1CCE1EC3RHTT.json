@@ -1,0 +1,29 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7GHCZKW2XNKSHN5NRKTF27V"
+  ],
+  "at": "2026-11-15T21:28:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (contradiction on parity-fix-derives-from-strict): The Decision (and parity-interim-from-strict, which follows it) says newModelSets builds from 'AsIsState once, WhatIfFrom per change set', assuming AsIsState's result feeds WhatIfFrom. It does not: model.AsIsState (internal/model/seed.go:47) returns (Model, []Problem, State), while model.WhatIfFrom (seed.go:115) takes a model.Seed (Known IDs, SeedNodes with Aspects and Placed, as-is Problems without the duplicate-handle ones, State), and the only code that builds a Seed is index.loadSeed from the database (internal/index/whatif.go:137). The interim leaf touches only internal/api and must not change internal/model, so it would have to reassemble a Seed by hand in internal/api (splitting State.Aspects/Placed back onto nodes and links and filtering the duplicate-handle problems), a fourth copy of seed rules the Decision set out to avoid. The plan should name the bridge: a model constructor (e.g. a Seed returned by or built from AsIsState, adding internal/model to the leaf's touch list as a non-rule change) or an explicit api-side assembly with its own test. The critic confirmed it: Checked internal/model/seed.go: AsIsState (47) returns (Model, []Problem, State), while WhatIfFrom (115) takes a Seed (Known, Nodes/Links as SeedNode/SeedLink carrying Aspects and Placed, Problems without duplicate-handle ones, State without Aspects). No code builds a Seed from AsIsState's result; the only constructor in the tree is index.loadSeed from the database (internal/index/whatif.go:137). @{01M7GGERTNQMVS8C3Y5BVRJS1M} and parity-interim-from-strict prescribe 'AsIsState once, WhatIfFrom per change set' as if one fed the other, while the leaf may not change internal/model and touches only internal/api, so it would have to reassemble the seed rules by hand in api, the copy the Decision set out to avoid. The plan contradicts the code and names no bridge; major stands. How should it be settled?"
+        },
+        "handle": "review-01m7gg7gxsa97hesrnfebfcz4t-r3-f2",
+        "id": "01M7GHSMDA01JXB1K048F9Q91X",
+        "key": null,
+        "kind": "question",
+        "node": "01M7GHSMDA01JXB1K046DQSK0B",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GHSMG93MKW1CCE1EC3RHTT",
+  "type": "ops",
+  "v": 1
+}

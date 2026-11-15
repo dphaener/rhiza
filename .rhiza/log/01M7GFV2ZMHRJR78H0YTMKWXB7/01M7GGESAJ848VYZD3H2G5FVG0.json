@@ -1,0 +1,206 @@
+{
+  "actor": "01M7GG8R0HRMSRAEZRMCMHB79N",
+  "after": [
+    "01M7GGD9M4XRCZNWM5F4AT67ZE"
+  ],
+  "at": "2026-11-15T21:05:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^TestPropertyProjectionParity$' -v runs at least 100 draws in under 20 s, logs how many draws had two landed heads on one target, a rebuild and pending entries (and fails as vacuous if any count is zero, as index.TestPropertyIncremental does), and reports, on a disagreement, the shrunk log, the view, the node or link, the field (version, conflict, pending, a field name, presence) and each side's value. go test -trimpath -count=1 -p 2 ./internal/index -run '^TestPropertyIncremental$' still passes on the moved generator. Failure case: TestParityReportNamesNode feeds the comparison two models that differ in one node's field and expects the report to name the view, the node and both values. It is not a timing budget: make test runs it. Reuse the generator as @{01M7GGES0NJ07WCC84WMZ4X3WD} says. Touches internal/api/parity_test.go (new), internal/index/indextest (new, imported only by tests) and internal/index/property_test.go. Must not change non-test code other than the new indextest package; a disagreement it finds is not fixed here: it goes into the known-cases table of @{01M7GGERXZCDD3VHM2K6J2ZM8R}, each entry naming the log shape, which @{01M7GFXD4EACNHW154CMM64NH3} empties.",
+          "statement": "A rapid property test in internal/api, TestPropertyProjectionParity, draws random logs and checks that, for the as-is view and every change set's write view, the interim model (newModel), the index's write model (writeIndex.model, over an index under t.TempDir()) and a fresh strict fold (changeset.FoldLog, then internal/model's AsIs, or WhatIf for an in-flight change set) give the same nodes, fields, links, versions and conflicts by the rule of @{01M7GGERQMXHJ6YYC2D5HYX4ZZ}; its draws include two landed heads on one target, a rebase that drops entry files after the index has seen them (so the index rebuilds), and dry-run pending entries laid over the index"
+        },
+        "handle": "projection-parity-property",
+        "id": "01M7GFXD16Z7ENTKT3FN11PWCX",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestPropertyProjectionParity|TestParity)' passes with the known-cases table empty and no skipped draws, at -rapid.checks=1000 as well as the default; go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWrite|TestDaemonPicks|TestDaemonPlansProposals|TestDaemonCandidates|TestInbox)' and go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^(set|daemon-picks|daemon-plans-proposals)$' pass. Fix by deriving from the strict engine as @{01M7GGERTNQMVS8C3Y5BVRJS1M} says. Each case found has its own TestParity<Case> test with the smallest log that shows it, and a note on this leaf (rhiza note add parity-cases-strict ...) naming the log shape, both results and which side changed; when the harness finds no case beyond the named one and the version rule, the note says so. Failure case: the regression test for the named case (a node whose create no longer applies in the strict what-if) fails on the code before the fix (show it in the commit's Checks: block by running it at the parent commit), and write_test.go's LandedConflict (two heads writing one field) still refuses set, mv and retire. Touches internal/api/model.go, internal/api/write_indexed.go, their tests, and internal/api/daemon_fold.go, proposals.go and inbox.go only where newModelSets' callers must build as-is once. Must not change internal/model or internal/index rules (the strict engine is the spec) and must not change a --json shape; a case that would change user-visible output on this repo's own log (for example a node with two landed heads on disjoint fields, which writes stop refusing) is raised as a question blocking this leaf instead.",
+          "statement": "Every case where the parity test finds the interim model or write_indexed.go's hybrid disagreeing with the strict engine is fixed on the non-strict side, starting with the one write_indexed.go's model comment names (the interim model keeps a node whose create no longer applies, the strict what-if drops it) and the version and conflict rule of @{01M7GGERQMXHJ6YYC2D5HYX4ZZ}, and each case has a named regression test and a note on this leaf"
+        },
+        "handle": "parity-cases-strict",
+        "id": "01M7GFXD4EACNHW154CR85Q738",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7GFXD4EACNHW154CMM64NH3",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api passes, and so does go test -trimpath -count=1 -p 2 -shuffle=on ./internal/api run twice with different seeds; go test -list '.*' ./internal/api counts no fewer tests than before. Profile in the commit's Checks: block: go test -trimpath -count=1 -p 2 -cpuprofile $TMPDIR/api.prof ./internal/api, then go tool pprof -top -cum $TMPDIR/api.prof, before and after, showing store.ReadLog's share of CPU falls (both numbers given). Failure case: a test that counts folds through Ctx.readLog and now sees none is changed to assert on the index instead, not deleted. Touches internal/api/init_test.go and the _test.go files that relied on the fallback. Must not change non-test code (a fix it needs belongs to @{01M7GFXD4EACNHW154CMM64NH3}) and must not share one index between parallel tests.",
+          "statement": "internal/api's tests run on the index, as production does: testCtx (internal/api/init_test.go) gives each Ctx an IndexPath under the test's t.TempDir(), and only the tests that exercise the no-index fallback on purpose clear it, each with a comment saying so"
+        },
+        "handle": "api-tests-on-index",
+        "id": "01M7GFXD744PD29P5BQCAM7KZF",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7GFXD744PD29P5BQAMF1287",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "question": "Which version and conflict rule does the parity test hold the interim model and write_indexed.go to: the base graph's largest head with Conflict on two heads, or the strict engine's last applied operation with Conflict only on an overlapping stale write?",
+          "reasoning": "The owner made the strict engine the spec, and internal/model's doc already defines the version as the last operation applied, the one new writes name as base, and a conflict as a stale operation overlapping an aspect. The interim rule (head() in model.go, versionOf in write_indexed.go) sets Conflict on any two heads, so it refuses writes after two landed edits to different fields that the strict engine merges silently. Two heads writing the same field stay a conflict under both rules, so set.txtar and write_test.go's LandedConflict keep passing. Excluding the current change set's own operations matches what Version means on the api Node today. Pending is built the same way in both api models from the current change set's ops, so it is checked there.",
+          "statement": "The parity test compares a node's or link's Version and Conflict by the strict engine's rule: Version is the last operation in its strict history that is not the current change set's own (the version new writes name as base), and Conflict is true when the view holds an unrepaired model.ErrConflict problem on that target from an operation not of the current change set. Pending, which the strict engine has no notion of, is compared between the interim model and the index's write model only. A node or link one side has and the other lacks is a disagreement.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-version-rule",
+        "id": "01M7GGERQMXHJ6YYC2D6V9V62B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGERQMXHJ6YYC2D5HYX4ZZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GGERQMXHJ6YYC2D5HYX4ZZ",
+        "id": "01M7GGERS9SXXW8ACWBB5JXFT6",
+        "link": "01M7GGERS9SXXW8ACWB993DRCQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGD9KF03S0ZM6121WB1WC1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "How is a disagreement the parity test finds fixed: patch each rule in model.go and write_indexed.go by hand, or derive both from the strict engine?",
+          "reasoning": "The change set's evidence is that the model rules are implemented three times; patching each case by hand keeps three copies and the next divergence. The strict views and the index's strict overlay already exist (model.WhatIfFrom, model.WhatIfDelta, index.WhatIfOverlay), so deriving from them is less code. The interim model is deleted by the milestone's projection change set, so effort spent re-implementing rules in it is thrown away. Building as-is once and seeding each what-if keeps the daemon's per-candidate cost from growing, which a plain swap to model.WhatIf would not.",
+          "statement": "A disagreement is fixed by having the non-strict side take its result from the strict engine, not by re-implementing the strict rule a third time: newModelSets builds its nodes, links, versions and conflicts from internal/model's as-is and what-if views (AsIsState once, WhatIfFrom per change set where a caller builds several), and writeIndex.buildModel lays the change set over the index's strict what-if (index.WhatIfOverlay and its problems) instead of writeLayer's interim apply. The daemon's per-candidate models (daemon_fold.go, proposals.go, inbox.go) must not rebuild as-is once per candidate.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-fix-derives-from-strict",
+        "id": "01M7GGERTNQMVS8C3Y5CXZNV1C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGERTNQMVS8C3Y5BVRJS1M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GGERTNQMVS8C3Y5BVRJS1M",
+        "id": "01M7GGERWF33PEBVR4MMJRAQ9H",
+        "link": "01M7GGERWF33PEBVR4MKMFA09M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGD9KF03S0ZM6121WB1WC1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Does the parity test land red until the fixes land, or green with the disagreements it finds listed by name?",
+          "reasoning": "Every leaf's commit must pass CI before merge, and the fixes are a separate concern with their own regression tests. A named table keeps each case visible and makes the fix leaf's done point checkable (the table is empty), where skipped draws would hide cases.",
+          "statement": "The parity test lands green on its own leaf: a disagreement it finds goes into a named table of known cases that it reports and tolerates, and the next leaf fixes them and empties the table; the test never skips a draw to stay green.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-known-cases-table",
+        "id": "01M7GGERXZCDD3VHM2KAEQZP32",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGERXZCDD3VHM2K6J2ZM8R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GGERXZCDD3VHM2K6J2ZM8R",
+        "id": "01M7GGERZPCZWHGRKAJ59MWGRF",
+        "link": "01M7GGERZPCZWHGRKAJ2WZV00Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGD9KF03S0ZM6121WB1WC1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Does the parity test copy internal/index's log generator or share it?",
+          "reasoning": "The generator already draws what the parity test needs (several change sets through the lifecycle, bases from a target's ops, corrupt and stray files, removals that force a rebuild). A copy would drift from the index's own property test. A _test.go file cannot be imported from another package, so sharing needs a small non-test package that only tests import; moving only the generator and what it needs keeps the churn to property_test.go.",
+          "statement": "The log generator of internal/index/property_test.go moves to a test-only helper package (internal/index/indextest), which internal/index's property test and internal/api's parity test both import; it is not copied. Other internal/index tests keep their own fixtures.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-generator-shared",
+        "id": "01M7GGES0NJ07WCC84WPHGHV6W",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GGES0NJ07WCC84WMZ4X3WD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GGES0NJ07WCC84WMZ4X3WD",
+        "id": "01M7GGES1ZXWSEPZVHZP8ZP912",
+        "link": "01M7GGES1ZXWSEPZVHZJWGE8DV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGD9KF03S0ZM6121WB1WC1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "id": "01M7GGES3QR1WFSRNF9WHAZC6S",
+        "link": "01M7GGES3QR1WFSRNF9VG0MEGM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGERQMXHJ6YYC2D5HYX4ZZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "id": "01M7GGES4EA7NZN2KVSDJG20RJ",
+        "link": "01M7GGES4EA7NZN2KVSBCSNQC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGERXZCDD3VHM2K6J2ZM8R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "id": "01M7GGES5CYPRCC050GS7RRKFH",
+        "link": "01M7GGES5CYPRCC050GS120N0A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGES0NJ07WCC84WMZ4X3WD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD4EACNHW154CMM64NH3",
+        "id": "01M7GGES7B44VV72BP9YS26BP4",
+        "link": "01M7GGES7B44VV72BP9XZYWHC8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGERQMXHJ6YYC2D5HYX4ZZ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXD4EACNHW154CMM64NH3",
+        "id": "01M7GGES86JV29Q1PQA2DH9N70",
+        "link": "01M7GGES86JV29Q1PQ9ZHMBT8W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGERTNQMVS8C3Y5BVRJS1M",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GGESAJ848VYZD3H2G5FVG0",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M7GGVJ4Z6GJSJ4EAKFGR9TJS",
+  "after": [
+    "01M7GFZTGGGAGFS5NRAPT5ER9K"
+  ],
+  "at": "2026-11-15T21:14:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api passes, and TestPropertyProjectionParity passes with write views drawn from the projection only. A test shows a write in a change set that depends on an in-flight change set records the base version the strict what-if view gives, on a log where the interim rule would give another (one of the cases @{01M7GGYX1AJ24Y40XJK9GRY8P8} or @{01M7GGYX9DWE3H3TZ3G0TA4T8P} recorded, or a new one if they recorded none). Failure case: a write whose target the strict view has dropped (its parent's create gone) is refused with the not-found error, not written against a node the interim model kept. go test -trimpath ./cmd/rhiza -run 'TestScripts/(write|apply|add|set)' passes. Touches internal/api/write.go, write_indexed.go, read.go, ship.go, run_model_cache.go, repair.go and their tests. Must not delete newModel yet (the last leaf does) and must not change any --json shape.",
+          "statement": "Every write takes its model and the base versions it records from the projection under the strict rules, replacing write_indexed.go's hybrid (strict as-is rows with in-flight ops laid on as the interim model applies them), and the reads, ship, run-model-cache and repair paths that branch on IndexPath (write.go:189, read.go:180, :197 and :222, ship.go:359, run_model_cache.go:88, repair.go:161) take the projection path unconditionally"
+        },
+        "handle": "writes-from-projection",
+        "id": "01M7GFZT6S9W93CH78BFG9BT3G",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GH02SH53GBH93AKVQYMYTV",
+  "type": "ops",
+  "v": 1
+}
