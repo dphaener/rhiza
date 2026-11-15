@@ -1,0 +1,77 @@
+{
+  "actor": "01M7EWFB4ST4GE5PV6P2G2460C",
+  "after": [
+    "01M7EWJSQM6NAT5BZ92TK3HX2G"
+  ],
+  "at": "2026-11-15T05:59:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/api -run '^TestSnapshotFixture' shows a fixture's copy folds to the same model as building it afresh, a write in one test's copy is not seen by another's, and many goroutines asking for one fixture at once build it once (the build is guarded by sync.Once or the like, so the fixtures are safe for the parallel tests of api-tests-parallel whichever leaf is built first); failure case: a fixture whose build fails fails every test that asks for it with the build's error, not a missing folder. The fixtures are chosen from the profile: go tool pprof -peek 'store.ReadLog' names the helpers and tests whose repeated writes cost most, and those move onto fixtures. Speedup measure: go test -trimpath -count=1 -cpuprofile $TMPDIR/api.prof ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' then go tool pprof -top -cum $TMPDIR/api.prof shows store.ReadLog under 30% of CPU (2026-11-15: 58%). Touches internal/api's test helpers (a new internal/api/fixture_test.go and the helpers in init_test.go, change_test.go and session_test.go) and the _test.go files moved onto the fixtures. Must not change non-test code, must not skip, delete or merge a test, and must not replace FoldLog (projection is out of scope).",
+          "statement": "internal/api's tests get their common starting repos (the models many tests rebuild through the same writes) from snapshot fixtures: each is built once per test binary into a template and copied per test, instead of each test re-applying the writes and re-reading the log after each."
+        },
+        "handle": "api-snapshot-fixtures",
+        "id": "01M7EQEPVV46QWM31RCED06F4E",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7EQEPVV46QWM31RCD5CVYXW",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' passes twice in a row with different shuffle seeds; go vet ./internal/api is clean; grep shows no t.Setenv left in newSessionFixture and TestMain in internal/api/budget_test.go sets XDG_CACHE_HOME. Failure case: go test -trimpath -race -count=1 ./internal/api -run '^Test(Daemon|Feed|Usage|Session|ShipPrePush|RunHandback|RunSpawned)' (the tests of the files that swap package variables, beside parallel ones) reports no data race. Speedup measure (orchestrator, quiet VM): /usr/bin/time -f '%e s' go test -trimpath -count=1 ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' within 150 s (2026-11-15: 388 s). Touches internal/api/*_test.go only (session_test.go's newSessionFixture, budget_test.go's TestMain, and the tests marked parallel). Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before.",
+          "statement": "internal/api's independent tests call t.Parallel(); the session fixture's cache folder moves to TestMain so its tests can too; a test that swaps a package variable (runClock, daemonTicker, daemonReexec and the like), calls t.Setenv or t.Chdir, uses run temp folders, or reads shared machine state stays serial, and a comment on each such test says why it must."
+        },
+        "handle": "api-tests-parallel",
+        "id": "01M7EQEPXRYWK194ZDV63W3EV6",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQEPXRYWK194ZDV340DVKR",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "reasoning": "Go panics when a test that called t.Setenv calls t.Parallel, so with the per-fixture Setenv the leaf's largest group of tests could never run in parallel; one per-binary folder keeps the host's ~/.cache untouched as the fixture's comment requires, and keeping run-folder tests serial avoids two tests with the same run ID sharing and removing one folder without changing non-test code.",
+          "statement": "internal/api's TestMain points XDG_CACHE_HOME at one temporary folder for the whole test binary (removed when it exits), and newSessionFixture stops calling t.Setenv, so the 65 session-fixture tests may call t.Parallel; a test that starts a run step (which creates os.UserCacheDir()/rhiza/run-tmp/<run id>), sweeps or inspects run temp folders, or sets its own XDG_CACHE_HOME stays serial, because testCtx's fixed clock and seed give every test the same run IDs",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "api-cache-per-binary",
+        "id": "01M7EWKKW3H9XAN03K0YGAJVCZ",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EWKKW3H9XAN03K0XQ2ERQB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EWKKW3H9XAN03K0XQ2ERQB",
+        "id": "01M7EWKKX04F8KY4HM87AR7RCW",
+        "link": "01M7EWKKX04F8KY4HM84265RFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EWJSPMGRMDNJ2QGBB9CPXX",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQEPXRYWK194ZDV340DVKR",
+        "id": "01M7EWKKY7EEBB8KE1BPB9BF4M",
+        "link": "01M7EWKKY7EEBB8KE1BNW6TY3D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EWKKW3H9XAN03K0XQ2ERQB",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EWKM19JSCXK27HDVBKCJ7Q",
+  "type": "ops",
+  "v": 1
+}

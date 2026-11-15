@@ -1,0 +1,30 @@
+{
+  "actor": "01M7EWTGAF12KZMENYSJ0VJKBJ",
+  "after": [
+    "01M7EWKM19JSCXK27HDVBKCJ7Q"
+  ],
+  "at": "2026-11-15T06:04:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -shuffle=on ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' passes twice in a row with different shuffle seeds; go vet ./internal/api is clean; grep shows no t.Setenv left in newSessionFixture and TestMain in internal/api/budget_test.go sets XDG_CACHE_HOME. Failure case: go test -trimpath -race -count=1 ./internal/api -run '^Test(Daemon|Feed|Usage|Session|ShipPrePush|Run|Handback|SpawnedSession|Abandon)' (the tests that swap package variables, runClock included via useClock, and run_handback_test.go's and run_spawned_test.go's tests, beside parallel ones) reports no data race. Speedup measure (orchestrator, quiet VM): /usr/bin/time -f '%e s' go test -trimpath -count=1 ./internal/api -skip '^(TestReadBudget|TestReadBudgetApply|TestDriverPollIsCheap)$' within 150 s (2026-11-15: 388 s). Touches internal/api/*_test.go only (session_test.go's newSessionFixture, budget_test.go's TestMain, and the tests marked parallel). Must not skip, delete or merge a test: go test -list '.*' ./internal/api counts the same tests as before.",
+          "statement": "internal/api's independent tests call t.Parallel(); the session fixture's cache folder moves to TestMain so its tests can too; a test that swaps a package variable (runClock, daemonTicker, daemonReexec and the like), calls t.Setenv or t.Chdir, uses run temp folders, or reads shared machine state stays serial, and a comment on each such test says why it must."
+        },
+        "handle": "api-tests-parallel",
+        "id": "01M7EQEPXRYWK194ZDV63W3EV6",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQEPXRYWK194ZDV340DVKR",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EWWEDFJRDPDSCF1KDJ9S09",
+  "type": "ops",
+  "v": 1
+}
