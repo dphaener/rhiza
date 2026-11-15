@@ -1,0 +1,9 @@
+scripts (1/4)	Set up job	2026-11-15T10:00:00.0000000Z Current runner version: '2.320.0'
+scripts (1/4)	Run scripts	2026-11-15T10:01:00.1000000Z === RUN   TestScripts
+scripts (1/4)	Run scripts	2026-11-15T10:01:05.2000000Z script-time	alpha	4.21
+scripts (2/4)	Run scripts	2026-11-15T10:01:06.3000000Z script-time	bravo	12.5
+scripts (2/4)	Run scripts	2026-11-15T10:01:06.4000000Z --- PASS: TestScripts/bravo (12.50s)
+scripts (3/4)	Run scripts	2026-11-15T10:01:07.5000000Z script-time	delta	0.333
+scripts (4/4)	Run scripts	2026-11-15T10:01:08.6000000Z script-time	gone	3
+scripts (4/4)	Run scripts	2026-11-15T10:01:09.7000000Z FAIL: TestScripts/charlie (2.00s)
+scripts (4/4)	Post job cleanup.	2026-11-15T10:01:10.8000000Z Cleaning up orphan processes

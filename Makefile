@@ -153,6 +153,13 @@ gate: ## Run the scoped local ship gate from RHIZA_GATE_BASE (see tools/gate)
 # suite is CI's. Pass -dry-run via ARGS to print the plan only.
 	go run -trimpath ./tools/gate $(ARGS)
 
+.PHONY: script-timings
+script-timings: ## Rewrite cmd/rhiza/testdata/script-timings.tsv from a CI run (RUN=<run id>) or a go test -json file (JSON=<file>)
+# tools/scripttimings merges the fresh times into the previous file: a script
+# that failed or did not run keeps its time, a removed script is dropped.
+# RUN reads the scripts jobs' script-time lines with gh run view --log.
+	go run -trimpath ./tools/scripttimings merge -run '$(RUN)' -json '$(JSON)'
+
 .PHONY: lint
 lint: fmt-check vet self-check ## Run fmt-check, vet and self-check
 
