@@ -99,6 +99,7 @@ func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
 	tmpsweep.StaleTemp("rhiza-api-cache-")
+	tmpsweep.StaleTemp("rhiza-api-snapshots-")
 	// The user cache (run temp folders, index caches) is one temporary folder
 	// for the whole binary, never the host's ~/.cache, set once here so tests
 	// need no t.Setenv of their own and may call t.Parallel.
@@ -108,6 +109,13 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if err := os.Setenv("XDG_CACHE_HOME", cache); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	// Snapshot templates live in a folder of their own, chosen here once,
+	// never from XDG_CACHE_HOME at build time (a t.Setenv test may build).
+	snapshotDir, err = os.MkdirTemp("", "rhiza-api-snapshots-")
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -122,6 +130,7 @@ func TestMain(m *testing.M) {
 		os.RemoveAll(genDir)
 	}
 	os.RemoveAll(cache)
+	os.RemoveAll(snapshotDir)
 	os.Exit(code)
 }
 

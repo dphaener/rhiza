@@ -48,14 +48,20 @@ func snapshotOf(name string, build func(dir string) (*Ctx, error)) *snapshot {
 	return s.(*snapshot)
 }
 
-// snapshotBase is the folder every template is built under: the binary's
-// temporary user cache, which TestMain removes when the tests end.
+// snapshotDir is the folder every template is built under, chosen once per
+// binary by TestMain (beside the binary's temporary user cache) and removed
+// when the tests end. It is never read from the environment at build time:
+// a test that t.Setenvs XDG_CACHE_HOME to its own t.TempDir() may be the one
+// to trigger a build, and a template under that folder would be deleted
+// with it, failing every later copy.
+var snapshotDir string
+
+// snapshotBase is the folder every template is built under.
 func snapshotBase() (string, error) {
-	base := os.Getenv("XDG_CACHE_HOME")
-	if base == "" {
-		return "", errors.New("XDG_CACHE_HOME is not set (TestMain sets it)")
+	if snapshotDir == "" {
+		return "", errors.New("snapshotDir is not set (TestMain sets it)")
 	}
-	return base, nil
+	return snapshotDir, nil
 }
 
 // template builds the snapshot once and returns its template folder.
@@ -433,5 +439,31 @@ func TestSnapshotFixtureBuildError(t *testing.T) {
 	// A later caller still gets the build's error.
 	if _, err := s.copyTo(filepath.Join(base, "late")); !errors.Is(err, boom) {
 		t.Errorf("late caller: err = %v, want %q", err, boom)
+	}
+}
+
+// TestSnapshotFixtureBuildUnderSetenvServesLaterCopies shows a build
+// triggered by a test that sets XDG_CACHE_HOME to its own t.TempDir() (as
+// sliceCtx and the inbox gate tests do before initCtx) still serves copies
+// after that test's folder is gone: the template's folder is chosen once by
+// TestMain, not read from the environment at build time.
+func TestSnapshotFixtureBuildUnderSetenvServesLaterCopies(t *testing.T) {
+	s := &snapshot{name: "built-under-setenv", build: buildInit}
+	var cache string
+	t.Run("build", func(t *testing.T) {
+		cache = t.TempDir()
+		t.Setenv("XDG_CACHE_HOME", cache)
+		s.copy(t)
+	})
+	if _, err := os.Stat(cache); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("the building test's cache %s outlived it: %v", cache, err)
+	}
+	if rel, err := filepath.Rel(snapshotDir, s.dir); err != nil || !filepath.IsLocal(rel) {
+		t.Errorf("template %s is not under snapshotDir %s", s.dir, snapshotDir)
+	}
+	_, ctx := s.copy(t)
+	mustFoldClean(t, ctxWorkspace(t, ctx))
+	if got := s.builds.Load(); got != 1 {
+		t.Errorf("built %d times, want once", got)
 	}
 }
