@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"errors"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -121,6 +123,151 @@ func TestInit(t *testing.T) {
 		}
 		if _, err := os.Stat(filepath.Join(root, store.Dir)); !os.IsNotExist(err) {
 			t.Errorf("dry-run init created .rhiza: %v", err)
+		}
+	})
+}
+
+func TestInitAgent(t *testing.T) {
+	def := adapter.Default().Name()
+	t.Run("FlagWritten", func(t *testing.T) {
+		ctx, conf := projectAgentCtx(t, "")
+		resp, err := callOp(t, ctx, "init", `{"agent":"`+askAgent+`"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := resp.(InitResponse)
+		if r.Agent != askAgent || !r.Saved || conf[ProjectAgentKey] != askAgent {
+			t.Errorf("agent %q saved %v, git config %q; want %s written", r.Agent, r.Saved, conf[ProjectAgentKey], askAgent)
+		}
+		if out := human(t, resp); !strings.Contains(out, "Agent: "+askAgent+", written to "+ProjectAgentKey) {
+			t.Errorf("human output lacks the agent:\n%s", out)
+		}
+	})
+
+	t.Run("UnknownFlagRefused", func(t *testing.T) {
+		ctx, conf := projectAgentCtx(t, "")
+		_, err := callOp(t, ctx, "init", `{"agent":"nope"}`)
+		if ExitCode(err) != 2 {
+			t.Fatalf("init --agent nope: %v, exit %d; want 2", err, ExitCode(err))
+		}
+		for _, n := range adapter.Names() {
+			if !strings.Contains(err.Error(), n) {
+				t.Errorf("message %q lacks registered adapter %s", err, n)
+			}
+		}
+		if _, err := os.Stat(filepath.Join(ctx.Root, store.Dir)); !os.IsNotExist(err) {
+			t.Errorf("refused init created .rhiza: %v", err)
+		}
+		if _, ok := conf[ProjectAgentKey]; ok {
+			t.Errorf("refused init wrote %s", ProjectAgentKey)
+		}
+	})
+
+	t.Run("NoTerminalTakesDefault", func(t *testing.T) {
+		ctx, conf := projectAgentCtx(t, "")
+		// Input with no terminal is never read as an answer.
+		ctx.Stdin = strings.NewReader(askAgent + "\n")
+		resp, err := callOp(t, ctx, "init", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r := resp.(InitResponse); r.Agent != def || conf[ProjectAgentKey] != def {
+			t.Errorf("agent %q, git config %q; want the default %s", r.Agent, conf[ProjectAgentKey], def)
+		}
+	})
+
+	prompt := func(t *testing.T, input string) (InitResponse, string, error) {
+		t.Helper()
+		ctx, conf := projectAgentCtx(t, "")
+		var term bytes.Buffer
+		ctx.Terminal, ctx.Stdin = &term, strings.NewReader(input)
+		resp, err := callOp(t, ctx, "init", `{}`)
+		if err != nil {
+			return InitResponse{}, term.String(), err
+		}
+		r := resp.(InitResponse)
+		if conf[ProjectAgentKey] != r.Agent {
+			t.Errorf("git config %q, want %q", conf[ProjectAgentKey], r.Agent)
+		}
+		return r, term.String(), nil
+	}
+
+	t.Run("PromptEmptyTakesDefault", func(t *testing.T) {
+		r, term, err := prompt(t, "\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.Agent != def {
+			t.Errorf("agent %q, want the default %s", r.Agent, def)
+		}
+		for _, want := range []string{"Which agent does this project use?", "  " + def + " (default)\n", "  " + askAgent + "\n", "Agent [" + def + "]: "} {
+			if !strings.Contains(term, want) {
+				t.Errorf("prompt lacks %q:\n%s", want, term)
+			}
+		}
+	})
+
+	t.Run("PromptReasksUnknown", func(t *testing.T) {
+		r, term, err := prompt(t, "nope\n"+askAgent+"\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.Agent != askAgent {
+			t.Errorf("agent %q, want %s", r.Agent, askAgent)
+		}
+		if !strings.Contains(term, "nope is not a registered agent adapter") || strings.Count(term, "Agent [") != 2 {
+			t.Errorf("want one refusal and a second ask:\n%s", term)
+		}
+	})
+
+	t.Run("PromptChosenStored", func(t *testing.T) {
+		r, _, err := prompt(t, " "+askAgent+" \n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.Agent != askAgent || !r.Saved {
+			t.Errorf("agent %q saved %v, want %s saved", r.Agent, r.Saved, askAgent)
+		}
+	})
+
+	t.Run("PromptUnknownAtEndRefused", func(t *testing.T) {
+		_, _, err := prompt(t, "nope")
+		if ExitCode(err) != 2 {
+			t.Fatalf("init: %v, exit %d; want 2", err, ExitCode(err))
+		}
+	})
+
+	t.Run("JSONDoesNotAsk", func(t *testing.T) {
+		ctx, _ := projectAgentCtx(t, "")
+		var term bytes.Buffer
+		ctx.Terminal, ctx.Stdin, ctx.JSON = &term, strings.NewReader(askAgent+"\n"), true
+		resp, err := callOp(t, ctx, "init", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r := resp.(InitResponse); r.Agent != def || term.Len() != 0 {
+			t.Errorf("agent %q, prompt %q; want the default and no prompt", r.Agent, term.String())
+		}
+	})
+
+	t.Run("NoGitWritesNothing", func(t *testing.T) {
+		ctx, conf := projectAgentCtx(t, "")
+		inner := ctx.Git
+		ctx.Git = func(args ...string) (string, error) {
+			if args[0] == "rev-parse" {
+				return "", errors.New("not a git repository")
+			}
+			return inner(args...)
+		}
+		resp, err := callOp(t, ctx, "init", `{"agent":"`+askAgent+`"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r := resp.(InitResponse); r.Saved || len(conf) != 0 {
+			t.Errorf("saved %v, git config %v; want nothing written", r.Saved, conf)
+		}
+		if out := human(t, resp); !strings.Contains(out, "rhiza daemon set "+ProjectAgentKey+" "+askAgent) {
+			t.Errorf("human output lacks how to set it later:\n%s", out)
 		}
 	})
 }

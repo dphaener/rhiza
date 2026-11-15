@@ -13,6 +13,11 @@ exec rhiza change new 'Agent setting' --title 'Agent setting' --json
 mkdir .rhiza/workflows
 cp $WORK/passes.toml .rhiza/workflows/passes.toml
 
+# init wrote the default adapter; unset it to see the unset setting.
+exec git config --get rhiza.project.agent
+stdout '^claude-code$'
+exec git config --unset rhiza.project.agent
+
 # Unset: listed with no value, the default adapter used.
 exec rhiza daemon settings
 stdout '^rhiza.project.agent = "" \(default, project\)$'

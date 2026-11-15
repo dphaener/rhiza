@@ -7146,13 +7146,22 @@ cmp stdout describe.golden.json
       "name": "init",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "agent": {
+            "description": "The agent adapter the project uses, stored in rhiza.project.agent; default the answer to a prompt on a terminal, else the registered default adapter",
+            "type": "string"
+          }
+        },
         "required": [],
         "type": "object"
       },
       "response": {
         "additionalProperties": false,
         "properties": {
+          "agent": {
+            "description": "The agent adapter the project uses",
+            "type": "string"
+          },
           "repo": {
             "description": "The new repository's ID",
             "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
@@ -7161,11 +7170,17 @@ cmp stdout describe.golden.json
           "root": {
             "description": "The absolute path of the project root holding .rhiza",
             "type": "string"
+          },
+          "saved": {
+            "description": "Whether the agent was written to rhiza.project.agent: false outside a git repository",
+            "type": "boolean"
           }
         },
         "required": [
+          "agent",
           "repo",
-          "root"
+          "root",
+          "saved"
         ],
         "type": "object"
       },

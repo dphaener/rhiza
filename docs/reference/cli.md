@@ -898,13 +898,19 @@ Exit code: set by the result, besides the shared codes.
 Create a Rhiza repository in the current folder.
 
 ```
-rhiza init
+rhiza init [--agent <agent>]
 ```
+
+Arguments and flags:
+
+- `--agent`: The agent adapter the project uses, stored in rhiza.project.agent; default the answer to a prompt on a terminal, else the registered default adapter
 
 Output (`--json` fields):
 
+- `agent` (string): The agent adapter the project uses
 - `repo` (string): The new repository's ID
 - `root` (string): The absolute path of the project root holding .rhiza
+- `saved` (boolean): Whether the agent was written to rhiza.project.agent: false outside a git repository
 
 ## rhiza land
 
