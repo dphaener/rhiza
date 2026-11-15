@@ -1,0 +1,30 @@
+{
+  "actor": "01M7ET5TJVE5QBP7V272TYBYJN",
+  "after": [
+    "01M7ESWMYHMXAP6JYPENAHRMY9"
+  ],
+  "at": "2026-11-15T05:17:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "make -n test shows go test with -skip of the budget tests, no -run of them and no 'Timing budgets' phase; make -n test-budgets shows them run -count=1 -p 1 over ./internal/api ./internal/index ./internal/slice; BUDGET_TESTS is ^(TestReadBudget|TestReadBudgetApply|TestBudget|TestCatchUpBudget|TestDriverPollIsCheap)$ and each name matches a test go test -list finds in those packages (@{01M7ESH0D6NJ2X7HZSR1XW9G58}); go test -trimpath ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets|TestMakeUpdateDryRun)$' passes with its expected commands updated; .github/workflows/ci.yml's budgets job still runs make test-budgets; make help shows make check without 'everything CI runs' and naming make test-budgets as the CI run it leaves out, and AGENTS.md's Commands block line for make check and README.md's Development section say the same (no 'everything CI runs' left in any of them: grep -n 'everything CI runs' Makefile AGENTS.md README.md prints nothing); failure case: TestMakeTestTimeout or TestMakeTestShardTargets fails when make test's recipe runs a budget test. Speedup measure (orchestrator, quiet VM): a warm /usr/bin/time -f '%e s' make test, against 254 s, expected about 70 s since the budget phase took 188 s, with no 'Timing budgets' phase in its output. Touches Makefile (test's and check's help text and check's comment), cmd/rhiza/makeupdate_test.go, AGENTS.md (the '(and the timing budgets)' lock sentence, make test's description and the Commands block's 'make check # everything CI runs' line), README.md (the Development section's '`make check` runs everything CI runs.' sentence). Must not drop a budget test from test-budgets or change a budget limit.",
+          "statement": "make test and make check no longer run the timing budgets: the budget phase leaves make test's recipe, the budgets run only in the opt-in make test-budgets (alone, -count=1 -p 1, printing the read-budget timings), which CI's budgets job runs on every pull request, and AGENTS.md, README.md and the Makefile's comments say so."
+        },
+        "handle": "budgets-out-of-make-test",
+        "id": "01M7EQDFY7GKPF549RAQVNSSCQ",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7EQDFY7GKPF549RAPQE285W",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3AKCN5WTRED0VFN3JJD5",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7ET6V3BHNB2M7YMG7B2CPJF",
+  "type": "ops",
+  "v": 1
+}
