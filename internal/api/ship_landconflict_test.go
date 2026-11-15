@@ -36,6 +36,7 @@ func landHeadFails(t *testing.T, f *sessionFixture, message, status string) {
 // merges origin/main into the branch, leaves the conflict in progress and
 // recorded for the conflict fixer, and reports a conflict naming the node.
 func TestShipLandNodeChangedMergesMain(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	landHeadFails(t, f, "cannot land change set X: node N changed", "exit status 3")
 	for k, v := range map[string]string{
@@ -69,6 +70,7 @@ func TestShipLandNodeChangedMergesMain(t *testing.T) {
 // Any other head-build failure of land still fails with the head build's
 // detail, merges nothing and records no conflict.
 func TestShipLandOtherHeadFailureStaysPlain(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct{ name, msg, status string }{
 		{"other message", "cannot land change set X: it depends on Y (draft)", "exit status 3"},
 		{"other exit", "cannot land change set X: node N changed", "exit status 1"},

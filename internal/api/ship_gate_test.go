@@ -37,6 +37,7 @@ func shipGate(t *testing.T, f *sessionFixture) ShipGateResponse {
 }
 
 func TestShipLocalGate(t *testing.T) {
+	t.Parallel()
 	t.Run("unstable runs the gate in the worktree", func(t *testing.T) {
 		f := gateFixture(t, "pwd; echo gate-ran", true)
 		r := shipGate(t, f)
@@ -116,6 +117,7 @@ func treeOf(code, rhiza string) string {
 // command or a dirty worktree runs it; an older ship state (Gated only)
 // reruns it once.
 func TestShipLocalGateOncePerCodeTree(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	log := filepath.Join(t.TempDir(), "gate.log")
 	set := func(cmd string) { f.git.out["config --get "+LocalGateKey] = cmd + "\n" }
@@ -181,6 +183,7 @@ func TestShipLocalGateOncePerCodeTree(t *testing.T) {
 // unpushed and recorded, for the gate's fixer: the head before the merge
 // already passed the gate, so a fixer there would see no failure.
 func TestShipRebaseRunsLocalGate(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T, gate string) (*sessionFixture, string) {
 		f, state := shipRebaseFixture(t)
 		f.git.out["config --get "+LocalGateKey] = gate + "\n"
@@ -254,6 +257,7 @@ func TestShipRebaseRunsLocalGate(t *testing.T) {
 // the head ship rebase left after the gate failed on it, so a rebase
 // conflict ends the run and a failing gate reaches the fixer.
 func TestShipGateFailed(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	f.git.out["config --get "+LocalGateKey] = "touch " + filepath.Join(t.TempDir(), "ran") + "\n"
 	g.answers["git rev-parse HEAD"] = "beef000111\n"
@@ -291,6 +295,7 @@ func TestShipGateFailed(t *testing.T) {
 // the run routes that to the gate's fixer. A wait (--settled) is not held
 // by it, and a new head on the branch ends it.
 func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(greenRollup)
 	g.answers["git rev-parse HEAD"] = "beef000111\n"
@@ -312,6 +317,7 @@ func TestShipCheckFailsOnGateFailedHead(t *testing.T) {
 
 // The same holds for the head the pre-push check failed on.
 func TestShipCheckFailsOnPrePushFailedHead(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(greenRollup)
 	g.answers["git rev-parse HEAD"] = "beef000111\n"
@@ -336,6 +342,7 @@ func TestShipCheckFailsOnPrePushFailedHead(t *testing.T) {
 // step sends it to the gate's fixer; a failure that was not the pre-push
 // check (a gh or push error) records nothing and the triage fails.
 func TestShipGateFailedOnPrePushFailure(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers["git rev-parse HEAD"] = "beef000111\n"
 	ask := func() ShipGateResponse {
@@ -369,6 +376,7 @@ func TestShipGateFailedOnPrePushFailure(t *testing.T) {
 // The gate's whole output goes to a log file the response names, and a
 // failing gate's human output ends with its failing lines and the path.
 func TestShipGateFullLog(t *testing.T) {
+	t.Parallel()
 	script := "echo '--- FAIL: TestX'; seq 1 20000 | sed 's/^/filler line /'; echo FAIL; echo 'make: *** [Makefile:64: test] Error 1'; exit 2"
 	f := gateFixture(t, script, true)
 	r, err := callOp(t, f.ctx, "ship.gate", `{}`)
@@ -409,6 +417,7 @@ func TestShipGateFullLog(t *testing.T) {
 // In a run, each gate run writes its own log in the run's directory and
 // never overwrites an earlier one; outside a run the log is per branch.
 func TestShipGateRunLog(t *testing.T) {
+	t.Parallel()
 	script := "echo '--- FAIL: TestX'; seq 1 20000 | sed 's/^/filler line /'; echo FAIL; echo 'make: *** [Makefile:64: test] Error 1'; exit 2"
 	f := gateFixture(t, script, true)
 	f.ctx.Getenv = func(k string) string {

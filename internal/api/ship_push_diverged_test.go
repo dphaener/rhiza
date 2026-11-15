@@ -74,6 +74,7 @@ func noForceOrRebase(t *testing.T, calls []string) {
 var shipPushDivergedSteps = []string{"ship.open-pr", "ship.rebase"}
 
 func TestShipPushDivergedMergesOrigin(t *testing.T) {
+	t.Parallel()
 	for _, op := range shipPushDivergedSteps {
 		t.Run(op, func(t *testing.T) { shipPushDivergedMerges(t, op) })
 	}
@@ -105,6 +106,7 @@ func shipPushDivergedMerges(t *testing.T, op string) {
 }
 
 func TestShipPushDivergedConflictStops(t *testing.T) {
+	t.Parallel()
 	for _, op := range shipPushDivergedSteps {
 		t.Run(op, func(t *testing.T) { shipPushDivergedConflict(t, op) })
 	}

@@ -42,6 +42,7 @@ func fakeHealth(statuses ...int) (*httptest.Server, *atomic.Int32) {
 }
 
 func TestShipDeployRecovers(t *testing.T) {
+	t.Parallel()
 	srv, n := fakeHealth(503, 503, 200)
 	defer srv.Close()
 	r, err := runShipDeploy(deployCtx(srv.URL, "10s", &bytes.Buffer{}), ShipDeployRequest{})
@@ -55,6 +56,7 @@ func TestShipDeployRecovers(t *testing.T) {
 }
 
 func TestShipDeployTimesOut(t *testing.T) {
+	t.Parallel()
 	srv, _ := fakeHealth(503)
 	defer srv.Close()
 	var stderr bytes.Buffer
@@ -74,6 +76,7 @@ func TestShipDeployTimesOut(t *testing.T) {
 }
 
 func TestShipDeployNoURLSkips(t *testing.T) {
+	t.Parallel()
 	r, err := runShipDeploy(deployCtx("", "10s", &bytes.Buffer{}), ShipDeployRequest{})
 	if err != nil {
 		t.Fatal(err)

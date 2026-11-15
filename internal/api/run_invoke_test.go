@@ -12,6 +12,7 @@ import (
 // file paths and the run's values; the lines the daemon adds for the session
 // follow it unchanged, and with none the prompt is the rendered invoke.
 func TestInvokePrompt(t *testing.T) {
+	t.Parallel()
 	vars := workflow.PromptVars{Change: "CS1", Run: "R1", Brief: "/s/brief.md", Slice: "/s/slice.json", Handback: "/s/handback.md", Worktree: "/wt"}
 	const invoke = "/myskill:build --prompt {brief} {leaf} {attempt}"
 	role := workflow.Role{Prompt: invoke}

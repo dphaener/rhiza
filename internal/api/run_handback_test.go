@@ -44,6 +44,8 @@ func handbackFixture(t *testing.T, agent string) (*messageFixture, *stepRunner, 
 	return f, &stepRunner{ctx: f.ctx, sessions: f.st, change: "C1", run: "R1", worktree: f.worktree}, dir
 }
 
+// Serial: it sets the package's resumeTranscript, which the resume fake
+// agent registered for the whole binary reads.
 func TestHandbackDeliver(t *testing.T) {
 	gate := workflow.Step{Name: "gate", Kind: workflow.KindGate, Commands: []string{"make gate"}}
 	cmd := workflow.Step{Name: "check", Kind: workflow.KindCommand, Run: "make check"}

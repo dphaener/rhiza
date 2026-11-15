@@ -21,6 +21,8 @@ import (
 // the daemon's sweep: only the orphans go, in the home project and in
 // another served project alike, the stderr line carries the freed bytes,
 // and a second call within the hour does nothing.
+//
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME), process-wide state.
 func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
@@ -188,6 +190,8 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 // TestDaemonSweepLeftoversOffPoll holds the sweep on a channel: the poll's
 // step returns at once, a second due poll starts no second sweep, and the
 // freed line is written once the sweep is released.
+//
+// Serial: it swaps the package's sweepLeftoversWork, which every daemon in the binary reads.
 func TestDaemonSweepLeftoversOffPoll(t *testing.T) {
 	now := time.Date(2026, 11, 12, 12, 0, 0, 0, time.UTC)
 	var mu sync.Mutex

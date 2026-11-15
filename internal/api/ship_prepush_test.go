@@ -182,6 +182,8 @@ func (r *prePushRepo) setCheck(cmd string) {
 	r.git("config", PrePushCheckKey, cmd)
 }
 
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheck(t *testing.T) {
 	t.Run("a clean head passes and the temporary checkout is removed", func(t *testing.T) {
 		r := newPrePushRepo(t)
@@ -282,6 +284,8 @@ func TestShipPrePushCheck(t *testing.T) {
 	})
 }
 
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckShipPush(t *testing.T) {
 	for _, b := range prePushBreaks {
 		t.Run(b.name+" pushes nothing", func(t *testing.T) {
@@ -315,6 +319,9 @@ func TestShipPrePushCheckShipPush(t *testing.T) {
 // ship open-pr, against a real origin: a failing check pushes nothing,
 // opens or edits no pull request, and exits 1 with the failing lines in
 // its response; a passing one pushes as before, whatever CI's state.
+//
+// Serial: it swaps the package's prePushCheck, which every ship command
+// in the binary calls.
 func TestShipPrePushCheckOpenPR(t *testing.T) {
 	setup := func(t *testing.T) (*Ctx, *openPRGH, string, func(...string) string) {
 		ctx, g, origin, git := openPRFixture(t, true)
@@ -380,6 +387,9 @@ func TestShipPrePushCheckOpenPR(t *testing.T) {
 
 // ship land: a failing check on the land commit pushes nothing and exits 1
 // with the failing lines in its response.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckLand(t *testing.T) {
 	for _, b := range prePushBreaks {
 		t.Run(b.name, func(t *testing.T) {
@@ -421,6 +431,9 @@ func TestShipPrePushCheckLand(t *testing.T) {
 // the merged head on the branch and records it, and exits 1 with the
 // failing lines in its response; ship gate --failed then passes on it, so
 // the step goes on to its fixer.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckRebase(t *testing.T) {
 	for _, b := range prePushBreaks {
 		t.Run(b.name, func(t *testing.T) {
@@ -478,6 +491,9 @@ func TestShipPrePushCheckRebase(t *testing.T) {
 // wait ends (settled, exit 0) with the merge kept unpushed, rather than
 // polling and checking again until it times out, and ship gate --failed
 // then passes on the kept head.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckSettleConflict(t *testing.T) {
 	b := prePushBreaks[0]
 	f, state := shipRebaseFixture(t)
@@ -524,6 +540,9 @@ func TestShipPrePushCheckSettleConflict(t *testing.T) {
 // With the pre-push check passing, ship rebase pushes whatever CI's state,
 // and the local gate runs only while CI is unstable; the check runs both
 // times.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckWithLocalGate(t *testing.T) {
 	for _, unstable := range []bool{false, true} {
 		t.Run(map[bool]string{false: "CI stable", true: "CI unstable"}[unstable], func(t *testing.T) {
@@ -553,6 +572,9 @@ func TestShipPrePushCheckWithLocalGate(t *testing.T) {
 // check on the merged head pushes nothing and leaves the branch at its
 // pre-merge head, with the failing lines in its error; a passing one
 // pushes the merge.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckWatchdog(t *testing.T) {
 	setup := func(t *testing.T) (*prePushRepo, shipTarget) {
 		r := newPrePushRepo(t)
@@ -603,6 +625,9 @@ func TestShipPrePushCheckWatchdog(t *testing.T) {
 // runs a build of the head being pushed, as ship land renders with one, not
 // this binary's in-process check: a fake build command "builds" a rhiza
 // that prints report as its check --json.
+//
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestShipPrePushCheckHeadBuild(t *testing.T) {
 	const build = `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza`
 	setup := func(t *testing.T, report string, buildFails bool) (*prePushRepo, *[]string) {
@@ -683,6 +708,8 @@ func (r *prePushRepo) prePushJournal(rs *run.Store, id string) []run.PrePushChec
 	return j.State().PrePushChecks
 }
 
+// Serial: it swaps the package's prePushCheck and calls t.Setenv (HOME,
+// GIT_CONFIG_*, in newPrePushRepo), state every ship command reads.
 func TestPrePushJournal(t *testing.T) {
 	r := newPrePushRepo(t)
 	rs := run.NewStore(run.Dir(filepath.Join(r.root, ".git")))
@@ -725,6 +752,7 @@ func TestPrePushJournal(t *testing.T) {
 // pre-push check see the workflow's [env] (SHIP_HEAD_BUILD among it) over
 // the daemon's own environment.
 func TestShipRunEnv(t *testing.T) {
+	t.Parallel()
 	const def = "name = \"w\"\n[env]\nSHIP_HEAD_RHIZA = \"{run_tmp}/rhiza-head\"\nSHIP_HEAD_BUILD = 'go build -o \"$SHIP_HEAD_RHIZA\" ./cmd/rhiza'\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"
 	j := run.Journal{ID: "r", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}}}}
 	ctx := testCtx(t.TempDir())

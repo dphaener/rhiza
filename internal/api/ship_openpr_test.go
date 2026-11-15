@@ -164,6 +164,7 @@ func openPRFixture(t *testing.T, review bool, ref ...string) (*Ctx, *openPRGH, s
 // commit pushes it and edits the body without creating another; and the
 // PR is recorded in the ship state file for the steps after it.
 func TestShipOpenPR(t *testing.T) {
+	t.Parallel()
 	ctx, g, origin, git := openPRFixture(t, true)
 	remoteHead := func() string {
 		out, err := g.exec("git", []string{"--git-dir", origin, "rev-parse", "cs/ship-it"}, "", nil)
@@ -244,6 +245,7 @@ func TestShipOpenPR(t *testing.T) {
 // Outside a run, or in one with no review journaled, ship open-pr exits
 // non-zero naming why, and pushes and opens nothing.
 func TestShipOpenPRRefusals(t *testing.T) {
+	t.Parallel()
 	ctx, g, origin, _ := openPRFixture(t, false)
 	_, err := callOp(t, ctx, "ship.open-pr", `{}`)
 	wantExit(t, err, 2)
@@ -268,6 +270,7 @@ func TestShipOpenPRRefusals(t *testing.T) {
 // A plan run with no review round is refused like a review run with none:
 // ship open-pr opens nothing for a plan nobody has reviewed.
 func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
+	t.Parallel()
 	ctx, g, _, _ := openPRFixture(t, false)
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -302,6 +305,7 @@ func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
 // names another change set, or none, is refused whatever its state, with a
 // conflict naming it; nothing is edited, created or written to ship state.
 func TestShipOpenPRRefusesForeignPR(t *testing.T) {
+	t.Parallel()
 	for _, body := range []string{"# Plan\n\nChange set 01M6T1ZR0000000000000000AB: Other.\n", "Fixes a bug."} {
 		for _, state := range []string{"OPEN", "MERGED", "CLOSED"} {
 			// onOrigin: the foreign PR's commit is ahead on origin's branch,
@@ -355,6 +359,7 @@ func TestShipOpenPRRefusesForeignPR(t *testing.T) {
 // the PR body in one inline code span with its backticks and line breaks
 // escaped, and a change set without a ref gets no ref line.
 func TestShipOpenPRBodyRef(t *testing.T) {
+	t.Parallel()
 	ref := "https://x.test/1 `a` @mention\n# heading"
 	ctx, g, _, _ := openPRFixture(t, true, ref)
 	if _, err := callOp(t, ctx, "ship.open-pr", `{}`); err != nil {
@@ -382,6 +387,7 @@ func TestShipOpenPRBodyRef(t *testing.T) {
 // A conductor's checks record rounds of findings and no outcome: ship
 // open-pr takes them as the review having run.
 func TestReviewJournaledConductorRounds(t *testing.T) {
+	t.Parallel()
 	if reviewJournaled(run.State{}) {
 		t.Fatal("an empty run counts as reviewed")
 	}

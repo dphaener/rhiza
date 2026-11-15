@@ -45,6 +45,7 @@ func wantLost(t *testing.T, f *messageFixture, detail string) {
 // A rejoined session with the SessionEnd mark and no exit is lost and
 // judged failed; Rex is asked nothing for it.
 func TestRejoinHookEndedIsLost(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	hookEnd(t, f)
 	if err := r.Rejoin(f.sid); err != nil {
@@ -63,6 +64,7 @@ func TestRejoinHookEndedIsLost(t *testing.T) {
 
 // A rejoined session whose block Rex does not know is lost.
 func TestRejoinBlockNotFoundIsLost(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	f.setHook(t, session.StateWorking, "")
 	f.rex.err = errors.New("block not found: block:b1")
@@ -78,6 +80,7 @@ func TestRejoinBlockNotFoundIsLost(t *testing.T) {
 // A block Rex still has leaves the session polled as before; later polls
 // make no Rex call.
 func TestRejoinBlockExists(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	f.setHook(t, session.StateWorking, "")
 	if err := r.Rejoin(f.sid); err != nil {
@@ -96,6 +99,7 @@ func TestRejoinBlockExists(t *testing.T) {
 // Rex failing otherwise judges nothing and is retried on later polls until
 // it answers; then not found makes the session lost.
 func TestRejoinRexUnreachableRetried(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	f.setHook(t, session.StateWorking, "")
 	f.rex.err = errors.New("connection refused")
@@ -118,6 +122,7 @@ func TestRejoinRexUnreachableRetried(t *testing.T) {
 // Mid-run, a record whose SessionEnd mark has stood past the grace with
 // no exit is lost on the next poll, with no Rex call.
 func TestPollHookEndedIsLostWithoutRex(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	f.setHook(t, session.StateWorking, "")
 	if s, _ := r.AgentStatus(f.sid); s.Done {
@@ -136,6 +141,7 @@ func TestPollHookEndedIsLostWithoutRex(t *testing.T) {
 // normally has it before its wrapper records the exit. The exit that
 // follows is what the poll then reads.
 func TestPollFreshHookEndNotJudged(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	hookEndAt(t, f, r, hookEndGrace-time.Second)
 	s, err := r.AgentStatus(f.sid)
@@ -159,6 +165,7 @@ func TestPollFreshHookEndNotJudged(t *testing.T) {
 
 // An exit already on the record is final: the lost check never replaces it.
 func TestLostNeverReplacesExit(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	code := 0
 	f.st.Update(f.sid, func(x *session.Record) {
@@ -177,6 +184,7 @@ func TestLostNeverReplacesExit(t *testing.T) {
 // exit: it does not overwrite it with its own, so the record and the run
 // agree.
 func TestSessionRunKeepsLostExit(t *testing.T) {
+	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"manual"}`)
 	fs.agent.code = 0
 	st := session.NewStore(session.Dir(f.common))

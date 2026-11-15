@@ -11,6 +11,7 @@ import (
 // warn with the install command for an older version, a missing skill, or
 // a stale project-scope guide; and its place after usage.
 func TestHealthGuide(t *testing.T) {
+	t.Parallel()
 	home := t.TempDir()
 	ctx := schedHealthCtx(t, "")
 	ctx.Home = home
@@ -55,6 +56,7 @@ func TestHealthGuide(t *testing.T) {
 }
 
 func TestHealthGuideAfterUsage(t *testing.T) {
+	t.Parallel()
 	ctx := schedHealthCtx(t, "")
 	ctx.Home = t.TempDir()
 	resp, err := callOp(t, ctx, "health", `{}`)

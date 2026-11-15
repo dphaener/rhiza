@@ -28,6 +28,7 @@ func failingCreates(ctx *Ctx, n int, msg string) (*int, *[]time.Duration) {
 }
 
 func TestShipGHRetryRecovers(t *testing.T) {
+	t.Parallel()
 	for _, msg := range []string{
 		"gh pr create: HTTP 502: Bad Gateway",
 		"GraphQL: Something went wrong while executing your query",
@@ -47,6 +48,7 @@ func TestShipGHRetryRecovers(t *testing.T) {
 }
 
 func TestShipGHRetryGivesUp(t *testing.T) {
+	t.Parallel()
 	ctx, _, _, _ := openPRFixture(t, true)
 	creates, waits := failingCreates(ctx, 10, "gh pr create: HTTP 503: unavailable")
 	_, err := callOp(t, ctx, "ship.open-pr", `{}`)
@@ -60,6 +62,7 @@ func TestShipGHRetryGivesUp(t *testing.T) {
 }
 
 func TestShipGHRetrySkipsOtherErrors(t *testing.T) {
+	t.Parallel()
 	for _, msg := range []string{"gh pr create: HTTP 422: Validation Failed", `no pull requests found for branch "x"`} {
 		ctx, _, _, _ := openPRFixture(t, true)
 		creates, waits := failingCreates(ctx, 10, msg)

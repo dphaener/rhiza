@@ -11,6 +11,7 @@ import (
 // TestStepRunnerChild: a restarted driver asks the runner where a spawned
 // child stands: running, ended with its outcome, or gone with its record.
 func TestStepRunnerChild(t *testing.T) {
+	t.Parallel()
 	f := newSpawnFixture(t)
 	sessions := session.NewStore(session.Dir(f.f.common))
 	zero, three := 0, 3

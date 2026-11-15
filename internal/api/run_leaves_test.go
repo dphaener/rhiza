@@ -75,6 +75,7 @@ func leafCommitRunner(t *testing.T) (*stepRunner, func(...string) string) {
 // Leaf: trailer names its leaf. With no new commit, or new commits naming
 // only another leaf or none, there is none, and the detail says why.
 func TestLeafCommit(t *testing.T) {
+	t.Parallel()
 	leaf := run.Leaf{ID: "L1", Handle: "leaf-a"}
 	t.Run("none", func(t *testing.T) {
 		r, _ := leafCommitRunner(t)
@@ -211,6 +212,7 @@ func (noSleep) Sleep(time.Duration) {}
 // and follows a builder whose commit names its leaf with a verifier given
 // that commit, on its leaf-session and in its spec.
 func TestLeafCommitEngine(t *testing.T) {
+	t.Parallel()
 	sr, git := leafCommitRunner(t)
 	g := &gitLeafRunner{stepRunner: sr, git: git,
 		leaves: []run.Leaf{{ID: "L1", Handle: "leaf-none"}, {ID: "L2", Handle: "leaf-other"}, {ID: "L3", Handle: "leaf-own"},
@@ -335,6 +337,7 @@ func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *C
 // were, and the committed entries show clean. A second call (a resume)
 // makes no new commit and returns the same one.
 func TestEvidenceCommit(t *testing.T) {
+	t.Parallel()
 	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
 	if err := os.WriteFile(filepath.Join(r.worktree, "notes.txt"), []byte("base\n"), 0o644); err != nil {
 		t.Fatal(err)
@@ -438,6 +441,7 @@ func TestEvidenceCommit(t *testing.T) {
 
 // With no Evidence of the verifier's own actor, nothing is committed.
 func TestEvidenceCommitNone(t *testing.T) {
+	t.Parallel()
 	r, git, _, leaf, _ := evidenceCommitRunner(t)
 	old := git("rev-parse", "HEAD")
 	if _, err := r.CommitEvidence(leaf, "S-v"); err == nil || !strings.Contains(err.Error(), "no Evidence by") {
@@ -452,6 +456,7 @@ func TestEvidenceCommitNone(t *testing.T) {
 // retry builder's also names the leaf and its attempt and points it at
 // the earlier attempts' findings. A verifier's gets no retry line.
 func TestLeafPrompt(t *testing.T) {
+	t.Parallel()
 	role := workflow.Role{Prompt: "build {leaf} attempt {attempt} of {change}"}
 	vars := workflow.PromptVars{Change: "CS1"}
 	spec := run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 1}
@@ -509,6 +514,7 @@ func TestLeafPrompt(t *testing.T) {
 // A round the retry gave shows as the retry's in run status, with no
 // decision.
 func TestRunInfoRetryRound(t *testing.T) {
+	t.Parallel()
 	st := run.State{Leaves: []run.LeafState{{Step: "build", Leaf: "LA", Handle: "leaf-a", Rounds: []run.LeafRound{
 		{Round: 2, After: 3, Question: "Q1", QuestionHandle: "q-one", Decision: "use-a-map"},
 		{Round: 3, After: 6, Question: "Q2", Retry: true},
@@ -542,6 +548,7 @@ func TestRunInfoRetryRound(t *testing.T) {
 // LeafAnswer finds the owner's Decision answering it, whatever its
 // wording, and nothing before one does.
 func TestAddLeafQuestion(t *testing.T) {
+	t.Parallel()
 	_, r, wctx := arbiterFixture(t)
 	leaf := mustWrite(t, wctx, "add", `{"kind":"capability","handle":"leaf-a"}`).Nodes[0]
 	cs := mustParseID(r.change)

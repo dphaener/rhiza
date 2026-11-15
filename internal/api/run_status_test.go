@@ -180,6 +180,7 @@ func first(reports []map[string]string, from int, ok func(map[string]string) boo
 // verifier, cleared once the leaf passes; root progress rising to 100; a
 // blocked child while a session waits on a question; and root done last.
 func TestProgramStatusBuild(t *testing.T) {
+	t.Parallel()
 	f := &statusLeafRunner{
 		leaves: []run.Leaf{
 			{ID: "L1", Handle: "leaf-a"},
@@ -258,6 +259,7 @@ func TestProgramStatusBuild(t *testing.T) {
 // A run whose leaf fails every attempt, or whose command step fails, ends
 // with root error naming the failure on one line.
 func TestProgramStatusError(t *testing.T) {
+	t.Parallel()
 	t.Run("leaf", func(t *testing.T) {
 		f := &statusLeafRunner{leaves: []run.Leaf{{ID: "L1", Handle: "leaf-a"}}, fail: map[string]bool{"leaf-a": true}}
 		reports := statusRun(t, statusLeavesWF, f)
@@ -289,6 +291,7 @@ func TestProgramStatusError(t *testing.T) {
 // rexRecord keeps progress to working and blocked, writes no app on a
 // clear, and puts id on a child record.
 func TestRexRecord(t *testing.T) {
+	t.Parallel()
 	p := 40
 	for _, c := range []struct {
 		id, state string
@@ -326,6 +329,7 @@ prompt = "v"
 // record per live check, its cycle named past cycle 1, and the root
 // counting the checks passed up to 100.
 func TestProgramStatusChecks(t *testing.T) {
+	t.Parallel()
 	f := &statusLeafRunner{polls: map[string][]run.AgentStatus{
 		"beta-check-1": {{Done: true, Outcome: "fail", Detail: "exit 1"}},
 	}}
@@ -358,6 +362,7 @@ func TestProgramStatusChecks(t *testing.T) {
 // fix, naming the review, each cleared once its session ends, with the
 // root naming the review step throughout.
 func TestProgramStatusReviewFixers(t *testing.T) {
+	t.Parallel()
 	f := &statusLeafRunner{
 		leaves: []run.Leaf{{ID: "L1", Handle: "leaf-a"}},
 		findings: map[string][]run.Finding{"alpha": {
@@ -399,6 +404,7 @@ func TestProgramStatusReviewFixers(t *testing.T) {
 // step while it runs and ends it in error naming the failed run, before
 // the checks step ever starts.
 func TestProgramStatusReviewCodeCheck(t *testing.T) {
+	t.Parallel()
 	f := &statusLeafRunner{code: 1}
 	reports := statusRun(t, "[step.code]\nkind = \"command\"\nrun = \"rhiza run code-check\"\non.pass = \"review\"\n"+statusChecksWF, f)
 	root := func(r map[string]string) bool { _, ok := r["id"]; return !ok }
@@ -417,6 +423,7 @@ func TestProgramStatusReviewCodeCheck(t *testing.T) {
 // for the surviving finding, and Rex's root record ends blocked, naming
 // the change set, the review step and the question's text.
 func TestProgramStatusReviewQuestions(t *testing.T) {
+	t.Parallel()
 	f := &statusLeafRunner{
 		findings:   map[string][]run.Finding{"alpha": {{ID: "f1", Severity: "major", Reason: "bad f1"}}},
 		everyCycle: true,
@@ -437,6 +444,7 @@ func TestProgramStatusReviewQuestions(t *testing.T) {
 // interview, as it launches; a feature's plan run and an autonomous run get
 // no such report, and the report ends with the step.
 func TestProgramStatusMilestoneInterview(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name       string
 		st         run.State

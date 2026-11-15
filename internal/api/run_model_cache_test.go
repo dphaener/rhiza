@@ -89,6 +89,7 @@ func newDriverFixture(t testing.TB, root, indexPath string, cs, actor id.ID, deb
 // poll after an entry in the run's change set, or a session done mark,
 // sees it.
 func TestDriverPollIsCheap(t *testing.T) {
+	t.Parallel()
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	if err := os.Mkdir(root, 0o755); err != nil {
@@ -287,6 +288,7 @@ func driverPollBudget(t *testing.T, g generated, log func(string)) {
 // session's writes, even inside the debounce window of an answer kept before
 // them, and another session's write in the same window changes nothing.
 func TestEvidenceReadsPastSessionWrites(t *testing.T) {
+	t.Parallel()
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	if err := os.Mkdir(root, 0o755); err != nil {

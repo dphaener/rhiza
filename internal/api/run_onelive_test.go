@@ -15,6 +15,7 @@ import (
 // refused with exit 2 naming a run of it; another change set is not held
 // back.
 func TestConcurrentStartsOneBegins(t *testing.T) {
+	t.Parallel()
 	src := "[step.hold]\nkind = \"wait\"\nuntil = \"false\"\ntimeout = \"1h\"\n"
 	def, err := workflow.Parse("wf", []byte(src))
 	if err != nil {

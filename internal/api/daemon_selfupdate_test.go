@@ -26,6 +26,7 @@ import (
 // A start pending at the end of a poll delays the self-update to the end of
 // each later poll with none pending.
 func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
+	t.Parallel()
 	common := t.TempDir()
 	lock, err := daemon.TryLock(common, time.Now())
 	if err != nil {
@@ -65,6 +66,7 @@ func TestDaemonLoopSelfUpdateWaitsForPending(t *testing.T) {
 // main, the daemon notes name rhiza.daemon.autoUpdate, and daemon set
 // writes rhiza.toml without the old keys.
 func TestDaemonSettingsMigrateRemovedSelfUpdate(t *testing.T) {
+	t.Parallel()
 	ctx, _ := daemonRepo(t)
 	path := filepath.Join(ctx.Root, "rhiza.toml")
 	old := "self_update_project = \"repo\"\n\n[projects.repo]\npath = \".\"\n\n[daemon]\n\"rhiza.daemon.selfUpdate\" = \"true\"\n"
@@ -100,6 +102,7 @@ func TestDaemonSettingsMigrateRemovedSelfUpdate(t *testing.T) {
 // A machine setting under a root whose rhiza.toml does not load fails: it
 // never falls back to the project's git config.
 func TestDaemonSetBrokenRootWritesNoGitConfig(t *testing.T) {
+	t.Parallel()
 	ctx, _ := daemonRepo(t)
 	if err := os.WriteFile(filepath.Join(ctx.Root, "rhiza.toml"), []byte("not = = toml\n"), 0o644); err != nil {
 		t.Fatal(err)
@@ -132,6 +135,7 @@ func (h *hangProcess) Kill() {
 // A self-update fetch that hangs is killed after its timeout, without a
 // terminal prompt, and reported as failed.
 func TestFetchMainWithinTimesOut(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	var got Program
 	h := &hangProcess{killed: make(chan struct{})}
@@ -148,6 +152,7 @@ func TestFetchMainWithinTimesOut(t *testing.T) {
 }
 
 func TestFetchMainWithinExitCode(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Start = (&shStart{codes: map[string]int{}}).start
 	if err := fetchMainWithin(ctx, "/main", time.Second); err != nil {
@@ -220,6 +225,8 @@ func autoUpdateRepo(t *testing.T, value, module string) (*Ctx, func() []string) 
 // runs make update; main with a Rhiza checkout fetches, fast-forwards and
 // runs make update once over several polls; main with none registered logs
 // it and updates nothing.
+//
+// Serial: it swaps the package's daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonAutoUpdateSetting(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
 	old := daemonReexec
@@ -267,6 +274,9 @@ func TestDaemonAutoUpdateSetting(t *testing.T) {
 // With rhiza.daemon.autoUpdate = latest the daemon reads the latest channel's
 // feed and installs a newer build over its executable, running no git fetch
 // and no make; an up-to-date daemon leaves the executable alone.
+//
+// Serial: it swaps the package's channelUpdateExe, channelUpdateURLs,
+// daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonAutoUpdateLatest(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
 	old := daemonReexec
@@ -324,6 +334,9 @@ func TestDaemonAutoUpdateLatest(t *testing.T) {
 // With rhiza.daemon.autoUpdate = release the daemon follows the release
 // channel only: a newer official release installs, an incremental build of
 // the same version does not.
+//
+// Serial: it swaps the package's channelUpdateExe, channelUpdateURLs,
+// daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonAutoUpdateRelease(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
 	old := daemonReexec

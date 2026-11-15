@@ -16,6 +16,7 @@ import (
 // started back to back get 36 then 37, and a number held only by an ended
 // run is still skipped.
 func TestReserveMilestoneNumber(t *testing.T) {
+	t.Parallel()
 	ctx, _, _, _ := openPRFixture(t, false)
 	for _, req := range []string{
 		`{"kind":"intent","handle":"milestone-12","fields":["statement=Twelve","milestone=12"]}`,
@@ -73,6 +74,7 @@ func mustState(t *testing.T, rs *run.Store, rid string) run.State {
 }
 
 func TestLaunchEnvMilestoneNumber(t *testing.T) {
+	t.Parallel()
 	has := func(l []string, s string) bool { return slices.Contains(l, s) }
 	set, unset := launchEnv(session.Record{ID: "S1", Change: "CS1", Run: "R1", MilestoneNumber: 36})
 	if !has(set, "RHIZA_MILESTONE_NUMBER=36") || has(unset, "RHIZA_MILESTONE_NUMBER") {
@@ -94,6 +96,7 @@ func TestLaunchEnvMilestoneNumber(t *testing.T) {
 // done points prefixed mN-) and fails one with the wrong handle, the wrong
 // field or an unprefixed done point, naming the intent and the number.
 func TestRunMilestoneCheckEnforcesNumber(t *testing.T) {
+	t.Parallel()
 	ctx, _, _, _ := openPRFixture(t, false)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	store := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))

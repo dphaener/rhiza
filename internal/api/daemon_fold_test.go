@@ -204,6 +204,7 @@ func (f *daemonFoldFix) eventLines() []string {
 // still lapses, and a lifecycle move reads again and runs the event
 // command.
 func TestDaemonIdlePollSkipsFold(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	f.unj[f.target] = daemonPending{at: f.clock}
 
@@ -279,6 +280,7 @@ func BenchmarkDaemonIdlePoll(b *testing.B) {
 // the daemon starts or resumes drops the cache: the next poll reads the log
 // again and acts on the change.
 func TestDaemonPollCacheInvalidates(t *testing.T) {
+	t.Parallel()
 	f := newDaemonFoldFix(t)
 	f.unj[f.target] = daemonPending{at: f.clock}
 	f.config["rhiza.autonomy.ship"] = "owner"

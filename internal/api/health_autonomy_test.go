@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+// Serial: it calls t.Setenv (XDG_CONFIG_HOME, in exposureRepo),
+// process-wide state.
 func TestHealthAutonomyRisk(t *testing.T) {
 	const phrase = "outside text reaches agents with no permission checks"
 
