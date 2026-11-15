@@ -39,6 +39,7 @@ func twoChanges(t *testing.T) (*Ctx, id.ID, id.ID) {
 }
 
 func TestCtxChangeSet(t *testing.T) {
+	t.Parallel()
 	t.Run("NoCurrent", func(t *testing.T) {
 		ctx, a, _ := twoChanges(t)
 		if _, err := callOp(t, ctx, "change.use", `{"none":true}`); err != nil {
@@ -126,6 +127,7 @@ func TestCtxChangeSet(t *testing.T) {
 }
 
 func TestCtxActor(t *testing.T) {
+	t.Parallel()
 	t.Run("Honoured", func(t *testing.T) {
 		ctx := initCtx(t)
 		ada := recordAda(t, ctx, "ada@example.com")
@@ -195,6 +197,7 @@ func TestCtxActor(t *testing.T) {
 }
 
 func TestRecordRefusedOnNonWrites(t *testing.T) {
+	t.Parallel()
 	ctx, _ := writeCtx(t)
 	ctx.Record = true
 	for _, c := range []struct{ op, req string }{

@@ -19,6 +19,7 @@ func showCall(t *testing.T, ctx *Ctx, req string) ShowResponse {
 }
 
 func TestShowNode(t *testing.T) {
+	t.Parallel()
 	ctx, landed, _ := readLog(t)
 	r := showCall(t, ctx, `{"ref":"store","view":"to-be"}`)
 	if r.Kind != "node" || r.Link != nil || r.Node == nil || r.View != "to-be" {
@@ -85,6 +86,7 @@ func TestShowNode(t *testing.T) {
 }
 
 func TestShowLink(t *testing.T) {
+	t.Parallel()
 	ctx, landed, _ := readLog(t)
 	cache := showCall(t, ctx, `{"ref":"cache","view":"as-is"}`).Node
 	if len(cache.LinksOut) != 1 {
@@ -110,6 +112,7 @@ func TestShowLink(t *testing.T) {
 }
 
 func TestShowHuman(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	h := human(t, showCall(t, ctx, `{"ref":"store","view":"to-be"}`))
 	for _, want := range []string{
@@ -150,6 +153,7 @@ func TestShowHuman(t *testing.T) {
 }
 
 func TestShowJSON(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	b, err := json.Marshal(showCall(t, ctx, `{"ref":"use-ssd","view":"as-is"}`))
 	if err != nil {
@@ -167,6 +171,7 @@ func TestShowJSON(t *testing.T) {
 }
 
 func TestShowErrors(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	_, err := callOp(t, ctx, "show", `{"ref":"nosuch"}`)
 	wantExit(t, err, 4)
@@ -191,6 +196,7 @@ func TestShowErrors(t *testing.T) {
 }
 
 func TestShowWhatIfDraft(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -203,6 +209,7 @@ func TestShowWhatIfDraft(t *testing.T) {
 }
 
 func TestShowEnds(t *testing.T) {
+	t.Parallel()
 	ctx, landed, _ := readLog(t)
 	r := mustReader(t, ctx, "as-is", defaultView)
 	e := &showEnds{r: r}

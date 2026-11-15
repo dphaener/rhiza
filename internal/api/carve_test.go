@@ -115,6 +115,7 @@ func wantIntact(t *testing.T, ctx *Ctx, cs id.ID, handles ...string) {
 }
 
 func TestCarve(t *testing.T) {
+	t.Parallel()
 	t.Run("KeepsIDs", func(t *testing.T) {
 		ctx, in, src, tgt := carveCtx(t)
 		p := mustWrite(t, in, "add", `{"kind":"capability","handle":"p"}`).Nodes[0]
@@ -311,6 +312,7 @@ func TestCarve(t *testing.T) {
 }
 
 func TestCarveRefused(t *testing.T) {
+	t.Parallel()
 	t.Run("DependentCycle", func(t *testing.T) {
 		// The target depends on the source, and a dependent of the source
 		// rests on p: the dependency it needs would close a loop.
@@ -428,6 +430,7 @@ func TestCarveRefused(t *testing.T) {
 }
 
 func TestCarveDryRun(t *testing.T) {
+	t.Parallel()
 	// setup builds the same log in a fresh repository each time: the seed
 	// and clock are fixed, so both runs draw the same IDs.
 	setup := func(t *testing.T) (*Ctx, id.ID, id.ID) {

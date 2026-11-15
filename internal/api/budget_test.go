@@ -282,6 +282,9 @@ func openTimingLog(t *testing.T, quiet string) func(line string) {
 	return write
 }
 
+// Serial: it times reads of the shared 50,000-node model in wall and
+// own CPU time, so no parallel test may run beside it, and it appends to that
+// model.
 func TestReadBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the read budget generates the 50,000-node model; skipped under -short")
@@ -446,6 +449,7 @@ func BenchmarkShowWhatIf(b *testing.B) {
 }
 
 func TestTimeWithinBudget(t *testing.T) {
+	t.Parallel()
 	over := readTiming{quiettest.Timing{Median: readBudget, Own: readBudget}, 1}
 	under := readTiming{quiettest.Timing{Median: readBudget - 1, Own: readBudget - 1}, 1}
 	// Over on the clock, but the excess was waiting for a CPU: under.

@@ -103,6 +103,7 @@ func statement(s string) map[string]json.RawMessage {
 }
 
 func TestModel(t *testing.T) {
+	t.Parallel()
 	t.Run("Version", func(t *testing.T) {
 		b := newLogBuilder(t)
 		c := b.create(op.KindDecision, "use-go", statement("Go"))

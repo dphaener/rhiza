@@ -42,6 +42,7 @@ const treeWrites = `{"writes":[
 ]}`
 
 func TestApply(t *testing.T) {
+	t.Parallel()
 	t.Run("OneEntry", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		before := len(logFiles(t, ctx.Root))
@@ -271,6 +272,7 @@ func TestApply(t *testing.T) {
 // oneOf over the item ops, each that op's request schema plus a required
 // "op" fixed to its name.
 func TestApplyInputSchema(t *testing.T) {
+	t.Parallel()
 	resp, err := callDescribe(t, `{"op":"apply"}`)
 	if err != nil {
 		t.Fatal(err)
@@ -341,6 +343,7 @@ func TestApplyInputSchema(t *testing.T) {
 // TestApplySchemaMatchesDecoder checks the ops the schema publishes are
 // exactly the ops the decoder accepts.
 func TestApplySchemaMatchesDecoder(t *testing.T) {
+	t.Parallel()
 	var schemaOps []string
 	for _, w := range applyWrites {
 		schemaOps = append(schemaOps, w.op)

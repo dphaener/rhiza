@@ -30,6 +30,7 @@ func lsHandles(r LsResponse) string {
 }
 
 func TestLsFilters(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	all := lsCall(t, ctx, `{"view":"to-be"}`)
 	// The test actor, then the nodes in creation (ID) order, live only (under-old lives on under retired old).
@@ -66,6 +67,7 @@ func TestLsFilters(t *testing.T) {
 }
 
 func TestLsPaging(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	want := lsHandles(lsCall(t, ctx, `{"view":"to-be","retired":true}`))
 	var got []string
@@ -104,6 +106,7 @@ func TestLsPaging(t *testing.T) {
 }
 
 func TestLsHuman(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	r := lsCall(t, ctx, `{"view":"to-be","retired":true,"kinds":["capability"],"parent":"store"}`)
 	h := human(t, r)
@@ -122,6 +125,7 @@ func TestLsHuman(t *testing.T) {
 }
 
 func TestLsErrors(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	for _, req := range []string{
 		`{"limit":5000}`,
@@ -146,6 +150,7 @@ func TestLsErrors(t *testing.T) {
 }
 
 func TestLsWhatIfDraft(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)

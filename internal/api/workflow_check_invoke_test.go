@@ -28,6 +28,7 @@ on.pass = "done"
 `
 
 func TestWorkflowCheckUnresolvedInvoke(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T) (*Ctx, string, string) {
 		t.Helper()
 		root, home := t.TempDir(), t.TempDir()

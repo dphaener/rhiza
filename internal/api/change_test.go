@@ -77,6 +77,7 @@ func landNode(t *testing.T, ctx *Ctx, kind op.Kind, handle string) id.ID {
 }
 
 func TestChangeOutsideRepo(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct{ op, req string }{
 		{"change.new", `{"intent":"x"}`},
 		{"change.use", `{"none":true}`},
@@ -91,6 +92,7 @@ func TestChangeOutsideRepo(t *testing.T) {
 }
 
 func TestChangeNew(t *testing.T) {
+	t.Parallel()
 	t.Run("OpensAndMakesCurrent", func(t *testing.T) {
 		ctx := initCtx(t)
 		r := newChange(t, ctx, `{"intent":"Try it"}`)
@@ -265,6 +267,7 @@ func TestChangeNew(t *testing.T) {
 }
 
 func TestChangeUse(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	first := newChange(t, ctx, `{"intent":"First"}`).ChangeSet
 	second := newChange(t, ctx, `{"intent":"Second"}`).ChangeSet
@@ -343,6 +346,7 @@ func TestChangeUse(t *testing.T) {
 }
 
 func TestChangeShow(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	_, err := callOp(t, ctx, "change.show", `{}`)
 	wantExit(t, err, 2)
@@ -432,6 +436,7 @@ func relanded(t *testing.T, ctx *Ctx) id.ID {
 }
 
 func TestChangeShowHistory(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := relanded(t, ctx)
 	resp, err := callOp(t, ctx, "change.show", `{"ref":"`+cs.String()+`"}`)
@@ -474,6 +479,7 @@ func TestChangeShowHistory(t *testing.T) {
 }
 
 func TestChangeLs(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	resp, err := callOp(t, ctx, "change.ls", `{}`)
 	if err != nil {
@@ -543,6 +549,7 @@ func TestChangeLs(t *testing.T) {
 }
 
 func TestChangeShowLeaves(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	landed(t, ctx) // store, a capability outside the change set
 	cs := newChange(t, ctx, `{"intent":"Leaves"}`).ChangeSet
@@ -639,6 +646,7 @@ func TestChangeShowLeaves(t *testing.T) {
 }
 
 func TestChangeShowLeavesLanded(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := landed(t, ctx)
 	leaves := func() []string {
@@ -671,6 +679,7 @@ func TestChangeShowLeavesLanded(t *testing.T) {
 // and refuses an unknown name, both or neither of name and --clear, and a
 // landed change set.
 func TestChangeWorkflow(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	common := t.TempDir()
 	ctx.Git = func(args ...string) (string, error) { return common + "\n", nil }

@@ -87,6 +87,7 @@ func sameRead(t *testing.T, what string, a, b any, ea, eb error) {
 }
 
 func TestReadBackendsAgree(t *testing.T) {
+	t.Parallel()
 	ctx, _, accepted := readLog(t)
 	stored := mustReader(t, ctx, "to-be", defaultView)
 	whatIf := mustReader(t, ctx, "what-if:"+accepted.String(), defaultView)
@@ -215,6 +216,7 @@ func TestReadBackendsAgree(t *testing.T) {
 }
 
 func TestReadWhatIfDraft(t *testing.T) {
+	t.Parallel()
 	// A draft's what-if shows its writes; as-is does not.
 	ctx := readCtx(t)
 	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
@@ -231,6 +233,7 @@ func TestReadWhatIfDraft(t *testing.T) {
 }
 
 func TestReadErrors(t *testing.T) {
+	t.Parallel()
 	ctx, landed, _ := readLog(t)
 	for _, v := range []string{"to-be", "what-if:" + mustCurrent(t, ctx).String()} {
 		r := mustReader(t, ctx, v, defaultView)
@@ -268,6 +271,7 @@ func mustCurrent(t *testing.T, ctx *Ctx) id.ID {
 }
 
 func TestReadOpenErrors(t *testing.T) {
+	t.Parallel()
 	ctx, landed, _ := readLog(t)
 	cases := []struct {
 		name, view string
@@ -319,6 +323,7 @@ func TestReadOpenErrors(t *testing.T) {
 }
 
 func TestViewParse(t *testing.T) {
+	t.Parallel()
 	ctx, landed, accepted := readLog(t)
 	w := ctxWorkspace(t, ctx)
 	for _, c := range []struct {
@@ -350,6 +355,7 @@ func TestViewParse(t *testing.T) {
 }
 
 func TestViewDefault(t *testing.T) {
+	t.Parallel()
 	asIs, toBe := "as-is", "to-be"
 	t.Run("NoChangeSet", func(t *testing.T) {
 		ctx := readCtx(t)
@@ -441,6 +447,7 @@ func TestViewDefault(t *testing.T) {
 }
 
 func TestReadHelpers(t *testing.T) {
+	t.Parallel()
 	for _, lt := range op.LinkTypes() {
 		if linkBackNames[lt] == "" {
 			t.Errorf("no backwards name for %s", lt)
@@ -489,6 +496,7 @@ func countingCtx(ctx *Ctx) *int {
 }
 
 func TestDefaultViewFoldsNothing(t *testing.T) {
+	t.Parallel()
 	ctx, landed, accepted := readLog(t)
 	draft := newChange(t, ctx, `{"intent":"Later"}`).ChangeSet
 	folds := countingCtx(ctx)
@@ -547,6 +555,7 @@ func TestDefaultViewFoldsNothing(t *testing.T) {
 }
 
 func TestDefaultViewSeesPending(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := readLog(t)
 	folds := countingCtx(ctx)
 	w := ctxWorkspace(t, ctx)

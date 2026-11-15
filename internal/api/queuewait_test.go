@@ -50,6 +50,7 @@ func wantQueueWaits(t *testing.T, f *daemonFoldFix, want ...string) []daemon.Que
 }
 
 func TestQueueWaitJournal(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	hold := &usageHold{Kind: "session", Used: 900, Projected: 900, Limit: 1000, Reserve: 20, Reset: f.clock.Add(time.Hour)}
 	machine := &daemon.MachineHold{Reason: daemon.SkipLoadHigh, Detail: "load 4.0 over 3.0"}
@@ -84,12 +85,14 @@ func TestQueueWaitJournal(t *testing.T) {
 }
 
 func TestQueueWaitFirstPollStarts(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	queueWaitPoll(t, f, 4, nil, nil, false)
 	wantQueueWaits(t, f, "started")
 }
 
 func TestQueueWaitRestartWritesNoDuplicate(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	queueWaitPoll(t, f, 0, nil, nil, false)
 	// A fresh daemon: no memory of the earlier polls but the journal.
@@ -102,6 +105,7 @@ func TestQueueWaitRestartWritesNoDuplicate(t *testing.T) {
 // starts its run by hand, the next poll journals started at the run's start
 // time, and later polls write nothing more.
 func TestQueueWaitShipOwnerStartedOutside(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	f.config["rhiza.autonomy.ship"] = "owner"
 	if started := queueWaitPoll(t, f, 4, nil, nil, false); len(started) != 0 {

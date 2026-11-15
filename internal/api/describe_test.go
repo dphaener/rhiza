@@ -28,6 +28,7 @@ func callDescribe(t *testing.T, req string) (DescribeResponse, error) {
 }
 
 func TestDescribeAll(t *testing.T) {
+	t.Parallel()
 	resp, err := callDescribe(t, `{}`)
 	if err != nil {
 		t.Fatal(err)
@@ -82,6 +83,7 @@ func TestDescribeAll(t *testing.T) {
 }
 
 func TestDescribeOne(t *testing.T) {
+	t.Parallel()
 	resp, err := callDescribe(t, `{"op":"describe"}`)
 	if err != nil {
 		t.Fatal(err)
@@ -92,6 +94,7 @@ func TestDescribeOne(t *testing.T) {
 }
 
 func TestDescribeUnknown(t *testing.T) {
+	t.Parallel()
 	_, err := callDescribe(t, `{"op":"nope"}`)
 	if ExitCode(err) != 4 {
 		t.Fatalf("err = %v, exit %d, want 4", err, ExitCode(err))
@@ -102,6 +105,7 @@ func TestDescribeUnknown(t *testing.T) {
 }
 
 func TestDescribeHuman(t *testing.T) {
+	t.Parallel()
 	resp, err := callDescribe(t, `{}`)
 	if err != nil {
 		t.Fatal(err)
@@ -118,6 +122,7 @@ func TestDescribeHuman(t *testing.T) {
 
 // Every response renders for people; --json alone is not enough.
 func TestEveryResponseIsHumaner(t *testing.T) {
+	t.Parallel()
 	h := reflect.TypeFor[Humaner]()
 	for _, o := range Operations() {
 		if !o.Response.Implements(h) {

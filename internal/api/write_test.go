@@ -73,6 +73,7 @@ func onlyOp(t *testing.T, ops []op.Op) op.Op {
 func raw(s string) json.RawMessage { return json.RawMessage(s) }
 
 func TestWriteCommon(t *testing.T) {
+	t.Parallel()
 	t.Run("ResponseAndHuman", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		r := mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -227,6 +228,7 @@ func TestWriteCommon(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
+	t.Parallel()
 	t.Run("KeysAndParent", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -341,6 +343,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
+	t.Parallel()
 	t.Run("RevisesCreate", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store","fields":["acceptance=1","built_in=2"]}`)
@@ -498,6 +501,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestMv(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T) (*Ctx, id.ID) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -574,6 +578,7 @@ func TestMv(t *testing.T) {
 }
 
 func TestRetire(t *testing.T) {
+	t.Parallel()
 	t.Run("Landed", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		recordWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -759,6 +764,7 @@ func TestRetire(t *testing.T) {
 }
 
 func TestLink(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T) (*Ctx, id.ID) {
 		ctx, cs := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -820,6 +826,7 @@ func TestLink(t *testing.T) {
 // table allows is never refused as a kind mismatch, and any other is a
 // usage error naming both kinds that writes nothing.
 func TestLinkEndpointKinds(t *testing.T) {
+	t.Parallel()
 	ctx, cs := writeCtx(t)
 	handle := func(prefix string, e check.End) string { return prefix + "-" + strings.ReplaceAll(string(e), " ", "-") }
 	for _, k := range op.Kinds() {
@@ -873,6 +880,7 @@ func TestLinkEndpointKinds(t *testing.T) {
 // TestLinkCycle refuses a depends-on link between change sets that would
 // close a loop, counting the links the same write batch added.
 func TestLinkCycle(t *testing.T) {
+	t.Parallel()
 	// link writes "from depends-on to" into change set in.
 	link := func(ctx *Ctx, in, from, to id.ID) error {
 		c := *ctx
@@ -969,6 +977,7 @@ func TestLinkCycle(t *testing.T) {
 // that would close a loop, naming it, whether the links in the way are
 // earlier writes or earlier items of the same apply.
 func TestLinkCapabilityLoop(t *testing.T) {
+	t.Parallel()
 	// caps adds capabilities a, b and c to a new change set.
 	caps := func(t *testing.T) *Ctx {
 		ctx, _ := writeCtx(t)
@@ -1038,6 +1047,7 @@ func TestLinkCapabilityLoop(t *testing.T) {
 }
 
 func TestUnlink(t *testing.T) {
+	t.Parallel()
 	t.Run("CreatedHereIsDropped", func(t *testing.T) {
 		ctx, cs := writeCtx(t)
 		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"store"}`)
@@ -1081,6 +1091,7 @@ func TestUnlink(t *testing.T) {
 // TestStackedWrites writes in a change set on top of the in-flight change
 // sets it depends on.
 func TestStackedWrites(t *testing.T) {
+	t.Parallel()
 	// in returns ctx writing into change set cs.
 	in := func(ctx *Ctx, cs id.ID) *Ctx {
 		c := *ctx

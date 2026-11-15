@@ -28,6 +28,7 @@ func proposalRun(id, workflow, cs string, gated []string, end, detail string) ru
 }
 
 func TestUncoveredProposals(t *testing.T) {
+	t.Parallel()
 	const a, b, rec = "A", "B", "REC"
 	tests := []struct {
 		name string
@@ -61,6 +62,7 @@ func TestUncoveredProposals(t *testing.T) {
 // next poll in the same process starts nothing more for it, and a pause
 // starts none at all. --max-runs bounds the starts, the ship pick counting.
 func TestDaemonPlansProposalsPending(t *testing.T) {
+	t.Parallel()
 	poll := func(f *daemonFoldFix, max int, paused bool) {
 		t.Helper()
 		var skips []daemon.Skip
