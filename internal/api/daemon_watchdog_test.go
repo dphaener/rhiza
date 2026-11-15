@@ -17,6 +17,7 @@ import (
 // TestWatchdogStalled drives the stalled-step recovery with a fake clock,
 // fake sessions and a fake run driver.
 func TestWatchdogStalled(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	sessions := session.NewStore(t.TempDir())
 	report := func(id string, auto bool, at time.Time) {
@@ -129,6 +130,7 @@ func slicesHoldFor(holds []daemon.WatchdogHold, id string) bool {
 // signature leads to one resume --retry, an unknown failure is left alone,
 // and so is a run that is live.
 func TestWatchdogTransient(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	failed := func(id, out string, auto bool) run.Journal {
 		return run.Journal{ID: id, Entries: []run.Entry{
@@ -195,6 +197,7 @@ func TestWatchdogTransient(t *testing.T) {
 // budget of one holds across them, and a run whose continue is already
 // queued is not charged.
 func TestWatchdogTransientBudgetAcrossPolls(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
 		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
@@ -246,6 +249,7 @@ func TestWatchdogTransientBudgetAcrossPolls(t *testing.T) {
 // once, the run is resumed once they pass, and a head already at attempt 2,
 // or already rerun, gets no second rerun, while a new head gets its own.
 func TestWatchdogCIRerun(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\n"
 	failed := func(id string) run.Journal {
@@ -351,6 +355,7 @@ func TestWatchdogCIRerun(t *testing.T) {
 // With ciReruns N the watchdog reruns a head's failed jobs while an attempt
 // is at most N, and never once an attempt is above N.
 func TestWatchdogCIRerunBudgetN(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\n"
 	j := run.Journal{ID: "r", Entries: []run.Entry{
@@ -390,6 +395,7 @@ func TestWatchdogCIRerunBudgetN(t *testing.T) {
 // passes together, and not at all while its journal stays where the PR was
 // found gone, its head red again after the rerun, or its budget spent.
 func TestWatchdogCIReadsBounded(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"rhiza ship check --settled\"\non.pass = \"merge\"\n[step.merge]\nkind = \"command\"\nrun = \"rhiza ship merge\"\n"
 	failed := func(id string) run.Journal {
@@ -438,6 +444,7 @@ func TestWatchdogCIReadsBounded(t *testing.T) {
 // TestWatchdogNestedStep: a stalled step three levels deep is named whole in
 // the watchdog's log and in the inbox hold it leaves.
 func TestWatchdogNestedStep(t *testing.T) {
+	t.Parallel()
 	const nested = "ship-change/build/build"
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	sessions := session.NewStore(t.TempDir())
@@ -481,6 +488,7 @@ func TestWatchdogNestedStep(t *testing.T) {
 // TestWatchdogTransientClassifierError leaves a failure to the inbox when the
 // classifier cannot run or is not set, even if the output looks transient.
 func TestWatchdogTransientClassifierError(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
 		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},

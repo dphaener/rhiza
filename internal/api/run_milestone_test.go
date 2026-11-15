@@ -15,6 +15,7 @@ import (
 // set and the fix, when it serves none: no intent at all, or an intent
 // under no milestone.
 func TestRunMilestoneCheck(t *testing.T) {
+	t.Parallel()
 	ctx, _, _, _ := openPRFixture(t, false)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	writePolicy(t, ctx.Root, "[schedule]\nbacklog = \"skip\"\n")
@@ -121,6 +122,7 @@ func writePolicy(t *testing.T, root, body string) {
 // that one, directly or through an intent under it, and one serving
 // another milestone or none fails naming it.
 func TestRunMilestoneCheckBacklogAndNamedMilestone(t *testing.T) {
+	t.Parallel()
 	ctx, _, _, _ := openPRFixture(t, false)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	store := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))

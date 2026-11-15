@@ -13,6 +13,7 @@ import (
 // same bytes into the main checkout; a dry run predicts the same change set
 // ID and worktree and writes nothing.
 func TestNewPlanChange(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "plan-reports")
 	plan, err := os.ReadFile(filepath.Join("..", "workflow", "builtin", "plan.toml"))
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 )
 
 func TestInstallVersion(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ in, want string }{
 		{"v1.2.3", "v1.2.3"},
 		{"v0.3.0", "v0.3.0"},
@@ -35,6 +36,7 @@ func TestInstallVersion(t *testing.T) {
 }
 
 func TestWithGitattribute(t *testing.T) {
+	t.Parallel()
 	const line = ".rhiza/rendered/** linguist-generated=true"
 	for _, tc := range []struct {
 		name, have, want string
@@ -89,6 +91,7 @@ func writeRoot(t *testing.T, ctx *Ctx, p, data string) {
 }
 
 func TestCIInstall(t *testing.T) {
+	t.Parallel()
 	both := []string{gitattributesPath, workflowPath}
 	ctx := initCtx(t)
 	ctx.Version = "v1.2.3"
@@ -151,6 +154,7 @@ func TestCIInstall(t *testing.T) {
 }
 
 func TestCIInstallLatest(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	ctx.Version = "dev"
 	ciInstall(t, ctx, `{}`)
@@ -160,6 +164,7 @@ func TestCIInstallLatest(t *testing.T) {
 }
 
 func TestCIInstallErrors(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "ci.install", `{}`)
 	wantExit(t, err, 4)
@@ -181,6 +186,7 @@ func TestCIInstallErrors(t *testing.T) {
 // can copy it: it must state the rule and carry the example job, and name no
 // language or test tool.
 func TestDocsCISinceGreen(t *testing.T) {
+	t.Parallel()
 	b, err := os.ReadFile(filepath.Join("..", "..", "docs", "ci-since-last-green.md"))
 	if err != nil {
 		t.Fatal(err)

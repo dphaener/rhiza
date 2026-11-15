@@ -28,6 +28,7 @@ func readRendered(t *testing.T, ctx *Ctx, p string) string {
 }
 
 func TestRenderEmpty(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	r := renderOK(t, ctx)
 	if !slices.Equal(r.Written, []string{".rhiza/rendered/index.md"}) || len(r.Removed) != 0 || r.Unchanged != 0 {
@@ -46,6 +47,7 @@ func TestRenderEmpty(t *testing.T) {
 }
 
 func TestRenderWritesAndRemoves(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	renderOK(t, ctx)
 	ctx.Record = true
@@ -109,6 +111,7 @@ func TestRenderWritesAndRemoves(t *testing.T) {
 }
 
 func TestRenderErrors(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	_, err := callOp(t, ctx, "render", `{}`)
 	wantExit(t, err, 4)

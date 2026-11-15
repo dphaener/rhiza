@@ -53,6 +53,7 @@ func guideGit(t *testing.T, dir string, args ...string) string {
 }
 
 func TestDaemonGuideRefresh(t *testing.T) {
+	t.Parallel()
 	setup := func(t *testing.T) (*Ctx, string, rootcfg.Config) {
 		ctx := testCtx(t.TempDir())
 		ctx.Version = "1.2.3"
@@ -142,6 +143,8 @@ func TestDaemonGuideRefresh(t *testing.T) {
 // new binary a re-exec runs: at the first poll of each start (ctx.Reap,
 // called before a poll starts any session) both installs are already
 // current for the running version.
+//
+// Serial: it swaps the package's daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonGuideRefreshAtStart(t *testing.T) {
 	ctx, _ := daemonRepo(t)
 	ctx.Home = t.TempDir()
@@ -236,6 +239,7 @@ func TestDaemonGuideRefreshAtStart(t *testing.T) {
 // the scope and the install command however many polls pass, and starts the
 // step on the poll after the guide is installed, with the item gone.
 func TestDaemonGuideHold(t *testing.T) {
+	t.Parallel()
 	if os.Geteuid() == 0 {
 		t.Skip("root writes into an unwritable folder")
 	}
@@ -308,6 +312,7 @@ func TestDaemonGuideHold(t *testing.T) {
 // and an interrupted run whose workflow names one is not resumed; both go
 // on once the guide is installed.
 func TestDaemonGuideHoldPlansAndResumes(t *testing.T) {
+	t.Parallel()
 	if os.Geteuid() == 0 {
 		t.Skip("root writes into an unwritable folder")
 	}

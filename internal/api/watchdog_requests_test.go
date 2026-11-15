@@ -15,6 +15,7 @@ import (
 // retried, one failed for another reason is left for the owner, and the
 // budget holds.
 func TestWatchdogRequests(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	const def = "name = \"p\"\n[step.plan]\nkind = \"command\"\nrun = \"true\"\n"
 	started := run.Entry{Type: run.TypeStarted, At: t0, Started: &run.Started{Definition: def}}

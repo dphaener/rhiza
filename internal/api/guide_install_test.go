@@ -31,6 +31,7 @@ func writePath(t *testing.T, p, data string) {
 }
 
 func TestYAMLQuote(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ in, want string }{
 		{"plain", `"plain"`},
 		{"a: b", `"a: b"`},
@@ -46,6 +47,7 @@ func TestYAMLQuote(t *testing.T) {
 }
 
 func TestSkillFileFrontmatter(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ name, text string }{{"rhiza", "rhiza"}, {"rhiza-scrub", "scrub"}, {"rhiza-plan", "plan"}, {"rhiza-planner", "planner"}, {"rhiza-plan-reviewer", "plan-reviewer"}, {"rhiza-plan-critic", "plan-critic"}, {"rhiza-plan-reviser", "plan-reviser"}, {"rhiza-build", "build"}, {"rhiza-builder", "builder"}, {"rhiza-verifier", "verifier"}, {"rhiza-build-retry", "build-retry"}, {"rhiza-review", "review"}} {
 		b, err := skillFile(tc.name, tc.text)
 		if err != nil {
@@ -60,6 +62,7 @@ func TestSkillFileFrontmatter(t *testing.T) {
 }
 
 func TestGuideInstall(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	ctx.Version = "v1.2.3"
@@ -91,6 +94,7 @@ func TestGuideInstall(t *testing.T) {
 // TestGuideInstallBuild finds the build topic in the installed plugin, as
 // the rhiza-build skill: frontmatter, then rhiza guide build's text.
 func TestGuideInstallBuild(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
@@ -117,6 +121,7 @@ func TestGuideInstallBuild(t *testing.T) {
 // plugin as their own skills beside the old review role skills, and a second
 // install reports them unchanged.
 func TestGuideInstallRoleSkills(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
@@ -151,6 +156,7 @@ func TestGuideInstallRoleSkills(t *testing.T) {
 // TestGuideInstallReview finds the review topic in the installed plugin, as
 // the rhiza-review skill: frontmatter, then rhiza guide review's text.
 func TestGuideInstallReview(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
@@ -176,6 +182,7 @@ func TestGuideInstallReview(t *testing.T) {
 // installed plugin as skills, each the frontmatter plus its topic's text,
 // and a second install reporting them unchanged.
 func TestGuideInstallReviewRoles(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	r := guideInstall(t, ctx, `{"agent":"claude"}`)
@@ -204,6 +211,7 @@ func TestGuideInstallReviewRoles(t *testing.T) {
 }
 
 func TestGuideInstallForeign(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
@@ -232,6 +240,7 @@ func TestGuideInstallForeign(t *testing.T) {
 }
 
 func TestInstalledVersion(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name, manifest, version string
 		ok                      bool
@@ -258,6 +267,7 @@ func TestInstalledVersion(t *testing.T) {
 }
 
 func TestGuideInstallErrors(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	for _, tc := range []struct {
 		name, req string
@@ -288,6 +298,7 @@ func TestGuideInstallErrors(t *testing.T) {
 }
 
 func TestGuideInstallEmptyFolder(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
@@ -303,6 +314,7 @@ func TestGuideInstallEmptyFolder(t *testing.T) {
 }
 
 func TestGuideInstallFileInTheWay(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	dir := filepath.Join(ctx.Home, ".claude", "skills", "rhiza")
@@ -320,6 +332,7 @@ func TestGuideInstallFileInTheWay(t *testing.T) {
 // TestGuideInstallConcurrent runs first installs at once: each sees the
 // folder another may have just created, and none may call it foreign.
 func TestGuideInstallConcurrent(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	ctx.Home = t.TempDir()
 	const n = 8

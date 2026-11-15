@@ -31,6 +31,7 @@ func watchdogCtx(t *testing.T, cfg map[string]string) (*Ctx, string) {
 }
 
 func TestWatchdogPolicy(t *testing.T) {
+	t.Parallel()
 	t.Run("defaults", func(t *testing.T) {
 		ctx, _ := watchdogCtx(t, nil)
 		p, err := WatchdogPolicyOf(ctx)

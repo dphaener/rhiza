@@ -61,6 +61,8 @@ func (f *messageFixture) noRex(t *testing.T, when string) {
 	}
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageWaitsForThePrompt(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindQuestion)
@@ -143,6 +145,7 @@ func TestSessionMessageWaitsForThePrompt(t *testing.T) {
 }
 
 func TestSessionMessageExitedSession(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	code := 0
 	if _, err := f.st.Update(f.sid, func(r *session.Record) {
@@ -161,6 +164,8 @@ func TestSessionMessageExitedSession(t *testing.T) {
 	}
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageExitWhileWaiting(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindPermission)
@@ -180,6 +185,8 @@ func TestSessionMessageExitWhileWaiting(t *testing.T) {
 	f.noRex(t, "exited while waiting")
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageTimeout(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindQuestion)
@@ -205,6 +212,7 @@ func TestSessionMessageTimeout(t *testing.T) {
 }
 
 func TestSessionMessageDryRun(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	f.ctx.DryRun = true
 	resp, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello"}`)
@@ -225,6 +233,7 @@ func TestSessionMessageDryRun(t *testing.T) {
 }
 
 func TestSessionMessageRefusals(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, req string
 		exit      int
@@ -254,6 +263,7 @@ func TestSessionMessageRefusals(t *testing.T) {
 }
 
 func TestTypePointerNoExec(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	f.ctx.Exec = nil
 	_, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"hello"}`)
@@ -269,6 +279,7 @@ func TestTypePointerNoExec(t *testing.T) {
 }
 
 func TestTypePointerOneLine(t *testing.T) {
+	t.Parallel()
 	if got := messagePointer("a", "x\ny\tz.md"); got != "rhiza: message from a: read x y z.md and act on it." {
 		t.Errorf("pointer %q", got)
 	}
@@ -278,6 +289,7 @@ func TestTypePointerOneLine(t *testing.T) {
 // one blocked on a question or menu, idle at its prompt or still starting
 // is left to typePointer, which waits for the prompt.
 func TestQueuePointerLeavesNonWorkingSessions(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ state, kind string }{
 		{session.StateBlocked, session.KindQuestion},
 		{session.StateBlocked, session.KindPermission},
@@ -303,6 +315,9 @@ func TestQueuePointerLeavesNonWorkingSessions(t *testing.T) {
 
 // A permission block the hook reported clears once Rex reports the session
 // idle afterwards: the pointer is typed once, then Enter.
+//
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageAfterPermissionBlockCleared(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setHook(t, session.StateBlocked, session.KindPermission)
@@ -328,6 +343,9 @@ func TestSessionMessageAfterPermissionBlockCleared(t *testing.T) {
 
 // A blocked session gets one stderr line naming the kind, the detail and
 // rhiza inbox open; the timeout error names the last status.
+//
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageSaysWhyWaiting(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setBlock(t, session.KindPermission, "Bash")
@@ -353,6 +371,9 @@ func TestSessionMessageSaysWhyWaiting(t *testing.T) {
 
 // A blocked session that starts working mid-wait gets a second line, and
 // only one: the timeout error names working as the last status.
+//
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestSessionMessageSaysWhenStatusChanges(t *testing.T) {
 	f := newMessageFixture(t)
 	f.setBlock(t, session.KindPermission, "Bash")
@@ -397,6 +418,7 @@ func (f *messageFixture) setCheckout(t *testing.T) string {
 // TestSessionMessageInSessionCheckout puts the message file, in a dry run
 // and a real one, under the session's Dir, never under its worktree.
 func TestSessionMessageInSessionCheckout(t *testing.T) {
+	t.Parallel()
 	f := newMessageFixture(t)
 	dir := f.setCheckout(t)
 	folder := filepath.Join(dir, ".rhiza", "local", "messages", f.sid)

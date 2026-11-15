@@ -12,6 +12,7 @@ import (
 // change set a bug's plan run opens takes its display title, and so its slug,
 // from the bug's text, not from a bare "Fix".
 func TestBugRequestTitlesAreDistinct(t *testing.T) {
+	t.Parallel()
 	a := daemon.Request{Kind: daemon.KindBug, Text: "Request plan runs fail at close-out: the daemon writes"}
 	b := daemon.Request{Kind: daemon.KindBug, Text: "rhiza run resume refuses a plan run whose record change set landed"}
 	ta := changeset.Open{Kind: changeset.KindIntention, Intent: a.Intent()}.DisplayTitle()

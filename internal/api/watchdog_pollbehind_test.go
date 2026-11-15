@@ -14,6 +14,7 @@ import (
 // slow poll is logged once and warns in health, a poll within the limit
 // clears it.
 func TestWatchdogPollBehind(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	pol := WatchdogPolicy{Enabled: true, PollBehind: 3}
 	var state daemon.State
@@ -55,6 +56,7 @@ func TestWatchdogPollBehind(t *testing.T) {
 // TestWatchdogPollBehindSteps times named steps with a fake clock and checks
 // the logged line and the recorded watchdog action name the slowest ones.
 func TestWatchdogPollBehindSteps(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	now := t0
 	ps := newPollSteps(func() time.Time { return now })
@@ -95,6 +97,7 @@ func TestWatchdogPollBehindSteps(t *testing.T) {
 // step blocks past it logs one line naming the step and project before the
 // step is released, a poll within the limit and a disabled check log none.
 func TestWatchdogPollOverrun(t *testing.T) {
+	t.Parallel()
 	const interval = 10 * time.Millisecond
 	var mu sync.Mutex
 	var lines []string
@@ -151,6 +154,7 @@ func TestWatchdogPollOverrun(t *testing.T) {
 // which watch it, when none is set), and a policy read
 // mid-poll re-arms the watch, timed from the poll's start.
 func TestWatchdogPollOverrunFirstPoll(t *testing.T) {
+	t.Parallel()
 	if def := defaultWatchdogPolicy(); !def.Enabled || def.PollBehind != DefaultPollBehind {
 		t.Fatalf("default policy %+v, want enabled with poll-behind %d", def, DefaultPollBehind)
 	}

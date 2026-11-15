@@ -47,6 +47,7 @@ func wantOwnTab(t *testing.T, f *sessionFixture) {
 // A check session opens its own tab even when an earlier session of the
 // run has a pane, and splits nothing.
 func TestStartCheck(t *testing.T) {
+	t.Parallel()
 	f, r := paneRunner(t)
 	f.rex.calls = nil
 	step := workflow.Step{Name: "review", Split: workflow.SplitRight}
@@ -67,6 +68,7 @@ func TestStartCheck(t *testing.T) {
 
 // A change set fixer's session opens its own tab the same way.
 func TestStartFix(t *testing.T) {
+	t.Parallel()
 	f, r := paneRunner(t)
 	f.rex.calls = nil
 	step := workflow.Step{Name: "review", Split: workflow.SplitBelow, Fixer: &workflow.Role{Prompt: "fix"}}
@@ -79,6 +81,7 @@ func TestStartFix(t *testing.T) {
 // An agent step's session, such as a plan run's interview, opens its own
 // tab and splits nothing.
 func TestStartAgent(t *testing.T) {
+	t.Parallel()
 	f, r := paneRunner(t)
 	f.rex.calls = nil
 	if _, err := r.StartAgent(workflow.Step{Name: "interview", Prompt: "go", Split: workflow.SplitRight}, "", nil); err != nil {

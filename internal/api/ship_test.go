@@ -18,6 +18,7 @@ import (
 )
 
 func TestParsePRView(t *testing.T) {
+	t.Parallel()
 	in := `{"number":12,"url":"https://github.com/o/r/pull/12","state":"OPEN","headRefOid":"abc1234def",
 	"statusCheckRollup":[
 	  {"__typename":"CheckRun","name":"test","status":"COMPLETED","conclusion":"SUCCESS"},
@@ -54,6 +55,7 @@ func TestParsePRView(t *testing.T) {
 }
 
 func TestParseRunList(t *testing.T) {
+	t.Parallel()
 	got, err := parseRunList([]byte(`[{"name":"CI","status":"completed","conclusion":"success"},{"name":"Rhiza","status":"in_progress","conclusion":""}]`))
 	if err != nil {
 		t.Fatal(err)
@@ -71,6 +73,7 @@ func TestParseRunList(t *testing.T) {
 }
 
 func TestChecksVerdict(t *testing.T) {
+	t.Parallel()
 	ok := ShipCheck{Name: "test", Status: "COMPLETED", Conclusion: "SUCCESS"}
 	cases := []struct {
 		name           string
@@ -192,6 +195,7 @@ func shipCheck(t *testing.T, f *sessionFixture, req string) ShipCheckResponse {
 }
 
 func TestShipCheckNoPR(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = "!no pull requests found for branch \"cs/ship-it\""
 	for _, req := range []string{`{}`, `{"settled":true}`} {
@@ -212,6 +216,7 @@ func TestShipCheckNoPR(t *testing.T) {
 }
 
 func TestShipCheckGhFails(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = "!HTTP 401: Bad credentials"
 	_, err := callOp(t, f.ctx, "ship.check", `{}`)
@@ -222,6 +227,7 @@ func TestShipCheckGhFails(t *testing.T) {
 }
 
 func TestShipCheckClosedPR(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = strings.Replace(openPR(greenRollup), `"OPEN"`, `"CLOSED"`, 1)
 	r := shipCheck(t, f, `{"settled":true}`)
@@ -234,6 +240,7 @@ func TestShipCheckClosedPR(t *testing.T) {
 }
 
 func TestShipCheckPending(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(`{"name":"test","status":"IN_PROGRESS","conclusion":""}`)
 	for _, req := range []string{`{}`, `{"settled":true}`} {
@@ -255,6 +262,7 @@ func TestShipCheckPending(t *testing.T) {
 }
 
 func TestShipCheckFailed(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(`{"name":"test","status":"COMPLETED","conclusion":"FAILURE"},{"name":"lint","status":"COMPLETED","conclusion":"SUCCESS"},{"context":"ci/x","state":"ERROR"}`)
 	if r := shipCheck(t, f, `{"settled":true}`); !r.Passed || r.ExitCode() != 0 || r.Written {
@@ -284,6 +292,7 @@ const infraRollup = `{"name":"test","status":"COMPLETED","conclusion":"FAILURE",
 // newer attempt of a check run once it finishes; with no baseline it is
 // --settled.
 func TestShipCheckSettledChanged(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(infraRollup)
 	g.answers["run rerun 42 --failed"] = ""
@@ -336,6 +345,7 @@ func TestShipCheckSettledChanged(t *testing.T) {
 }
 
 func TestShipCheckGreenThenMerge(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 
 	_, err := callOp(t, f.ctx, "ship.merge", `{}`)
@@ -443,6 +453,7 @@ func TestShipCheckGreenThenMerge(t *testing.T) {
 }
 
 func TestShipMergeNotMerged(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
 		t.Fatal(err)
@@ -464,6 +475,7 @@ func TestShipMergeNotMerged(t *testing.T) {
 }
 
 func TestShipMergeRefusedStops(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
 		t.Fatal(err)
@@ -513,6 +525,7 @@ func TestShipMergeRefusedStops(t *testing.T) {
 }
 
 func TestShipTargetWithoutWorktree(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	if err := os.RemoveAll(f.worktree); err != nil {
 		t.Fatal(err)
@@ -525,6 +538,7 @@ func TestShipTargetWithoutWorktree(t *testing.T) {
 }
 
 func TestShipStateRoundTrip(t *testing.T) {
+	t.Parallel()
 	path := filepath.Join(t.TempDir(), "a", "b", "cs.json")
 	if st, err := readShipState(path); err != nil || st.PR != 0 {
 		t.Fatalf("missing state: %+v, %v", st, err)
@@ -544,6 +558,7 @@ func TestShipStateRoundTrip(t *testing.T) {
 }
 
 func TestShipEvidenceHandle(t *testing.T) {
+	t.Parallel()
 	if got := shipEvidenceHandle(7, "ship-it"); got != "pr-7-ship-it" {
 		t.Errorf("handle = %q", got)
 	}
@@ -555,6 +570,7 @@ func TestShipEvidenceHandle(t *testing.T) {
 }
 
 func TestShipEvidenceFields(t *testing.T) {
+	t.Parallel()
 	st := shipState{PR: 7, URL: "https://github.com/o/r/pull/7", Head: "abc1234def",
 		Checks: []ShipCheck{{Name: "test", Status: "COMPLETED", Conclusion: "SUCCESS"}, {Name: "ci/x", Status: "COMPLETED", Conclusion: "NEUTRAL"}}}
 	want := []string{
@@ -609,6 +625,7 @@ func shipLandFixture(t *testing.T) (*sessionFixture, string, id.ID) {
 }
 
 func TestShipLand(t *testing.T) {
+	t.Parallel()
 	f, state, capID := shipLandFixture(t)
 	cs := currentOf(t, f.ctx)
 	resp, err := callOp(t, f.ctx, "ship.land", `{}`)
@@ -665,6 +682,7 @@ func TestShipLand(t *testing.T) {
 }
 
 func TestShipLandAfterAgentLanded(t *testing.T) {
+	t.Parallel()
 	f, _, capID := shipLandFixture(t)
 	cs := currentOf(t, f.ctx)
 	if _, err := callOp(t, f.ctx, "land", `{}`); err != nil {
@@ -700,6 +718,7 @@ func TestShipLandAfterAgentLanded(t *testing.T) {
 }
 
 func TestShipLandRefusals(t *testing.T) {
+	t.Parallel()
 	f, state, _ := shipLandFixture(t)
 	f.git.out["symbolic-ref --short HEAD"] = "main\n"
 	_, err := callOp(t, f.ctx, "ship.land", `{}`)
@@ -743,6 +762,7 @@ func (s *shipExec) run(name string, args []string, dir string, _ []string) ([]by
 }
 
 func TestShipCloseOut(t *testing.T) {
+	t.Parallel()
 	f, _, state := shipFixture(t)
 	x := &shipExec{answers: map[string]string{}}
 	f.ctx.Exec = x.run
@@ -815,6 +835,7 @@ func TestShipCloseOut(t *testing.T) {
 }
 
 func TestShipCloseOutForget(t *testing.T) {
+	t.Parallel()
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
 		t.Fatal(err)
@@ -837,6 +858,7 @@ func TestShipCloseOutForget(t *testing.T) {
 }
 
 func TestShipCloseOutDirtyWorktree(t *testing.T) {
+	t.Parallel()
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
 		t.Fatal(err)
@@ -853,6 +875,7 @@ func TestShipCloseOutDirtyWorktree(t *testing.T) {
 }
 
 func TestShipCommand(t *testing.T) {
+	t.Parallel()
 	f, _, _ := shipFixture(t)
 	f.ctx.Start = nil
 	resp, err := callOp(t, f.ctx, "ship.command", `{}`)
@@ -902,6 +925,7 @@ func TestShipCommand(t *testing.T) {
 }
 
 func TestShipCheckWaitsForPushedHead(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "abc1234def"}); err != nil {
 		t.Fatal(err)
@@ -924,6 +948,7 @@ func TestShipCheckWaitsForPushedHead(t *testing.T) {
 // A head someone else pushed on top of the run's is followed; one that
 // drops the run's commits stays unsettled and is named.
 func TestShipCheckFollowsMovedHead(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "0ld0000000", Pushed: "0ld0000000"}); err != nil {
 		t.Fatal(err)
@@ -960,6 +985,7 @@ func TestShipCheckFollowsMovedHead(t *testing.T) {
 // --pr-open passes on an open PR whatever its CI, records nothing, and
 // fails with no PR or a closed one.
 func TestShipCheckPROpen(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = "!no pull requests found for branch \"cs/ship-it\""
 	if r := shipCheck(t, f, `{"pr_open":true}`); r.Passed || r.ExitCode() != 1 {
@@ -990,6 +1016,7 @@ func TestShipCheckPROpen(t *testing.T) {
 // the worktree is gone; a tab Rex no longer has is already closed, and
 // other change sets' tabs are left alone.
 func TestShipCloseOutClosesTabs(t *testing.T) {
+	t.Parallel()
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
 		t.Fatal(err)
@@ -1068,6 +1095,7 @@ func rhizaRepoFixture(t *testing.T) (*sessionFixture, *shipExec, string) {
 }
 
 func TestShipLandWithHeadBuild(t *testing.T) {
+	t.Parallel()
 	f, x, bin := rhizaRepoFixture(t)
 	cs := currentOf(t, f.ctx)
 	f.ctx.ActorRef = shipTestActor
@@ -1107,6 +1135,7 @@ func TestShipLandWithHeadBuild(t *testing.T) {
 }
 
 func TestShipLandHeadBuildMissing(t *testing.T) {
+	t.Parallel()
 	f, x, bin := rhizaRepoFixture(t)
 	cs := currentOf(t, f.ctx)
 	if err := os.Remove(bin); err != nil {
@@ -1135,6 +1164,7 @@ func TestShipLandHeadBuildMissing(t *testing.T) {
 }
 
 func TestShipRenderInProcess(t *testing.T) {
+	t.Parallel()
 	f, _, _ := shipLandFixture(t)
 	x := &shipExec{answers: map[string]string{}}
 	f.ctx.Exec = x.run
@@ -1152,6 +1182,7 @@ func TestShipRenderInProcess(t *testing.T) {
 }
 
 func TestShipActorFlags(t *testing.T) {
+	t.Parallel()
 	a, err := id.Parse("01M5PWGEF85Y185JZ2ZGCNH40N")
 	if err != nil {
 		t.Fatal(err)
@@ -1173,6 +1204,7 @@ func TestShipActorFlags(t *testing.T) {
 
 // The stale-render test hook applies only with RHIZA_TEST_NOW set too.
 func TestRenderStaleHookInert(t *testing.T) {
+	t.Parallel()
 	env := func(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
 	for _, c := range []struct {
 		getenv func(string) string
@@ -1191,6 +1223,7 @@ func TestRenderStaleHookInert(t *testing.T) {
 }
 
 func TestSplitConflicts(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name            string
 		rendered        string
@@ -1221,6 +1254,7 @@ func TestSplitConflicts(t *testing.T) {
 }
 
 func TestGitLines(t *testing.T) {
+	t.Parallel()
 	if got := gitLines("a.go\n\n b.md \n"); !slices.Equal(got, []string{"a.go", "b.md"}) {
 		t.Errorf("gitLines = %q", got)
 	}
@@ -1272,6 +1306,7 @@ func shipRebase(t *testing.T, f *sessionFixture) ShipRebaseResponse {
 }
 
 func TestShipRebaseNotBehind(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out["merge-base --is-ancestor "+rebaseOnto+" HEAD"] = ""
 	r := shipRebase(t, f)
@@ -1292,6 +1327,7 @@ func TestShipRebaseNotBehind(t *testing.T) {
 }
 
 func TestShipRebaseClean(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseMerge] = ""
 	f.git.out[rebasePush] = ""
@@ -1319,6 +1355,7 @@ func TestShipRebaseClean(t *testing.T) {
 // --no-push merges main and stops: no push, no pushed head recorded, so
 // origin's branch stays where it was.
 func TestShipRebaseNoPush(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseMerge] = ""
 	resp, err := callOp(t, f.ctx, "ship.rebase", `{"no_push":true}`)
@@ -1343,6 +1380,7 @@ func TestShipRebaseNoPush(t *testing.T) {
 }
 
 func TestShipRebaseRenderedConflict(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
 	f.git.out["diff --cached --name-only"] = ".rhiza/rendered/index.md\n"
@@ -1376,6 +1414,7 @@ func TestShipRebaseRenderedConflict(t *testing.T) {
 }
 
 func TestShipRebaseCodeConflict(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	cs := currentOf(t, f.ctx)
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\nfeature.txt\n"
@@ -1428,6 +1467,7 @@ func TestShipRebaseCodeConflict(t *testing.T) {
 // fewer than 3 conflict fixes (merge commits with the run's Review:
 // trailer) on the branch.
 func TestShipCheckConflicts(t *testing.T) {
+	t.Parallel()
 	f, _ := shipRebaseFixture(t)
 	fixes := ""
 	inner := f.ctx.Exec
@@ -1558,6 +1598,7 @@ func execOrder(f *sessionFixture, bin string) []string {
 // workflow's build command after merging main and before rendering, since
 // the step before it built the head without main.
 func TestShipRebaseBuildsMergedHead(t *testing.T) {
+	t.Parallel()
 	f, _ := shipRebaseFixture(t)
 	bin, _ := headBuildRebase(t, f, "")
 	f.git.out[rebaseMerge] = ""
@@ -1573,6 +1614,7 @@ func TestShipRebaseBuildsMergedHead(t *testing.T) {
 
 // A rendered-only conflict is settled with the merged head's build too.
 func TestShipRebaseRenderedConflictBuildsMergedHead(t *testing.T) {
+	t.Parallel()
 	f, _ := shipRebaseFixture(t)
 	bin, _ := headBuildRebase(t, f, "")
 	f.git.out[rebaseConflict] = ".rhiza/rendered/index.md\n"
@@ -1592,6 +1634,7 @@ func TestShipRebaseRenderedConflictBuildsMergedHead(t *testing.T) {
 // A merged head that does not build pushes nothing and puts the branch
 // back, so a retried step merges again.
 func TestShipRebaseMergedHeadBuildFails(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	headBuildRebase(t, f, "!cmd/rhiza/main.go:1:1: syntax error")
 	f.git.out[rebaseMerge] = ""
@@ -1615,6 +1658,7 @@ func TestShipRebaseMergedHeadBuildFails(t *testing.T) {
 }
 
 func TestShipRebaseFixerMerge(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out["merge-base --is-ancestor "+rebaseOnto+" HEAD"] = ""
 	f.git.out["rev-list --merges --count "+rebaseOrigin+"..HEAD"] = "1\n"
@@ -1634,6 +1678,7 @@ func TestShipRebaseFixerMerge(t *testing.T) {
 }
 
 func TestShipRebasePushFails(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseMerge] = ""
 	f.git.out["reset -q --keep beef000111"] = ""
@@ -1649,6 +1694,7 @@ func TestShipRebasePushFails(t *testing.T) {
 }
 
 func TestShipRebaseRefusals(t *testing.T) {
+	t.Parallel()
 	f, _ := shipRebaseFixture(t)
 	f.git.out["symbolic-ref --short HEAD"] = "main\n"
 	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
@@ -1685,6 +1731,7 @@ func shipFollowFixture(t *testing.T) *sessionFixture {
 }
 
 func TestShipFollowFastForwards(t *testing.T) {
+	t.Parallel()
 	f := shipFollowFixture(t)
 	f.git.out["status --porcelain --untracked-files=no"] = ""
 	f.git.out["merge --ff-only "+rebaseOrigin] = ""
@@ -1697,6 +1744,7 @@ func TestShipFollowFastForwards(t *testing.T) {
 }
 
 func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
+	t.Parallel()
 	f := shipFollowFixture(t)
 	f.git.out["status --porcelain --untracked-files=no"] = " M feature.txt\n"
 	_, err := callOp(t, f.ctx, "ship.rebase", `{}`)
@@ -1714,6 +1762,7 @@ func TestShipFollowRefusesDirtyWorktree(t *testing.T) {
 // and a conflicting merge (the fake's merge fails) is aborted and refused,
 // naming origin's commits. Nothing is reset, rebased or pushed.
 func TestShipFollowRefusesConflictingOrigin(t *testing.T) {
+	t.Parallel()
 	f := shipFollowFixture(t)
 	delete(f.git.out, "merge-base --is-ancestor HEAD "+rebaseOrigin)
 	f.git.out["rev-list --oneline HEAD.."+rebaseOrigin] = "def5678 Origin only commit\n"
@@ -1742,6 +1791,7 @@ func TestShipFollowRefusesConflictingOrigin(t *testing.T) {
 // new PR's head and ship merge merges it instead of reporting the plan's
 // merge as already done.
 func TestShipMergeAfterPlanMerge(t *testing.T) {
+	t.Parallel()
 	ctx, g, _, git := openPRFixture(t, true)
 	git("push", "-q", "origin", "main")
 	var merges []string
@@ -1790,6 +1840,7 @@ func TestShipMergeAfterPlanMerge(t *testing.T) {
 }
 
 func TestShipCheckNoRunIDNotRerun(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = openPR(`{"name":"ext","status":"COMPLETED","conclusion":"FAILURE","detailsUrl":"https://ci.example/job/1"}`)
 	r := shipCheck(t, f, `{"settled":true}`)
@@ -1803,6 +1854,7 @@ const rerunRollup = `{"name":"test","status":"COMPLETED","conclusion":"FAILURE",
 // A budget of 2 reruns a head's failed run twice, recording the count
 // before each gh call, then fails on the third red; a new head starts over.
 func TestShipCheckRerunBudget(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(rerunRollup)
 	const rerun = "gh run rerun 42 --failed"
@@ -1842,6 +1894,7 @@ func TestShipCheckRerunBudget(t *testing.T) {
 
 // Without the flag a head is rerun exactly once.
 func TestShipCheckRerunDefaultOnce(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = openPR(rerunRollup)
 	g.answers["run rerun 42 --failed"] = ""
@@ -1854,6 +1907,7 @@ func TestShipCheckRerunDefaultOnce(t *testing.T) {
 }
 
 func TestShipCheckRerunsUsage(t *testing.T) {
+	t.Parallel()
 	f, _, _ := shipFixture(t)
 	for _, req := range []string{`{"reruns":0}`, `{"reruns":-1}`} {
 		_, err := callOp(t, f.ctx, "ship.check", req)
@@ -1865,6 +1919,7 @@ func TestShipCheckRerunsUsage(t *testing.T) {
 }
 
 func TestShipCloseOutRecordsStaleMain(t *testing.T) {
+	t.Parallel()
 	f, _, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
 		t.Fatal(err)
@@ -1942,6 +1997,7 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 }
 
 func TestTrimFailureLog(t *testing.T) {
+	t.Parallel()
 	p := "test\tRun\t2026-11-04T10:00:00Z "
 	jest := p + "npm test\n" + p + "FAIL src/x.test.js\n" + p + "  \x1b[31m● X › works\x1b[0m\n" + p + "    expected 1, got 2\n"
 	got, where := trimFailureLog(jest)
@@ -1986,6 +2042,7 @@ func TestTrimFailureLog(t *testing.T) {
 // After the reruns a failing Jest job's log is saved trimmed in the run's
 // folder and the finding names the file.
 func TestShipCheckSavesFailedLog(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	g.answers[shipPRView] = openPR(infraRollup)
 	g.answers["run rerun 42 --failed"] = ""
@@ -2010,6 +2067,7 @@ func TestShipCheckSavesFailedLog(t *testing.T) {
 // --test-failures passes only with a failing test recorded for the head,
 // reads the state file alone, and runs no gh.
 func TestShipCheckTestFailures(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	r := shipCheck(t, f, `{"test_failures":true}`)
 	if r.Passed || r.ExitCode() != 1 || r.Detail == "" {
@@ -2040,6 +2098,7 @@ func TestShipCheckTestFailures(t *testing.T) {
 // TestParsePRViewMultiJob feeds the rollup of one Actions run split into
 // lint, script shards, rest, budgets and the aggregate check job.
 func TestParsePRViewMultiJob(t *testing.T) {
+	t.Parallel()
 	job := func(name, status, conclusion string) string {
 		return `{"__typename":"CheckRun","name":"` + name + `","status":"` + status + `","conclusion":"` + conclusion +
 			`","detailsUrl":"https://github.com/o/r/actions/runs/4242/job/` + name + `"}`
@@ -2099,6 +2158,7 @@ func TestParsePRViewMultiJob(t *testing.T) {
 // refuses a pull request on the branch, open, merged or closed, whose body
 // names another change set or none, naming it, and writes no ship state.
 func TestShipCheckRefusesForeignPR(t *testing.T) {
+	t.Parallel()
 	bodies := map[string]string{
 		"another change set": "Change set 01M6T1ZR0000000000000000AB: Other.",
 		"no change set line": "Fixes a bug.",
@@ -2131,6 +2191,7 @@ const (
 // A red head after its reruns names the count, the failing tests and, when
 // the diff is .rhiza-only, that fact: never a claim about the cause.
 func TestShipCheckFailureDetailNotes(t *testing.T) {
+	t.Parallel()
 	const logCall = "run view 42 --log-failed"
 	const testLog = "test\tRun\t--- FAIL: TestGarden (0.1s)\n"
 	cases := []struct{ name, diff, check, log, want string }{
@@ -2182,6 +2243,7 @@ func withRunEnv(f *sessionFixture, run *string) {
 }
 
 func TestShipCheckNamesRun(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	run := "01RUNA"
 	withRunEnv(f, &run)
@@ -2199,6 +2261,7 @@ func TestShipCheckNamesRun(t *testing.T) {
 }
 
 func TestShipLandNamesRun(t *testing.T) {
+	t.Parallel()
 	f, state, _ := shipLandFixture(t)
 	run := "01RUNA"
 	withRunEnv(f, &run)
@@ -2211,6 +2274,7 @@ func TestShipLandNamesRun(t *testing.T) {
 }
 
 func TestShipRebaseNamesRun(t *testing.T) {
+	t.Parallel()
 	f, state := shipRebaseFixture(t)
 	f.git.out[rebaseMerge] = ""
 	f.git.out[rebasePush] = ""
@@ -2223,6 +2287,7 @@ func TestShipRebaseNamesRun(t *testing.T) {
 }
 
 func TestShipLandHeadBuildErrorDetail(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, out string
 		err       error
@@ -2255,6 +2320,7 @@ func TestShipLandHeadBuildErrorDetail(t *testing.T) {
 }
 
 func TestShipCheckDraftStops(t *testing.T) {
+	t.Parallel()
 	for _, req := range []string{`{}`, `{"settled":true}`} {
 		f, g, state := shipFixture(t)
 		g.answers[shipPRView] = strings.Replace(openPR(greenRollup), `"state":"OPEN"`, `"state":"OPEN","isDraft":true`, 1)
@@ -2278,6 +2344,7 @@ func TestShipCheckDraftStops(t *testing.T) {
 }
 
 func TestShipMergeDraftStops(t *testing.T) {
+	t.Parallel()
 	f, g, state := shipFixture(t)
 	if err := writeShipState(state, shipState{PR: 7, Branch: "cs/ship-it", Head: "abc1234def"}); err != nil {
 		t.Fatal(err)
@@ -2312,6 +2379,7 @@ func attemptRollup(job string, conclusion string) string {
 
 // --infra passes only on a recorded red head with no failing test.
 func TestShipCheckInfra(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	if r := shipCheck(t, f, `{"infra":true}`); r.Passed || r.ExitCode() != 1 {
 		t.Errorf("no red recorded: %+v", r)
@@ -2348,6 +2416,7 @@ func TestShipCheckInfra(t *testing.T) {
 // --settled --changed --rerun-infra reruns with backoff from the state
 // file, and settles on a green attempt, a failing test or a new head.
 func TestShipCheckRerunInfraBackoff(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	now := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
@@ -2424,6 +2493,7 @@ func TestShipCheckRerunInfraBackoff(t *testing.T) {
 }
 
 func TestShipInfraWaitSettlesOnCause(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = openPR(infraRollup)
 	g.answers["run rerun 42 --failed"] = ""
@@ -2453,6 +2523,7 @@ func modelOnlyRollup() string {
 // SKIPPED jobs are not failed jobs: a model-only PR's head is settled and
 // green, and ship check reruns nothing for it.
 func TestShipRerunFailedSkippedJobs(t *testing.T) {
+	t.Parallel()
 	f, g, _ := shipFixture(t)
 	g.answers[shipPRView] = openPR(modelOnlyRollup())
 	// No "run rerun" answer: a rerun call would fail the check.

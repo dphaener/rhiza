@@ -10,6 +10,7 @@ import (
 // detaches profiles into the daemon's path with the run's ID added; unset,
 // the driver's environment has none.
 func TestDaemonCPUProfilePassedToDrivers(t *testing.T) {
+	t.Parallel()
 	run := func(prof string) Program {
 		t.Helper()
 		ctx := testCtx(t.TempDir())

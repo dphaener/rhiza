@@ -7,6 +7,7 @@ import (
 )
 
 func TestClassifyFailure(t *testing.T) {
+	t.Parallel()
 	say := func(out string, err error) func(string, string) (string, error) {
 		return func(string, string) (string, error) { return out, err }
 	}
@@ -36,6 +37,7 @@ func TestClassifyFailure(t *testing.T) {
 }
 
 func TestClassifyFailureGivesOutputAndCommand(t *testing.T) {
+	t.Parallel()
 	var gotCmd, gotIn string
 	ClassifyFailure("mycmd", "the output", func(c, in string) (string, error) {
 		gotCmd, gotIn = c, in

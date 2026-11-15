@@ -59,6 +59,7 @@ func treeShape(r TreeResponse) []string {
 }
 
 func TestTree(t *testing.T) {
+	t.Parallel()
 	ctx := treeLog(t)
 	cases := []struct {
 		req  string
@@ -123,6 +124,7 @@ func TestTree(t *testing.T) {
 }
 
 func TestTreeEmpty(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	for _, c := range []struct{ req, want string }{
 		{`{}`, "No capabilities yet.\n\nnext: rhiza add capability <handle>\n"},
@@ -142,6 +144,7 @@ func TestTreeEmpty(t *testing.T) {
 }
 
 func TestTreeErrors(t *testing.T) {
+	t.Parallel()
 	ctx := treeLog(t)
 	for _, c := range []struct {
 		req  string

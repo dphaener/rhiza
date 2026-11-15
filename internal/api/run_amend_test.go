@@ -131,6 +131,8 @@ func (f *amendFixture) unchanged(t *testing.T, when string) {
 	}
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendIdleStep(t *testing.T) {
 	var resp RunAmendResponse
 	f := runAmendFixture(t, func(f *amendFixture) {
@@ -191,6 +193,8 @@ func TestRunAmendIdleStep(t *testing.T) {
 	}
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendFromStdin(t *testing.T) {
 	runAmendFixture(t, func(f *amendFixture) {
 		f.ctx.Stdin = strings.NewReader(newBrief)
@@ -206,6 +210,8 @@ func TestRunAmendFromStdin(t *testing.T) {
 	})
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendRefusals(t *testing.T) {
 	cases := []struct {
 		name, req string
@@ -241,6 +247,8 @@ func TestRunAmendRefusals(t *testing.T) {
 	})
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendSymlinkRefused(t *testing.T) {
 	runAmendFixture(t, func(f *amendFixture) {
 		outside := filepath.Join(t.TempDir(), "outside.md")
@@ -264,6 +272,8 @@ func TestRunAmendSymlinkRefused(t *testing.T) {
 	})
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendDryRun(t *testing.T) {
 	runAmendFixture(t, func(f *amendFixture) {
 		f.ctx.DryRun = true
@@ -283,6 +293,8 @@ func TestRunAmendDryRun(t *testing.T) {
 	})
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendFinishedRun(t *testing.T) {
 	f := runAmendFixture(t, func(*amendFixture) {})
 	f.rex.calls = nil
@@ -294,6 +306,8 @@ func TestRunAmendFinishedRun(t *testing.T) {
 	f.unchanged(t, "finished run")
 }
 
+// Serial: it swaps the package's runClock (useClock, here or in its
+// fixture), which every run in the binary reads.
 func TestRunAmendExitedSession(t *testing.T) {
 	runAmendFixture(t, func(f *amendFixture) {
 		code := 0
@@ -309,6 +323,7 @@ func TestRunAmendExitedSession(t *testing.T) {
 }
 
 func TestAmendRel(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct{ in, want string }{
 		{"brief.md", "brief.md"},
 		{" ./docs/plan.md ", "docs/plan.md"},

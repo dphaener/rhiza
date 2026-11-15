@@ -18,6 +18,7 @@ func scriptedStart(results []fakeProcess, n *int) func(Program) (Process, error)
 }
 
 func TestCommandRerunsOnTransient(t *testing.T) {
+	t.Parallel()
 	fail := func(s string) fakeProcess { return fakeProcess{out: strings.NewReader(s), code: 1} }
 	ok := func() fakeProcess { return fakeProcess{out: strings.NewReader("ok\n"), code: 0} }
 	transient := func(out string) bool { return strings.Contains(out, "flaky") }

@@ -21,6 +21,7 @@ func sendMessagePayload(sid string) string {
 // journaled, while the hook's status is not recorded: a late hook does not
 // revive the session.
 func TestSessionHookJournalsAfterExit(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual","run":"run-1","step":"talk"}`)
 	rs := run.NewStore(run.Dir(f.common))
 	if err := rs.Create("run-1", run.Entry{Type: run.TypeStarted, At: time.Now()}); err != nil {
@@ -71,6 +72,7 @@ func TestSessionHookJournalsAfterExit(t *testing.T) {
 
 // A session in no run journals nothing and reports nothing.
 func TestSessionHookNoRunJournalsNothing(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	r, errOut := hook(t, f.ctx, "PostToolUse", sendMessagePayload(s.ID))
 	if errOut != "" {

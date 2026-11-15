@@ -30,6 +30,7 @@ func runCellBoundsLua(t *testing.T, stub, body string) lua.LValue {
 // surface.BoundsForCells over the window the block's rect implies: a block
 // filling the window, a half-width split and a 70/30 one.
 func TestRexCellBoundsScalesTheBlockToItsWindow(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name       string
 		cols, rows int        // the block's terminal size
@@ -88,6 +89,7 @@ func TestRexCellBoundsScalesTheBlockToItsWindow(t *testing.T) {
 // LAYER_BOUNDS for no block, a block in a floating layer, and a block the
 // view does not hold.
 func TestRexCellBoundsFallsBackWithoutASize(t *testing.T) {
+	t.Parallel()
 	stub := `rex = {
   session = { view = function() return { windows = { { layers = {
     { kind = "floating", layout = { block_id = "f", rect = { 0, 0, 1, 1 } } },
@@ -109,6 +111,7 @@ func TestRexCellBoundsFallsBackWithoutASize(t *testing.T) {
 // app's layer goes to the window of the focused block, in a tiled or
 // floating layer, and to none (the active one) without a block.
 func TestRexBlockWindowFindsTheFocusedBlocksWindow(t *testing.T) {
+	t.Parallel()
 	stub := `rex = {
   session = { view = function() return { windows = {
     { window_id = "w1", layers = {

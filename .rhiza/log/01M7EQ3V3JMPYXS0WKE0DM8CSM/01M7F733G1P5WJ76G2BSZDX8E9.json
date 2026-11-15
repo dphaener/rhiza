@@ -1,0 +1,40 @@
+{
+  "actor": "01M7F6VN0489ZCTKHC6XY2APMH",
+  "after": [
+    "01M7F61W1NV7YR9X3YJVV4SRK6"
+  ],
+  "at": "2026-11-15T09:02:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4d7d7fb24, the verifier ran the acceptance -run pattern (139 tests from the 34 session_/web_/inbox_/rex_ files without newSessionFixture plus plan_test.go and lifecycle_test.go) with go test -p 2 -trimpath -count=1 under the machine lock, using -shuffle=on, -shuffle=1794751111 and -shuffle=4242: all ok (19-21 s). The same pattern with -race -shuffle=on passed in 100.7 s with no DATA RACE. go vet ./internal/api exited 0. go test -list '.*' ./internal/api lists 756 Test funcs at HEAD and at HEAD~1, so none were skipped, deleted or merged. rhiza ship generate and rhiza render exited 0. The diff only adds lines to the 34 listed _test.go files plus .rhiza actor and rendered records; no non-test code changed. 114 tests call t.Parallel. All 25 serial tests have a // Serial: comment, and each reason holds: limitFixture/useClock/startAPIErr/watchFixture swap package state, launcher.Register is used in rex_actions and rex_install, t.Setenv is used in inbox_gate_budget and webGateFixture, and t.Chdir is used in session_bypass. A scan of the parallel test bodies found no Setenv, Chdir, launcher.Register, runClock, limit or api-error swaps, run-tmp or XDG_CACHE_HOME use."
+        },
+        "handle": "api-tests-parallel-rest-verified",
+        "id": "01M7F733E5ACKFQ744M03MRN14",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7F733E5ACKFQ744KZKQFS9Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F733E5ACKFQ744KZKQFS9Z",
+        "id": "01M7F733F32ESJ1RE1GDD5AZRB",
+        "link": "01M7F733F32ESJ1RE1GAMH8WXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EX7WX9045E0A4MD9RZV4A5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3V3JMPYXS0WKE0DM8CSM",
+  "for": "01M7F2ZFCH3XETVPK9A6WPV47G",
+  "id": "01M7F733G1P5WJ76G2BSZDX8E9",
+  "type": "ops",
+  "v": 1
+}

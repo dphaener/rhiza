@@ -54,6 +54,8 @@ func human(t *testing.T, resp any) string {
 	return buf.String()
 }
 
+// Serial: it calls t.Chdir (RelativeRootIsMadeAbsolute), process-wide
+// state.
 func TestInit(t *testing.T) {
 	t.Run("Fresh", func(t *testing.T) {
 		root := t.TempDir()
@@ -128,6 +130,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestInitAgent(t *testing.T) {
+	t.Parallel()
 	def := adapter.Default().Name()
 	t.Run("FlagWritten", func(t *testing.T) {
 		ctx, conf := projectAgentCtx(t, "")

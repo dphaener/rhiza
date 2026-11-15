@@ -98,6 +98,27 @@ var (
 func TestMain(m *testing.M) {
 	// A run killed by a go test timeout never reached the RemoveAll below.
 	tmpsweep.StaleTemp("rhiza-api-budget-")
+	tmpsweep.StaleTemp("rhiza-api-cache-")
+	tmpsweep.StaleTemp("rhiza-api-snapshots-")
+	// The user cache (run temp folders, index caches) is one temporary folder
+	// for the whole binary, never the host's ~/.cache, set once here so tests
+	// need no t.Setenv of their own and may call t.Parallel.
+	cache, err := os.MkdirTemp("", "rhiza-api-cache-")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err := os.Setenv("XDG_CACHE_HOME", cache); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	// Snapshot templates live in a folder of their own, chosen here once,
+	// never from XDG_CACHE_HOME at build time (a t.Setenv test may build).
+	snapshotDir, err = os.MkdirTemp("", "rhiza-api-snapshots-")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	diskFreeBytes = func(dir string) (uint64, error) {
 		panic("test read the host's real free disk space for " + dir + ": pin it with pinFreeBytes(ctx) or set RHIZA_TEST_FREE_BYTES beside RHIZA_TEST_NOW")
 	}
@@ -108,6 +129,8 @@ func TestMain(m *testing.M) {
 	if genDir != "" {
 		os.RemoveAll(genDir)
 	}
+	os.RemoveAll(cache)
+	os.RemoveAll(snapshotDir)
 	os.Exit(code)
 }
 
@@ -268,6 +291,9 @@ func openTimingLog(t *testing.T, quiet string) func(line string) {
 	return write
 }
 
+// Serial: it times reads of the shared 50,000-node model in wall and
+// own CPU time, so no parallel test may run beside it, and it appends to that
+// model.
 func TestReadBudget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the read budget generates the 50,000-node model; skipped under -short")
@@ -432,6 +458,7 @@ func BenchmarkShowWhatIf(b *testing.B) {
 }
 
 func TestTimeWithinBudget(t *testing.T) {
+	t.Parallel()
 	over := readTiming{quiettest.Timing{Median: readBudget, Own: readBudget}, 1}
 	under := readTiming{quiettest.Timing{Median: readBudget - 1, Own: readBudget - 1}, 1}
 	// Over on the clock, but the excess was waiting for a CPU: under.

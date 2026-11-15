@@ -13,6 +13,7 @@ import (
 // sets, more than one default page, and checks that a plain read pages it
 // while --all and health's roadmap check see every change set.
 func TestRoadmapOverAPageIsReadWhole(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	// A third of the in-flight change sets are drafts, off the roadmap:
 	// 156 in flight leaves 104 proposed or accepted.

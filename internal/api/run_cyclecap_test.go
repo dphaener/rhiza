@@ -16,6 +16,7 @@ import (
 // run's change set; once that change set has landed, into a landed record
 // change set of its own, each handle the next free.
 func TestAddReviewQuestion(t *testing.T) {
+	t.Parallel()
 	_, r, wctx := arbiterFixture(t)
 	cs := mustParseID(r.change)
 	q, err := r.AddReviewQuestion("Review check alpha still fails after 3 cycles. How?")
@@ -82,6 +83,7 @@ func questionCreatedIn(c changeset.ChangeSet, h string) bool {
 // A fixer of an answered cycle is told each answering Decision, a leaf's
 // and the change set's alike; any other fixer is not.
 func TestCycleCapFixerPrompts(t *testing.T) {
+	t.Parallel()
 	role := workflow.Role{Prompt: "fix {leaf}"}
 	vars := workflow.PromptVars{Run: "R1"}
 	answers := []run.ReviewAnswer{
@@ -107,6 +109,7 @@ func TestCycleCapFixerPrompts(t *testing.T) {
 // run status lists the questions a capped check raised and the Decisions
 // that gave it a fresh cycle.
 func TestCycleCapStatus(t *testing.T) {
+	t.Parallel()
 	j := run.Journal{ID: "R1", Entries: []run.Entry{
 		{Type: run.TypeCheckCycle, Step: "review", Cycle: 3, Checks: []string{"alpha"}},
 		{Type: run.TypeCheck, Step: "review", Check: "alpha", Cycle: 3, Outcome: run.CheckFailed},

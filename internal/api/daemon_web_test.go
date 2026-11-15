@@ -24,6 +24,8 @@ func (f *webFake) Close() error { f.closed = true; return nil }
 // Each read of the port setting takes its value from the test over a
 // channel, and the test checks the listeners only once the daemon waits for
 // its next tick, so every check sees exactly one finished poll.
+//
+// Serial: it swaps the package's daemonTicker and webFactory, which every daemon in the binary reads.
 func TestDaemonWebListenerFollowsPort(t *testing.T) {
 	var fakes []*webFake
 	old := webFactory
@@ -153,6 +155,8 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 }
 
 // --once and RHIZA_TEST_NOW open no listener.
+//
+// Serial: it swaps the package's daemonTicker and webFactory, which every daemon in the binary reads.
 func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 	opened := 0
 	old := webFactory

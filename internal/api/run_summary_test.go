@@ -13,6 +13,7 @@ import (
 // question raised at the cap, an owner cycle with the owner's findings,
 // a request for changes and an approval. It reads the journal only.
 func TestReviewSummary(t *testing.T) {
+	t.Parallel()
 	sha := "0123456789abcdef0123456789abcdef01234567"
 	j := run.Journal{ID: "R1", Entries: []run.Entry{
 		{Type: run.TypeStarted, Started: &run.Started{Workflow: "review", Change: "C1", Title: "Tidy up"}},
@@ -111,6 +112,7 @@ None ran.
 
 // A downgraded finding shows with its original and lower severity.
 func TestRunStatusReviewSummaryDowngraded(t *testing.T) {
+	t.Parallel()
 	j := run.Journal{ID: "R3", Entries: []run.Entry{
 		{Type: run.TypeStarted, Started: &run.Started{Workflow: "review", Change: "C1"}},
 		{Type: run.TypeCheckCycle, Step: "review", Cycle: 1, Checks: []string{"alpha"}},

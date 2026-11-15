@@ -53,6 +53,7 @@ func wantNext(t *testing.T, err error, next string) {
 }
 
 func TestLifecycleIntentionPath(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
 
@@ -99,6 +100,7 @@ func TestLifecycleIntentionPath(t *testing.T) {
 }
 
 func TestLifecycleCustomRule(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := newChange(t, ctx, `{"intent":"X"}`).ChangeSet
 	move(t, ctx, "propose", `{}`)
@@ -117,6 +119,7 @@ func TestLifecycleCustomRule(t *testing.T) {
 }
 
 func TestLifecycleWithdraw(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		state changeset.State
 		steps []string
@@ -146,6 +149,7 @@ func TestLifecycleWithdraw(t *testing.T) {
 }
 
 func TestLifecycleIllegal(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name  string
 		steps []string
@@ -186,6 +190,7 @@ func TestLifecycleIllegal(t *testing.T) {
 }
 
 func TestLifecycleRecordLandsFromDraft(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
 	r := move(t, ctx, "land", `{}`)
@@ -198,6 +203,7 @@ func TestLifecycleRecordLandsFromDraft(t *testing.T) {
 }
 
 func TestLifecycleOtherChangeSet(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	other := newChange(t, ctx, `{"intent":"Other"}`).ChangeSet
 	cur := newChange(t, ctx, `{"intent":"Current"}`).ChangeSet
@@ -221,6 +227,7 @@ func TestLifecycleOtherChangeSet(t *testing.T) {
 }
 
 func TestLifecycleDryRun(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
 	size := logSize(t, ctx)
@@ -244,6 +251,7 @@ func TestLifecycleDryRun(t *testing.T) {
 }
 
 func TestLifecycleNoChangeSet(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	for _, name := range []string{"propose", "accept", "reject", "withdraw", "land"} {
 		_, err := callOp(t, ctx, name, `{}`)
@@ -262,6 +270,7 @@ func TestLifecycleNoChangeSet(t *testing.T) {
 }
 
 func TestLifecycleRecordFlag(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	newChange(t, ctx, `{"intent":"X"}`)
 	ctx.Record = true
@@ -307,6 +316,7 @@ func wantLandRefused(t *testing.T, ctx *Ctx, cs id.ID, want, next string) {
 }
 
 func TestLandDependencies(t *testing.T) {
+	t.Parallel()
 	t.Run("Accepted", func(t *testing.T) {
 		ctx, a, b := stackedPair(t)
 		want := "cannot land change set " + b.String() + ": it depends on " + a.String() + " (accepted)"
@@ -373,6 +383,7 @@ func TestLandDependencies(t *testing.T) {
 }
 
 func TestLandConflict(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	recordWrite(t, ctx, "add", `{"kind":"decision","handle":"base","fields":["statement=Old"]}`)
 	b := newChange(t, ctx, `{"intent":"B"}`).ChangeSet
@@ -390,6 +401,7 @@ func TestLandConflict(t *testing.T) {
 // TestLandRevisedLanded: A revises in place a field B wrote; once A has
 // landed, land still refuses B (D13) until B writes the field again.
 func TestLandRevisedLanded(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	a := newChange(t, ctx, `{"intent":"A"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"base","fields":["statement=Base"]}`)
@@ -419,6 +431,7 @@ func TestLandRevisedLanded(t *testing.T) {
 // TestLandProblem: an op on a node that is not there is not a conflict, but
 // land refuses it all the same, pointing at the what-if view.
 func TestLandProblem(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	b := newChange(t, ctx, `{"intent":"R","kind":"record"}`).ChangeSet
 	w := ctxWorkspace(t, ctx)
@@ -480,6 +493,7 @@ func landPath(t *testing.T, ctx *Ctx, cs id.ID) string {
 }
 
 func TestReopenOnBranch(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := landed(t, ctx)
 	// Another change set's land in the base does not matter.
@@ -532,6 +546,7 @@ func TestReopenOnBranch(t *testing.T) {
 }
 
 func TestReopenLandedOnBase(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := landed(t, ctx)
 	ctx.Git = branchGit("100644 blob abc\t" + landPath(t, ctx, cs) + "\x00").run
@@ -556,6 +571,7 @@ func TestReopenLandedOnBase(t *testing.T) {
 }
 
 func TestReopenNoBase(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name string
 		git  func(...string) (string, error)
@@ -585,6 +601,7 @@ func TestReopenNoBase(t *testing.T) {
 }
 
 func TestReopenIllegal(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name  string
 		steps []string
@@ -621,6 +638,7 @@ func TestReopenIllegal(t *testing.T) {
 // TestReopenNoWritesToLanded: reopen is the one way into a landed change
 // set; ordinary writes stay refused.
 func TestReopenNoWritesToLanded(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	cs := landed(t, ctx)
 	ctx.ChangeRef = cs.String()

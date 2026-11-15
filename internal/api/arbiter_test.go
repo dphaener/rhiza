@@ -44,6 +44,7 @@ func arbiterFixture(t *testing.T) (*sessionFixture, *stepRunner, *Ctx) {
 // fixed text over the question's ID and names no other node, change set
 // or run.
 func TestStartArbiterPrompt(t *testing.T) {
+	t.Parallel()
 	f, r, wctx := arbiterFixture(t)
 	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
 	step := workflow.Step{Name: workflow.ArbiterName, Kind: workflow.KindArbiter, Interval: workflow.DefaultInterval}
@@ -72,6 +73,7 @@ func TestStartArbiterPrompt(t *testing.T) {
 // TestArbiterAnswer accepts only a live Decision with a live answers link
 // to the question, the assumed wording and a reasoning.
 func TestArbiterAnswer(t *testing.T) {
+	t.Parallel()
 	_, r, wctx := arbiterFixture(t)
 	n := 0
 	question := func() id.ID {
@@ -164,6 +166,7 @@ func TestArbiterAnswer(t *testing.T) {
 // never launches it, nor does one with no agent step to ask, so their
 // arbiter is not checked.
 func TestRunStartChecksArbiter(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
 	writeWorkflow(t, f.ctx.Root, "cmd", "[step.a]\nkind = \"command\"\nrun = \"true\"\n")
@@ -207,6 +210,7 @@ func holdPane(t *testing.T, f *sessionFixture, r *stepRunner) {
 
 // An arbiter's session opens its own tab and splits nothing.
 func TestStartArbiterOwnTab(t *testing.T) {
+	t.Parallel()
 	f, r, wctx := arbiterFixture(t)
 	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
 	holdPane(t, f, r)
@@ -219,6 +223,7 @@ func TestStartArbiterOwnTab(t *testing.T) {
 
 // An advisor's session opens its own tab and splits nothing.
 func TestStartAdvisorOwnTab(t *testing.T) {
+	t.Parallel()
 	f, r, _ := arbiterFixture(t)
 	holdPane(t, f, r)
 	step := workflow.Step{Name: workflow.ArbiterName, Kind: workflow.KindArbiter, Interval: workflow.DefaultInterval}
@@ -231,6 +236,7 @@ func TestStartAdvisorOwnTab(t *testing.T) {
 // run recommend closes the advisor's pane once the recommendation is
 // journalled; a dry run journals nothing and closes nothing.
 func TestRunRecommendClosesAdvisorPane(t *testing.T) {
+	t.Parallel()
 	f, rs := signoffRaceFixture(t)
 	if err := session.NewStore(session.Dir(f.common)).Write(session.Record{ID: "S-advisor", Run: signoffRaceRun, Step: "review", Advises: "S-asker",
 		Tab: session.Tab{Window: "window:w9", Block: "block:a2"}}); err != nil {
@@ -353,6 +359,7 @@ func blockCloses(f *fakeExec) [][]string {
 // journalled, pass or fail, never while it is still running; one whose
 // session is lost while still running keeps its pane.
 func TestArbiterPaneClosesAfterVerdict(t *testing.T) {
+	t.Parallel()
 	const wf = "[step.build]\nkind = \"agent\"\nprompt = \"build\"\non.pass = \"done\"\n"
 	running := run.AgentStatus{}
 	for _, tt := range []struct {
@@ -458,6 +465,7 @@ func briefStart(t *testing.T, f *sessionFixture, r *stepRunner, kind, question s
 // with RHIZA_BRIEF and RHIZA_SLICE set; a second advisor for the same
 // asker gets another directory and leaves the first's files alone.
 func TestArbiterBrief(t *testing.T) {
+	t.Parallel()
 	f, r, wctx := arbiterFixture(t)
 	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
 	cs, err := id.Parse(r.change)
@@ -511,11 +519,13 @@ func TestArbiterBrief(t *testing.T) {
 }
 
 // TestAdvisorBrief is TestArbiterBrief's advisor half under its own name.
+// Parallel through TestArbiterBrief, which calls t.Parallel.
 func TestAdvisorBrief(t *testing.T) { TestArbiterBrief(t) }
 
 // An unwritable runs directory fails the arbiter's start with its path and
 // starts no session.
 func TestArbiterBriefUnwritable(t *testing.T) {
+	t.Parallel()
 	f, r, wctx := arbiterFixture(t)
 	q := mustWrite(t, wctx, "add", `{"kind":"question","handle":"which-store","fields":["statement=Which store?"]}`).Nodes[0]
 	cs, _ := id.Parse(r.change)

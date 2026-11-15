@@ -12,6 +12,7 @@ import (
 )
 
 func TestDaemonHomePrefersWorkingProject(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	for _, n := range []string{"a", "b"} {
 		if err := os.MkdirAll(filepath.Join(root, n, ".rhiza"), 0o755); err != nil {
@@ -94,6 +95,7 @@ func checkPollGitBounded(t *testing.T, c *Ctx, dir string, st *pollGitStarts) {
 	}
 }
 
+// Serial: it swaps the package's pollGitTimeout, which every daemon in the binary reads.
 func TestPollGitBounded(t *testing.T) {
 	old := pollGitTimeout
 	pollGitTimeout = 10 * time.Millisecond
@@ -116,6 +118,7 @@ func TestPollGitBounded(t *testing.T) {
 	}
 }
 
+// Serial: it swaps the package's pollGitTimeout, which every daemon in the binary reads.
 func TestPollGitBoundedHome(t *testing.T) {
 	old := pollGitTimeout
 	pollGitTimeout = 10 * time.Millisecond

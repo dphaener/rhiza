@@ -12,6 +12,7 @@ const apiTestToken = "s3cret-token-value-1234"
 // daemon.set accepts rhiza.web.token; the daemon's web handler gates POSTs on
 // the token it reads from that setting; no read path returns its value.
 func TestWebTokenSetting(t *testing.T) {
+	t.Parallel()
 	ctx, _ := daemonRepo(t)
 	h := WebProjectHandler(ctx)
 	post := func(hdr string) int {

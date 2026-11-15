@@ -62,6 +62,7 @@ func wantRecorded(t *testing.T, state string, want bool) *ShipModelConflict {
 }
 
 func TestShipLandRecordsModelConflict(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	_, err := callOp(t, f.ctx, "ship.land", `{}`)
 	wantExit(t, err, 3)
@@ -90,6 +91,7 @@ func (c ModelConflict) ptr() *[4]string {
 // conflictHead is rhizaRepoFixture's head build answering land with the
 // body --json prints for the conflict landing in-process gives.
 func TestShipLandHeadBuildRecordsModelConflict(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	// What rhiza land --json prints for this conflict.
 	lctx := *f.ctx
@@ -130,6 +132,7 @@ func TestShipLandHeadBuildRecordsModelConflict(t *testing.T) {
 }
 
 func TestShipLandClearsModelConflict(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	cs := currentOf(t, f.ctx)
 	if _, err := callOp(t, f.ctx, "ship.land", `{}`); err == nil {
@@ -152,6 +155,7 @@ func TestShipLandClearsModelConflict(t *testing.T) {
 }
 
 func TestShipLandSucceedsAfterRebase(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	cs := currentOf(t, f.ctx)
 	if _, err := callOp(t, f.ctx, "ship.land", `{}`); err == nil {
@@ -173,6 +177,7 @@ func TestShipLandSucceedsAfterRebase(t *testing.T) {
 }
 
 func TestShipCheckModelConflict(t *testing.T) {
+	t.Parallel()
 	f, state, _ := modelConflictFixture(t)
 	head, fixes := "beef000111\n", ""
 	inner := f.ctx.Exec

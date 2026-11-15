@@ -165,6 +165,7 @@ func (f *modelFixture) newEntry(t *testing.T, before map[string]bool) string {
 }
 
 func TestModelBranch(t *testing.T) {
+	t.Parallel()
 	t.Run("AcceptShipsBranch", func(t *testing.T) {
 		f := modelBranchFixture(t, true)
 		exec := f.ctx.Exec
@@ -304,6 +305,7 @@ func TestModelBranch(t *testing.T) {
 // main checkout onto a model branch with a PR, and the next tick has
 // nothing left to do.
 func TestDaemonCommitsUntracked(t *testing.T) {
+	t.Parallel()
 	f := modelBranchFixture(t, true)
 	f.ctx.Git = func(args ...string) (string, error) {
 		out, err := f.gh.exec("git", args, f.root, nil)
@@ -332,6 +334,7 @@ func TestDaemonCommitsUntracked(t *testing.T) {
 // and the command that ships it; once a model branch holds it the part is
 // ok and the entry is listed as pending.
 func TestHealthMainOrphanLog(t *testing.T) {
+	t.Parallel()
 	f := modelBranchFixture(t, true)
 	f.ctx.Git = func(args ...string) (string, error) {
 		out, err := f.gh.exec("git", args, f.root, nil)
@@ -382,6 +385,7 @@ func TestHealthMainOrphanLog(t *testing.T) {
 // TestHealthMainOrphanLogLiveRun: an untracked entry a live run's worktree
 // also holds is pending, not an orphan, and leaves the main part ok.
 func TestHealthMainOrphanLogLiveRun(t *testing.T) {
+	t.Parallel()
 	f := modelBranchFixture(t, true)
 	f.ctx.Git = func(args ...string) (string, error) {
 		out, err := f.gh.exec("git", args, f.root, nil)

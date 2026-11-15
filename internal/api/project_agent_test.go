@@ -46,6 +46,7 @@ func projectAgentCtx(t *testing.T, agent string) (*Ctx, map[string]string) {
 var errUnset = errors.New("unset")
 
 func TestProjectAgentStart(t *testing.T) {
+	t.Parallel()
 	def := adapter.Default().Name()
 	cases := []struct {
 		name, project, flag, step, want string
@@ -91,6 +92,7 @@ func TestProjectAgentStart(t *testing.T) {
 // the skill check and stops later; the default adapter refuses the
 // uninstalled skill by its name.
 func TestProjectAgentSkillCheck(t *testing.T) {
+	t.Parallel()
 	def := adapter.Default().Name()
 	missing := "skill not installed"
 	cases := []struct {
@@ -116,6 +118,7 @@ func TestProjectAgentSkillCheck(t *testing.T) {
 }
 
 func TestProjectAgentDaemonSet(t *testing.T) {
+	t.Parallel()
 	ctx, conf := projectAgentCtx(t, "")
 	_, err := callOp(t, ctx, "daemon.set", `{"key":"rhiza.project.agent","value":"nope"}`)
 	if err == nil {
@@ -156,6 +159,7 @@ func TestProjectAgentDaemonSet(t *testing.T) {
 // TestProjectAgentUnknown: a name in git config the registry does not
 // know refuses the start, naming the key and the registered names.
 func TestProjectAgentUnknown(t *testing.T) {
+	t.Parallel()
 	ctx, _ := projectAgentCtx(t, "nope")
 	_, err := startAdapter(ctx, SessionStartRequest{PermissionMode: "manual"})
 	if err == nil || !strings.Contains(AsError(err).Message, `git config rhiza.project.agent is "nope"`) ||

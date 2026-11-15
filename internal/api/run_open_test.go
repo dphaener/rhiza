@@ -16,6 +16,7 @@ import (
 // and says so; a live run whose block is gone or unrecorded says its tab
 // is gone and focuses nothing.
 func TestRunOpenFocusesLiveRunTab(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	rs := run.NewStore(run.Dir(f.common))
 	at := time.Unix(1700000000, 0).UTC()
@@ -100,6 +101,7 @@ func TestRunOpenFocusesLiveRunTab(t *testing.T) {
 // run.open --run focuses a live run by its ID, also one with no change set
 // yet; the change set and --run together, or neither, are usage errors.
 func TestRunOpenByRun(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "x")
 	rs := run.NewStore(run.Dir(f.common))
 	at := time.Unix(1700000000, 0).UTC()

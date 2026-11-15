@@ -21,6 +21,7 @@ func decodeOp() Operation {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		in   string
@@ -58,6 +59,7 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeRejects(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name, in, want string
 	}{

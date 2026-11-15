@@ -42,6 +42,7 @@ func trustedIn(t *testing.T, path string) (map[string]bool, map[string]json.RawM
 }
 
 func TestSessionRunTrustsFolders(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	home := t.TempDir()
 	f.ctx.Home = home
@@ -80,6 +81,7 @@ func TestSessionRunTrustsFolders(t *testing.T) {
 }
 
 func TestSessionRunTrustHonoursConfigDirAndCreatesFile(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	home, conf := t.TempDir(), filepath.Join(t.TempDir(), "conf")
 	if err := os.MkdirAll(conf, 0o755); err != nil {
@@ -105,6 +107,7 @@ func TestSessionRunTrustHonoursConfigDirAndCreatesFile(t *testing.T) {
 }
 
 func TestSessionRunTrustDryRunWritesNothing(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	home := t.TempDir()
 	f.ctx.Home = home
@@ -119,6 +122,7 @@ func TestSessionRunTrustDryRunWritesNothing(t *testing.T) {
 }
 
 func TestSessionRunTrustWarnsOnUnreadableConfig(t *testing.T) {
+	t.Parallel()
 	f, s, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	home := t.TempDir()
 	f.ctx.Home = home
@@ -157,6 +161,9 @@ func (trustLimitAdapter) Trust(cur []byte, dirs []string) ([]byte, error) {
 	return claudecode.Adapter{}.Trust(cur, dirs)
 }
 
+// Serial: it resets the package's limitLaunches (limitFixture), which the
+// limit fake agent registered for the whole binary appends to, and
+// swaps the package's runClock (useClock), which every run in the binary reads.
 func TestSessionRunResumeTrustsAgain(t *testing.T) {
 	f, s, path := limitFixture(t)
 	f.ctx.Getenv = func(string) string { return "" }

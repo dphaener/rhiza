@@ -81,6 +81,7 @@ func mustFoldClean(t *testing.T, w *workspace) []changeset.ChangeSet {
 }
 
 func TestWorkspace(t *testing.T) {
+	t.Parallel()
 	t.Run("CurrentRoundTrip", func(t *testing.T) {
 		w := testWorkspace(t, false)
 		got, err := w.current()

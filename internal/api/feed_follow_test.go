@@ -12,6 +12,9 @@ import (
 // TestFeedFollowTicks drives follow with a replaced ticker: it starts at the
 // end of the feed, emits a change set landing between two ticks once, and
 // stops on an interrupt.
+//
+// Serial: it swaps the package's feedTicker, which every feed follow in
+// the binary reads.
 func TestFeedFollowTicks(t *testing.T) {
 	ctx := initCtx(t)
 	ada := recordAda(t, ctx, "ada@example.com")
@@ -79,6 +82,7 @@ func TestFeedFollowTicks(t *testing.T) {
 
 // TestFeedFollowLimit emits the backlog from a since and stops at the limit.
 func TestFeedFollowLimit(t *testing.T) {
+	t.Parallel()
 	ctx := initCtx(t)
 	ada := recordAda(t, ctx, "ada@example.com")
 	rec := *ctx

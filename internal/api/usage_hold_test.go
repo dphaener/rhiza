@@ -61,6 +61,8 @@ func finishedRun(n int, tokens int64, at time.Time) run.Journal {
 	return j
 }
 
+// Serial: it sets the package's holdFakeRecords, which the hold-fake
+// agent registered for the whole binary reads.
 func TestUsageHoldProjection(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)
@@ -155,6 +157,9 @@ func TestUsageHoldProjection(t *testing.T) {
 
 // Only a hit of a window's kind moves that window: a session hit leaves the
 // weekly window alone, and a weekly hit leaves the session window alone.
+//
+// Serial: it sets the package's holdFakeRecords, which the hold-fake
+// agent registered for the whole binary reads.
 func TestUsageWindowsHitKinds(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)
@@ -200,6 +205,9 @@ func TestUsageWindowsHitKinds(t *testing.T) {
 
 // A saved window keeps its start from poll to poll: the chain is built from
 // it, not from wherever the lookback falls.
+//
+// Serial: it sets the package's holdFakeRecords, which the hold-fake
+// agent registered for the whole binary reads.
 func TestUsageWindowsAnchored(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)
@@ -255,6 +263,7 @@ func TestUsageWindowsAnchored(t *testing.T) {
 // A hold stops picks, resumes, queued starts and plans, and the next poll
 // after it clears starts the held change set.
 func TestUsageHoldStopsLaunches(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	hold := &usageHold{Kind: "session", Used: 900, Projected: 900, Limit: 1000, Reserve: 20, Reset: f.clock.Add(time.Hour)}
 	var skips []daemon.Skip
@@ -290,6 +299,7 @@ func TestUsageHoldStopsLaunches(t *testing.T) {
 // leaves the queues as they were and a live run running. The poll after
 // the hold clears launches each of them.
 func TestUsageHoldStopsEveryLaunch(t *testing.T) {
+	t.Parallel()
 	f := usageFix(t)
 	var detached [][]string
 	f.ctx.Detach = func(p Program, _ string) error {
@@ -393,6 +403,9 @@ func TestUsageHoldStopsEveryLaunch(t *testing.T) {
 
 // A live run adds only what it is still expected to burn: the mean of the
 // last finished runs less its own tokens so far, never below zero.
+//
+// Serial: it sets the package's holdFakeRecords, which the hold-fake
+// agent registered for the whole binary reads.
 func TestUsageHoldLiveRunRemaining(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)
@@ -453,6 +466,8 @@ func TestUsageHoldLiveRunRemaining(t *testing.T) {
 	}
 }
 
+// Serial: it sets the package's holdFakeRecords and holdFakeLive, which
+// the hold-fake agent registered for the whole binary reads.
 func TestUsageLiveLimit(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)
@@ -530,6 +545,8 @@ func TestUsageLiveLimit(t *testing.T) {
 	}
 }
 
+// Serial: it sets the package's holdFakeRecords and holdFakeLive, which
+// the hold-fake agent registered for the whole binary reads.
 func TestHealthUsageLiveLimit(t *testing.T) {
 	holdFakeOnce()
 	f := usageFix(t)

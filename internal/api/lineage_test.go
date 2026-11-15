@@ -91,6 +91,7 @@ func whyLine(d WhyDecision) string {
 }
 
 func TestWhyWalk(t *testing.T) {
+	t.Parallel()
 	ctx, css, _ := lineageLog(t)
 	r := whyOf(t, ctx, `{"ref":"cache","view":"as-is"}`)
 	if r.Node.Handle != "cache" || r.Node.Kind != op.KindCapability || r.View != "as-is" {
@@ -167,6 +168,7 @@ func TestWhyWalk(t *testing.T) {
 }
 
 func TestWhyFromDecision(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := lineageLog(t)
 	r := whyOf(t, ctx, `{"ref":"d1","view":"as-is"}`)
 	var got []string
@@ -205,6 +207,7 @@ func TestWhyFromDecision(t *testing.T) {
 }
 
 func TestWhyEmptyAndErrors(t *testing.T) {
+	t.Parallel()
 	ctx, _, _ := lineageLog(t)
 	r := whyOf(t, ctx, `{"ref":"q1","view":"as-is"}`)
 	if r.Decisions == nil || r.Sources == nil || len(r.Decisions)+len(r.Sources) != 0 {
@@ -224,6 +227,7 @@ func TestWhyEmptyAndErrors(t *testing.T) {
 var lineageAtRe = regexp.MustCompile(`^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$`)
 
 func TestLogNode(t *testing.T) {
+	t.Parallel()
 	ctx, css, _ := lineageLog(t)
 	r := logOf(t, ctx, `{"ref":"cache","view":"to-be"}`)
 	if r.Target.Kind != "node" || r.Target.Handle != "cache" || r.View != "to-be" {
@@ -267,6 +271,7 @@ func TestLogNode(t *testing.T) {
 }
 
 func TestLogReopened(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	cs := relanded(t, ctx)
 	r := logOf(t, ctx, `{"ref":"store"}`)
@@ -298,6 +303,7 @@ func TestLogReopened(t *testing.T) {
 }
 
 func TestLogReopenedAccepted(t *testing.T) {
+	t.Parallel()
 	// Reopened and not yet relanded: one Landed and one Reopened line, no
 	// stale at or actor.
 	ctx := readCtx(t)
@@ -324,6 +330,7 @@ func TestLogReopenedAccepted(t *testing.T) {
 }
 
 func TestLogLink(t *testing.T) {
+	t.Parallel()
 	ctx, css, dx := lineageLog(t)
 	r := logOf(t, ctx, fmt.Sprintf(`{"ref":%q,"view":"as-is"}`, dx.String()[:20]))
 	if r.Target.Kind != "link" || r.Target.ID != dx || r.Target.Handle != "" {
@@ -392,6 +399,7 @@ func newID(t *testing.T, ctx *Ctx) id.ID {
 }
 
 func TestLogCarve(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	src := newChange(t, ctx, `{"intent":"Bundle"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"decision","handle":"moved"}`)
@@ -437,6 +445,7 @@ func TestLogCarve(t *testing.T) {
 }
 
 func TestWhyCitedQuotes(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	newChange(t, ctx, `{"intent":"Base"}`)
 	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[\"we must  keep\\nit small\",\"we shall grow\"]"]}`)
@@ -463,6 +472,7 @@ func TestWhyCitedQuotes(t *testing.T) {
 }
 
 func TestWhyCitedQuotesKeepsAll(t *testing.T) {
+	t.Parallel()
 	src := map[string]json.RawMessage{"quotes": json.RawMessage(`["a b","c d"]`)}
 	for name, cited := range map[string][]string{
 		"no match":     {"zzz"},
@@ -480,6 +490,7 @@ func TestWhyCitedQuotesKeepsAll(t *testing.T) {
 // Quotes stored as objects, as source add writes them, are matched by
 // their text field and kept whole.
 func TestWhyCitedQuotesObjects(t *testing.T) {
+	t.Parallel()
 	src := map[string]json.RawMessage{"quotes": json.RawMessage(`[{"text":"we must  keep\nit small","by":"owner"},{"text":"we shall grow"},"a plain one"]`)}
 	got, n := whyCitedQuotes(src, []string{"must keep it", "plain"})
 	if n != 1 || string(got["quotes"]) != `[{"text":"we must  keep\nit small","by":"owner"},"a plain one"]` {
@@ -490,6 +501,7 @@ func TestWhyCitedQuotesObjects(t *testing.T) {
 // A source reached by two decisions shows the quotes each cites; reached
 // by a node that is not a decision too, it shows all of them.
 func TestWhyCitedQuotesShared(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	newChange(t, ctx, `{"intent":"Base"}`)
 	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[{\"text\":\"alpha one\"},{\"text\":\"beta two\"},{\"text\":\"gamma three\"}]"]}`)
@@ -542,6 +554,7 @@ func TestWhyCitedQuotesShared(t *testing.T) {
 // the walk from a capability, and in addSource even when the node reached
 // from carries a quote that matches only some of them.
 func TestWhyNonDecisionKeepsAllQuotes(t *testing.T) {
+	t.Parallel()
 	ctx := readCtx(t)
 	newChange(t, ctx, `{"intent":"Base"}`)
 	mustWrite(t, ctx, "add", `{"kind":"source","handle":"talk","json_fields":["quotes=[\"we must keep it small\",\"we shall grow\"]"]}`)

@@ -21,6 +21,7 @@ func testOp(name string) Operation {
 }
 
 func TestRegistrySorted(t *testing.T) {
+	t.Parallel()
 	var r registry
 	for _, n := range []string{"propose", "add", "change.new", "change.ls", "init"} {
 		r.add(testOp(n))
@@ -43,6 +44,7 @@ func TestRegistrySorted(t *testing.T) {
 }
 
 func TestRegistryPanics(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name  string
 		setup func(r *registry)
@@ -74,6 +76,7 @@ func TestRegistryPanics(t *testing.T) {
 }
 
 func TestRegistryDefault(t *testing.T) {
+	t.Parallel()
 	// No operations are registered yet; the package-level functions read
 	// the default registry.
 	if ops := Operations(); len(ops) != len(defaultRegistry.ops) {

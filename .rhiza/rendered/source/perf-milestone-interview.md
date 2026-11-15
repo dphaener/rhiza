@@ -55,6 +55,7 @@ Planning the test-perf milestone with the owner
 - derived-from [fast-suite-build-order](../decision/fast-suite-build-order.md)
 - derived-from [scaled-test-clock](../decision/scaled-test-clock.md)
 - derived-from [budgets-opt-in](../decision/budgets-opt-in.md)
+- derived-from [api-fixture-templates](../decision/api-fixture-templates.md)
 
 ## History
 

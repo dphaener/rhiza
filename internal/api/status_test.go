@@ -21,6 +21,7 @@ func statusOf(t *testing.T, ctx *Ctx, req string) StatusResponse {
 }
 
 func TestStatusOutsideRepo(t *testing.T) {
+	t.Parallel()
 	ctx := testCtx(t.TempDir())
 	if _, err := callOp(t, ctx, "status", `{}`); ExitCode(err) != 4 {
 		t.Errorf("status outside a repo: err %v, want not_found", err)
@@ -38,6 +39,7 @@ func TestStatusOutsideRepo(t *testing.T) {
 }
 
 func TestStatusHookErrorSilent(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	ctx := testCtx(root)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
@@ -55,6 +57,7 @@ func TestStatusHookErrorSilent(t *testing.T) {
 // TestStatusHookCap checks the hook's worst case stays under guide.StartCap:
 // a long intent, both installs out of date and a long version.
 func TestStatusHookCap(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	ctx := testCtx(root)
 	ctx.Home = t.TempDir()
@@ -100,6 +103,7 @@ func TestStatusHookCap(t *testing.T) {
 // TestStatusGuideFiles checks an install at the running version is current
 // only while every file it writes is on disk as written.
 func TestStatusGuideFiles(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	ctx := testCtx(root)
 	ctx.Home = t.TempDir()
@@ -142,6 +146,7 @@ func TestStatusGuideFiles(t *testing.T) {
 }
 
 func TestTruncate(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		in   string
 		n    int

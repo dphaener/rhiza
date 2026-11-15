@@ -13,6 +13,7 @@ import (
 // Under a root, a project's web roadmap and its API (even with all=true) list
 // only that project's milestone and change sets, never another project's.
 func TestWebRootRoadmapIsProjectScoped(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	names := []string{"alpha", "beta"}
 	var home *Ctx

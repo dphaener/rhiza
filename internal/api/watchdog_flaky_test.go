@@ -14,6 +14,7 @@ import (
 // flake of a test while its request is open; two for two tests; none with
 // fileBugs = false; and none for the flakes a planned request named.
 func TestFlakyTestBugs(t *testing.T) {
+	t.Parallel()
 	var queue []daemon.Request
 	var runs []CIRun
 	d := watchdogDeps{

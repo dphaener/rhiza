@@ -8,6 +8,7 @@ import (
 )
 
 func TestWithNameDiffersOnlyInName(t *testing.T) {
+	t.Parallel()
 	for _, n := range workflow.BuiltinNames() {
 		src, _ := workflow.Builtin(n)
 		got := withName(src, "forked")
@@ -22,6 +23,7 @@ func TestWithNameDiffersOnlyInName(t *testing.T) {
 }
 
 func TestWithNameAddsMissing(t *testing.T) {
+	t.Parallel()
 	got := string(withName([]byte("# c\n[step.a]\nkind = \"x\"\n"), "n"))
 	want := "name = \"n\"\n\n# c\n[step.a]\nkind = \"x\"\n"
 	if got != want {

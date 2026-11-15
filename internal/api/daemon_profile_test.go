@@ -18,6 +18,9 @@ import (
 // capture, and a second request while one runs is refused. The daemon loop
 // runs in-process with its ticks and the capture's clock under the test's
 // control; nothing binds a socket.
+//
+// Serial: it swaps the package's profileWaitEvery, which every daemon
+// profile reads.
 func TestDaemonProfile(t *testing.T) {
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, rootcfg.File), nil, 0o644); err != nil {
@@ -130,6 +133,9 @@ func TestDaemonProfile(t *testing.T) {
 }
 
 // With no --out the profile lands in the root's state folder.
+//
+// Serial: it swaps the package's profileWaitEvery, which every daemon
+// profile reads.
 func TestDaemonProfileDefaultPath(t *testing.T) {
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, rootcfg.File), nil, 0o644); err != nil {
@@ -167,6 +173,7 @@ func TestDaemonProfileDefaultPath(t *testing.T) {
 
 // Without a daemon the operation says so.
 func TestDaemonProfileNoDaemon(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, rootcfg.File), nil, 0o644); err != nil {
 		t.Fatal(err)

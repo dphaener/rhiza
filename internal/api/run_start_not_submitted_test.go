@@ -34,6 +34,7 @@ func feed(t *testing.T, f *messageFixture, event string) {
 // session with that reason, as an environment failure, and again on every
 // later read.
 func TestStartNotSubmittedFailsSession(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	advance := startClock(t, f)
 	feed(t, f, "SessionStart")
@@ -66,6 +67,7 @@ func TestStartNotSubmittedFailsSession(t *testing.T) {
 // SessionStart, UserPromptSubmit then idle (Stop) past the grace does not
 // fail.
 func TestStartNotSubmittedPromptedIsFine(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	advance := startClock(t, f)
 	feed(t, f, "SessionStart")
@@ -93,6 +95,7 @@ func TestStartNotSubmittedPromptedIsFine(t *testing.T) {
 
 // SessionStart then idle within the grace does not fail.
 func TestStartNotSubmittedWithinGrace(t *testing.T) {
+	t.Parallel()
 	f, r := lostFixture(t)
 	advance := startClock(t, f)
 	feed(t, f, "SessionStart")

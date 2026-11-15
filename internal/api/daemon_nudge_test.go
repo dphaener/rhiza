@@ -16,6 +16,7 @@ import (
 // message per stall, keyed on its report time; the attended run's gets none;
 // the inbox's stalled list is untouched by the nudge.
 func TestDaemonNudgeStalled(t *testing.T) {
+	t.Parallel()
 	sessions := session.NewStore(t.TempDir())
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	report := func(id string, at time.Time) {

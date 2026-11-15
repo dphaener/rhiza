@@ -9,6 +9,7 @@ import (
 )
 
 func TestExitCode(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		err  error
@@ -34,6 +35,7 @@ func TestExitCode(t *testing.T) {
 }
 
 func TestErrorMessageAndNext(t *testing.T) {
+	t.Parallel()
 	e := Conflictf("handle %q is taken", "core").WithNext("rhiza show core")
 	if e.Error() != `handle "core" is taken` {
 		t.Errorf("Error() = %q", e.Error())
@@ -49,6 +51,7 @@ func TestErrorMessageAndNext(t *testing.T) {
 }
 
 func TestErrorJSON(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name string
 		err  error
@@ -73,6 +76,7 @@ func TestErrorJSON(t *testing.T) {
 }
 
 func TestArticle(t *testing.T) {
+	t.Parallel()
 	for s, want := range map[string]string{"intent": "an", "evidence": "an", "actor": "an", "exempts": "an", "capability": "a", "decision": "a", "": "a"} {
 		if got := article(s); got != want {
 			t.Errorf("article(%q) = %q, want %q", s, got, want)

@@ -15,6 +15,7 @@ import (
 // the state newest first with a repeated hold as one action, and health
 // lists them.
 func TestWatchdogLog(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
 		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},

@@ -146,6 +146,7 @@ const schemaSampleWant = `{
 `
 
 func TestSchema(t *testing.T) {
+	t.Parallel()
 	b, err := canon.Marshal(Schema(reflect.TypeFor[schemaSample]()))
 	if err != nil {
 		t.Fatal(err)
@@ -156,6 +157,7 @@ func TestSchema(t *testing.T) {
 }
 
 func TestSchemaEmptyStruct(t *testing.T) {
+	t.Parallel()
 	b, err := canon.Marshal(Schema(reflect.TypeFor[struct{}]()))
 	if err != nil {
 		t.Fatal(err)
@@ -167,6 +169,7 @@ func TestSchemaEmptyStruct(t *testing.T) {
 }
 
 func TestSchemaScalars(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		t    reflect.Type
 		want string
@@ -197,6 +200,7 @@ func TestSchemaScalars(t *testing.T) {
 }
 
 func TestSchemaPanics(t *testing.T) {
+	t.Parallel()
 	type untagged struct{ Name string }
 	type float struct {
 		X float64 `json:"x"`

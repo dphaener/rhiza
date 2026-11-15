@@ -18,6 +18,9 @@ const applyBudget = 200 * time.Millisecond
 // into a draft change set of the 50,000-node model, index open to answer,
 // and requires that it reads the log not at all. It runs after
 // TestReadBudget (file order) because it appends to the shared model.
+//
+// Serial: it times writes into the shared 50,000-node model, so no
+// parallel test may run beside it, and it must run after TestReadBudget.
 func TestReadBudgetApply(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the read budget generates the 50,000-node model; skipped under -short")

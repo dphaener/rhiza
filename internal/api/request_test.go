@@ -16,6 +16,7 @@ import (
 // and is started again, with a new run, daemonUnjournaledHold after its
 // first start.
 func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "req")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
@@ -79,6 +80,7 @@ func TestDaemonPlanRequestsRequeuesUnjournaled(t *testing.T) {
 }
 
 func TestRequestPlanRunArgsPassRef(t *testing.T) {
+	t.Parallel()
 	for _, ref := range []string{"https://example.com/issues/7", "--dry-run", "--change=01M6VY7JMM5NPB3QVG1ECZH1YW", "-h"} {
 		with := planRunArgs(daemon.Request{ID: "r1", Ref: ref}, "plan", "default", false, "manual")
 		if !slices.Contains(with, "--ref="+ref) || slices.Contains(with, ref) {
@@ -96,6 +98,7 @@ func TestRequestPlanRunArgsPassRef(t *testing.T) {
 // queue after its run ends, and blocks the next one only while its run
 // runs, or while its start is within daemonStartGrace and not journaled.
 func TestDaemonMilestoneWaitsAfterEndedRun(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "req")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }
@@ -150,6 +153,7 @@ func TestDaemonMilestoneWaitsAfterEndedRun(t *testing.T) {
 // sign-off (or gate) wait, or its start unjournaled within daemonStartGrace.
 // Live at any later step it blocks nothing.
 func TestDaemonMilestoneWaitsOwnerSteps(t *testing.T) {
+	t.Parallel()
 	f := newSessionFixture(t, "req")
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
 	f.ctx.Now = func() time.Time { return now }

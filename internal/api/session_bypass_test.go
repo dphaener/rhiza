@@ -10,6 +10,8 @@ import (
 // With neither HOME nor XDG_CONFIG_HOME the machine is trust daily: the
 // placeholder path in the message is never read, so a file planted at it
 // under the current directory cannot turn bypass on.
+//
+// Serial: it calls t.Chdir, which moves the whole process.
 func TestBypassCheckNoConfigPathIsDaily(t *testing.T) {
 	dir := t.TempDir()
 	planted := filepath.Join(dir, "$XDG_CONFIG_HOME", "rhiza", "machine.toml")

@@ -14,6 +14,7 @@ import (
 // carrying IDs and handles in every field it has: no notice holds any of
 // them, and change sets and questions show by title and text.
 func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
+	t.Parallel()
 	gate := []InboxGateQuestion{{Handle: "q-handle", Statement: "Full statement?", Restatement: "Plain words?", Blocks: "node-handle"}}
 	// ids fills the fields that carry IDs and handles on an item of kind.
 	ids := func(kind string, it InboxItem) InboxItem {
@@ -86,6 +87,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 // A load-high or memory-low hold that has lasted 31 minutes notifies the
 // owner once, however many polls see it.
 func TestDaemonNotifyMachineHold(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ reason, msg string }{
 		{daemon.SkipLoadHigh, "machine load is high: the daemon holds new starts and resumes"},
 		{daemon.SkipMemoryLow, "available memory is low: the daemon holds new starts and resumes"},

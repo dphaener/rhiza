@@ -25,6 +25,7 @@ func pickJournal(cs string, entries ...run.Entry) run.Journal {
 // and have a leaf, none with a live run or an unattended failed run, in
 // roadmap order, under the running runs' cap.
 func TestDaemonPicks(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
 	f.milestone(m)
@@ -103,6 +104,7 @@ func TestDaemonPicks(t *testing.T) {
 // held past the grace, taking no slot, until a new journal of its change
 // set shows, 15 minutes pass since the start or it is no longer accepted.
 func TestDaemonHeld(t *testing.T) {
+	t.Parallel()
 	yes := func(string) bool { return true }
 	at := time.Unix(1700000000, 0)
 	old := pickJournal("B")
@@ -154,6 +156,7 @@ func TestDaemonHeld(t *testing.T) {
 // inside; skip and an unknown value skip it as no-milestone, the unknown
 // one with its reason in the detail.
 func TestDaemonCandidatesBacklog(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
 	f.milestone(m)
@@ -212,6 +215,7 @@ func TestDaemonCandidatesBacklog(t *testing.T) {
 // resolution: the repo's [ready] rule names the workflow, changeConducts
 // resolves and reads it.
 func TestPickNoLeaves(t *testing.T) {
+	t.Parallel()
 	f := newPlanFix()
 	m := f.intent("m", id.ID{}, "a")
 	f.milestone(m)
@@ -289,6 +293,7 @@ func TestPickNoLeaves(t *testing.T) {
 // conductorWorkflow is true only for a workflow whose first step is an agent
 // step that declares checks.
 func TestConductorWorkflow(t *testing.T) {
+	t.Parallel()
 	load := func(src string) *workflow.Definition {
 		t.Helper()
 		def, err := workflow.Parse("w", []byte(src))

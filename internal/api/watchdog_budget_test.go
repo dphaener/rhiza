@@ -16,6 +16,7 @@ import (
 // watchdog acts no more once the budget is spent, and the owner gets one
 // inbox item naming every attempt.
 func TestWatchdogBudget(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	js := []run.Journal{{ID: "gh", Entries: []run.Entry{
 		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
@@ -86,6 +87,7 @@ func TestWatchdogBudget(t *testing.T) {
 // TestWatchdogHolds: a run with its budget spent keeps its one hold, and
 // loses it once abandoned or once its change set is withdrawn or rejected.
 func TestWatchdogHolds(t *testing.T) {
+	t.Parallel()
 	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
 	journal := func(id, change, detail string) run.Journal {
 		return run.Journal{ID: id, Entries: []run.Entry{
