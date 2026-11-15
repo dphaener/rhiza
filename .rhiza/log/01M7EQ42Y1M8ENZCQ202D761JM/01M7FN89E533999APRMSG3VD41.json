@@ -1,0 +1,63 @@
+{
+  "actor": "01M7FMYKRX7K7132DNBH1AENAS",
+  "after": [
+    "01M7FMFF57JTBXK1RGQEFV66NY"
+  ],
+  "at": "2026-11-15T13:09:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c9e38ec85: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza; GODEBUG=inittrace=1 rhiza-x version shows go-runewidth init 0.023-0.038 ms clock, 48 bytes (88516d956 build: 22 ms clock, 56472 bytes). 200-start loop alternated under the machine lock: old 7.14 s, 7.09 s; new 1.97 s, 2.09 s. go mod why -m names cmd/rhiza, charmbracelet/colorprofile, charmbracelet/x/ansi; go mod verify all modules verified; no replace directive; go test -trimpath -p 2 ./internal/tui/... ok. Old and new binaries give byte-identical output for slice --change (default and --budget 800), status, a bad change list call (exit 2 both) and a missing change set (exit 4, clean message). StringWidth of ASCII, CJK, emoji, flags, box drawing is unchanged between v0.0.27 and v0.0.31 by default; under RUNEWIDTH_EASTASIAN=1 or a ja_JP locale, e-acute goes from 2 to 1 (recorded as a minor finding)."
+        },
+        "handle": "cheap-process-start-qa-1",
+        "id": "01M7FN89B4RMA2B2E05TBS9VB3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FN89B4RMA2B2E05RMFKWRS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FN89B4RMA2B2E05RMFKWRS",
+        "id": "01M7FN89BY7BT1HJYGFVR5T9WQ",
+        "link": "01M7FN89BY7BT1HJYGFT0HP2RS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQF5XD1RT48N8TWXXJAXT3",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at c9e38ec85: /usr/bin/time go test -trimpath -count=1 ./internal/slice -run '^TestFit$' ok in 2.67 s wall (was 42 s); go test -trimpath -count=1 -p 2 ./internal/slice ok (19.0 s); TestCheckOrder passes, and its skip and go-back cases assert exact errors naming the budget and both states. Coverage: -coverprofile for TestFit here and in a detached worktree of 88516d956: 39 budget.go blocks covered in old.out, 0 missing in new.out. git diff from the merge-base leaves budget.go untouched; the brief-two-sections subtest now also asserts not over and exactly two cut, and TestFitWithin's comment no longer says TestFit sweeps every budget."
+        },
+        "handle": "testfit-boundaries-qa-1",
+        "id": "01M7FN89CQFJQWBMZNCK6X82ST",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7FN89CQFJQWBMZNCGKRQAGD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7FN89CQFJQWBMZNCGKRQAGD",
+        "id": "01M7FN89DGQGC3DTVXTMYWYJPP",
+        "link": "01M7FN89DGQGC3DTVXTKNJZSCB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQF5ZRFYQWZJCW8CKY1S8V",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7EQ42Y1M8ENZCQ202D761JM",
+  "for": "01M7FKHSZ0D42ZSBZ0F78386RP",
+  "id": "01M7FN89E533999APRMSG3VD41",
+  "type": "ops",
+  "v": 1
+}

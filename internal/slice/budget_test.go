@@ -3,7 +3,9 @@ package slice
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -116,6 +118,91 @@ func kept(t *testing.T, b []byte, js bool) string {
 	return strings.Join(out, "")
 }
 
+// probe is the cut state Fit reached at a budget: an index into states(),
+// or len(states()) for over budget.
+type probe struct{ budget, state int }
+
+// checkOrder checks that the state only moves forward as the budget goes
+// down, one state at a time between neighbouring budgets. seq is the
+// probes in any order, each budget at most once.
+func checkOrder(seq []probe) error {
+	seq = slices.Clone(seq)
+	slices.SortFunc(seq, func(a, b probe) int { return b.budget - a.budget })
+	for k := 1; k < len(seq); k++ {
+		prev, p := seq[k-1], seq[k]
+		switch {
+		case p.state < prev.state:
+			return fmt.Errorf("budget %d: state %d after state %d at budget %d", p.budget, p.state, prev.state, prev.budget)
+		case p.budget == prev.budget-1 && p.state > prev.state+1:
+			return fmt.Errorf("budget %d: state %d right after state %d at budget %d, skipping state %d", p.budget, p.state, prev.state, prev.budget, prev.state+1)
+		}
+	}
+	return nil
+}
+
+// lastBudget returns the largest budget in 1..top at which in holds, by
+// bisection, or 0 if it holds at none. in must hold at every budget below
+// one it holds at.
+func lastBudget(top int, in func(int) bool) int {
+	lo, hi := 0, top+1
+	for hi-lo > 1 {
+		mid := lo + (hi-lo)/2
+		if in(mid) {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	return lo
+}
+
+// probeBudgets returns the budgets TestFit checks big at, top its uncut
+// tokens: just below, at and just above each cut state's first budget
+// (found by bisection on state, the state index at a budget), plus 64
+// budgets in 1..top from a fixed seed.
+func probeBudgets(top int, state func(int) int) []int {
+	var out []int
+	add := func(b int) {
+		if b >= 1 && b <= top {
+			out = append(out, b)
+		}
+	}
+	add(top)
+	for i := 1; i <= len(states()); i++ {
+		b := lastBudget(top, func(b int) bool { return state(b) >= i })
+		add(b - 1)
+		add(b)
+		add(b + 1)
+	}
+	r := rand.New(rand.NewSource(1))
+	for range 64 {
+		add(r.Intn(top) + 1)
+	}
+	return out
+}
+
+func TestCheckOrder(t *testing.T) {
+	ok := []probe{{100, 0}, {99, 1}, {90, 1}, {80, 3}, {79, 4}}
+	if err := checkOrder(ok); err != nil {
+		t.Errorf("in order: %v", err)
+	}
+	for _, c := range []struct {
+		name string
+		seq  []probe
+		want string
+	}{
+		{"skips a state", []probe{{100, 0}, {99, 1}, {98, 3}, {97, 4}},
+			"budget 98: state 3 right after state 1 at budget 99, skipping state 2"},
+		{"goes back a state", []probe{{97, 3}, {100, 1}, {99, 2}, {98, 1}},
+			"budget 98: state 1 after state 2 at budget 99"},
+	} {
+		err := checkOrder(c.seq)
+		if err == nil || err.Error() != c.want {
+			t.Errorf("%s: err = %v, want %q", c.name, err, c.want)
+		}
+	}
+}
+
 func TestFit(t *testing.T) {
 	for _, js := range []bool{false, true} {
 		format := map[bool]string{false: "markdown", true: "json"}[js]
@@ -127,10 +214,14 @@ func TestFit(t *testing.T) {
 		want := kept(t, uncut.Bytes, js)
 
 		t.Run("cuts in order "+format, func(t *testing.T) {
-			// Sweep the budget down; the state may only move forward,
-			// and every state is reached.
-			last, seen := 0, map[int]bool{}
-			for b := uncut.Tokens; b >= 1; b-- {
+			// Fit at each cut state's boundary and a seeded sample of
+			// budgets between; the state may only move forward as the
+			// budget goes down, and every state is reached.
+			memo := map[int]int{}
+			state := func(b int) int {
+				if i, ok := memo[b]; ok {
+					return i
+				}
 				res := fit(t, s, Options{Budget: b, JSON: js})
 				i := stateIndex(t, res)
 				if res.Over {
@@ -138,16 +229,25 @@ func TestFit(t *testing.T) {
 				} else if res.Tokens > b {
 					t.Fatalf("budget %d: %d tokens and not over", b, res.Tokens)
 				}
-				if i < last {
-					t.Fatalf("budget %d: state %d after state %d", b, i, last)
-				}
-				if !seen[i] {
-					t.Logf("budget %d: %d tokens, over %v, cut %v", b, res.Tokens, res.Over, res.Omitted)
-				}
-				last, seen[i] = i, true
 				if got := kept(t, res.Bytes, js); got != want {
 					t.Fatalf("budget %d: never-cut sections changed:\n%s\nwant\n%s", b, got, want)
 				}
+				memo[b] = i
+				return i
+			}
+			for _, b := range probeBudgets(uncut.Tokens, state) {
+				state(b)
+			}
+			seq := make([]probe, 0, len(memo))
+			for b, i := range memo {
+				seq = append(seq, probe{budget: b, state: i})
+			}
+			if err := checkOrder(seq); err != nil {
+				t.Fatal(err)
+			}
+			seen := map[int]bool{}
+			for _, p := range seq {
+				seen[p.state] = true
 			}
 			for i := range len(states()) + 1 {
 				if !seen[i] {
@@ -167,26 +267,28 @@ func TestFit(t *testing.T) {
 		uncut := fit(t, s, Options{Budget: 1 << 30})
 		next := (uncut.Tokens/1000 + 1) * 1000
 		// Find the first budget that briefs In flight and Neighbours.
-		for b := uncut.Tokens; b >= 1; b-- {
-			res := fit(t, s, Options{Budget: b})
-			if len(res.Omitted) < 2 {
-				continue
-			}
-			want := fmt.Sprintf("\n\n---\n"+
-				"Omitted: neighbours 4 (brief) — `rhiza slice hard-pause --budget %d`\n"+
-				"Omitted: in flight 4 (brief) — `rhiza slice hard-pause --budget %d`\n", next, next)
-			if !strings.HasSuffix(string(res.Bytes), want) {
-				t.Errorf("footer:\n%s\nwant suffix\n%s", res.Bytes, want)
-			}
-			if !strings.Contains(string(res.Bytes), "## Neighbours\n\n- neighbour-0 `01JN00`\n- neighbour-1 `01JN01`\n") {
-				t.Errorf("neighbours not brief:\n%s", res.Bytes)
-			}
-			if !strings.Contains(string(res.Bytes), "## In flight\n\n- `01JB00`\n") {
-				t.Errorf("in flight not brief:\n%s", res.Bytes)
-			}
-			return
+		b := lastBudget(uncut.Tokens, func(b int) bool {
+			return len(fit(t, s, Options{Budget: b}).Omitted) >= 2
+		})
+		if b == 0 {
+			t.Fatal("no budget briefs two sections")
 		}
-		t.Fatal("no budget briefs two sections")
+		res := fit(t, s, Options{Budget: b})
+		if res.Over || len(res.Omitted) != 2 {
+			t.Fatalf("budget %d: over %v, cut %v", b, res.Over, res.Omitted)
+		}
+		want := fmt.Sprintf("\n\n---\n"+
+			"Omitted: neighbours 4 (brief) — `rhiza slice hard-pause --budget %d`\n"+
+			"Omitted: in flight 4 (brief) — `rhiza slice hard-pause --budget %d`\n", next, next)
+		if !strings.HasSuffix(string(res.Bytes), want) {
+			t.Errorf("footer:\n%s\nwant suffix\n%s", res.Bytes, want)
+		}
+		if !strings.Contains(string(res.Bytes), "## Neighbours\n\n- neighbour-0 `01JN00`\n- neighbour-1 `01JN01`\n") {
+			t.Errorf("neighbours not brief:\n%s", res.Bytes)
+		}
+		if !strings.Contains(string(res.Bytes), "## In flight\n\n- `01JB00`\n") {
+			t.Errorf("in flight not brief:\n%s", res.Bytes)
+		}
 	})
 
 	t.Run("commands", func(t *testing.T) {
@@ -333,8 +435,9 @@ func TestFit(t *testing.T) {
 }
 
 // TestFitWithin checks, for the small test slices, every format and every
-// budget, that the output fits the budget unless it is over. TestFit's
-// sweeps check the same of big.
+// budget, that the output fits the budget unless it is over. TestFit
+// checks the same of big at its cut states' boundaries and a seeded sample
+// of budgets between.
 func TestFitWithin(t *testing.T) {
 	slices := map[string]Slice{"small": small(t), "tiny": tiny(t)}
 	for _, name := range []string{"small", "tiny"} {
