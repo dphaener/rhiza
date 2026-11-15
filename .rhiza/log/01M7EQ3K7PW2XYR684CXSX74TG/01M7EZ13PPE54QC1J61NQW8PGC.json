@@ -1,0 +1,147 @@
+{
+  "actor": "01M7EYSG15MNPKDDNHK0JPM85G",
+  "after": [
+    "01M7EYZQWER3NQ19DBCBT93P8F"
+  ],
+  "at": "2026-11-15T06:41:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "make -n test and make -n test-scripts SHARD=1/4 pass -parallel 8 with NPROC=4 (the Makefile's CPU count: getconf _NPROCESSORS_ONLN unless NPROC is set), -parallel 4 with NPROC=2, -parallel 8 with NPROC=16, and -parallel 3 with RHIZA_TEST_SCRIPT_PARALLEL=3; go test -trimpath ./cmd/rhiza -run '^(TestMakeTestTimeout|TestMakeTestShardTargets)$' covers each; failure case: RHIZA_TEST_SCRIPT_PARALLEL=0, -2 or abc falls back to the NPROC default rather than passing -parallel 0 or failing make. Speedup and memory measure (orchestrator, quiet VM): go clean -testcache && systemd-run --user --scope -p MemoryMax=6G -p TasksMax=300 -- /usr/bin/time -f '%e s %M KB' go test -trimpath ./cmd/rhiza passes without hitting either cap, faster than at -parallel 4. Touches Makefile, cmd/rhiza/makeupdate_test.go. Must not raise the default's cap above 8 or drop the machine-wide test lock.",
+          "statement": "make test and make test-scripts run cmd/rhiza's scripts at a -parallel of twice the CPU count capped at 8, or RHIZA_TEST_SCRIPT_PARALLEL when it is a positive integer, instead of go test's default of GOMAXPROCS."
+        },
+        "handle": "scripts-parallel-bounded",
+        "id": "01M7EQE64JDCYTPPV13887PNSS",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7EQE64JDCYTPPV1369XDSNM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/scripttimings shows: a go test -json fixture of TestScripts subtests, and a gh run view --log fixture of script-time lines from four scripts jobs, each merge into the previous file as sorted name<TAB>seconds lines, a script that failed or did not run keeping its previous time and a script no longer under cmd/rhiza/testdata/script dropped; failure case: input with no passing TestScripts subtest and no script-time line exits non-zero and leaves the file unchanged, as does a malformed previous file. The builder checks in the file with a line for every cmd/rhiza/testdata/script/*.txtar at 1 second (@{01M7EZ13EVPEKPW95GAYJB3C0H}). Refresh (orchestrator, before merge): make script-timings RUN=<this PR's CI run> rewrites it from the scripts jobs, recorded after the virtual clock, and that commit lands with the change set. Touches tools/scripttimings/, Makefile, cmd/rhiza/testdata/script-timings.tsv. Must not add a module dependency.",
+          "statement": "cmd/rhiza/testdata/script-timings.tsv, checked in, holds each script's recorded wall time (name, tab, seconds, sorted by name), and make script-timings rewrites it through a small Go tool under tools/scripttimings from the script-time lines of a CI run's scripts jobs (RUN=<run id>, read with gh run view --log) or from a go test -json file of TestScripts (JSON=<file>)."
+        },
+        "handle": "script-timings-file",
+        "id": "01M7EQE65YZAMRMTAKKMA3XGZK",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run '^(TestScriptShard|TestScriptShardEnvError)$' shows the shards disjoint and covering every script, greedy by recorded time on a fixture of timings (longest first, each to the least-loaded shard, ties to the lower shard), and with the checked-in timings each shard's total within 15% of the mean; failure case: RHIZA_TEST_SHARD=0/4, 5/4 and 1/0 are still refused. The test-scripts-sharded capability's statement says the split is weighted. Measure (orchestrator, after 5 PRs): gh run view <run> --json jobs shows the four scripts jobs within 60 s of each other (2026-11-15, run 43685514513 after the virtual clock, round-robin: 106-197 s). Touches cmd/rhiza/main_test.go, cmd/rhiza/shard_test.go. Must not change the shard env format or the CI matrix.",
+          "statement": "RHIZA_TEST_SHARD=i/n splits cmd/rhiza's scripts by recorded time instead of round-robin by name: each script, longest first by script-timings.tsv (a missing one weighted at the median), goes to the shard with the least total so far, so CI's four script shards take about the same time."
+        },
+        "handle": "script-shards-weighted",
+        "id": "01M7EQE69J35XJW25SPFMZ5P0K",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7EQE69J35XJW25SPBZBH1MS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "reasoning": "The orchestrator ruled that the timing file comes from a CI scripts job's go test -json output, not a full local run. CI's scripts jobs run go test without -json today, so no per-script time reaches any log. Raw -json in the log would make testscript log every script and bury the --- FAIL: lines ship check --test-failures and ci-fix read; an uploaded artifact needs a new action. A replay keeps the failure text as go test prints it and adds about 400 short lines per run.",
+          "statement": "CI's scripts jobs record each script's time in their own log: make test-scripts runs go test -json through a replay that prints go test's text for what did not pass and one script-time line per passing script, and make script-timings reads those lines with gh run view --log; no artifact upload and no new workflow step",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "script-times-from-ci-log",
+        "id": "01M7EZ13D3AQHEA3J3WWRP37X0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EZ13D3AQHEA3J3WV9MGQVA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EZ13D3AQHEA3J3WV9MGQVA",
+        "id": "01M7EZ13DX8SBBNPSV1AJMZZW3",
+        "link": "01M7EZ13DX8SBBNPSV178DY9TP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EYZQVMZTCGPSEZ671SETVX",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "No CI log before this change set carries per-script times, the orchestrator ruled out a full local run as the source, and builders never push, so CI times exist only once the PR's CI has run. Equal seconds make the order and the shards fall back to name order (round-robin), today's behaviour, until the refresh commit lands with the change set.",
+          "statement": "The first checked-in script-timings.tsv gives every script 1 second, and the orchestrator rewrites it with make script-timings RUN=<run> from the change set's own PR CI run before merge",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "script-timings-seed-then-ci",
+        "id": "01M7EZ13EVPEKPW95GB0Q2GR16",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7EZ13EVPEKPW95GAYJB3C0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7EZ13EVPEKPW95GAYJB3C0H",
+        "id": "01M7EZ13G2SNJ0JYJCW13E7F1G",
+        "link": "01M7EZ13G2SNJ0JYJCVYTJ7CJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EYZQVMZTCGPSEZ671SETVX",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "id": "01M7EZ13HXBMM0BTV4QD1AJBNR",
+        "link": "01M7EZ13HXBMM0BTV4QCRN171H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EZ13EVPEKPW95GAYJB3C0H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./tools/scripttimings -run '^TestReplay' turns a go test -json fixture of passing, failing and skipped TestScripts subtests into the failing ones' text (with their --- FAIL: lines) and a script-time line per passing one, and a fixture whose package passed exits 0; failure cases: a fixture with a failed subtest, a build failure, or no package end event (a killed go test) exits non-zero. go test -trimpath ./cmd/rhiza -run '^TestMakeTestShardTargets$' shows make -n test-scripts SHARD=2/3 passing -json and the replay, with RHIZA_TEST_SHARD, the lock and go test's failing status kept. CI's scripts step stays make test-scripts SHARD=<shard>. Touches tools/scripttimings/, Makefile, cmd/rhiza/makeupdate_test.go. Must not change the CI matrix, add a workflow step or action, or drop the machine-wide test lock.",
+          "statement": "make test-scripts runs go test -json through tools/scripttimings's replay, which prints go test's text for every test that did not pass and for the package (its --- FAIL:, FAIL and panic: lines as go test prints them), then one script-time<TAB><name><TAB><seconds> line per passing TestScripts subtest, and exits non-zero whenever go test failed, so each CI scripts job's log carries its scripts' times."
+        },
+        "handle": "ci-script-timings",
+        "id": "01M7EZ13K1QGZHVMCYCJYNBE4D",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7EZ13K1QGZHVMCYCGB79TTD",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7EZ13K1QGZHVMCYCGB79TTD",
+        "id": "01M7EZ13M0C38K36N4DGD77WES",
+        "link": "01M7EZ13M0C38K36N4DEAA60ZK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EZ13D3AQHEA3J3WV9MGQVA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7EZ13K1QGZHVMCYCGB79TTD",
+        "id": "01M7EZ13MZMHN8GZTS1RC3X8XX",
+        "link": "01M7EZ13MZMHN8GZTS1N4662A1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7EQE65YZAMRMTAKKJN4A7A6",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7EZ13PPE54QC1J61NQW8PGC",
+  "type": "ops",
+  "v": 1
+}

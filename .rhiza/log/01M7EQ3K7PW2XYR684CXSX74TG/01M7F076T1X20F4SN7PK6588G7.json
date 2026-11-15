@@ -1,0 +1,41 @@
+{
+  "actor": "01M7F05BV78DPX4BEBNJYYQPPD",
+  "after": [
+    "01M7F04QA4M7WV7S46WKTN5WXX"
+  ],
+  "at": "2026-11-15T07:02:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding is right that list order does not fix start order: testscript's RunT calls t.Run then t.Parallel per file, and Go hands -parallel slots to woken subtests in scheduler order. But the suggested fix is unsafe: a ticket taken in Setup runs after t.Parallel has already given the script a slot, so a script holding a slot would wait for a higher-ranked script still parked in waitParallel for a slot, and with fewer slots than scripts (-parallel 8, ~400 scripts) the suite can deadlock. A safe start order needs TestScripts to schedule scripts itself instead of testscript's t.Parallel, which widens a change set the orchestrator told planners not to widen. The owner approved the milestone for its wall-time targets (cold make test within 4 minutes, CI median within 3), not for a start order; those are met by the bounded -parallel and the weighted shards, whose acceptance already measures them (shards within 15% of the mean, CI scripts jobs within 60 s of each other, -parallel 8 faster than 4). List order still helps in practice, since subtests queue for slots roughly in t.Run order. So the reviser narrows the intent's clause to what the leaves deliver, and scripts-longest-first keeps its own honest statement.",
+          "statement": "The change set does not promise that cmd/rhiza's scripts start longest first: its intent's 'start longest first' clause is narrowed to the scripts being listed longest first (scripts-longest-first) and placed longest first into weighted shards (script-shards-weighted), and no leaf adds a start-order mechanism such as a ranked start ticket",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "longest-first-is-list-order",
+        "id": "01M7F076QTJNMKAHYYCFM0B4VA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7F076QTJNMKAHYYCF7FZSX2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7F076QTJNMKAHYYCF7FZSX2",
+        "id": "01M7F076RR8PAAPAQSM08YK1J0",
+        "link": "01M7F076RR8PAAPAQSKZZ4VFMR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7F04Q5YGDR93VPKAK43X8DB",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7EQ3K7PW2XYR684CXSX74TG",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7F076T1X20F4SN7PK6588G7",
+  "type": "ops",
+  "v": 1
+}
