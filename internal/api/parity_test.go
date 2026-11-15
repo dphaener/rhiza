@@ -362,157 +362,37 @@ func strictView(p parityLog, cs id.ID) (parityView, gmodel.Model, []gmodel.Probl
 	return v, m, ps
 }
 
-// viewFacts is what a known case reads of one view's log shape: the view's
-// change set and current change set, the ops each change set applies, and
-// the strict engine's problems on the view, by target.
+// viewFacts is what a known case reads of one view's log shape: the log,
+// the view's change set and its current change set, and the strict
+// engine's view and problems.
 type viewFacts struct {
-	log     parityLog
-	cs, cur id.ID
-	// skipped maps a target to the sentinels of the strict problems that
-	// skipped an op on it.
-	skipped map[id.ID][]error
-	// heads is the number of heads each target has over the ops the
-	// index's write model counts for Version: the landed ones and those of the
-	// current change set's in-flight dependencies.
-	heads map[id.ID]int
-	// history is each target's strict history in the view.
-	history map[id.ID][]gmodel.Ref
-	// deps is the current change set's in-flight dependencies.
-	deps []id.ID
+	log      parityLog
+	cs, cur  id.ID
+	strict   gmodel.Model
+	problems []gmodel.Problem
 }
-
-// skipSentinels are the model sentinels whose problem means the op did not
-// apply.
-var skipSentinels = []error{gmodel.ErrBase, gmodel.ErrRetired, gmodel.ErrExists, gmodel.ErrMissing,
-	gmodel.ErrParent, gmodel.ErrCycle}
 
 func newViewFacts(p parityLog, cs id.ID, m gmodel.Model, ps []gmodel.Problem) *viewFacts {
-	f := &viewFacts{log: p, cs: cs, cur: p.current(cs), skipped: map[id.ID][]error{}, heads: map[id.ID]int{},
-		history: map[id.ID][]gmodel.Ref{}}
-	for _, n := range m.Nodes() {
-		f.history[n.ID] = n.History
-	}
-	for _, l := range m.Links() {
-		f.history[l.ID] = l.History
-	}
-	if !f.cur.IsZero() {
-		f.deps = changeset.Closure(p.sets, f.cur)
-	}
-	for _, pr := range ps {
-		t, ok := p.target[pr.Op]
-		if !ok {
-			continue
-		}
-		for _, e := range skipSentinels {
-			if errors.Is(pr.Err, e) {
-				f.skipped[t] = append(f.skipped[t], e)
-			}
-		}
-	}
-	byTarget := map[id.ID][]op.Op{}
-	byID := map[id.ID]changeset.ChangeSet{}
-	for _, s := range p.sets {
-		byID[s.ID] = s
-		if s.State == changeset.StateLanded {
-			for _, o := range s.Ops {
-				byTarget[o.Target()] = append(byTarget[o.Target()], o)
-			}
-		}
-	}
-	if !f.cur.IsZero() {
-		for _, d := range dependencyOrder(p.sets, f.cur) {
-			for _, o := range byID[d].Ops {
-				byTarget[o.Target()] = append(byTarget[o.Target()], o)
-			}
-		}
-	}
-	for t, ops := range byTarget {
-		named := map[id.ID]bool{}
-		for _, o := range ops {
-			if o.Base != o.ID {
-				named[o.Base] = true
-			}
-		}
-		for _, o := range ops {
-			if !named[o.ID] {
-				f.heads[t]++
-			}
-		}
-	}
-	return f
-}
-
-// ops returns change set cs's folded ops.
-func (f *viewFacts) ops(cs id.ID) []op.Op {
-	for _, s := range f.log.sets {
-		if s.ID == cs {
-			return s.Ops
-		}
-	}
-	return nil
-}
-
-func (f *viewFacts) skippedBy(t id.ID, sentinel error) bool {
-	return slices.ContainsFunc(f.skipped[t], func(e error) bool { return e == sentinel })
+	return &viewFacts{log: p, cs: cs, cur: p.current(cs), strict: m, problems: ps}
 }
 
 // knownCase is a disagreement the harness has found and tolerates until
-// the leaf that fixes it (parity-write-index-from-strict, for the index's
-// write model) empties this table. The interim model takes its views from
-// the strict engine (parity-interim-from-strict), so no case names it: any
-// disagreement of the interim side fails. Name names the log shape that
-// gives it; match recognises a disagreement of that shape.
+// the leaf that fixes it empties this table. The interim model takes its
+// views from the strict engine (parity-interim-from-strict) and so does
+// the index's write model (parity-write-index-from-strict), so the table
+// is empty: any disagreement fails. Name names the log shape that gives
+// it; match recognises a disagreement of that shape.
 type knownCase struct {
 	name  string
 	match func(f *viewFacts, d disagreement) bool
 }
 
-// skippedCase is the known case of the index's write model applying an op
-// on the target that the strict engine skips with sentinel.
-func skippedCase(name string, sentinel error) knownCase {
-	return knownCase{name: name, match: func(f *viewFacts, d disagreement) bool {
-		return d.SideA == sideIndex && d.SideB == sideStrict && f.skippedBy(d.Target, sentinel)
-	}}
-}
-
 // knownCases is the table of known disagreements (Decision
 // parity-known-cases-table), matched in order. Each one is reported with
-// its count.
-var knownCases = []knownCase{
-	{name: "write view of a terminal change set with ops on the target: the index leaves its ops out of Version",
-		match: func(f *viewFacts, d disagreement) bool {
-			return d.SideA == sideIndex && d.SideB == sideStrict && (d.Field == "version" || d.Field == "conflict") &&
-				!f.cs.IsZero() && f.cur.IsZero() &&
-				slices.ContainsFunc(f.ops(f.cs), func(o op.Op) bool { return o.Target() == d.Target })
-		}},
-	skippedCase("an op whose base is not in the target's strict history (model.ErrBase): the index applies it, the strict engine skips it", gmodel.ErrBase),
-	skippedCase("an op on a retired target, or a create or move under a retired parent (model.ErrRetired): the index applies it, the strict engine skips it", gmodel.ErrRetired),
-	skippedCase("a create of an ID already taken (model.ErrExists): the index applies it, the strict engine skips it", gmodel.ErrExists),
-	skippedCase("an op on a target, parent, endpoint or decision not in the view (model.ErrMissing): the index applies it, the strict engine skips it", gmodel.ErrMissing),
-	skippedCase("a create or move under a parent whose kind has no children (model.ErrParent): the index applies it, the strict engine skips it", gmodel.ErrParent),
-	skippedCase("a move that makes a node its own ancestor (model.ErrCycle): the index applies it, the strict engine skips it", gmodel.ErrCycle),
-	{name: "a dependency's op on the target after the current change set's op in strict apply order: the index applies every dependency's ops before the current change set's",
-		match: func(f *viewFacts, d disagreement) bool {
-			if d.SideA != sideIndex {
-				return false
-			}
-			mine := false
-			for _, r := range f.history[d.Target] {
-				switch {
-				case r.ChangeSet == f.cur && !f.cur.IsZero():
-					mine = true
-				case mine && slices.Contains(f.deps, r.ChangeSet):
-					return d.SideB == sideStrict
-				}
-			}
-			return false
-		}},
-	{name: "two heads on one target: the index's rule takes the largest head and sets Conflict, the strict one the last op applied and a conflict only on an overlapping stale write",
-		match: func(f *viewFacts, d disagreement) bool {
-			return d.SideA == sideIndex && d.SideB == sideStrict && (d.Field == "version" || d.Field == "conflict") &&
-				f.heads[d.Target] > 1
-		}},
-}
+// its count. The cases the index's write model had, each fixed and kept as
+// a TestParityIndex test, are in the notes on leaf
+// parity-write-index-from-strict.
+var knownCases = []knownCase{}
 
 // known returns the known case d is one of, or "" for none.
 func known(f *viewFacts, d disagreement) string {

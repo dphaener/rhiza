@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GNKVS92NJ5M065WSBM9QFM"
+  ],
+  "at": "2026-11-15T22:57:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case, the named one (TestParityIndexCreateNoLongerApplies): a draft creates a child under a landed parent that a later landed change set retires. Before: index write model holds the child (present); strict what-if skips the create (model.ErrRetired), absent. Index side changed: buildModel lays the change set over the index's strict what-if (WhatIfOverlayOver)."
+        },
+        "handle": "note-01m7gpv9w8mr88",
+        "id": "01M7GPV9W8MR88K545W5EJVSBG",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPV9W8MR88K545W1HQT163",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPV9W8MR88K545W1HQT163",
+        "id": "01M7GPV9Y1DDJGD6NMSSYJ2MK9",
+        "link": "01M7GPV9Y1DDJGD6NMSSVHENQP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVA048B7J17E9BJYGAAG2",
+  "type": "ops",
+  "v": 1
+}

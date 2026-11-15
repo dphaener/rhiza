@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GPVEAW97Z82JWN7RX4MYFH"
+  ],
+  "at": "2026-11-15T22:57:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case (TestParityIndexUnknownBase): a draft updates a landed node naming a base not in its history. Before: index applied it (statement \"b\"); strict skips it (model.ErrBase, statement \"a\"). Index side changed."
+        },
+        "handle": "note-01m7gpvg63bf3s",
+        "id": "01M7GPVG63BF3SRPKCADX21QNZ",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPVG63BF3SRPKCAANWR5W5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPVG63BF3SRPKCAANWR5W5",
+        "id": "01M7GPVG7HHW87NGTT5V42SXEP",
+        "link": "01M7GPVG7HHW87NGTT5RBG793S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVG9430D1GRV3XK6XYZW8",
+  "type": "ops",
+  "v": 1
+}

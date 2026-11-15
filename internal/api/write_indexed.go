@@ -4,14 +4,14 @@ package api
 // the index's folded state plus its own new entries, so it never reads or
 // folds the log. The Model a builder sees is the what-if overlay of the
 // target change set (the stored as-is rows, corrected by what the change
-// set and its in-flight dependencies wrote), with the change set taken from
-// the entries the dry run holds in pending when there are any.
+// set and its in-flight dependencies wrote, as the strict engine applies
+// them), with the change set taken from the entries the dry run holds in
+// pending when there are any.
 
 import (
 	"cmp"
 	"encoding/json"
 	"errors"
-	"maps"
 	"slices"
 	"strings"
 
@@ -140,12 +140,13 @@ func (ix *writeIndex) changeSets(w *workspace) []changeset.ChangeSet {
 }
 
 // model is the write view of change set current (zero for none), as
-// newModel builds it: the stored as-is rows, then the ops of current's
-// in-flight dependencies in dependencyOrder, then current's own, each
-// applied as newModel's model.apply does. The strict what-if view is not
-// it: that one drops a node whose create no longer applies (its parent's
-// create gone with a retirement in the change set, or a move under a node
-// created later), which the interim model keeps.
+// newModel builds it: the strict engine's, taken from the index. When
+// current is in flight it is the strict what-if of current (the stored
+// as-is rows, then current and its in-flight dependencies in their apply
+// order, an op the strict engine skips left out), with current folded from
+// its stored entries and the dry run's pending ones; else it is as-is.
+// Version and Conflict follow the strict rule from the view's histories
+// and problems, as newModel's do.
 func (ix *writeIndex) model(w *workspace, current id.ID) Model {
 	if ix.models != nil && len(w.pending) == 0 {
 		if m, ok := ix.models[current]; ok {
@@ -165,205 +166,105 @@ func (ix *writeIndex) buildModel(w *workspace, current id.ID) Model {
 	if ix.ctx != nil && ix.ctx.builtModel != nil {
 		ix.ctx.builtModel(current)
 	}
-	m := &writeModel{ix: ix, cs: current}
+	m := &writeModel{ix: ix}
 	var over *changeset.ChangeSet
 	if !current.IsZero() {
 		if es := ix.entries(w, current); len(es) > 0 {
-			c, _ := changeset.Fold(current, es)
-			if inFlightState(c.State) {
-				m.ops = c.Ops
-				m.pend = map[id.ID][]id.ID{}
-				for _, o := range c.Ops {
-					m.pend[o.Target()] = append(m.pend[o.Target()], o.ID)
-				}
+			if c, _ := changeset.Fold(current, es); inFlightState(c.State) {
+				over = &c
 			}
-			over = &c
 		}
 	}
 	if ix.relevant != nil {
 		ix.relevant[current] = []id.ID{current}
 	}
-	l := &writeLayer{ix: ix, nodes: map[id.ID]*gmodel.Node{}, links: map[id.ID]*gmodel.Link{}}
-	if over != nil && inFlightState(over.State) {
-		sets, err := ix.index().WhatIfSets(current, over)
-		ix.fail(err)
-		byID := map[id.ID]changeset.ChangeSet{}
-		for _, c := range sets {
-			byID[c.ID] = c
-		}
-		order := dependencyOrder(sets, current)
-		if ix.relevant != nil {
-			ix.relevant[current] = append([]id.ID{current}, order...)
-		}
-		for _, d := range order {
-			for _, o := range byID[d].Ops {
-				l.apply(d, o)
-			}
-		}
+	view := id.ID{}
+	if over != nil {
+		view, m.cs = current, current
+		m.pend = map[id.ID][]id.ID{}
 		for _, o := range over.Ops {
-			l.apply(current, o)
+			m.pend[o.Target()] = append(m.pend[o.Target()], o.ID)
+		}
+		if ix.relevant != nil {
+			sets, err := ix.index().WhatIfSets(current, over)
+			ix.fail(err)
+			ix.relevant[current] = append([]id.ID{current}, dependencyOrder(sets, current)...)
 		}
 	}
-	m.ov = ix.index().OverlayOf(l.list())
+	ov, ps, err := ix.index().WhatIfOverlayOver(view, over)
+	if err != nil {
+		ix.fail(err)
+		return m
+	}
+	m.ov = ov
+	m.conflict = ix.conflicts(ps, m.cs)
 	return m
 }
 
-// writeLayer is the nodes and links in-flight ops touch, each loaded from
-// the stored as-is rows on first use, with the ops applied on top.
-type writeLayer struct {
-	ix    *writeIndex
-	nodes map[id.ID]*gmodel.Node
-	links map[id.ID]*gmodel.Link
-}
-
-// node returns node i of the layer, loaded from as-is on first use; nil
-// when neither holds it.
-func (l *writeLayer) node(i id.ID) *gmodel.Node {
-	if n, ok := l.nodes[i]; ok {
-		return n
-	}
-	n, ok, err := l.ix.index().Node(index.AsIs, i)
-	l.ix.fail(err)
-	if !ok || err != nil {
-		return nil
-	}
-	n.Fields, n.History = maps.Clone(n.Fields), slices.Clone(n.History)
-	l.nodes[i] = &n
-	return &n
-}
-
-// link is node for links.
-func (l *writeLayer) link(i id.ID) *gmodel.Link {
-	if k, ok := l.links[i]; ok {
-		return k
-	}
-	k, ok, err := l.ix.index().Link(index.AsIs, i)
-	l.ix.fail(err)
-	if !ok || err != nil {
-		return nil
-	}
-	k.History = slices.Clone(k.History)
-	l.links[i] = &k
-	return &k
-}
-
-// apply applies op o of change set cs as model.apply does: a create sets
-// its target whatever it was, and an op on a target with no create is
-// ignored. Each op applied joins its target's History, which versionOf
-// reads.
-func (l *writeLayer) apply(cs id.ID, o op.Op) {
-	ref := gmodel.Ref{ChangeSet: cs, Op: o.ID}
-	switch o.Type {
-	case op.TypeNodeCreate:
-		n := l.node(o.Node)
-		if n == nil {
-			n = &gmodel.Node{ID: o.Node, Created: cs}
-			l.nodes[o.Node] = n
+// conflicts returns the targets ps holds an unrepaired model.ErrConflict
+// problem on from an op not of change set current (zero for none), as
+// modelBase.conflicts does. A stored conflict that is not a stale base
+// names only its op, whose target is read from its change set.
+func (ix *writeIndex) conflicts(ps []gmodel.Problem, current id.ID) map[id.ID]bool {
+	out := map[id.ID]bool{}
+	var rest []gmodel.Problem
+	for _, p := range ps {
+		if !errors.Is(p.Err, gmodel.ErrConflict) || (!current.IsZero() && p.ChangeSet == current) {
+			continue
 		}
-		n.Kind, n.Handle, n.Parent, n.Key = o.Kind, o.Handle, o.Parent, o.Key
-		n.Fields = maps.Clone(o.Fields)
-		n.History = append(n.History, ref)
-	case op.TypeNodeUpdate, op.TypeNodeMove, op.TypeNodeRetire:
-		n := l.node(o.Node)
-		if n == nil {
-			return
+		var stale *gmodel.StaleBaseError
+		if errors.As(p.Err, &stale) {
+			out[stale.Node] = true
+		} else if !p.Op.IsZero() {
+			rest = append(rest, p)
 		}
-		switch o.Type {
-		case op.TypeNodeUpdate:
-			if o.Handle != "" {
-				n.Handle = o.Handle
+	}
+	if len(rest) == 0 {
+		return out
+	}
+	var css []id.ID
+	for _, p := range rest {
+		if !slices.Contains(css, p.ChangeSet) {
+			css = append(css, p.ChangeSet)
+		}
+	}
+	got, err := ix.index().OpsOf(css)
+	ix.fail(err)
+	for _, p := range rest {
+		for _, o := range got[p.ChangeSet].Ops {
+			if o.ID == p.Op {
+				out[o.Target()] = true
 			}
-			if n.Fields == nil && len(o.Set) > 0 {
-				n.Fields = map[string]json.RawMessage{}
-			}
-			maps.Copy(n.Fields, o.Set)
-			for _, k := range o.Unset {
-				delete(n.Fields, k)
-			}
-		case op.TypeNodeMove:
-			n.Parent, n.Key = o.Parent, o.Key
-		default:
-			n.Retired = true
-		}
-		n.History = append(n.History, ref)
-	case op.TypeLinkCreate:
-		k := l.link(o.Link)
-		if k == nil {
-			k = &gmodel.Link{ID: o.Link, Created: cs}
-			l.links[o.Link] = k
-		}
-		k.Type, k.From, k.To, k.Note, k.Decision = o.LinkType, o.From, o.To, o.Note, o.Decision
-		k.History = append(k.History, ref)
-	case op.TypeLinkRetire:
-		if k := l.link(o.Link); k != nil {
-			k.Retired = true
-			k.History = append(k.History, ref)
 		}
 	}
-}
-
-// list returns the layer's nodes and links.
-func (l *writeLayer) list() ([]gmodel.Node, []gmodel.Link) {
-	ns := make([]gmodel.Node, 0, len(l.nodes))
-	for _, n := range l.nodes {
-		ns = append(ns, *n)
-	}
-	ls := make([]gmodel.Link, 0, len(l.links))
-	for _, k := range l.links {
-		ls = append(ls, *k)
-	}
-	return ns, ls
+	return out
 }
 
 // writeModel is the Model of a write over the index.
 type writeModel struct {
-	ix   *writeIndex
-	ov   *index.Overlay
+	ix *writeIndex
+	ov *index.Overlay
+	// cs is the current change set: the view's while it is in flight, else
+	// none.
 	cs   id.ID
-	ops  []op.Op
 	pend map[id.ID][]id.ID
+	// conflict is the targets the view holds an unrepaired conflict on
+	// from an op not of cs.
+	conflict map[id.ID]bool
 }
 
 func (m *writeModel) ok() bool { return m.ov != nil && m.ix.err == nil }
 
-// versionOf gives the version and conflict of a node or link from its
-// history: the head over the operations other than the change set's own,
-// as the interim model counts them.
-func (m *writeModel) versionOf(hist []gmodel.Ref) (id.ID, bool) {
-	var refs []gmodel.Ref
-	for _, h := range hist {
-		if h.ChangeSet != m.cs || m.cs.IsZero() {
-			refs = append(refs, h)
+// versionOf gives the version and conflict of node or link i from its
+// strict history: the last operation that is not the current change set's
+// own, and whether the view holds an unrepaired conflict on it.
+func (m *writeModel) versionOf(i id.ID, hist []gmodel.Ref) (id.ID, bool) {
+	for j := len(hist) - 1; j >= 0; j-- {
+		if m.cs.IsZero() || hist[j].ChangeSet != m.cs {
+			return hist[j].Op, m.conflict[i]
 		}
 	}
-	switch len(refs) {
-	case 0:
-		return id.ID{}, false
-	case 1:
-		return refs[0].Op, false
-	}
-	var css []id.ID
-	want := map[id.ID]bool{}
-	for _, r := range refs {
-		want[r.Op] = true
-		if !slices.Contains(css, r.ChangeSet) {
-			css = append(css, r.ChangeSet)
-		}
-	}
-	got, err := m.ix.index().FoldedOf(css)
-	if err != nil {
-		m.ix.fail(err)
-		return id.ID{}, false
-	}
-	var ops []op.Op
-	for _, c := range got {
-		for _, o := range c.Ops {
-			if want[o.ID] {
-				ops = append(ops, o)
-			}
-		}
-	}
-	return head(ops)
+	return id.ID{}, m.conflict[i]
 }
 
 // creator is the actor that created node n (gmodel.CreatedBy): the one
@@ -395,7 +296,7 @@ func (m *writeModel) node(n gmodel.Node, version bool) Node {
 	out := apiNode(n)
 	out.Pending = slices.Clone(m.pend[n.ID])
 	if version {
-		out.Version, out.Conflict = m.versionOf(n.History)
+		out.Version, out.Conflict = m.versionOf(n.ID, n.History)
 	}
 	return out
 }
@@ -404,7 +305,7 @@ func (m *writeModel) link(l gmodel.Link, version bool) Link {
 	out := Link{ID: l.ID, Type: l.Type, From: l.From, To: l.To, Note: l.Note, Decision: l.Decision, Retired: l.Retired}
 	out.Pending = slices.Clone(m.pend[l.ID])
 	if version {
-		out.Version, out.Conflict = m.versionOf(l.History)
+		out.Version, out.Conflict = m.versionOf(l.ID, l.History)
 	}
 	return out
 }

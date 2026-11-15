@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GPVKWHP4MGX8E24C0XAKWQ"
+  ],
+  "at": "2026-11-15T22:57:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case (TestParityIndexParentWithoutChildren): a draft creates a capability under a landed decision. Before: index holds it (present); strict skips it (model.ErrParent), absent. Index side changed."
+        },
+        "handle": "note-01m7gpvnek94q7",
+        "id": "01M7GPVNEK94Q7CWY1M7JBJEVD",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPVNEK94Q7CWY1M60V9WPR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPVNEK94Q7CWY1M60V9WPR",
+        "id": "01M7GPVNFH1B7SN8G8XB9GT6QR",
+        "link": "01M7GPVNFH1B7SN8G8X9CXMKHJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVNGMQQZ6E4ZJN9JSKNCR",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GPVA048B7J17E9BJYGAAG2"
+  ],
+  "at": "2026-11-15T22:57:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case (TestParityIndexTerminalVersion): one landed change set creating a node, write view of that landed change set. Before: index Version none (it left the change set's own ops out though it is not in flight); strict Version is the create. Index side changed: the current change set is the view's only while in flight."
+        },
+        "handle": "note-01m7gpvcdnzke7",
+        "id": "01M7GPVCDNZKE783QC858KG3K9",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPVCDNZKE783QC82Z46A7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPVCDNZKE783QC82Z46A7Y",
+        "id": "01M7GPVCES2DG5CD5VVBXT36RY",
+        "link": "01M7GPVCES2DG5CD5VVAY91DFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVCFYAS0PHGC39PXJGW80",
+  "type": "ops",
+  "v": 1
+}

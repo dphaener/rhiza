@@ -36,13 +36,23 @@ type Overlay struct {
 // is not in the log, or not in flight, the overlay is the as-is view and
 // the problems are ErrMissing or ErrState, as model.WhatIf gives them.
 func (x *Index) WhatIfOverlay(cs id.ID) (*Overlay, []model.Problem, error) {
+	return x.WhatIfOverlayOver(cs, nil)
+}
+
+// WhatIfOverlayOver is WhatIfOverlay with cs taken as over instead of
+// folded from its stored entries when over is not nil, as WhatIfSets
+// takes it: a change set with entries not yet written (a dry run's), whose
+// pending entries are laid over too. The problems are those of the view,
+// the stored as-is ones included, but for the repaired and the
+// duplicate-handle ones.
+func (x *Index) WhatIfOverlayOver(cs id.ID, over *changeset.ChangeSet) (*Overlay, []model.Problem, error) {
 	tx, err := x.db.Begin()
 	if err != nil {
 		return nil, nil, err
 	}
 	defer tx.Rollback()
 
-	sets, err := whatIfSets(tx, cs, nil)
+	sets, err := whatIfSets(tx, cs, over)
 	if err != nil {
 		return nil, nil, err
 	}
