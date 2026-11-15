@@ -3,8 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -821,33 +824,85 @@ func TestLink(t *testing.T) {
 	})
 }
 
+// linkEndpoints is TestLinkEndpointKinds' starting repository: change set
+// Shape, an x- and a y- node of every kind (added in Shape where the kind
+// has a parent, else landed), then change set Other, current.
+var linkEndpoints = snapshotOf("link-endpoints", func(dir string) (*Ctx, error) {
+	ctx, err := buildInit(dir)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := runOp(ctx, "change.new", `{"intent":"Shape"}`); err != nil {
+		return nil, err
+	}
+	rec := *ctx
+	rec.Record = true
+	for _, k := range op.Kinds() {
+		for _, p := range []string{"x", "y"} {
+			h := linkEndHandle(p, check.NodeEnd(k))
+			if op.HasParent(k) {
+				_, err = runOp(&rec, "add", fmt.Sprintf(`{"kind":%q,"handle":%q}`, k, h))
+			} else {
+				_, err = landNodeOn(ctx, k, h)
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	_, err = runOp(ctx, "change.new", `{"intent":"Other"}`)
+	return ctx, err
+})
+
+// linkEndpointSets returns the IDs of a linkEndpoints copy's change sets
+// Shape and Other, which are the same in every copy.
+func linkEndpointSets(t *testing.T, ctx *Ctx) (shape, other id.ID) {
+	t.Helper()
+	for _, c := range mustFoldClean(t, ctxWorkspace(t, ctx)) {
+		switch c.Open.Intent {
+		case "Shape":
+			shape = c.ID
+		case "Other":
+			other = c.ID
+		}
+	}
+	if shape.IsZero() || other.IsZero() {
+		t.Fatalf("linkEndpoints has no change set Shape (%s) or Other (%s)", shape, other)
+	}
+	return shape, other
+}
+
+func linkEndHandle(prefix string, e check.End) string {
+	return prefix + "-" + strings.ReplaceAll(string(e), " ", "-")
+}
+
 // TestLinkEndpointKinds shows buildLink agrees with check.Allowed for every
 // link type and every pair of end kinds, change sets included: a pair the
 // table allows is never refused as a kind mismatch, and any other is a
 // usage error naming both kinds that writes nothing.
+// Each link is tried in its own fresh copy of linkEndpoints, so no link
+// reads the ones before it.
 func TestLinkEndpointKinds(t *testing.T) {
 	t.Parallel()
-	ctx, cs := writeCtx(t)
-	handle := func(prefix string, e check.End) string { return prefix + "-" + strings.ReplaceAll(string(e), " ", "-") }
-	for _, k := range op.Kinds() {
-		for _, p := range []string{"x", "y"} {
-			if h := handle(p, check.NodeEnd(k)); op.HasParent(k) {
-				recordWrite(t, ctx, "add", fmt.Sprintf(`{"kind":%q,"handle":%q}`, k, h))
-			} else {
-				landNode(t, ctx, k, h)
-			}
-		}
+	scratch := t.TempDir()
+	probe, err := linkEndpoints.copyTo(filepath.Join(scratch, "probe"))
+	if err != nil {
+		t.Fatal(err)
 	}
-	other := newChange(t, ctx, `{"intent":"Other"}`).ChangeSet
+	cs, other := linkEndpointSets(t, probe)
+	if got := currentOf(t, probe); got != other {
+		t.Fatalf("linkEndpoints' current change set = %s, want Other %s", got, other)
+	}
 	ref := func(prefix string, e check.End) string {
 		switch {
 		case e != check.ChangeSet:
-			return handle(prefix, e)
+			return linkEndHandle(prefix, e)
 		case prefix == "x":
 			return cs.String()
 		}
 		return other.String()
 	}
+	n := 0
 	for _, lt := range op.LinkTypes() {
 		for _, from := range check.Ends() {
 			for _, to := range check.Ends() {
@@ -859,7 +914,16 @@ func TestLinkEndpointKinds(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+				n++
+				dir := filepath.Join(scratch, strconv.Itoa(n))
+				ctx, err := linkEndpoints.copyTo(dir)
+				if err != nil {
+					t.Fatal(err)
+				}
 				_, err = callOp(t, ctx, "link", string(req))
+				if rmErr := os.RemoveAll(dir); rmErr != nil {
+					t.Fatal(rmErr)
+				}
 				mismatch := err != nil && strings.Contains(err.Error(), "does not go from")
 				switch {
 				case check.Allowed(lt, from, to) && mismatch:

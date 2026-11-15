@@ -15,13 +15,11 @@ import (
 	"github.com/dphaener/rhiza/internal/store"
 )
 
-// initCtx runs init in a temp folder and returns a Ctx over it.
+// initCtx gives t a repository just after init in its own temp folder
+// (a copy of initSnapshot) and returns a Ctx over it.
 func initCtx(t *testing.T) *Ctx {
 	t.Helper()
-	ctx := testCtx(t.TempDir())
-	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
-		t.Fatal(err)
-	}
+	_, ctx := initSnapshot.copy(t)
 	return ctx
 }
 
@@ -64,16 +62,34 @@ func wantExit(t *testing.T, err error, code int) {
 // returns its ID.
 func landNode(t *testing.T, ctx *Ctx, kind op.Kind, handle string) id.ID {
 	t.Helper()
-	w := ctxWorkspace(t, ctx)
-	node := w.mustID(t)
-	c := op.Op{ID: w.mustID(t), Type: op.TypeNodeCreate, Node: node, Kind: kind, Handle: handle}
-	if kind == op.KindSource {
-		c.Fields = map[string]json.RawMessage{"url": json.RawMessage(`"https://example.com"`)}
-	}
-	if _, _, err := w.writeRecord("Add "+handle, []op.Op{c}, w.mustID(t), w.mustID(t)); err != nil {
+	node, err := landNodeOn(ctx, kind, handle)
+	if err != nil {
 		t.Fatal(err)
 	}
 	return node
+}
+
+// landNodeOn is landNode returning its failure, for snapshot builds.
+func landNodeOn(ctx *Ctx, kind op.Kind, handle string) (id.ID, error) {
+	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, false)
+	if err != nil {
+		return id.ID{}, err
+	}
+	var ids [4]id.ID
+	for i := range ids {
+		if ids[i], err = w.ids.New(); err != nil {
+			return id.ID{}, err
+		}
+	}
+	node := ids[0]
+	c := op.Op{ID: ids[1], Type: op.TypeNodeCreate, Node: node, Kind: kind, Handle: handle}
+	if kind == op.KindSource {
+		c.Fields = map[string]json.RawMessage{"url": json.RawMessage(`"https://example.com"`)}
+	}
+	if _, _, err := w.writeRecord("Add "+handle, []op.Op{c}, ids[2], ids[3]); err != nil {
+		return id.ID{}, err
+	}
+	return node, nil
 }
 
 func TestChangeOutsideRepo(t *testing.T) {
