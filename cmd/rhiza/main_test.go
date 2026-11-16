@@ -406,7 +406,22 @@ var processScripts = map[string]string{
 	"workflow-stage-autonomy":              "starts rhiza through sh -c",
 }
 
+// notConverted is the reason a script kept on processScripts until its
+// rhiza lines ran in-process. No entry may keep it: unconverted fails one.
 const notConverted = "not converted yet"
+
+// unconverted returns the scripts on list whose reason is notConverted,
+// sorted.
+func unconverted(list map[string]string) []string {
+	var names []string
+	for name, reason := range list {
+		if reason == notConverted {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names
+}
 
 // scriptEnvKey is the key of a script's environment names in env.Values.
 type scriptEnvKey struct{}

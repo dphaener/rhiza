@@ -188,3 +188,19 @@ func (r *recordT) Run(name string, f func(testscript.T)) {
 	}()
 	<-done
 }
+
+// TestProcessListConverted keeps every processScripts entry converted: an
+// entry whose reason is notConverted fails, naming the script, as the
+// fixture list shows; the real list has none.
+func TestProcessListConverted(t *testing.T) {
+	fixture := map[string]string{
+		"stays-a-process": "a stdin feed",
+		"left-behind":     notConverted,
+	}
+	if got := unconverted(fixture); strings.Join(got, ",") != "left-behind" {
+		t.Errorf("unconverted(fixture) = %q, want [left-behind]", got)
+	}
+	for _, name := range unconverted(processScripts) {
+		t.Errorf("processScripts: %s keeps the reason %q: run its rhiza lines in-process, or give the reason it starts rhiza as a process", name, notConverted)
+	}
+}
