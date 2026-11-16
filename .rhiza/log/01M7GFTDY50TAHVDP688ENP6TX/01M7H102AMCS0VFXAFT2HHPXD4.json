@@ -1,0 +1,326 @@
+{
+  "actor": "01M7H0P8AXH3PCAMJMX3E8HQZG",
+  "after": [
+    "01M7H0XYF69HXGX4VYZ1B5CEVK"
+  ],
+  "at": "2026-11-16T01:54:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestProjection|TestPropertyProjectionParity|TestWrite)' passes, with TestPropertyProjectionParity comparing the projection's views (not writeIndex.model) against a fresh strict fold. New tests in internal/api/projection_test.go: a dry-run write with pending entries sees them through the projection (its change sets, entries and model) and leaves the index file unchanged (its Stamp before and after equal); one call that asks the projection for the model, the change sets and a change set's entries three times opens the index once (counted through a test hook on the opener); with ctx.IndexPath empty the workspace's projection is nil and the op answers from the log as before. Failure case: an index file that is not a database is rebuilt and the call answers as before; an index that cannot be opened returns that error, not a silent fold. Touches internal/api/projection.go (new), write_indexed.go, workspace.go, run_model_cache.go, inbox.go only for inboxGateRead's opener, and their tests. Must not move status, the inbox's fold, render, change ls or the daemon fold onto it (their own leaves do), must not change read.go's reader, and must not delete the interim model or an IndexPath branch (01M7GFTKCA does).",
+          "statement": "internal/api has one projection interface in a new internal/api/projection.go (change sets with their states and folds, a change set's entries, the stored problems, the model of the current change set's view or of as-is, and the dry run's pending entries laid over all of them), whose only implementation is writeIndex's index-plus-pending code moved behind it; workspace opens it lazily, at most once per call, when ctx.IndexPath is set, and the writes, run_model_cache.go and inboxGateRead that build a writeIndex today get it through the interface"
+        },
+        "handle": "projection-interface",
+        "id": "01M7GFYXY7FTRWHX1NNQK5T90P",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run Status passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/status' passes for every status*.txtar script. A test with ctx.IndexPath set and Ctx.readLog counting shows status, and status with Hook, read the log zero times and give the same counts and change set as over the log. Measure in the commit's Checks: block, each run wrapped as /home/rhiza/orchestrator/machine-rules.md says: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza, then in this repo's main checkout run $TMPDIR/rhiza-x status once and /usr/bin/time -f '%e s' $TMPDIR/rhiza-x status, within 200 ms (2026-11-16: 1.93 s). Failure case: status --hook outside a repo stays silent with exit 0, and with an index that cannot be opened it still exits 0. Touches internal/api/status.go and its tests. Must not change status's text or --json output.",
+          "statement": "rhiza status and its session-start hook (StatusRequest.Hook) count change sets by state from the projection instead of folding the whole log (internal/api/status.go:123), so the hook paid on every session start costs a few index rows"
+        },
+        "handle": "status-from-projection",
+        "id": "01M7GFYY0KNAMKMJK1MHW7XCEH",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7GFYY0KNAMKMJK1MHE68E99",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run Inbox passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/inbox' passes for every inbox*.txtar script. A test with ctx.IndexPath set and Ctx.readLog counting shows an inbox with overlapping in-flight change sets and a run waiting on questions reads the log zero times and lists the same items as over the log. grep -n 'index.Open\\|openWriteIndex' internal/api/inbox.go prints nothing. Failure case: a run whose worktree is gone or whose log does not read gives the inbox item without its questions, as today, and no error. Touches internal/api/inbox.go and its tests. Must not change the inbox's items or --json shape, and must not change internal/run.",
+          "statement": "rhiza inbox's inboxFold (internal/api/inbox.go:602-619) takes change set states, the in-flight change sets and the overlaps' as-is model (:685) from the workspace's projection instead of opening internal/index itself, folding the log only when the projection is nil, and inboxGateRead (:1405) reads the run worktree through that worktree's projection instead of building a writeIndex by hand"
+        },
+        "handle": "inbox-from-projection",
+        "id": "01M7GFYY2VQJHCVC83XSEVGB9B",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run Render passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/render' passes for every render*.txtar script; make self-check passes, so rhiza render on this repo writes byte-identical .rhiza/rendered/ files (git status --short .rhiza/rendered prints nothing after it). A test with ctx.IndexPath set renders the same files as over the log, including an Evidence node's creator and a retired link endpoint. Failure case: a log with an entry that does not decode still makes render refuse with the same error as today (render-refuses-damaged-log). Measure in the commit's Checks: block, wrapped as /home/rhiza/orchestrator/machine-rules.md says: /usr/bin/time -f '%e s' $TMPDIR/rhiza-x render in this repo's main checkout, before and after. Touches internal/api/render.go and its tests. Must not change a rendered file's content or damagedLog's rules.",
+          "statement": "rhiza render takes the change sets and the as-is model it renders from the projection (its folded change sets and index-as-is-model's AsIs) instead of changeset.FoldLog and model.AsIs over the whole log (internal/api/render.go:99-100), and keeps damagedLog's own read so it still refuses a damaged log"
+        },
+        "handle": "render-from-projection",
+        "id": "01M7GFYY4Z3CRG97YV48Z7XPHK",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'ChangeLs' passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/change' passes for every change*.txtar script. A test with ctx.IndexPath set and Ctx.readLog counting shows change ls reads the log zero times and lists the same change sets and problems as over the log, a damaged entry's problem included. Failure case: an entry file that vanished after the index saw it (a rebase) makes the projection rebuild, and change ls lists the remaining change sets with no stale one. Touches internal/api/change.go and its tests. Must not change change ls's text or --json output, nor change show, whose index path change_indexed.go already has.",
+          "statement": "rhiza change ls (internal/api/change.go:669) takes the change sets, their kind, state, intent and title, and the log and fold problems it lists from the projection (its folded change sets and stored problems) instead of workspace.log() and changeset.FoldLog over the whole log"
+        },
+        "handle": "change-reads-from-projection",
+        "id": "01M7GFYY75HKKZF3E9JQ72THK7",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7GFYY75HKKZF3E9JKJBT985",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Daemon' passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/daemon' passes for every daemon*.txtar script. A test with ctx.IndexPath set and Ctx.readLog counting, over a log with a proposed change set with leaves, one without, an accepted one and overlapping in-flight change sets, shows the poll reads the log zero times and its candidates, proposed list, plan skips, overlaps and lifecycle moves equal those over the log. Failure case: a stamp change from a vanished entry file (the index rebuilds) still gives the same candidates on the next poll. Touches internal/api/daemon_fold.go and its tests. Must not change the daemon's schedule, its journal records or any --json shape, and must not delete newModelBase (01M7GFTKCA does).",
+          "statement": "The daemon's poll fold (internal/api/daemon_fold.go:197) takes its change sets from the projection instead of changeset.FoldLog over the whole log, and the models it reads per candidate, for the proposed list and for the overlaps and actors (:215-230) from the projection's views instead of newModelBase over the folded list"
+        },
+        "handle": "daemon-fold-from-projection",
+        "id": "01M7GFYY98FH6TH6DY2H2M7PRX",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "question": "Does the projection interface wrap the existing writeIndex or start as a new type, and what does a read do when ctx.IndexPath is empty?",
+          "reasoning": "writeIndex already answers change sets, a change set's entries and the strict model of a view over the index with pending entries overlaid, which is the interface the intent names; a second implementation beside it would be a fourth copy the next change set must delete. Opening it lazily keeps ops that never read the model from paying an index open, and leaving the empty-IndexPath branch in place keeps this change set from doing 01M7GFTKCA's deletion, which the orchestrator kept out of it.",
+          "statement": "The projection interface's one implementation grows out of writeIndex (internal/api/write_indexed.go: the index with the dry run's pending entries laid over it, already used by every write, run_model_cache.go and inboxGateRead), moved behind an interface in a new internal/api/projection.go, not a new type beside it; read.go's reader stays as it is for 01M7GFTKCA's writes-from-projection. workspace opens it lazily, at most once per call, when ctx.IndexPath is set and an op first asks for it; with ctx.IndexPath empty it is nil and each moved read keeps its log path, which 01M7GFTKCA's throwaway-index-fallback and interim-model-deleted remove",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "projection-grows-from-write-index",
+        "id": "01M7H1017W72NYN680ZK4VXC35",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H1017W72NYN680ZGD9P2H8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H1017W72NYN680ZGD9P2H8",
+        "id": "01M7H10194SSSXY4DCYRC404H9",
+        "link": "01M7H10194SSSXY4DCYQGXT58V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Is reading the log once per call part of the projection-interface leaf or its own leaf?",
+          "reasoning": "The two are different concerns in different code (the projection in projection.go, the memo in workspace.go), each a fresh session can finish and verify alone; the orchestrator asked for one concern per leaf because reviewers flag oversized ones. The memo serves the ops that still read the log until 01M7GFTKCA deletes that path.",
+          "statement": "workspace reading the log at most once per call is its own leaf (workspace-log-once), separate from the projection interface, with no depends-on between them: workspace.log() keeps the disk read of its first call and appends the pending entries on each call, and a write to disk drops the kept read",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "log-once-is-own-leaf",
+        "id": "01M7H101AK8J5RA1NYNGCWKFF2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H101AK8J5RA1NYNEVSBXHG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H101AK8J5RA1NYNEVSBXHG",
+        "id": "01M7H101C3VDFAVYE2CKFMTW8V",
+        "link": "01M7H101C3VDFAVYE2CHWH9JMT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "The inbox no longer folds the log with an index and takes 0.62 s, mostly parsing run journals: does the inbox leaf keep the 200 ms target?",
+          "reasoning": "The milestone plan's 2.3 s came before #599: with an index the inbox already reads states and in-flight change sets from it, and inboxGateRead already opens the worktree's own index, so only the no-index fold and the hand-opened indexes are left to move. A probe on the main checkout showed the rest of the time in run journal parsing, not in any log fold; making run.Store.List cheaper is work on the run store, not on reads from the projection, so holding this leaf to 200 ms would make it unfinishable inside its intent.",
+          "statement": "The inbox leaf only moves inboxFold (internal/api/inbox.go:602-619 and the overlaps at :685) and inboxGateRead (:1405) onto the projection interface; it carries no timing target. The inbox's remaining time (0.62 s on 2026-11-16 at 6ebf119de, 40% of its CPU in run.Store.List parsing run journal files) is outside this change set's intent and goes to a discovered-from draft change set, which serves m39-reads-fast for the inbox",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "inbox-rescoped-after-parity",
+        "id": "01M7H101D82M3QXB920VS6CM7P",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H101D82M3QXB920R8D196P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H101D82M3QXB920R8D196P",
+        "id": "01M7H101ESV2R32D6RRMZMCJKQ",
+        "link": "01M7H101ESV2R32D6RRHEXF75A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Where does render's as-is model.Model come from once it stops calling model.AsIs over the folded log?",
+          "reasoning": "render.Render takes a whole internal/model Model, and the index only answers row reads, overlays and what-ifs of an in-flight change set; rebuilding as-is in internal/api from rows would be another copy of seed rules. The strict engine stays the spec because the rows are what it computed. Splitting it from render keeps each leaf one concern.",
+          "statement": "The index gets one read, (*index.Index).AsIs() (model.Model, []model.Problem, error), that assembles the stored as-is rows (nodes with fields and histories, links, the as-is problems) into the model.Model render.Render takes; it adds no rule and changes no stored row, and is its own leaf (index-as-is-model) that render-from-projection depends on",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "index-as-is-read",
+        "id": "01M7H101G3THQECHBD6B58G042",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H101G3THQECHBD67A6C36M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H101G3THQECHBD67A6C36M",
+        "id": "01M7H101HB660VGP20C2EJ7X3K",
+        "link": "01M7H101HB660VGP20C1579QP3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Does render's damaged-log check also move onto the projection's stored log problems?",
+          "reasoning": "The index does not notice an edit inside an entry file it has already listed (internal/index/index.go doc), and render's refusal of a damaged log is the safety net for exactly that case, so the damage check must keep looking at the files; the fold and the as-is rebuild are the whole-log work the intent removes.",
+          "statement": "rhiza render keeps damagedLog's own read of the log (internal/api/render.go:97-100) and takes only the change sets and the as-is model from the projection",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "render-keeps-damage-read",
+        "id": "01M7H101JW71NKB5A14KYFX27G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H101JW71NKB5A14GCDDCWV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H101JW71NKB5A14GCDDCWV",
+        "id": "01M7H101N38XF25AA39CGE7MBB",
+        "link": "01M7H101N38XF25AA39A0K3W9X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "id": "01M7H101QNPKB6434P6DN1YXJ9",
+        "link": "01M7H101QNPKB6434P6CHEJS9R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1017W72NYN680ZGD9P2H8",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWorkspaceLog|TestChange|TestWrite)' passes. New tests in internal/api/workspace_test.go, counting disk reads through Ctx.readLog: an op over the log path (ctx.IndexPath empty) that calls model, changeSets and entriesOfSet several times reads the disk once; a dry run of several writes still chains, each later read seeing the earlier pending entries, with one disk read; a real write followed by a read in the same workspace reads the disk again and sees the written entry. Failure case: a log with a damaged entry gives the same problems on the second call as on the first. Touches internal/api/workspace.go and its tests only. Must not change any op's output.",
+          "statement": "workspace.log() (internal/api/workspace.go:146) reads the log from disk at most once per workspace, keeping that read and laying the dry run's pending entries on it at each call, and a write to disk drops the kept read so the next call sees the new entry"
+        },
+        "handle": "workspace-log-once",
+        "id": "01M7H101RT64ATZVGM97YN1ZZX",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7H101RT64ATZVGM94276F58",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7H101RT64ATZVGM94276F58",
+        "id": "01M7H101SYD4WZN54Z1Y5Z9SJK",
+        "link": "01M7H101SYD4WZN54Z1XD1BH4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101AK8J5RA1NYNEVSBXHG",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H101RT64ATZVGM94276F58",
+        "id": "01M7H101V4DRQKVJ29THCSVYJH",
+        "link": "01M7H101V4DRQKVJ29TE9B8TRQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "id": "01M7H101YVGKKKMXS99XGF2HAQ",
+        "link": "01M7H101YVGKKKMXS99VY61XQ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101D82M3QXB920R8D196P",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/index -run '^(TestAsIs|TestPropertyIncremental)' passes. A new property test in internal/index, drawing logs with internal/index/indextest (two landed heads, rebuilds, a duplicate handle), catches an index up step by step and checks that AsIs's model and problems equal model.AsIs over changeset.FoldLog of the same log after every step. Failure case: an empty log gives an empty model and no error; a closed index returns an error. Touches a new internal/index/asis.go and its test only. Must not change a stored row, the schema or any rule in internal/model.",
+          "statement": "internal/index has a read, (*Index).AsIs() (model.Model, []model.Problem, error), that assembles the stored as-is rows (every node with its fields and history, every link, the as-is problems) into an internal/model Model without decoding a log entry"
+        },
+        "handle": "index-as-is-model",
+        "id": "01M7H101ZYJWDMD0XH772MHYH5",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7H101ZYJWDMD0XH748H3H6C",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7H101ZYJWDMD0XH748H3H6C",
+        "id": "01M7H10219TNACQQXFD9NQ5MRR",
+        "link": "01M7H10219TNACQQXFD6XAGQVT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101G3THQECHBD67A6C36M",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H101ZYJWDMD0XH748H3H6C",
+        "id": "01M7H1022CPJF2NJ7NEGMTSJH6",
+        "link": "01M7H1022CPJF2NJ7NEFC8SM94",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT08KZFZSZTD7G35JHPTJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "id": "01M7H102521CQ41TZ7VCQ2CQBP",
+        "link": "01M7H102521CQ41TZ7VAGHJTDQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101JW71NKB5A14GCDDCWV",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "id": "01M7H1026T1BK5TVP5TNTD3B62",
+        "link": "01M7H1026T1BK5TVP5TJQY22GX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101ZYJWDMD0XH748H3H6C",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H102AMCS0VFXAFT2HHPXD4",
+  "type": "ops",
+  "v": 1
+}
