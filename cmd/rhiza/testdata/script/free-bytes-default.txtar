@@ -6,9 +6,9 @@ env REX_SERVER=
 mkdir repo
 cd repo
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
-exec rhiza health
+rhiza health
 stdout '^ok   disk     1.0 TiB free, minimum 10.0 GiB$'

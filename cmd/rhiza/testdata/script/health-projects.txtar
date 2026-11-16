@@ -11,21 +11,21 @@ mkdir alpha beta
 
 cd alpha
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 
 cd ../beta
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 cd $WORK
 
 # At the root: machine parts once, project parts per project.
-exec rhiza health --json
+rhiza health --json
 stdout -count=1 '"part": "daemon"'
 stdout -count=1 '"part": "disk"'
 stdout -count=1 '"part": "usage"'
@@ -34,31 +34,31 @@ stdout -count=2 '"part": "inbox"'
 stdout -count=2 '"part": "check"'
 stdout -count=6 '"project": "alpha"'
 stdout -count=6 '"project": "beta"'
-exec rhiza health
+rhiza health
 stdout '^ok   main     alpha: '
 stdout '^ok   main     beta: '
-exec rhiza api call health
+rhiza api call health
 stdout -count=6 '"project": "beta"'
 
 # One project's bad part makes the whole report exit 1.
 exec sh -c 'echo junk > beta/.rhiza/log/junk.json'
-! exec rhiza health
+! rhiza health
 stdout '^bad  check    beta: '
 ! stdout '^bad  check    alpha'
 rm beta/.rhiza/log/junk.json
 
 # --project and the project's own directory give only that project's.
-exec rhiza health --project alpha --json
+rhiza health --project alpha --json
 ! stdout '"project"'
 stdout -count=1 '"part": "inbox"'
 cd beta
-exec rhiza health --json
+rhiza health --json
 ! stdout '"project"'
 stdout -count=1 '"part": "inbox"'
-exec rhiza health --all --json
+rhiza health --all --json
 stdout -count=6 '"project": "alpha"'
 cd $WORK
-! exec rhiza health --project nope
+! rhiza health --project nope
 stderr 'not registered'
 
 # The machine's parts read the root daemon: its live runs in every
@@ -69,11 +69,11 @@ exec sh -c 'echo beta > .rhiza-root/daemon.home'
 root-daemon-lock .
 cp alpha-state.json alpha/.git/rhiza/daemon.state.json
 cp beta-state.json beta/.git/rhiza/daemon.state.json
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout -count=3 '"id": "RUN'
-exec rhiza health
+rhiza health
 stdout '^ok   daemon +running, process .*, 3 live runs$'
-exec rhiza health --json
+rhiza health --json
 stdout '"part": "usage",\n\s*"state": "ok",\n\s*"summary": "session 300, no limit known'
 -- alpha-state.json --
 {"process":{"host":"h","pid":1,"started":"2030-01-01T00:00:00Z"},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNA","change":"CSA","state":"building"}]}

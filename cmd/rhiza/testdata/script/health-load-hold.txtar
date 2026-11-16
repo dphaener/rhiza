@@ -7,28 +7,28 @@ env REX_SERVER=
 env RHIZA_TEST_FREE_BYTES=1099511627776
 
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 
-exec rhiza health
+rhiza health
 stdout '^ok   load '
 
 exec sh -c 'mkdir -p .git/rhiza; s=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza health
+rhiza health
 stdout '^ok   load '
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza health
+rhiza health
 stdout '^warn load +new runs held for 31m0s \(load-high\): 1-minute load 4.00 per core, over the limit of 3.00'
 stdout 'rhiza daemon set rhiza.daemon.maxLoad'
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1G available, under the minimum of 2G\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza health
+rhiza health
 stdout '^ok   load '
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1G available, under the minimum of 2G\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza health
+rhiza health
 stdout '^warn load +new runs held for 31m0s \(memory-low\): 1G available, under the minimum of 2G'
 stdout 'rhiza daemon set rhiza.daemon.minMemory'

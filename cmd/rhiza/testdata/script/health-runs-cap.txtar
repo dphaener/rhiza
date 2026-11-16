@@ -11,14 +11,14 @@ exec sh -c 'printf "[projects.alpha]\npath = \"alpha\"\n[projects.beta]\npath = 
 mkdir alpha beta
 cd alpha
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 cd ../beta
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 cd $WORK
@@ -30,10 +30,10 @@ root-daemon-lock .
 # Max 4: two live runs in alpha, one in beta, one start not journaled yet.
 cp alpha-ok.json alpha/.git/rhiza/daemon.state.json
 cp beta-ok.json beta/.git/rhiza/daemon.state.json
-exec rhiza health
+rhiza health
 stdout '^ok   daemon +running'
 stdout 'runs: 3/4 live, 1 starting'
-exec rhiza health --json
+rhiza health --json
 stdout '"live": 3'
 stdout '"starting": 1'
 stdout '"max": 4'
@@ -41,7 +41,7 @@ stdout '"max": 4'
 # Max 2 with three live runs: bad, naming the three, exit 1.
 cp alpha-over.json alpha/.git/rhiza/daemon.state.json
 cp beta-ok.json beta/.git/rhiza/daemon.state.json
-! exec rhiza health
+! rhiza health
 stdout '^bad  daemon +running'
 stdout 'runs: 3/2 live, 1 starting'
 stdout 'live run: alpha, RUNA1'

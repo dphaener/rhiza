@@ -10,9 +10,9 @@ stdout 'ran [0-9]+ commands'
 fold-ok
 
 # What the walkthrough ends with.
-exec rhiza ls --kind capability
+rhiza ls --kind capability
 stdout 'export-csv'
-exec rhiza change ls
+rhiza change ls
 stdout 'landed intention: Export reports as CSV'
 exec git status --short
 ! stdout '^ M'

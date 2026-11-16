@@ -5,36 +5,36 @@
 env XDG_CONFIG_HOME=$WORK/xdg
 
 # No machine config: daily.
-exec rhiza machine show
+rhiza machine show
 stdout 'trust: daily \(no machine config; it would be '${WORK@R}'/xdg/rhiza/machine\.toml\)'
-exec rhiza machine show --json
+rhiza machine show --json
 stdout '"trust": "daily"'
 stdout '"file": false'
 cp stdout $WORK/none.json
-exec rhiza api call machine.show
+rhiza api call machine.show
 cmp stdout $WORK/none.json
 
 # Dedicated: the trust and the path.
 mkdir $WORK/xdg/rhiza
 cp $WORK/dedicated.toml $WORK/xdg/rhiza/machine.toml
-exec rhiza machine show
+rhiza machine show
 stdout 'trust: dedicated \(from '${WORK@R}'/xdg/rhiza/machine\.toml\)'
-exec rhiza machine show --json
+rhiza machine show --json
 stdout '"trust": "dedicated"'
 stdout '"file": true'
 cp stdout $WORK/ded.json
-exec rhiza api call machine.show
+rhiza api call machine.show
 cmp stdout $WORK/ded.json
 
 # A bad file: non-zero, naming the file.
 cp $WORK/bad.toml $WORK/xdg/rhiza/machine.toml
-! exec rhiza machine show
+! rhiza machine show
 stderr ${WORK@R}'/xdg/rhiza/machine\.toml'
-! exec rhiza machine show --json
+! rhiza machine show --json
 stdout ${WORK@R}'/xdg/rhiza/machine\.toml'
 
 # Nothing writes trust: no operation but machine.show mentions the machine.
-exec rhiza describe --json
+rhiza describe --json
 stdout '"machine\.show"'
 ! stdout '"machine\.(set|write|trust)'
 

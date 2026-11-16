@@ -2,36 +2,36 @@
 # (exit 2) naming the known fields. A node already in the log with an unknown
 # field still reads, folds and passes check.
 
-exec rhiza init
-exec rhiza change new Shape
+rhiza init
+rhiza change new Shape
 
 # add: an unknown field is refused and names the known ones.
-! exec rhiza add evidence e1 --field bogus=x
+! rhiza add evidence e1 --field bogus=x
 stderr '^rhiza: an evidence has no field "bogus" \(known fields: command, head, observed, pr, result, statement, status, test, tests\)$'
-! exec rhiza add evidence e1 --json-field bogus=1 --json
+! rhiza add evidence e1 --json-field bogus=1 --json
 stdout '"code": "usage"'
 stdout 'known fields: command, head'
 
 # An anchor has path, symbol and fingerprint.
-! exec rhiza add anchor a1 --field statement=x
+! rhiza add anchor a1 --field statement=x
 stderr 'an anchor has no field "statement" \(known fields: fingerprint, path, symbol\)'
 
 # Nothing was written by the refusals.
-exec rhiza change show
+rhiza change show
 ! stdout '\(e1\)'
 ! stdout '\(a1\)'
 
 # set: the same refusal, on a new node and on a landed one.
-exec rhiza add evidence e1 --field command=true
-! exec rhiza set e1 --field bogus=x
+rhiza add evidence e1 --field command=true
+! rhiza set e1 --field bogus=x
 stderr 'an evidence has no field "bogus"'
-exec rhiza add capability c1 --field statement=Reads --record
-! exec rhiza set c1 --field bogus=x
+rhiza add capability c1 --field statement=Reads --record
+! rhiza set c1 --field bogus=x
 stderr 'known fields: acceptance, built_in, statement'
 
 # A hand-written entry with an unknown field still folds and checks.
 exec sh -c 'sed -i.bak "s/\"command\"/\"bogus\"/" .rhiza/log/*/*.json && rm .rhiza/log/*/*.bak'
 exec grep -r bogus .rhiza/log
 fold-ok
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check

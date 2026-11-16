@@ -2,20 +2,20 @@
 # link and apply refuse the link that would close a loop (exit 3), name the
 # loop and write nothing.
 
-exec rhiza init
-exec rhiza change new Shape
-exec rhiza add capability a
-exec rhiza add capability b
-exec rhiza add capability c
-exec rhiza link a depends-on b
-exec rhiza link b depends-on c
+rhiza init
+rhiza change new Shape
+rhiza add capability a
+rhiza add capability b
+rhiza add capability c
+rhiza link a depends-on b
+rhiza link b depends-on c
 exec sh -c 'find .rhiza/log -name "*.json" | wc -l > before.txt'
 
 # c depending on a would close the loop: refused, exit 3, with next.
-! exec rhiza link c depends-on a
+! rhiza link c depends-on a
 stderr '^rhiza: depends-on from c to a would close a loop: a depends on b, b depends on c$'
 stderr '^next: rhiza show a$'
-! exec rhiza link c depends-on a --json
+! rhiza link c depends-on a --json
 stdout '"code": "conflict"'
 stdout '"next": "rhiza show a"'
 exec sh -c 'rhiza link c depends-on a 2>/dev/null; echo exit $?'
@@ -35,7 +35,7 @@ cmp before.txt after.txt
 fold-ok
 
 # A chain with no loop is fine.
-exec rhiza link a depends-on c
+rhiza link a depends-on c
 
 -- loop.json --
 {"writes":[{"op":"link","from":"c","type":"depends-on","to":"a"}]}

@@ -5,26 +5,26 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza inbox
+rhiza inbox
 stdout '^Nothing waits on you$'
 
 mkdir .git/rhiza
 cp ../stale.json .git/rhiza/main-stale.json
-exec rhiza inbox --json
+rhiza inbox --json
 stdout -count=1 '"kind": "main-stale"'
 stdout 'main was not updated: /m has uncommitted changes'
-exec rhiza inbox
+rhiza inbox
 stdout -count=1 '^[0-9a-f]+ main-stale change set 01M6CRZSRFQ94MAJ8CRTEE44P2$'
 exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
 ! exec sh -c 'rhiza inbox open $(cat ../id)'
 stderr 'no tab to open'
 
 rm .git/rhiza/main-stale.json
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'main-stale'
 stdout '"items": \[\]'
 

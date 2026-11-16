@@ -6,38 +6,38 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 mkdir .git/rhiza
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'load-high'
 stdout '"items": \[\]'
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"load-high\",\"detail\":\"1-minute load 4.00 per core, over the limit of 3.00\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout -count=1 '"kind": "load-high"'
 stdout '1-minute load 4.00 per core, over the limit of 3.00: held for 31m0s'
-exec rhiza inbox
+rhiza inbox
 stdout -count=1 '^[0-9a-f]+ load-high$'
 exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
 ! exec sh -c 'rhiza inbox open $(cat ../id)'
 stderr 'no tab to open'
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 29 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1.0 GiB available, under the minimum of 2.0 GiB\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'memory-low'
 
 exec sh -c 's=$(date -u -d "$RHIZA_TEST_NOW - 31 minutes" +%Y-%m-%dT%H:%M:%SZ); printf "{\"machine_hold\":{\"since\":\"%s\",\"reason\":\"memory-low\",\"detail\":\"1.0 GiB available, under the minimum of 2.0 GiB\"}}" $s > .git/rhiza/daemon.state.json'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout -count=1 '"kind": "memory-low"'
 stdout '1.0 GiB available, under the minimum of 2.0 GiB: held for 31m0s'
 ! stdout 'load-high'
 
 cp ../ok.json .git/rhiza/daemon.state.json
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'memory-low'
 stdout '"items": \[\]'
 

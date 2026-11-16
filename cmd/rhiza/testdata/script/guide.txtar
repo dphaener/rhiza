@@ -4,7 +4,7 @@
 ! exists .rhiza
 
 # rhiza guide prints the rhiza skill, the same as guide rhiza.
-exec rhiza guide
+rhiza guide
 stdout '^# Rhiza$'
 stdout '^## The core loop$'
 stdout '^## Hard rules$'
@@ -15,31 +15,31 @@ stdout 'RHIZA_ACTOR'
 ! stdout 'Leaf:'
 ! stderr .
 cp stdout skill.md
-exec rhiza guide rhiza
+rhiza guide rhiza
 cmp stdout skill.md
 
 # --json carries the name, the version and the same text; api call gives
 # the same bytes.
-exec rhiza guide --json
+rhiza guide --json
 stdout '"name": "rhiza"'
 stdout '"version": "'
 stdout '"text": "# Rhiza\\n'
 stdout 'The core loop'
 cp stdout guide.json
-exec rhiza api call guide '{}'
+rhiza api call guide '{}'
 cmp stdout guide.json
-exec rhiza guide sources --json
+rhiza guide sources --json
 cp stdout sources.json
-exec rhiza api call guide '{"name":"sources"}'
+rhiza api call guide '{"name":"sources"}'
 cmp stdout sources.json
 
 # The scrub skill.
-exec rhiza guide scrub
+rhiza guide scrub
 stdout '^# rhiza-scrub$'
 stdout '^## Steps$'
 
 # The plan skill.
-exec rhiza guide plan
+rhiza guide plan
 stdout '^# Plan$'
 stdout '/rhiza-planner'
 stdout 'rhiza guide plan-reviewer'
@@ -47,47 +47,47 @@ stdout 'rhiza guide plan-critic'
 stdout 'rhiza guide plan-reviser'
 
 # Each topic.
-exec rhiza guide apply
+rhiza guide apply
 stdout '^# apply$'
 stdout '^## The file$'
 # It shows a depends-on link between two capabilities, and that a loop is
 # refused.
 stdout '"op":"link","from":"export-csv","type":"depends-on","to":"report-query"'
 stdout 'would close a loop'
-exec rhiza guide arbiter
+rhiza guide arbiter
 stdout '^# Arbiter$'
 stdout 'wording=\(assumed, would have escalated\)'
 stdout 'reasoning='
 stdout '"op":"link","from":"<handle>","type":"answers","to":"<question id>"'
 stdout '^rhiza session done$'
-exec rhiza guide build
+rhiza guide build
 stdout '^# Build$'
 stdout '/rhiza-builder'
 stdout 'rhiza guide verifier'
 stdout 'rhiza guide build-retry'
-exec rhiza guide carving
+rhiza guide carving
 stdout '^# Carving$'
 stdout '^## Known limit$'
-exec rhiza guide change-sets
+rhiza guide change-sets
 stdout '^# Change sets$'
 stdout '^## Lifecycle$'
 stdout 'landed --reopen--> accepted'
-exec rhiza guide import
+rhiza guide import
 stdout '^# Import$'
 stdout '(?s)## 1\. Init.*## 2\. Survey.*## 3\. Record built.*## 4\. Bring in.*## 5\. Retire.*## 6\. Write unbuilt.*## 7\. Verify'
-exec rhiza guide plan-review
+rhiza guide plan-review
 stdout '^# Plan review$'
 stdout '/rhiza-plan-critic'
 stdout 'rhiza guide plan-reviser'
-exec rhiza guide plan-reviewer
+rhiza guide plan-reviewer
 stdout 'rhiza run findings - --json <<''EOF'''
-exec rhiza guide plan-critic
+rhiza guide plan-critic
 stdout 'rhiza run verdict - --json <<''EOF'''
-exec rhiza guide reopening
+rhiza guide reopening
 stdout '^# Reopening$'
 stdout 'rhiza reopen --change <id>'
 stdout '^## Never delete or edit log entries$'
-exec rhiza guide review
+rhiza guide review
 stdout '^# Review$'
 stdout '`/rhiza-check-compliance` \(`rhiza guide check-compliance`\)'
 stdout '`/rhiza-check-quality` \(`rhiza guide check-quality`\)'
@@ -98,22 +98,22 @@ stdout '`/rhiza-fixer` \(`rhiza guide fixer`\)'
 stdout '`/rhiza-ci-fix` \(`rhiza guide ci-fix`\)'
 stdout '`/rhiza-gate-fix` \(`rhiza guide gate-fix`\)'
 stdout '`/rhiza-conflict-fix` \(`rhiza guide conflict-fix`\)'
-exec rhiza guide check-compliance
+rhiza guide check-compliance
 stdout 'rhiza run findings --check "\$RHIZA_CHECK" - <<''EOF'''
 stdout '"severity":"major","leaf":"<leaf>","place":"path:line"'
-exec rhiza guide critic
+rhiza guide critic
 stdout 'rhiza run verdict --check "\$RHIZA_CHECK" - <<''EOF'''
 stdout 'Never add a finding'
-exec rhiza guide fixer
+rhiza guide fixer
 stdout '`Review: <run>`'
-exec rhiza guide check-qa
+rhiza guide check-qa
 stdout 'Evidence written as yourself on'
-exec rhiza guide sources
+rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
 # guide ls lists all thirty-four texts with their kinds and sizes.
-exec rhiza guide ls
+rhiza guide ls
 stdout -count=37 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
@@ -149,30 +149,30 @@ stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '
 stdout '^- verifier +topic +[0-9]+ tokens  '
 stdout '^- workflows +topic +[0-9]+ tokens  Writing a custom workflow'
-exec rhiza guide ls --json
+rhiza guide ls --json
 stdout '"texts": \['
 stdout '"kind": "skill"'
 stdout '"kind": "topic"'
 stdout '"tokens": [0-9]+'
 cp stdout ls.json
-exec rhiza api call guide.ls '{}'
+rhiza api call guide.ls '{}'
 cmp stdout ls.json
 
 # An unknown name is not_found, exit 4, with a next.
-! exec rhiza guide nope
+! rhiza guide nope
 stderr '^rhiza: no guide text "nope"$'
 stderr '^next: rhiza guide ls$'
 ! stdout .
 exec sh -c 'rhiza guide nope 2>/dev/null; echo exit $?'
 stdout '^exit 4$'
-! exec rhiza guide nope --json
+! rhiza guide nope --json
 stdout '"code": "not_found"'
 stdout '"next": "rhiza guide ls"'
 
 # Nothing above made a repository; inside one guide works the same.
 ! exists .rhiza
-exec rhiza init
-exec rhiza guide
+rhiza init
+rhiza guide
 cmp stdout skill.md
-exec rhiza guide ls --json
+rhiza guide ls --json
 cmp stdout ls.json
