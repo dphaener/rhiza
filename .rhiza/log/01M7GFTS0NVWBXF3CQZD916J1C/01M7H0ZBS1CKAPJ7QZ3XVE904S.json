@@ -1,0 +1,30 @@
+{
+  "actor": "01M7H0P67PNKWWGCEBWGHGY7TH",
+  "after": [
+    "01M7H0YQWFRP751P040RG3YFF4"
+  ],
+  "at": "2026-11-16T01:54:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|ShellWithStdin|ChildEnv)' and go test -trimpath -count=1 ./internal/api -run '^Test(ShipGate|ShipPrePush|ShipGenerate|DaemonHook|UsageLive|ChildEnv)' pass, with a new test TestChildEnv in cmd/rhiza that calls run() with an environment whose HOME and GIT_CONFIG_GLOBAL differ from the process's (set with t.Setenv to other values) and shows the git child sees the given ones (a git config value only that GIT_CONFIG_GLOBAL holds is read back), and a test in internal/api that a gate or hook child started through a Ctx whose Environ holds a marker variable the process lacks sees it; failure case: a Ctx whose Environ unsets a variable the process has (PATH-free, or a removed marker) leaves it unset in the child. go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-|session-hook|usage-live)' passes; go vet ./cmd/rhiza ./internal/api is clean. Touches cmd/rhiza/main.go, ctx.go, detach_unix.go, tui.go, tui_open.go, internal/api/api.go and the internal/api files named in the statement, and their tests. Must not change any command's output, flags or exit codes.",
+          "statement": "run() takes its environment as a list, api.Ctx carries it as Environ with Getenv derived from it, and nothing on run()'s call path reads os.Getenv, os.LookupEnv or os.Environ or starts a child with a nil Env (which inherits the process's): gitIn, gitConfig, execIn, shellWithStdin and startProgram's programEnv in cmd/rhiza/ctx.go, detach_unix.go:19, tui.go's colorprofile.Detect calls, and internal/api's ship_build.go:199, usage_live.go:106, daemon_hook.go:87, ship_prepush.go:247, ship_generate.go:104, ship_gate.go:209, run_leaves.go:690, run.go:1657 (XDG_CONFIG_HOME) and project.go:228 (git clone) take it from the Ctx, and gosweep.CacheDir's callers on that path use CacheDirFrom(ctx.Getenv); the daemon's self re-exec (internal/daemon/reexec.go) is the one exception"
+        },
+        "handle": "cli-child-env",
+        "id": "01M7H0YQDRC85SWH2705CSVSH0",
+        "key": "zzzzyi",
+        "kind": "capability",
+        "node": "01M7H0YQDRC85SWH2704XH2WC9",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H0ZBS1CKAPJ7QZ3XVE904S",
+  "type": "ops",
+  "v": 1
+}
