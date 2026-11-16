@@ -93,13 +93,18 @@ func TestRunConcurrentDirs(t *testing.T) {
 
 // guardedDirs are the packages on run()'s path that read nothing of the
 // process: TestNoProcessGlobals parses their non-test Go files.
-var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "internal/daemon", "internal/gosweep", "internal/index"}
+var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "internal/daemon", "internal/gosweep", "internal/index", "internal/envexec"}
 
 // processGlobals are, by import path, the functions and variables that
 // read or change the process's working directory, arguments, executable,
 // environment or user folders: os's, and path/filepath's Abs, which joins
 // a relative path onto os.Getwd (a path a command takes is joined onto
-// the Ctx's working directory instead).
+// the Ctx's working directory instead), and os/exec's LookPath, which
+// searches the process's PATH (a program is found with envexec.LookPath on
+// the Ctx's environment instead). os/exec's Command and CommandContext,
+// which search the process's PATH for a bare name and resolve a relative
+// one against the process's working directory, are flagged by
+// processCommands unless the name is an absolute string literal.
 var processGlobals = map[string]map[string]bool{
 	"os": {
 		"Getwd": true, "Chdir": true, "Args": true, "Executable": true,
@@ -107,7 +112,12 @@ var processGlobals = map[string]map[string]bool{
 		"UserCacheDir": true, "UserHomeDir": true, "TempDir": true,
 	},
 	"path/filepath": {"Abs": true},
+	"os/exec":       {"LookPath": true},
 }
+
+// processCommands are os/exec's functions that start a program by name,
+// with the index of their name argument.
+var processCommands = map[string]int{"Command": 0, "CommandContext": 1}
 
 // processGlobalsAllowed names each remaining site that may read the
 // process, by file (slash path from the repository root) and enclosing
@@ -116,11 +126,12 @@ var processGlobalsAllowed = []struct{ file, fn, reason string }{
 	{"cmd/rhiza/main.go", "main", "the process's entry point: it hands run() the process's working directory, arguments, environment and RHIZA_CPUPROFILE"},
 	{"cmd/rhiza/ctx.go", "selfPath", "main() alone calls it to find the running binary from os.Args[0] (made absolute with filepath.Abs against the process's own working directory, where os.Args[0] is relative to); run() is given the result"},
 	{"internal/daemon/reexec.go", "", "the daemon re-execs its own process image, with the process's own arguments and environment"},
+	{"internal/envexec/envexec.go", "Command", "it calls os/exec with the path LookPath found on the given environment's PATH, absolute against the given working directory"},
 }
 
 // TestNoProcessGlobals checks that no non-test Go file of the guarded
 // packages reads the process's working directory (filepath.Abs included),
-// arguments, executable, environment or user folders outside
+// arguments, executable, environment, PATH or user folders outside
 // processGlobalsAllowed; each site it finds is named by file and line. Its
 // fixtures show it failing.
 func TestNoProcessGlobals(t *testing.T) {
@@ -154,11 +165,20 @@ func TestNoProcessGlobals(t *testing.T) {
 		// not, and selfPath's Abs is allowlisted.
 		write("internal/api/apply.go", "package api\n\nimport fp \"path/filepath\"\n\nfunc read(f string) string {\n\tabs, _ := fp.Abs(f)\n\treturn fp.Join(abs, f)\n}\n")
 		write("cmd/rhiza/ctx.go", "package main\n\nimport \"path/filepath\"\n\nfunc selfPath() string { p, _ := filepath.Abs(\"x\"); return p }\n\nfunc root(v string) string {\n\tp, _ := filepath.Abs(v)\n\treturn p\n}\n")
+		// exec.LookPath is flagged, and exec.Command or CommandContext
+		// with a bare, relative or variable name, under any import name;
+		// an absolute literal name is not.
+		write("internal/api/ship_gate.go", "package api\n\nimport (\n\t\"context\"\n\tx \"os/exec\"\n)\n\nfunc gate(c context.Context, n string) {\n\t_ = x.Command(\"git\", \"status\")\n\t_ = x.CommandContext(c, \"sh\", \"-c\", n)\n\t_ = x.Command(n)\n\t_ = x.Command(\"./bin/gate\")\n\t_ = x.Command(\"/bin/sh\", \"-c\", n)\n\t_, _ = x.LookPath(n)\n}\n")
 		got := findProcessGlobals(t, fix, guardedDirs)
 		want := []string{
 			"cmd/rhiza/ctx.go:8: filepath.Abs",
 			"cmd/rhiza/main.go:8: os.Getenv",
 			"internal/api/apply.go:6: filepath.Abs",
+			"internal/api/ship_gate.go:9: exec.Command",
+			"internal/api/ship_gate.go:10: exec.CommandContext",
+			"internal/api/ship_gate.go:11: exec.Command",
+			"internal/api/ship_gate.go:12: exec.Command",
+			"internal/api/ship_gate.go:14: exec.LookPath",
 			"internal/index/cache.go:5: os.UserCacheDir",
 		}
 		if strings.Join(got, "\n") != strings.Join(want, "\n") {
@@ -264,20 +284,49 @@ func processGlobalUses(fset *token.FileSet, f *ast.File) []processGlobalUse {
 		if d, ok := decl.(*ast.FuncDecl); ok {
 			fn = d.Name.Name
 		}
+		// absolute holds the os/exec Command selectors called with an
+		// absolute literal name: Inspect visits a call before its Fun.
+		absolute := map[*ast.SelectorExpr]bool{}
 		ast.Inspect(decl, func(n ast.Node) bool {
+			if call, ok := n.(*ast.CallExpr); ok {
+				if sel, ok := call.Fun.(*ast.SelectorExpr); ok {
+					if i, ok := processCommands[sel.Sel.Name]; ok && i < len(call.Args) && absoluteLiteral(call.Args[i]) {
+						absolute[sel] = true
+					}
+				}
+				return true
+			}
 			sel, ok := n.(*ast.SelectorExpr)
 			if !ok {
 				return true
 			}
-			if x, ok := sel.X.(*ast.Ident); ok {
-				if p, ok := pkgs[x.Name]; ok && processGlobals[p][sel.Sel.Name] {
-					uses = append(uses, processGlobalUse{path.Base(p) + "." + sel.Sel.Name, fn, fset.Position(sel.Pos()).Line})
-				}
+			x, ok := sel.X.(*ast.Ident)
+			if !ok {
+				return true
+			}
+			p, ok := pkgs[x.Name]
+			if !ok {
+				return true
+			}
+			_, command := processCommands[sel.Sel.Name]
+			if processGlobals[p][sel.Sel.Name] || (p == "os/exec" && command && !absolute[sel]) {
+				uses = append(uses, processGlobalUse{path.Base(p) + "." + sel.Sel.Name, fn, fset.Position(sel.Pos()).Line})
 			}
 			return true
 		})
 	}
 	return uses
+}
+
+// absoluteLiteral reports whether e is a string literal holding an
+// absolute path.
+func absoluteLiteral(e ast.Expr) bool {
+	lit, ok := e.(*ast.BasicLit)
+	if !ok || lit.Kind != token.STRING {
+		return false
+	}
+	v, err := strconv.Unquote(lit.Value)
+	return err == nil && filepath.IsAbs(v)
 }
 
 // processGlobalAllowed reports whether file's function fn is in

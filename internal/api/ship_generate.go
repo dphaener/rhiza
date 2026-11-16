@@ -11,11 +11,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os/exec"
 	"reflect"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/envexec"
 )
 
 func init() {
@@ -98,9 +99,8 @@ func runShipGenerate(ctx *Ctx, req any) (any, error) {
 	resp := ShipGenerateResponse{Command: gen}
 	c, cancel := context.WithTimeout(context.Background(), shipGenerateTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(c, "sh", "-c", gen)
+	cmd := envexec.Command(c, childEnv(ctx), ctx.Wd, "sh", "-c", gen)
 	cmd.Dir = dir
-	cmd.Env = childEnv(ctx)
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second

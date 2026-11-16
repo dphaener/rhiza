@@ -16,7 +16,8 @@ import (
 )
 
 // testCtx is a Ctx over root with a fixed clock, seeded IDs, a git config
-// whose user.email is test@example.com and, as in production, an index:
+// whose user.email is test@example.com, an Environ holding the process's
+// PATH (children are found on Environ's PATH alone) and, as in production, an index:
 // IndexPath is a fresh file under t's own t.TempDir(), so no two tests (or
 // two Ctxs of one test) share an index. A test that exercises the no-index
 // fallback on purpose clears IndexPath, with a comment saying so.
@@ -39,6 +40,7 @@ func testCtxNoIndex(root string) *Ctx {
 		Now:       clock,
 		IDs:       id.NewGenerator(clock, rand.New(rand.NewSource(3))),
 		GitConfig: gitConfig(map[string]string{"user.email": "test@example.com", "user.name": "Test User"}),
+		Environ:   []string{"PATH=" + os.Getenv("PATH")},
 	}
 }
 

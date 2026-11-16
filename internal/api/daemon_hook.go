@@ -8,10 +8,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/envexec"
 )
 
 // notifyTimeout is how long the notify command may run before it is killed.
@@ -81,9 +82,8 @@ func runHookCommandOutput(ctx *Ctx, command string, in []byte, env []string) (st
 	timeout := notifyTimeoutFor(ctx)
 	c, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	cmd := exec.CommandContext(c, "sh", "-c", command)
+	cmd := envexec.Command(c, childEnv(ctx, env...), ctx.Wd, "sh", "-c", command)
 	cmd.Dir = ctx.Root
-	cmd.Env = childEnv(ctx, env...)
 	cmd.Stdin = bytes.NewReader(append(in, '\n'))
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out

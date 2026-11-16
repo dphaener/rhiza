@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/envexec"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	runclock "github.com/dphaener/rhiza/internal/run"
@@ -80,7 +81,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Getenv:    getenv,
 		Environ:   g.environ,
 		Exec:      execIn(wd, g.environ),
-		LookPath:  exec.LookPath,
+		LookPath:  func(file string) (string, error) { return envexec.LookPath(file, g.environ, wd) },
 		Self:      g.self,
 		Start:     startProgram(wd, g.environ),
 		Detach:    detachProgram(wd, g.environ),
@@ -103,14 +104,14 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	if ctx.RexBlock != "" {
 		ctx.Rex = stderr
 	}
-	ctx.Git = gitIn(ctx.Root, g.environ)
+	ctx.Git = gitIn(wd, ctx.Root, g.environ)
 	ctx.Verdict = func(output string) api.FailureVerdict {
 		cmd := api.FailureClassifierCommand(ctx)
 		if cmd == "" {
 			return api.FailureVerdict{Reason: "classifier off"}
 		}
 		return api.ClassifyFailure(cmd, output, func(command, stdin string) (string, error) {
-			return shellWithStdin(command, stdin, g.environ)
+			return shellWithStdin(wd, command, stdin, g.environ)
 		})
 	}
 	ctx.Classify = func(output string) bool {
@@ -248,13 +249,13 @@ func findRoot(dir string) string {
 	return dir
 }
 
-// gitIn returns an api.Ctx.Git that runs `git -C root <args...>` with env
-// and returns its standard output. A failure carries git's trimmed standard
+// gitIn returns an api.Ctx.Git that runs `git -C root <args...>` with env,
+// git found on env's PATH against wd (run()'s working directory), and
+// returns its standard output. A failure carries git's trimmed standard
 // error.
-func gitIn(root string, env []string) func(args ...string) (string, error) {
+func gitIn(wd, root string, env []string) func(args ...string) (string, error) {
 	return func(args ...string) (string, error) {
-		cmd := exec.Command("git", append([]string{"-C", root}, args...)...)
-		cmd.Env = env
+		cmd := envexec.Command(nil, env, wd, "git", append([]string{"-C", root}, args...)...)
 		out, err := cmd.Output()
 		if err != nil {
 			var ee *exec.ExitError
@@ -269,16 +270,16 @@ func gitIn(root string, env []string) func(args ...string) (string, error) {
 
 // execIn returns api.Ctx.Exec: it runs name with args in dir (childDir of
 // wd, run()'s working directory), with env (nil for base, the environment
-// run() was given), and returns its standard output. A failure carries the
+// run() was given), name found on that env's PATH against wd, and returns
+// its standard output. A failure carries the
 // program's trimmed standard error.
 func execIn(wd string, base []string) func(name string, args []string, dir string, env []string) ([]byte, error) {
 	return func(name string, args []string, dir string, env []string) ([]byte, error) {
 		if env == nil {
 			env = base
 		}
-		cmd := exec.Command(name, args...)
+		cmd := envexec.Command(nil, env, wd, name, args...)
 		cmd.Dir = childDir(wd, dir)
-		cmd.Env = env
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		out, err := cmd.Output()
@@ -297,14 +298,15 @@ func execIn(wd string, base []string) func(name string, args []string, dir strin
 // project; one that runs out of time is killed and its failure is real.
 var classifierTimeout = 60 * time.Second
 
-// shellWithStdin runs command through sh -c with stdin and env and returns
-// its standard output, for the failure classifier. It kills the command,
+// shellWithStdin runs command through sh -c in wd (run()'s working
+// directory, sh found on env's PATH against it) with stdin and env and
+// returns its standard output, for the failure classifier. It kills the command,
 // and every process it started, after classifierTimeout.
-func shellWithStdin(command, stdin string, env []string) (string, error) {
+func shellWithStdin(wd, command, stdin string, env []string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), classifierTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "sh", "-c", command)
-	cmd.Env = env
+	cmd := envexec.Command(ctx, env, wd, "sh", "-c", command)
+	cmd.Dir = wd
 	ownGroup(cmd)
 	cmd.WaitDelay = streamGrace
 	cmd.Stdin = strings.NewReader(stdin)
@@ -328,22 +330,22 @@ func shellWithStdin(command, stdin string, env []string) (string, error) {
 const streamGrace = 2 * time.Second
 
 // startProgram returns api.Ctx.Start, over os/exec: each program gets env,
-// the environment run() was given, with its own changes (programEnv), and
-// runs in its Dir made absolute against wd, run()'s working directory
+// the environment run() was given, with its own changes (programEnv), is
+// found on that environment's PATH against wd, and runs in its Dir made absolute against wd, run()'s working directory
 // (childDir).
 func startProgram(wd string, env []string) func(p api.Program) (api.Process, error) {
 	return func(p api.Program) (api.Process, error) { return startProgramIn(wd, env, p) }
 }
 
 func startProgramIn(wd string, env []string, p api.Program) (api.Process, error) {
-	cmd := exec.Command(p.Name, p.Args...)
-	cmd.Dir = childDir(wd, p.Dir)
+	dir := childDir(wd, p.Dir)
 	set := p.Env
 	if p.Dir != "" {
 		// As a shell would: the inherited PWD names another folder.
-		set = append([]string{"PWD=" + cmd.Dir}, set...)
+		set = append([]string{"PWD=" + dir}, set...)
 	}
-	cmd.Env = programEnv(env, set, p.Unset)
+	cmd := envexec.Command(nil, programEnv(env, set, p.Unset), wd, p.Name, p.Args...)
+	cmd.Dir = dir
 	proc := &process{cmd: cmd}
 	if p.Terminal {
 		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
@@ -489,11 +491,11 @@ func workingDir(wd string) (string, error) {
 }
 
 // gitConfig returns the trimmed value of a git config key, read in dir with
-// env, or an error if it is unset or empty.
+// env (git found on env's PATH against dir), or an error if it is unset or
+// empty.
 func gitConfig(dir, key string, env []string) (string, error) {
-	cmd := exec.Command("git", "config", "--get", key)
+	cmd := envexec.Command(nil, env, dir, "git", "config", "--get", key)
 	cmd.Dir = dir
-	cmd.Env = env
 	out, err := cmd.Output()
 	v := strings.TrimSpace(string(out))
 	if err != nil || v == "" {

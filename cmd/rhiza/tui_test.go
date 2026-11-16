@@ -92,7 +92,7 @@ func TestTUISettingsScopes(t *testing.T) {
 			t.Fatalf("git init: %v\n%s", err, out)
 		}
 	}
-	apps := newTUIModels(globals{wd: filepath.Join(root, "beta")}, func(string) string { return "" })
+	apps := newTUIModels(globals{wd: filepath.Join(root, "beta"), environ: os.Environ()}, func(string) string { return "" })
 
 	// Ship defaults to auto: toggle it to owner in beta.
 	am := apps.autonomy()

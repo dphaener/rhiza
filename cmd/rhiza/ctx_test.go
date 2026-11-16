@@ -2,12 +2,16 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // TestRunWorkingDir checks that run() works in the working directory it is
@@ -133,7 +137,7 @@ func TestShellWithStdinTimesOut(t *testing.T) {
 	t.Cleanup(func() { classifierTimeout = old })
 
 	start := time.Now()
-	out, err := shellWithStdin("sleep 20; echo real: slow", "", os.Environ())
+	out, err := shellWithStdin(t.TempDir(), "sleep 20; echo real: slow", "", os.Environ())
 	if err == nil || !strings.Contains(err.Error(), "timed out") {
 		t.Fatalf("err = %v, want a timeout", err)
 	}
@@ -148,7 +152,7 @@ func TestShellWithStdinTimesOut(t *testing.T) {
 // TestShellWithStdin checks that a classifier within the timeout reads its
 // stdin and returns its output.
 func TestShellWithStdin(t *testing.T) {
-	out, err := shellWithStdin("cat", "flake: network", os.Environ())
+	out, err := shellWithStdin(t.TempDir(), "cat", "flake: network", os.Environ())
 	if err != nil || out != "flake: network" {
 		t.Fatalf("got %q, %v", out, err)
 	}
@@ -260,6 +264,89 @@ func writeFile(t *testing.T, path, data string) {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestChildEnvPath checks that run() finds the programs it starts on the PATH
+// of the environment it was given, never the process's: a fake git first
+// on the given PATH, absent from the process's, is the git that runs (it
+// leaves a marker and hands on to the real git), a relative PATH entry is
+// joined onto run()'s working directory, and a program only the process's
+// PATH holds is not found through the Ctx.
+func TestChildEnvPath(t *testing.T) {
+	realGit, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("no git")
+	}
+	procBin := t.TempDir()
+	writeExec(t, filepath.Join(procBin, "rhiza-childpath-process-only"), "#!/bin/sh\nexit 0\n")
+	t.Setenv("PATH", procBin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("GIT_CONFIG_GLOBAL", filepath.Join(home, "gitconfig"))
+
+	for _, rel := range []bool{false, true} {
+		name := "absolute"
+		if rel {
+			name = "relative"
+		}
+		t.Run(name, func(t *testing.T) {
+			repo := t.TempDir()
+			marker := filepath.Join(t.TempDir(), "fake-git")
+			bin := filepath.Join(repo, "fakebin")
+			writeExec(t, filepath.Join(bin, "git"), "#!/bin/sh\necho \"$*\" >> "+marker+"\nexec "+realGit+" \"$@\"\n")
+			entry := bin
+			if rel {
+				entry = "fakebin"
+			}
+			env := []string{
+				"HOME=" + home,
+				"GIT_CONFIG_GLOBAL=" + filepath.Join(home, "gitconfig"),
+				"PATH=" + entry + string(os.PathListSeparator) + "/usr/bin" + string(os.PathListSeparator) + "/bin",
+				"RHIZA_TEST_NOW=2026-10-24T12:00:00Z",
+				"RHIZA_TEST_SEED=1",
+			}
+			if out, err := exec.Command(realGit, "-C", repo, "init", "-q").CombinedOutput(); err != nil {
+				t.Fatalf("git init: %v\n%s", err, out)
+			}
+			var stdout, stderr bytes.Buffer
+			if code := run([]string{"daemon", "settings", "--json"}, repo, "", strings.NewReader(""), &stdout, &stderr, env); code != 0 {
+				t.Fatalf("daemon settings: exit %d\n%s%s", code, stdout.String(), stderr.String())
+			}
+			b, err := os.ReadFile(marker)
+			if err != nil || !strings.Contains(string(b), "config") {
+				t.Errorf("the given PATH's git did not run (marker %q, %v): the process's git ran instead", b, err)
+			}
+
+			ctx, err := newCtx(globals{wd: repo, environ: env}, nil, userdir.Getenv(env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p, err := ctx.LookPath("git"); err != nil || p != filepath.Join(bin, "git") {
+				t.Errorf("LookPath(git) = %q, %v; want the given PATH's %s", p, err, filepath.Join(bin, "git"))
+			}
+			// Failure case: on the process's PATH only, so not found.
+			if p, err := ctx.LookPath("rhiza-childpath-process-only"); !errors.Is(err, exec.ErrNotFound) {
+				t.Errorf("LookPath found %q (%v) on the process's PATH; want not found", p, err)
+			}
+			if _, err := ctx.Exec("rhiza-childpath-process-only", nil, "", nil); !errors.Is(err, exec.ErrNotFound) {
+				t.Errorf("Exec ran a program only the process's PATH holds: %v", err)
+			}
+			if _, err := ctx.Start(api.Program{Name: "rhiza-childpath-process-only"}); !errors.Is(err, exec.ErrNotFound) {
+				t.Errorf("Start ran a program only the process's PATH holds: %v", err)
+			}
+			if err := ctx.Detach(api.Program{Name: "rhiza-childpath-process-only"}, filepath.Join(t.TempDir(), "d.log")); !errors.Is(err, exec.ErrNotFound) {
+				t.Errorf("Detach ran a program only the process's PATH holds: %v", err)
+			}
+		})
+	}
+}
+
+func writeExec(t *testing.T, path, data string) {
+	t.Helper()
+	writeFile(t, path, data)
+	if err := os.Chmod(path, 0o755); err != nil {
 		t.Fatal(err)
 	}
 }
