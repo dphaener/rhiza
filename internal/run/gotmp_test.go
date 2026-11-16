@@ -116,7 +116,7 @@ func TestNoEnvNoRunTmp(t *testing.T) {
 func TestTmpDirFallsBackToOSTemp(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", "")
 	t.Setenv("HOME", "")
-	got := TmpDir("r1", nil)
+	got := TmpDir("r1", os.Getenv)
 	want := filepath.Join(os.TempDir(), "rhiza-run-tmp-"+strconv.Itoa(os.Getuid()), "r1")
 	if got != want {
 		t.Errorf("TmpDir = %q, want %q", got, want)
@@ -127,7 +127,7 @@ func TestTmpDirFallsBackToOSTemp(t *testing.T) {
 // another run's folder stay.
 func TestRunTmpRemovalSparesOthers(t *testing.T) {
 	e, r, _, _ := setup(t, gotmpWF)
-	other := TmpDir("other-run", nil)
+	other := TmpDir("other-run", os.Getenv)
 	if err := os.MkdirAll(other, 0o755); err != nil {
 		t.Fatal(err)
 	}

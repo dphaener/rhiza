@@ -19,6 +19,7 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 	"github.com/dphaener/rhiza/internal/tui/modalopen"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 const tuiOpenUsage = "rhiza tui open <app> [--session <id>] [--block <id>]"
@@ -65,7 +66,7 @@ func openModal(app launcher.App, session, block, exe, cwd string, getenv func(st
 	if exe == "" {
 		return errors.New("cannot find the rhiza binary")
 	}
-	sf, err := os.CreateTemp("", "rhiza-modal-*.size")
+	sf, err := os.CreateTemp(userdir.Temp(getenv), "rhiza-modal-*.size")
 	if err != nil {
 		return err
 	}

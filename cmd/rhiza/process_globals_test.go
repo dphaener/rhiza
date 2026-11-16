@@ -48,7 +48,7 @@ func TestRunConcurrentDirs(t *testing.T) {
 			{"add", "capability", name + "-store", "--field", "statement=Keeps " + name + "'s log", "--record"},
 		} {
 			var stdout, stderr bytes.Buffer
-			if code := run(args, dir, "", strings.NewReader(""), &stdout, &stderr, env); code != 0 {
+			if code := run(args, dir, "", strings.NewReader(""), &stdout, &stderr, env, ownChildren{}); code != 0 {
 				t.Fatalf("%s: rhiza %s: exit %d\n%s%s", name, strings.Join(args, " "), code, stdout.String(), stderr.String())
 			}
 		}
@@ -65,7 +65,7 @@ func TestRunConcurrentDirs(t *testing.T) {
 			defer wg.Done()
 			rhiza := func(args ...string) (int, string) {
 				var stdout, stderr bytes.Buffer
-				code := run(args, r.dir, "", strings.NewReader(""), &stdout, &stderr, r.env)
+				code := run(args, r.dir, "", strings.NewReader(""), &stdout, &stderr, r.env, ownChildren{})
 				return code, stdout.String() + stderr.String()
 			}
 			for n := range rounds {
@@ -93,7 +93,7 @@ func TestRunConcurrentDirs(t *testing.T) {
 
 // guardedDirs are the packages on run()'s path that read nothing of the
 // process: TestNoProcessGlobals parses their non-test Go files.
-var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "internal/daemon", "internal/gosweep", "internal/index", "internal/envexec"}
+var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "internal/daemon", "internal/gosweep", "internal/index", "internal/envexec", "internal/userdir"}
 
 // processGlobals are, by import path, the functions and variables that
 // read or change the process's working directory, arguments, executable,
@@ -104,7 +104,8 @@ var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "interna
 // the Ctx's environment instead). os/exec's Command and CommandContext,
 // which search the process's PATH for a bare name and resolve a relative
 // one against the process's working directory, are flagged by
-// processCommands unless the name is an absolute string literal.
+// processCommands unless the name is an absolute string literal, and os's
+// MkdirTemp and CreateTemp with an empty dir by processTemps.
 var processGlobals = map[string]map[string]bool{
 	"os": {
 		"Getwd": true, "Chdir": true, "Args": true, "Executable": true,
@@ -118,6 +119,12 @@ var processGlobals = map[string]map[string]bool{
 // processCommands are os/exec's functions that start a program by name,
 // with the index of their name argument.
 var processCommands = map[string]int{"Command": 0, "CommandContext": 1}
+
+// processTemps are os's functions that make a temporary file or folder,
+// with the index of their dir argument: an empty dir ("" as a literal)
+// reads the process's TMPDIR, so the Ctx's temp folder is passed instead
+// (userdir.Temp over the Ctx's getenv).
+var processTemps = map[string]int{"MkdirTemp": 0, "CreateTemp": 0}
 
 // processGlobalsAllowed names each remaining site that may read the
 // process, by file (slash path from the repository root) and enclosing
@@ -169,6 +176,11 @@ func TestNoProcessGlobals(t *testing.T) {
 		// with a bare, relative or variable name, under any import name;
 		// an absolute literal name is not.
 		write("internal/api/ship_gate.go", "package api\n\nimport (\n\t\"context\"\n\tx \"os/exec\"\n)\n\nfunc gate(c context.Context, n string) {\n\t_ = x.Command(\"git\", \"status\")\n\t_ = x.CommandContext(c, \"sh\", \"-c\", n)\n\t_ = x.Command(n)\n\t_ = x.Command(\"./bin/gate\")\n\t_ = x.Command(\"/bin/sh\", \"-c\", n)\n\t_, _ = x.LookPath(n)\n}\n")
+		// os.MkdirTemp and os.CreateTemp with an empty dir are flagged,
+		// under any import name; with a dir they are not.
+		write("internal/api/ship_prepush.go", "package api\n\nimport o \"os\"\n\nfunc tmp(d string) {\n\t_, _ = o.MkdirTemp(\"\", \"x-*\")\n\t_, _ = o.CreateTemp(``, \"y-*\")\n\t_, _ = o.MkdirTemp(d, \"x-*\")\n\t_, _ = o.CreateTemp(d, \"y-*\")\n}\n")
+		// userdir is guarded too.
+		write("internal/userdir/userdir.go", "package userdir\n\nimport \"os\"\n\nvar get = os.Getenv\n")
 		got := findProcessGlobals(t, fix, guardedDirs)
 		want := []string{
 			"cmd/rhiza/ctx.go:8: filepath.Abs",
@@ -179,7 +191,10 @@ func TestNoProcessGlobals(t *testing.T) {
 			"internal/api/ship_gate.go:11: exec.Command",
 			"internal/api/ship_gate.go:12: exec.Command",
 			"internal/api/ship_gate.go:14: exec.LookPath",
+			"internal/api/ship_prepush.go:6: os.MkdirTemp",
+			"internal/api/ship_prepush.go:7: os.CreateTemp",
 			"internal/index/cache.go:5: os.UserCacheDir",
+			"internal/userdir/userdir.go:5: os.Getenv",
 		}
 		if strings.Join(got, "\n") != strings.Join(want, "\n") {
 			t.Errorf("fixtures found\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
@@ -293,6 +308,11 @@ func processGlobalUses(fset *token.FileSet, f *ast.File) []processGlobalUse {
 					if i, ok := processCommands[sel.Sel.Name]; ok && i < len(call.Args) && absoluteLiteral(call.Args[i]) {
 						absolute[sel] = true
 					}
+					if x, ok := sel.X.(*ast.Ident); ok && pkgs[x.Name] == "os" {
+						if i, ok := processTemps[sel.Sel.Name]; ok && i < len(call.Args) && emptyLiteral(call.Args[i]) {
+							uses = append(uses, processGlobalUse{"os." + sel.Sel.Name, fn, fset.Position(sel.Pos()).Line})
+						}
+					}
 				}
 				return true
 			}
@@ -327,6 +347,16 @@ func absoluteLiteral(e ast.Expr) bool {
 	}
 	v, err := strconv.Unquote(lit.Value)
 	return err == nil && filepath.IsAbs(v)
+}
+
+// emptyLiteral reports whether e is the empty string literal.
+func emptyLiteral(e ast.Expr) bool {
+	lit, ok := e.(*ast.BasicLit)
+	if !ok || lit.Kind != token.STRING {
+		return false
+	}
+	v, err := strconv.Unquote(lit.Value)
+	return err == nil && v == ""
 }
 
 // processGlobalAllowed reports whether file's function fn is in

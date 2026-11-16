@@ -226,6 +226,7 @@ func runProjectClone(ctx *Ctx, root string, r ProjectAddRequest) (any, error) {
 		return ProjectAddResponse{Name: name, Path: name}, nil
 	}
 	cmd := envexec.Command(nil, childEnv(ctx), ctx.Wd, "git", "clone", "--quiet", "--", r.Path, dest)
+	cmd.Dir = ctx.Wd
 	if out, err := cmd.CombinedOutput(); err != nil {
 		os.RemoveAll(dest)
 		return nil, Usagef("cannot clone %s: %s", r.Path, strings.TrimSpace(string(out))).

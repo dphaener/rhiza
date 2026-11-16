@@ -1,0 +1,15 @@
+{
+  "actor": "01M7HZRFTF97XGWK0GAKMSABWK",
+  "after": [],
+  "at": "2026-11-16T10:58:28Z",
+  "body": {
+    "intent": "Convert the rhiza lines of kept scripts that need no process: sh -c callers, workflow steps, per-line exec",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7J0494VM4SWF37MDQDAZKZB",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7J0494VM4SWF37MDQYFP70Z",
+  "type": "open",
+  "v": 1
+}

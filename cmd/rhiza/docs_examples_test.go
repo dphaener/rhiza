@@ -37,7 +37,7 @@ func TestDocsExampleWorkflows(t *testing.T) {
 	env := []string{"HOME=" + dir, "XDG_CONFIG_HOME=" + dir, "PATH=" + os.Getenv("PATH")}
 	for _, f := range files {
 		var out, errb bytes.Buffer
-		if code := run([]string{"workflow", "check", f}, dir, "", strings.NewReader(""), &out, &errb, env); code != 0 || !strings.Contains(out.String(), "is valid") {
+		if code := run([]string{"workflow", "check", f}, dir, "", strings.NewReader(""), &out, &errb, env, ownChildren{}); code != 0 || !strings.Contains(out.String(), "is valid") {
 			t.Errorf("%s: exit %d\n%s%s", filepath.Base(f), code, out.String(), errb.String())
 		}
 	}

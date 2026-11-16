@@ -390,15 +390,15 @@ func TestDefaultPath(t *testing.T) {
 	if err := os.Symlink(a, link); err != nil {
 		t.Fatal(err)
 	}
-	pa, err := DefaultPath(a, nil)
+	pa, err := DefaultPath(a, os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pl, err := DefaultPath(link, nil)
+	pl, err := DefaultPath(link, os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pb, err := DefaultPath(b, nil)
+	pb, err := DefaultPath(b, os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -509,7 +509,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 		if err := os.Mkdir(d, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := DefaultPath(d, nil)
+		p, err := DefaultPath(d, os.Getenv)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -523,7 +523,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 		}
 		paths[d] = p
 	}
-	if err := Remove(a, nil); err != nil {
+	if err := Remove(a, os.Getenv); err != nil {
 		t.Fatal(err)
 	}
 	for _, f := range []string{paths[a], paths[a] + "-wal", paths[a] + "-shm"} {
@@ -534,7 +534,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 	if _, err := os.Stat(paths[b]); err != nil {
 		t.Fatalf("another worktree's index went: %v", err)
 	}
-	if err := Remove(a, nil); err != nil {
+	if err := Remove(a, os.Getenv); err != nil {
 		t.Fatalf("Remove with no database: %v", err)
 	}
 }

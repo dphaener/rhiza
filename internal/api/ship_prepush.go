@@ -87,7 +87,7 @@ func prePushCheckHead(ctx *Ctx, dir string) (string, error) {
 
 // prePushCheckAt runs the check on head, the commit of dir's checkout.
 func prePushCheckAt(ctx *Ctx, dir, head string) error {
-	tmp, err := os.MkdirTemp("", "rhiza-prepush-*")
+	tmp, err := os.MkdirTemp(tempDir(ctx), "rhiza-prepush-*")
 	if err != nil {
 		return Errorf("pre-push check: %v", err)
 	}
@@ -238,7 +238,7 @@ func prePushRhizaCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
 // build's check --json there.
 func prePushHeadCheck(ctx *Ctx, tmp, cmd string) (CheckResponse, []string, error) {
 	var rep CheckResponse
-	bdir, err := os.MkdirTemp("", "rhiza-prepush-bin-*")
+	bdir, err := os.MkdirTemp(tempDir(ctx), "rhiza-prepush-bin-*")
 	if err != nil {
 		return rep, nil, Errorf("pre-push check: %v", err)
 	}

@@ -1,8 +1,10 @@
 // Package envexec starts programs for a caller that runs for an
 // environment and working directory other than the process's (run() in a
 // test script): a bare program name is found on the PATH of the given
-// environment, never the process's, and a relative PATH entry or program
-// path is joined onto the given working directory, never the process's.
+// environment, never the process's, a program path is joined onto the
+// given working directory, never the process's, and a program found
+// through a '.', empty or relative PATH entry is refused with exec.ErrDot,
+// as os/exec refuses it.
 // os/exec's Command and LookPath read the process's PATH and resolve
 // against the process's working directory, so in-process callers would
 // start the host's programs instead of a script's stand-ins.
@@ -23,9 +25,11 @@ import (
 // LookPath finds file as exec.LookPath does, but on the PATH of environ (a
 // list in os.Environ() form, the last PATH entry winning) and against wd:
 // a file holding a path separator is joined onto wd when relative and
-// returned without a PATH search, and a relative (or empty, meaning the
-// current folder) PATH entry is joined onto wd. The result is absolute when
-// wd is. A miss is an *exec.Error wrapping exec.ErrNotFound.
+// returned without a PATH search. A match through a relative (or empty,
+// meaning the current folder) PATH entry is refused, as exec.LookPath
+// refuses it: an *exec.Error wrapping exec.ErrDot, with the match (joined
+// onto wd) as the path. The result is absolute when wd is. A miss is an
+// *exec.Error wrapping exec.ErrNotFound.
 func LookPath(file string, environ []string, wd string) (string, error) {
 	getenv := userdir.Getenv(environ)
 	if hasSeparator(file) {
@@ -43,10 +47,14 @@ func LookPath(file string, environ []string, wd string) (string, error) {
 		if dir == "" {
 			dir = "."
 		}
-		if !filepath.IsAbs(dir) {
+		rel := !filepath.IsAbs(dir)
+		if rel {
 			dir = filepath.Join(wd, dir)
 		}
 		if found, err := findExecutable(filepath.Join(dir, file), getenv); err == nil {
+			if rel {
+				return found, &exec.Error{Name: file, Err: exec.ErrDot}
+			}
 			return found, nil
 		}
 	}
@@ -93,8 +101,9 @@ func executable(p string) error {
 
 // Command is exec.CommandContext (exec.Command when c is nil) with name
 // found by LookPath on environ's PATH against wd, and Env set to environ.
-// Args[0] stays name, as a shell passes it. When name is not found the
-// command's Err holds the miss, so Start, Run and Output return it.
+// Args[0] stays name, as a shell passes it. When name is not found, or is
+// found only through a relative PATH entry (exec.ErrDot), the command's
+// Err holds the error, so Start, Run and Output return it.
 func Command(c context.Context, environ []string, wd, name string, args ...string) *exec.Cmd {
 	var path string
 	var err error

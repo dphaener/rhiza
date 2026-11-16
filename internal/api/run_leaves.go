@@ -682,7 +682,7 @@ func (r *stepRunner) commitOnHead(paths []string, msg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tmp, err := os.MkdirTemp("", "rhiza-index-")
+	tmp, err := os.MkdirTemp(tempDir(r.ctx), "rhiza-index-")
 	if err != nil {
 		return "", fmt.Errorf("temporary index: %v", err)
 	}

@@ -121,7 +121,7 @@ func shipModelWrite(ctx *Ctx, top, cs, tag string, write func(root string) error
 		base = "FETCH_HEAD"
 	}
 
-	tmp, err := os.MkdirTemp("", "rhiza-model-*")
+	tmp, err := os.MkdirTemp(tempDir(ctx), "rhiza-model-*")
 	if err != nil {
 		return err
 	}

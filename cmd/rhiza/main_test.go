@@ -44,11 +44,21 @@ func TestMain(m *testing.M) {
 
 // rhizaProcess is the test binary run as a rhiza process. Under a script
 // (RHIZA_TEST_SCRIPT set by setup) it exits 2 unless the script is on
-// processScripts: every other script runs rhiza in-process.
+// processScripts: every other script runs rhiza in-process. A refusal is
+// also written to the script's refusal marker ($WORK/processRefusedMarker),
+// so the script fails at once (refusedCheck) instead of waiting on a
+// caller that ignored the exit status.
 func rhizaProcess() int {
 	if name := os.Getenv("RHIZA_TEST_SCRIPT"); name != "" {
 		if _, ok := processScripts[name]; !ok {
-			fmt.Fprintf(os.Stderr, "rhiza: script %s started rhiza as a process but is not on processScripts, the process list in cmd/rhiza/main_test.go: run its rhiza lines in-process (a bare rhiza line), or add it to the list with its reason\n", name)
+			msg := fmt.Sprintf("rhiza: script %s started rhiza as a process but is not on processScripts, the process list in cmd/rhiza/main_test.go: run its rhiza lines in-process (a bare rhiza line), or add it to the list with its reason\n", name)
+			fmt.Fprint(os.Stderr, msg)
+			if work := os.Getenv("WORK"); work != "" {
+				if f, err := os.OpenFile(filepath.Join(work, processRefusedMarker), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+					fmt.Fprint(f, msg)
+					f.Close()
+				}
+			}
 			return 2
 		}
 	}
@@ -492,17 +502,70 @@ func scriptEnv(ts *testscript.TestScript) []string {
 	return env
 }
 
+// processRefusedMarker is the file under a script's $WORK where
+// rhizaProcess records each refused rhiza process.
+const processRefusedMarker = ".rhiza-process-refused"
+
+// refusedEvery is how often an in-process rhiza line looks for the
+// refusal marker while run() works.
+const refusedEvery = 100 * time.Millisecond
+
+// processRefused returns what rhizaProcess recorded under work ("" when it
+// refused no rhiza process there).
+func processRefused(work string) string {
+	b, err := os.ReadFile(filepath.Join(work, processRefusedMarker))
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
+}
+
+// refusedCheck fails the script when one of its rhiza processes was
+// refused: an off-list script fails at once, never waiting on a caller (a
+// fake bin/ callback, a hook) that ignored the exit status 2.
+func refusedCheck(ts *testscript.TestScript) {
+	if msg := processRefused(ts.Getenv("WORK")); msg != "" {
+		ts.Fatalf("%s", msg)
+	}
+}
+
 // rhizaInProcess is the script command `rhiza args...`: it runs run() in
 // the test process with the script's working directory, environment and
 // streams, self as its own path, and fails or passes as `exec rhiza` would.
+// A refused rhiza process of the script (refusedCheck), before the line or
+// while run() works, fails the line at once; run() is then left to finish
+// on its own, writing nowhere.
 func rhizaInProcess(ts *testscript.TestScript, neg bool, args []string, self string) {
 	if len(args) > 0 && strings.HasPrefix(args[len(args)-1], "&") {
 		ts.Fatalf("rhiza: an in-process rhiza cannot run in the background; use exec rhiza ... & and put the script on processScripts")
 	}
+	refusedCheck(ts)
 	var mu sync.Mutex
 	stdout := &lockedWriter{mu: &mu, w: ts.Stdout()}
 	stderr := &lockedWriter{mu: &mu, w: ts.Stderr()}
-	code := run(args, ts.MkAbs("."), self, strings.NewReader(""), stdout, stderr, scriptEnv(ts))
+	done := make(chan int, 1)
+	go func() {
+		done <- run(args, ts.MkAbs("."), self, strings.NewReader(""), stdout, stderr, scriptEnv(ts), ownChildren{})
+	}()
+	tick := time.NewTicker(refusedEvery)
+	defer tick.Stop()
+	work := ts.Getenv("WORK")
+	var code int
+wait:
+	for {
+		select {
+		case code = <-done:
+			break wait
+		case <-tick.C:
+			if msg := processRefused(work); msg != "" {
+				mu.Lock()
+				stdout.w, stderr.w = io.Discard, io.Discard
+				mu.Unlock()
+				ts.Fatalf("%s", msg)
+			}
+		}
+	}
+	refusedCheck(ts)
 	switch {
 	case code == 0 && neg:
 		ts.Fatalf("unexpected command success")
@@ -620,8 +683,16 @@ func setup(env *testscript.Env) error {
 	if err := checkWorkOutsideRepo(env.WorkDir); err != nil {
 		return err
 	}
-	// The rhiza process entry checks the script against processScripts.
+	// The rhiza process entry checks the script against processScripts,
+	// and a refusal it records fails the script at its end even when no
+	// later rhiza line sees it.
 	env.Setenv("RHIZA_TEST_SCRIPT", scriptWorkName(env.WorkDir))
+	work := env.WorkDir
+	env.Defer(func() {
+		if msg := processRefused(work); msg != "" {
+			env.T().Fatal(msg)
+		}
+	})
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
 	env.Setenv("RHIZA_TEST_FREE_BYTES", testFreeBytes)

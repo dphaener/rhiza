@@ -2,19 +2,19 @@
 // rules of os.UserCacheDir, os.UserHomeDir and os.TempDir, but reads the
 // environment through a getenv func instead of the process's, so a caller
 // running in-process for another environment (a test script) places them
-// where that environment says. A nil getenv is os.Getenv.
+// where that environment says. A nil getenv reads nothing: an unset
+// environment, never the process's.
 package userdir
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	"runtime"
 )
 
 func lookup(getenv func(string) string) func(string) string {
 	if getenv == nil {
-		return os.Getenv
+		return func(string) string { return "" }
 	}
 	return getenv
 }
@@ -82,7 +82,7 @@ func Cache(getenv func(string) string) (string, error) {
 }
 
 // Temp is os.TempDir over getenv: $TMPDIR, else /tmp, on Unix; %TMP%,
-// %TEMP% or %USERPROFILE% on Windows; /tmp on Plan 9.
+// %TEMP%, %USERPROFILE% or %SystemRoot%\Temp on Windows; /tmp on Plan 9.
 func Temp(getenv func(string) string) string {
 	getenv = lookup(getenv)
 	switch runtime.GOOS {
@@ -92,7 +92,11 @@ func Temp(getenv func(string) string) string {
 				return v
 			}
 		}
-		return os.TempDir()
+		root := getenv("SystemRoot")
+		if root == "" {
+			root = `C:\Windows`
+		}
+		return filepath.Join(root, "Temp")
 	case "plan9":
 		return "/tmp"
 	}

@@ -33,6 +33,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 	var stderr bytes.Buffer
 	ctx := &Ctx{
 		Home:   home,
+		Getenv: os.Getenv,
 		Root:   t.TempDir(),
 		Now:    func() time.Time { return now },
 		Git:    func(args ...string) (string, error) { return common + "\n", nil },
@@ -47,7 +48,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(root, ".rhiza", "log"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := index.DefaultPath(root, nil)
+		p, err := index.DefaultPath(root, os.Getenv)
 		if err != nil {
 			t.Fatal(err)
 		}

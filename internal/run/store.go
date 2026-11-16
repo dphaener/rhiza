@@ -44,8 +44,8 @@ func Dir(gitCommonDir string) string {
 // TmpDir is the run's own temp folder, outside every git repository:
 // <user cache dir>/rhiza/run-tmp/<run id>, or
 // <temp dir>/rhiza-run-tmp-<uid>/<run id> when there is no user cache
-// dir, both placed by the os package's rules over getenv (userdir; nil is
-// the process's environment). A workflow's [env] values name it as
+// dir, both placed by the os package's rules over getenv (userdir; nil
+// reads nothing). A workflow's [env] values name it as
 // {run_tmp}. The engine creates it as a step starts and removes it (that
 // folder only, never the shared run-tmp parent) when the run ends.
 func TmpDir(id string, getenv func(string) string) string {
@@ -58,8 +58,8 @@ func TmpDir(id string, getenv func(string) string) string {
 // Store keeps one append-only JSONL journal per run in a directory.
 type Store struct {
 	dir string
-	// Getenv places the runs' temp folders (TmpDir); nil is the process's
-	// environment.
+	// Getenv places the runs' temp folders (TmpDir); nil reads nothing (an
+	// unset environment, never the process's).
 	Getenv func(string) string
 }
 

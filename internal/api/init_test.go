@@ -41,7 +41,18 @@ func testCtxNoIndex(root string) *Ctx {
 		IDs:       id.NewGenerator(clock, rand.New(rand.NewSource(3))),
 		GitConfig: gitConfig(map[string]string{"user.email": "test@example.com", "user.name": "Test User"}),
 		Environ:   []string{"PATH=" + os.Getenv("PATH")},
+		Getenv:    testCache,
 	}
+}
+
+// testCache is a test Ctx's getenv: the test binary's user cache folder
+// (XDG_CACHE_HOME, set once in TestMain) and nothing else, so an index or
+// run folder lands there, as it did when a nil getenv read the process's.
+func testCache(key string) string {
+	if key == "XDG_CACHE_HOME" {
+		return os.Getenv("XDG_CACHE_HOME")
+	}
+	return ""
 }
 
 // callOp decodes reqJSON for the named operation and runs it on ctx.

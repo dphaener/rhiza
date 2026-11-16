@@ -171,11 +171,11 @@ func TestReapAdopt(t *testing.T) {
 func TestInProcessDaemonLeavesSiblings(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
-		own   []ownChildren
+		own   ownChildren
 		adopt bool
 	}{
-		{"in-process", nil, false},
-		{"process", []ownChildren{processChildren}, true},
+		{"in-process", ownChildren{}, false},
+		{"process", processChildren, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			// The daemon runs on a Rhiza root: dir is its project repo.
@@ -197,7 +197,7 @@ func TestInProcessDaemonLeavesSiblings(t *testing.T) {
 			rhiza := func(args ...string) {
 				t.Helper()
 				var stdout, stderr strings.Builder
-				if code := run(args, dir, "", strings.NewReader(""), &stdout, &stderr, env, tc.own...); code != 0 {
+				if code := run(args, dir, "", strings.NewReader(""), &stdout, &stderr, env, tc.own); code != 0 {
 					t.Fatalf("rhiza %s: exit %d\n%s%s", strings.Join(args, " "), code, stdout.String(), stderr.String())
 				}
 			}

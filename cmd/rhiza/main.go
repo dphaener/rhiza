@@ -100,20 +100,18 @@ func usage() string {
 // rhiza binary (empty when unknown) and environ the environment in
 // os.Environ() form: what the command reads (its getenv is derived from
 // it) and what every child it starts gets. run reads none of them from the
-// process. own, given only by a real rhiza process (main), lets the daemon
-// adopt and reap that process's children; an in-process call passes none,
+// process. own is required, so every caller chooses: a real rhiza process
+// (main) passes processChildren, which lets the daemon adopt and reap that
+// process's children; an in-process call passes the zero ownChildren{},
 // and its Ctx's Adopt and Reap stay nil.
-func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string, own ...ownChildren) int {
+func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string, own ownChildren) int {
 	if environ == nil {
 		// Never nil: a child's nil Env would inherit the process's.
 		environ = []string{}
 	}
 	getenv := userdir.Getenv(environ)
 	g, rest, err := parseGlobals(args)
-	g.wd, g.self, g.stderr, g.environ = wd, self, stderr, environ
-	for _, o := range own {
-		g.own = o
-	}
+	g.wd, g.self, g.stderr, g.environ, g.own = wd, self, stderr, environ, own
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}

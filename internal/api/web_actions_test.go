@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
@@ -97,7 +98,7 @@ func webGateFixture(t *testing.T) (*Ctx, id.ID, string) {
 		return []byte(common + "\n"), nil
 	}
 	ctx.Start = (&shStart{}).start
-	p, err := index.DefaultPath(ctx.Root, nil)
+	p, err := index.DefaultPath(ctx.Root, os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}

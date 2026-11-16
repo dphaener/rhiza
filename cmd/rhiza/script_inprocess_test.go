@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
@@ -35,8 +36,9 @@ echo "exit=$?"
 
 // TestProcessScripts shows the process list enforced at the rhiza process
 // entry: a script off processScripts whose fake bin/ command starts rhiza
-// gets exit 2 and a message naming the list, while its bare rhiza lines run
-// in-process; the same script on the list starts rhiza as a process.
+// gets exit 2 and a message naming the list, and fails at its next bare
+// rhiza line (or at its end) with that message, while its bare rhiza lines
+// run in-process; the same script on the list starts rhiza as a process.
 func TestProcessScripts(t *testing.T) {
 	if _, ok := processScripts["process-list-fixture"]; !ok {
 		t.Fatal("process-list-fixture is not on processScripts")
@@ -44,19 +46,13 @@ func TestProcessScripts(t *testing.T) {
 	if _, ok := processScripts["off-list-fixture"]; ok {
 		t.Fatal("off-list-fixture is on processScripts")
 	}
-	off := writeFixture(t, "off-list-fixture", `
-env PATH=$WORK/bin:$PATH
-chmod 755 bin/callrhiza
-exec callrhiza version
-stdout '^exit=2$'
-! stdout '^rhiza '
-stderr '^rhiza: script off-list-fixture started rhiza as a process but is not on processScripts, the process list in cmd/rhiza/main_test.go'
-
-# Its bare rhiza line runs in-process, so the list does not apply.
+	const listMsg = "rhiza: script off-list-fixture started rhiza as a process but is not on processScripts, the process list in cmd/rhiza/main_test.go"
+	// Its bare rhiza line runs in-process, so the list does not apply.
+	inProcess := writeFixture(t, "off-list-fixture", `
 rhiza version
 stdout '^rhiza '
 ! stderr .
-`+callRhiza)
+`)
 	on := writeFixture(t, "process-list-fixture", `
 env PATH=$WORK/bin:$PATH
 chmod 755 bin/callrhiza
@@ -67,7 +63,60 @@ stdout '^exit=0$'
 exec rhiza version
 stdout '^rhiza '
 `+callRhiza)
-	testscript.Run(t, scriptParams(t, []string{off, on}))
+	testscript.Run(t, scriptParams(t, []string{inProcess, on}))
+
+	for _, c := range []struct{ name, script string }{
+		// The refused callback's caller passes on; the next bare rhiza
+		// line fails with the list's message.
+		{"next rhiza line", `
+env PATH=$WORK/bin:$PATH
+chmod 755 bin/callrhiza
+exec callrhiza version
+stdout '^exit=2$'
+! stdout '^rhiza '
+stderr '^` + regexp.QuoteMeta(listMsg) + `'
+rhiza version
+`},
+		// No later rhiza line: the script fails at its end.
+		{"script end", `
+env PATH=$WORK/bin:$PATH
+chmod 755 bin/callrhiza
+exec callrhiza version
+stdout '^exit=2$'
+`},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			rt := &recordT{}
+			testscript.RunT(rt, scriptParams(t, []string{writeFixture(t, "off-list-fixture", c.script+callRhiza)}))
+			if !rt.failed || !strings.Contains(rt.log.String(), listMsg) {
+				t.Errorf("failed %v, want a failure naming the list:\n%s", rt.failed, rt.log.String())
+			}
+		})
+	}
+}
+
+// TestProcessRefusedFailsFast shows an off-list script whose in-process
+// rhiza line waits on a fake bin/ callback that rhiza refused failing in
+// seconds with the list's message, not at the go test timeout: the hook
+// command calls rhiza, which exits 2, then waits a minute under a
+// five-minute hook timeout.
+func TestProcessRefusedFailsFast(t *testing.T) {
+	f := writeFixture(t, "off-list-fixture", `
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_NOTIFY_TIMEOUT=5m
+chmod 755 bin/callrhiza
+rhiza hook run notify --command 'callrhiza version; sleep 60'
+`+callRhiza)
+	rt := &recordT{}
+	start := time.Now()
+	testscript.RunT(rt, scriptParams(t, []string{f}))
+	took := time.Since(start)
+	if !rt.failed || !strings.Contains(rt.log.String(), "started rhiza as a process but is not on processScripts") {
+		t.Errorf("failed %v, want a failure naming the list:\n%s", rt.failed, rt.log.String())
+	}
+	if took > 20*time.Second {
+		t.Errorf("the script took %s to fail, want seconds", took)
+	}
 }
 
 // TestScriptEnv shows the environment the in-process rhiza gets: setup's

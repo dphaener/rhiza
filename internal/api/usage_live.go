@@ -102,6 +102,7 @@ func runUserStatusLine(ctx *Ctx, command string, payload []byte) string {
 	c, cancel := context.WithTimeout(context.Background(), userStatusLineTimeout)
 	defer cancel()
 	cmd := envexec.Command(c, childEnv(ctx), ctx.Wd, "sh", "-c", command)
+	cmd.Dir = ctx.Wd
 	cmd.Stdin = bytes.NewReader(payload)
 	var out bytes.Buffer
 	cmd.Stdout = &out

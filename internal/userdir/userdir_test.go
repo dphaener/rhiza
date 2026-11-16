@@ -15,19 +15,40 @@ func env(m map[string]string) func(string) string {
 // one the os package gives.
 func TestMatchesOS(t *testing.T) {
 	if want, werr := os.UserCacheDir(); true {
-		got, err := Cache(nil)
+		got, err := Cache(os.Getenv)
 		if got != want || (err == nil) != (werr == nil) {
-			t.Errorf("Cache(nil) = %q, %v; want %q, %v", got, err, want, werr)
+			t.Errorf("Cache(os.Getenv) = %q, %v; want %q, %v", got, err, want, werr)
 		}
 	}
 	if want, werr := os.UserHomeDir(); true {
-		got, err := Home(nil)
+		got, err := Home(os.Getenv)
 		if got != want || (err == nil) != (werr == nil) {
-			t.Errorf("Home(nil) = %q, %v; want %q, %v", got, err, want, werr)
+			t.Errorf("Home(os.Getenv) = %q, %v; want %q, %v", got, err, want, werr)
 		}
 	}
-	if got, want := Temp(nil), os.TempDir(); got != want {
-		t.Errorf("Temp(nil) = %q, want %q", got, want)
+	if got, want := Temp(os.Getenv), os.TempDir(); got != want {
+		t.Errorf("Temp(os.Getenv) = %q, want %q", got, want)
+	}
+}
+
+// TestNilGetenv checks that a nil getenv reads nothing, never the
+// process's environment: with HOME and TMPDIR set in the process, Home
+// fails and Temp is the default.
+func TestNilGetenv(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("the XDG rules are Linux's")
+	}
+	t.Setenv("HOME", "/process-home")
+	t.Setenv("XDG_CACHE_HOME", "/process-cache")
+	t.Setenv("TMPDIR", "/process-tmp")
+	if d, err := Home(nil); err == nil {
+		t.Errorf("Home(nil) = %q, want an error", d)
+	}
+	if d, err := Cache(nil); err == nil {
+		t.Errorf("Cache(nil) = %q, want an error", d)
+	}
+	if d := Temp(nil); d != "/tmp" {
+		t.Errorf("Temp(nil) = %q, want /tmp", d)
 	}
 }
 

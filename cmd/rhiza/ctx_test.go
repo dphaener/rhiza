@@ -34,7 +34,7 @@ func TestRunWorkingDir(t *testing.T) {
 	rhiza := func(wd string, args ...string) (int, string, string) {
 		t.Helper()
 		var stdout, stderr bytes.Buffer
-		code := run(args, wd, "", strings.NewReader(""), &stdout, &stderr, env)
+		code := run(args, wd, "", strings.NewReader(""), &stdout, &stderr, env, ownChildren{})
 		return code, stdout.String(), stderr.String()
 	}
 
@@ -201,7 +201,7 @@ func TestChildEnv(t *testing.T) {
 	rhiza := func(args ...string) string {
 		t.Helper()
 		var stdout, stderr bytes.Buffer
-		if code := run(args, repo, "", strings.NewReader(""), &stdout, &stderr, env); code != 0 {
+		if code := run(args, repo, "", strings.NewReader(""), &stdout, &stderr, env, ownChildren{}); code != 0 {
 			t.Fatalf("rhiza %v: exit %d\n%s%s", args, code, stdout.String(), stderr.String())
 		}
 		return stdout.String()
@@ -271,9 +271,9 @@ func writeFile(t *testing.T, path, data string) {
 // TestChildEnvPath checks that run() finds the programs it starts on the PATH
 // of the environment it was given, never the process's: a fake git first
 // on the given PATH, absent from the process's, is the git that runs (it
-// leaves a marker and hands on to the real git), a relative PATH entry is
-// joined onto run()'s working directory, and a program only the process's
-// PATH holds is not found through the Ctx.
+// leaves a marker and hands on to the real git), the same git through a
+// relative PATH entry is refused with exec.ErrDot and never runs, and a
+// program only the process's PATH holds is not found through the Ctx.
 func TestChildEnvPath(t *testing.T) {
 	realGit, err := exec.LookPath("git")
 	if err != nil {
@@ -310,18 +310,31 @@ func TestChildEnvPath(t *testing.T) {
 			if out, err := exec.Command(realGit, "-C", repo, "init", "-q").CombinedOutput(); err != nil {
 				t.Fatalf("git init: %v\n%s", err, out)
 			}
+			ctx, err := newCtx(globals{wd: repo, environ: env}, nil, userdir.Getenv(env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if rel {
+				// os/exec refuses a program found through a relative
+				// entry, and so does the Ctx.
+				if p, err := ctx.LookPath("git"); !errors.Is(err, exec.ErrDot) {
+					t.Errorf("LookPath(git) = %q, %v; want exec.ErrDot", p, err)
+				}
+				if _, err := ctx.Exec("git", []string{"--version"}, "", nil); !errors.Is(err, exec.ErrDot) {
+					t.Errorf("Exec(git) through a relative entry: %v, want exec.ErrDot", err)
+				}
+				if b, err := os.ReadFile(marker); err == nil {
+					t.Errorf("the relative entry's git ran (marker %q)", b)
+				}
+				return
+			}
 			var stdout, stderr bytes.Buffer
-			if code := run([]string{"daemon", "settings", "--json"}, repo, "", strings.NewReader(""), &stdout, &stderr, env); code != 0 {
+			if code := run([]string{"daemon", "settings", "--json"}, repo, "", strings.NewReader(""), &stdout, &stderr, env, ownChildren{}); code != 0 {
 				t.Fatalf("daemon settings: exit %d\n%s%s", code, stdout.String(), stderr.String())
 			}
 			b, err := os.ReadFile(marker)
 			if err != nil || !strings.Contains(string(b), "config") {
 				t.Errorf("the given PATH's git did not run (marker %q, %v): the process's git ran instead", b, err)
-			}
-
-			ctx, err := newCtx(globals{wd: repo, environ: env}, nil, userdir.Getenv(env))
-			if err != nil {
-				t.Fatal(err)
 			}
 			if p, err := ctx.LookPath("git"); err != nil || p != filepath.Join(bin, "git") {
 				t.Errorf("LookPath(git) = %q, %v; want the given PATH's %s", p, err, filepath.Join(bin, "git"))

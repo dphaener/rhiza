@@ -22,7 +22,13 @@ func startedEntry(start string, n int) Entry {
 	}}
 }
 
-func newStore(t *testing.T) *Store { return NewStore(filepath.Join(t.TempDir(), "runs")) }
+// newStore is a store whose run temp folders follow the process's
+// environment (the test's XDG_CACHE_HOME).
+func newStore(t *testing.T) *Store {
+	s := NewStore(filepath.Join(t.TempDir(), "runs"))
+	s.Getenv = os.Getenv
+	return s
+}
 
 func TestRoundTrip(t *testing.T) {
 	s := newStore(t)

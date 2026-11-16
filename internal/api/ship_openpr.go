@@ -138,7 +138,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		return nil, err
 	}
 
-	body, err := os.CreateTemp("", "rhiza-pr-body-*.md")
+	body, err := os.CreateTemp(tempDir(ctx), "rhiza-pr-body-*.md")
 	if err != nil {
 		return nil, Errorf("ship open-pr: %v", err)
 	}
