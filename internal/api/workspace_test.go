@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -427,4 +428,140 @@ func (w *workspace) mustID(t *testing.T) id.ID {
 // actorRef and forRef over git.
 func resolveRefs(w *workspace, actorRef, forRef string, git func(string) (string, error)) (id.ID, id.ID, error) {
 	return w.resolveActor(id.ID{}, &Ctx{ActorRef: actorRef, ForRef: forRef, GitConfig: git})
+}
+
+// logOnceWorkspace opens a workspace over ctx's log (no index) whose disk
+// reads are counted through Ctx.readLog.
+func logOnceWorkspace(t *testing.T, ctx *Ctx, dryRun bool) (*workspace, *int) {
+	t.Helper()
+	ctx.IndexPath = ""
+	reads := countingCtx(ctx)
+	rc := *ctx
+	rc.DryRun = dryRun
+	w, err := openCtxWorkspace(&rc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return w, reads
+}
+
+func TestWorkspaceLogReadsDiskOnce(t *testing.T) {
+	t.Parallel()
+	ctx, landed, accepted := readLog(t)
+	w, reads := logOnceWorkspace(t, ctx, false)
+	fresh := ctxWorkspace(t, ctx)
+	for i := range 3 {
+		if got, want := w.model(accepted), fresh.model(accepted); !reflect.DeepEqual(got, want) {
+			t.Fatalf("call %d: model differs from a fresh read", i)
+		}
+		if got, want := w.changeSets(), fresh.changeSets(); !reflect.DeepEqual(got, want) || len(got) == 0 {
+			t.Fatalf("call %d: %d change sets, differ from a fresh read: %v", i, len(got), !reflect.DeepEqual(got, want))
+		}
+		if got, want := w.entriesOfSet(landed), fresh.entriesOfSet(landed); !reflect.DeepEqual(got, want) || len(got) == 0 {
+			t.Fatalf("call %d: entries of the landed set differ from a fresh read", i)
+		}
+	}
+	if *reads != 1 {
+		t.Errorf("disk reads = %d, want 1", *reads)
+	}
+	// A caller changing its copy leaves the kept read as it was.
+	l := w.log()
+	l.Entries[0] = entry.Entry{}
+	l.Entries = l.Entries[:0]
+	if got := w.log(); len(got.Entries) == 0 || got.Entries[0].ID.IsZero() {
+		t.Error("changing a returned log changed the kept read")
+	}
+}
+
+func TestWorkspaceLogDryRunChains(t *testing.T) {
+	t.Parallel()
+	ctx, landed, _ := readLog(t)
+	before := logFiles(t, ctx.Root)
+	w, reads := logOnceWorkspace(t, ctx, true)
+	n := len(w.changeSets())
+	var opened []id.ID
+	for i := range 3 {
+		cs, _, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Pending"}, id.ID{}, id.ID{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		opened = append(opened, cs)
+		// Each later read sees every earlier pending entry.
+		if got := len(w.changeSets()); got != n+i+1 {
+			t.Fatalf("after %d dry writes: %d change sets, want %d", i+1, got, n+i+1)
+		}
+		for _, o := range opened {
+			if _, ok := w.changeSet(o); !ok {
+				t.Fatalf("after %d dry writes: pending change set %s not read", i+1, o)
+			}
+			if got, err := w.resolveChangeSet(o.String()); err != nil || got != o {
+				t.Fatalf("resolve pending %s: %s, %v", o, got, err)
+			}
+		}
+		if len(w.entriesOfSet(landed)) == 0 {
+			t.Fatal("the landed set's entries are gone")
+		}
+	}
+	if *reads != 1 {
+		t.Errorf("disk reads = %d, want 1", *reads)
+	}
+	if after := logFiles(t, ctx.Root); !slices.Equal(before, after) {
+		t.Errorf("a dry run wrote to the log: %d files, then %d", len(before), len(after))
+	}
+}
+
+func TestWorkspaceLogWriteDropsRead(t *testing.T) {
+	t.Parallel()
+	ctx, _, _ := readLog(t)
+	w, reads := logOnceWorkspace(t, ctx, false)
+	n := len(w.changeSets())
+	first := w.log().Entries[0]
+	cs, e, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Written"}, first.Actor, first.For)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := len(w.changeSets()); got != n+1 {
+		t.Fatalf("after a write: %d change sets, want %d", got, n+1)
+	}
+	es := w.entriesOfSet(cs)
+	if len(es) != 1 || es[0].ID != e.ID {
+		t.Fatalf("entries of the written set = %v, want its open entry %s", es, e.ID)
+	}
+	if *reads != 2 {
+		t.Errorf("disk reads = %d, want 2 (one before the write, one after)", *reads)
+	}
+	// The read after the write is kept again.
+	w.model(cs)
+	if *reads != 2 {
+		t.Errorf("disk reads after another read = %d, want 2", *reads)
+	}
+}
+
+func TestWorkspaceLogDamagedEntry(t *testing.T) {
+	t.Parallel()
+	ctx, landed, _ := readLog(t)
+	bad, _ := ctx.IDs.New()
+	path := filepath.Join(ctx.Root, store.Dir, store.LogDir, landed.String(), bad.String()+".json")
+	if err := os.WriteFile(path, []byte("{not json"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	w, reads := logOnceWorkspace(t, ctx, false)
+	first := w.log()
+	if len(first.Problems) == 0 {
+		t.Fatal("a damaged entry gave no problems")
+	}
+	firstSets := w.changeSets()
+	second := w.log()
+	if !reflect.DeepEqual(first.Problems, second.Problems) {
+		t.Errorf("problems differ: %v, then %v", first.Problems, second.Problems)
+	}
+	if !reflect.DeepEqual(firstSets, w.changeSets()) {
+		t.Error("change sets differ between calls")
+	}
+	if fresh := ctxWorkspace(t, ctx).log(); !reflect.DeepEqual(fresh.Problems, second.Problems) {
+		t.Errorf("problems %v, a fresh read's %v", second.Problems, fresh.Problems)
+	}
+	if *reads != 1 {
+		t.Errorf("disk reads = %d, want 1", *reads)
+	}
 }

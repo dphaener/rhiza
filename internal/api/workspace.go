@@ -96,6 +96,9 @@ type workspace struct {
 	// readLog reads the log from disk; nil means st.ReadLog. A test sets it
 	// through Ctx to count the folds a read costs.
 	readLog func() store.Log
+	// disk is the log's disk read, kept from the first log call until a
+	// write to disk drops it; nil before that call.
+	disk *store.Log
 	// proj is the projection the reads go through, opened on first use;
 	// nil when they read the log. See projection.go.
 	proj *projectionSlot
@@ -146,9 +149,18 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 	return w, nil
 }
 
-// log reads the log, plus the entries a dry run has built so far.
+// log reads the log, plus the entries a dry run has built so far. The disk
+// is read once, on the first call, and kept until a write to disk; each
+// call gets its own copy of the slices, with the pending entries laid on.
 func (w *workspace) log() store.Log {
-	l := w.diskLog()
+	if w.disk == nil {
+		d := w.diskLog()
+		w.disk = &d
+	}
+	l := store.Log{
+		Entries:  slices.Clone(w.disk.Entries),
+		Problems: slices.Clone(w.disk.Problems),
+	}
 	if len(w.pending) > 0 {
 		l.Entries = append(l.Entries, w.pending...)
 		slices.SortFunc(l.Entries, func(a, b entry.Entry) int {
@@ -421,6 +433,7 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 		w.pending = append(w.pending, e)
 		return nil
 	}
+	w.disk = nil
 	if err := w.st.Write(e); err != nil {
 		return Errorf("%s", err.Error())
 	}
