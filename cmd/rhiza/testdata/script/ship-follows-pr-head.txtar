@@ -16,11 +16,11 @@ cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
 cp $WORK/other.mod go.mod
-exec rhiza init
-exec rhiza change new 'Ship it' --title 'Ship it' --json
-exec rhiza add capability shipping --field 'statement=Ships a change set'
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza init
+rhiza change new 'Ship it' --title 'Ship it' --json
+rhiza add capability shipping --field 'statement=Ships a change set'
+rhiza propose
+rhiza accept --reason ok
 exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
@@ -29,7 +29,7 @@ cp $WORK/feature.txt feature.txt
 exec git add feature.txt
 exec git commit -qm 'Build the feature'
 exec git push -q -u origin cs/ship-it
-exec rhiza ship check
+rhiza ship check
 stdout 'passed'
 
 # A second clone pushes a commit to the branch.
@@ -51,7 +51,7 @@ cd $WORK/repo
 exec git rev-parse HEAD
 cp stdout $WORK/run-head.txt
 exec sh -c 'echo changed >> feature.txt'
-! exec rhiza ship rebase
+! rhiza ship rebase
 stderr 'uncommitted changes'
 stderr 'feature.txt'
 exec git rev-parse HEAD
@@ -59,7 +59,7 @@ cmp stdout $WORK/run-head.txt
 exec git checkout -q feature.txt
 
 # Clean, it fast-forwards instead of failing.
-exec rhiza ship rebase
+rhiza ship rebase
 exec git rev-parse HEAD
 cmp stdout $WORK/moved-head.txt
 
@@ -72,8 +72,8 @@ exec git push -q origin cs/ship-it
 exec git rev-parse HEAD
 cp stdout $WORK/third-head.txt
 cd $WORK/repo
-exec rhiza ship check
-exec rhiza ship land
+rhiza ship check
+rhiza ship land
 # HEAD holds the pushed head and the land commit reached origin.
 exec sh -c 'git merge-base --is-ancestor $(cat $WORK/third-head.txt) HEAD'
 exec git rev-parse HEAD
@@ -97,7 +97,7 @@ exec git add local.txt
 exec git commit -qm 'Local only commit'
 exec git rev-parse HEAD
 cp stdout $WORK/local-head.txt
-exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
+rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
 exec sh -c 'git merge-base --is-ancestor $(cat $WORK/local-head.txt) HEAD'
 exec sh -c 'git merge-base --is-ancestor $(cat $WORK/fourth-head.txt) HEAD'
 
@@ -115,7 +115,7 @@ exec git add clash.txt
 exec git commit -qm 'Local clash'
 exec git rev-parse HEAD
 cp stdout $WORK/clash-head.txt
-! exec rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
+! rhiza ship rebase --change 01M5PWGEF85Y185JZ2ZGCNH40N
 stderr 'Origin clash'
 ! exec git rev-parse -q --verify MERGE_HEAD
 exec git rev-parse HEAD

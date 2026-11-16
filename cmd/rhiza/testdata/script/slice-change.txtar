@@ -4,74 +4,74 @@
 # heads the slice. The default view follows the change set: what-if for a
 # draft or proposed one, to-be for an accepted one, as-is for none.
 
-exec rhiza init
-exec rhiza apply model.json --record
-exec rhiza change new 'Add a read cache'
-exec rhiza add capability cache --parent store --field 'statement=Caches reads'
-exec rhiza link cache depends-on log
-exec rhiza set log --field 'statement=Appends entries in batches'
+rhiza init
+rhiza apply model.json --record
+rhiza change new 'Add a read cache'
+rhiza add capability cache --parent store --field 'statement=Caches reads'
+rhiza link cache depends-on log
+rhiza set log --field 'statement=Appends entries in batches'
 
 # The current draft: what-if, and the same bytes every time.
-exec rhiza slice
+rhiza slice
 cmp stdout change.md
 ! stderr .
-exec rhiza slice
+rhiza slice
 cmp stdout change.md
-exec rhiza slice --json
+rhiza slice --json
 cmp stdout change.json
-exec rhiza slice --json
+rhiza slice --json
 cmp stdout change.json
 
 # A node slice through the change set: cache exists only in what-if.
-exec rhiza slice cache
+rhiza slice cache
 cmp stdout cache.md
-exec rhiza slice cache
+rhiza slice cache
 cmp stdout cache.md
 
 # With no current change set there is nothing to slice without a ref.
-exec rhiza change use --none
-! exec rhiza slice
+rhiza change use --none
+! rhiza slice
 stderr '^rhiza: no change set to slice'
 stderr '^next: rhiza slice <ref>$'
-! exec rhiza slice --json
+! rhiza slice --json
 stdout '"code": "usage"'
 
 # --change by a unique prefix, any case, and RHIZA_CHANGE: the same slice.
-exec rhiza slice --change 01M5PWGMAR
+rhiza slice --change 01M5PWGMAR
 cmp stdout change.md
 env RHIZA_CHANGE=01m5pwgmar
-exec rhiza slice
+rhiza slice
 cmp stdout change.md
 env RHIZA_CHANGE=
 
 # --view as-is: the touched nodes as they are, without the new one.
-exec rhiza slice --change 01M5PWGMAR --view as-is
+rhiza slice --change 01M5PWGMAR --view as-is
 cmp stdout change-as-is.md
-exec rhiza slice --change 01M5PWGMAR --view as-is
+rhiza slice --change 01M5PWGMAR --view as-is
 cmp stdout change-as-is.md
 
 # what-if needs a change set.
-! exec rhiza slice log --view what-if
+! rhiza slice log --view what-if
 stderr '^rhiza: --view what-if needs a change set'
 stderr '^next: rhiza change ls$'
-! exec rhiza slice log --view what-if --json
+! rhiza slice log --view what-if --json
 stdout '"code": "usage"'
 
 # Accepted: the default is to-be.
-exec rhiza change use 01M5PWGMAR
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza slice
+rhiza change use 01M5PWGMAR
+rhiza propose
+rhiza accept --reason ok
+rhiza slice
 cmp stdout accepted.md
-exec rhiza slice
+rhiza slice
 cmp stdout accepted.md
 
 # A second draft that also touches log: the accepted one is in flight.
-exec rhiza change new 'Tune the log'
-exec rhiza set log --field 'acceptance=core team'
-exec rhiza slice log
+rhiza change new 'Tune the log'
+rhiza set log --field 'acceptance=core team'
+rhiza slice log
 cmp stdout in-flight.md
-exec rhiza slice log
+rhiza slice log
 cmp stdout in-flight.md
 
 -- model.json --

@@ -2,61 +2,61 @@
 # or the subtree under one node: an indented list, siblings by key, retired
 # nodes and what is under them only with --retired.
 
-exec rhiza init
+rhiza init
 
 # An empty tree says so.
-exec rhiza tree
+rhiza tree
 cmp stdout empty.md
 
 # Siblings follow key order, not creation order: alpha goes before beta,
 # a-one before a-two.
-exec rhiza add capability beta --record
-exec rhiza add capability alpha --before beta --record
-exec rhiza add capability a-two --parent alpha --record
-exec rhiza add capability a-one --parent alpha --before a-two --record
-exec rhiza add capability a-one-x --parent a-one --record
-exec rhiza add capability b-one --parent beta --record
-exec rhiza add intent goal --record
-exec rhiza add intent sub-goal --parent goal --record
-exec rhiza add decision pick --record
-exec rhiza retire beta --reason gone --record
+rhiza add capability beta --record
+rhiza add capability alpha --before beta --record
+rhiza add capability a-two --parent alpha --record
+rhiza add capability a-one --parent alpha --before a-two --record
+rhiza add capability a-one-x --parent a-one --record
+rhiza add capability b-one --parent beta --record
+rhiza add intent goal --record
+rhiza add intent sub-goal --parent goal --record
+rhiza add decision pick --record
+rhiza retire beta --reason gone --record
 
-exec rhiza tree
+rhiza tree
 cmp stdout whole.md
 
-exec rhiza tree --depth 1
+rhiza tree --depth 1
 cmp stdout depth1.md
 
-exec rhiza tree a-one
+rhiza tree a-one
 cmp stdout sub.md
 
-exec rhiza tree --kind intent
+rhiza tree --kind intent
 cmp stdout intent.md
 
-exec rhiza tree --retired
+rhiza tree --retired
 cmp stdout retired.md
 
-exec rhiza tree --json
+rhiza tree --json
 cmp stdout whole.json
 
-exec rhiza api call tree '{"ref":"a-one"}'
+rhiza api call tree '{"ref":"a-one"}'
 stdout '"root": "01M5PWGT68X5XKB54XFQMHKA0A"'
 stdout -count=2 '"handle"'
 
 # A node outside the tree, a kind mismatch, a negative depth: exit 2.
-! exec rhiza tree pick
+! rhiza tree pick
 cmp stderr pick.err
-! exec rhiza tree pick --json
+! rhiza tree pick --json
 stdout '"code": "usage"'
-! exec rhiza tree goal --kind capability
+! rhiza tree goal --kind capability
 stderr 'is an intent, not a capability'
-! exec rhiza tree --depth -1
+! rhiza tree --depth -1
 stderr 'depth -1 is negative'
 
 # An unknown ref: exit 4.
-! exec rhiza tree nope
+! rhiza tree nope
 stderr 'no node matches "nope"'
-! exec rhiza tree nope --json
+! rhiza tree nope --json
 stdout '"code": "not_found"'
 
 -- empty.md --

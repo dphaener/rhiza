@@ -14,11 +14,11 @@ cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
 cp $WORK/other.mod go.mod
-exec rhiza init
-exec rhiza change new 'Ship it' --title 'Ship it' --json
-exec rhiza add capability shipping --field 'statement=Ships a change set'
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza init
+rhiza change new 'Ship it' --title 'Ship it' --json
+rhiza add capability shipping --field 'statement=Ships a change set'
+rhiza propose
+rhiza accept --reason ok
 exec git add -A
 exec git commit -qm 'Start shipping'
 exec git push -q -u origin main
@@ -27,9 +27,9 @@ cp $WORK/feature.txt feature.txt
 exec git add feature.txt
 exec git commit -qm 'Build the feature'
 exec git push -q -u origin cs/ship-it
-exec rhiza ship check
+rhiza ship check
 stdout 'passed'
-exec rhiza ship land
+rhiza ship land
 stdout '^Pushed [0-9a-f]{7}\.$'
 exec git rev-parse HEAD
 cp stdout $WORK/run-head.txt
@@ -50,9 +50,9 @@ cp stdout $WORK/moved-head.txt
 
 # The run's check passes on the moved head without timing out.
 cd $WORK/repo
-exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N
+rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout 'passed'
-exec rhiza ship merge --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
+rhiza ship merge --change 01M5PWGEF85Y185JZ2ZGCNH40N --json
 exec cat $WORK/moved-head.txt
 stdout '^[0-9a-f]{40}$'
 
@@ -64,7 +64,7 @@ exec git add rewritten.txt
 exec git commit -qm 'Rewrite the branch'
 exec git push -q -f origin cs/ship-it
 cd $WORK/repo
-! exec rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N --settled
+! rhiza ship check --change 01M5PWGEF85Y185JZ2ZGCNH40N --settled
 stdout 'drops the pushed'
 
 -- other.mod --

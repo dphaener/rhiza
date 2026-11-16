@@ -4,9 +4,9 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.daemon.watchdog.enabled = true \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.agentNudge = 20m \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.agentRetry = 40m \(default, machine\)'
@@ -21,19 +21,19 @@ stdout 'rhiza.project.watchdog.retryBudget = 2 \(default, project\)'
 stdout 'rhiza.project.watchdog.enabled = true \(default, project\)'
 ! stdout 'rhiza.project.watchdog.pollBehind'
 
-exec rhiza daemon set rhiza.daemon.watchdog.retryBudget 4
-exec rhiza daemon set rhiza.project.watchdog.retryBudget 1
-exec rhiza daemon settings
+rhiza daemon set rhiza.daemon.watchdog.retryBudget 4
+rhiza daemon set rhiza.project.watchdog.retryBudget 1
+rhiza daemon settings
 stdout 'rhiza.daemon.watchdog.retryBudget = 4 \(rhiza.toml, machine\)'
 stdout 'rhiza.project.watchdog.retryBudget = 1 \(git config, project\)'
 exec git config --get rhiza.project.watchdog.retryBudget
 stdout '^1$'
 
-! exec rhiza daemon set rhiza.daemon.watchdog.agentNudge soon
+! rhiza daemon set rhiza.daemon.watchdog.agentNudge soon
 stderr 'rhiza.daemon.watchdog.agentNudge'
-! exec rhiza daemon set rhiza.project.watchdog.fileBugs maybe
+! rhiza daemon set rhiza.project.watchdog.fileBugs maybe
 stderr 'rhiza.project.watchdog.fileBugs'
-! exec rhiza daemon set rhiza.project.watchdog.pollBehind 2
+! rhiza daemon set rhiza.project.watchdog.pollBehind 2
 stderr 'unknown setting'
 
 fold-ok

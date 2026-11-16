@@ -4,33 +4,33 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.daemon.usage.session = "" \(default, machine\)'
 stdout 'rhiza.daemon.usage.weekly = "" \(default, machine\)'
 stdout 'rhiza.daemon.usage.reserve = 20 \(default, machine\)'
-exec rhiza daemon settings --json
+rhiza daemon settings --json
 stdout '"key": "rhiza.daemon.usage.reserve"'
 
-exec rhiza daemon set rhiza.daemon.usage.session 5000000
-exec rhiza daemon set rhiza.daemon.usage.weekly 90000000
-exec rhiza daemon set rhiza.daemon.usage.reserve 35
-exec rhiza daemon settings
+rhiza daemon set rhiza.daemon.usage.session 5000000
+rhiza daemon set rhiza.daemon.usage.weekly 90000000
+rhiza daemon set rhiza.daemon.usage.reserve 35
+rhiza daemon settings
 stdout 'rhiza.daemon.usage.session = 5000000 \(rhiza.toml, machine\)'
 stdout 'rhiza.daemon.usage.weekly = 90000000 \(rhiza.toml, machine\)'
 stdout 'rhiza.daemon.usage.reserve = 35 \(rhiza.toml, machine\)'
-exec rhiza daemon set rhiza.daemon.usage.reserve 0
-exec rhiza daemon set rhiza.daemon.usage.reserve 100
+rhiza daemon set rhiza.daemon.usage.reserve 0
+rhiza daemon set rhiza.daemon.usage.reserve 100
 
 # Bad values exit 2 and write nothing.
-! exec rhiza daemon set rhiza.daemon.usage.reserve 101
+! rhiza daemon set rhiza.daemon.usage.reserve 101
 stderr 'from 0 to 100'
-! exec rhiza daemon set rhiza.daemon.usage.reserve -1
-! exec rhiza daemon set rhiza.daemon.usage.reserve lots
-! exec rhiza daemon set rhiza.daemon.usage.session many
+! rhiza daemon set rhiza.daemon.usage.reserve -1
+! rhiza daemon set rhiza.daemon.usage.reserve lots
+! rhiza daemon set rhiza.daemon.usage.session many
 stderr 'whole number of tokens'
-! exec rhiza daemon set rhiza.daemon.usage.weekly 1.5
+! rhiza daemon set rhiza.daemon.usage.weekly 1.5
 exec grep '"rhiza.daemon.usage.reserve" = ' $WORK/rhiza.toml
 stdout '= "100"'
 exec grep '"rhiza.daemon.usage.session" = ' $WORK/rhiza.toml

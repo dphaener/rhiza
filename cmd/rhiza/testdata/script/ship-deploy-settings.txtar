@@ -4,30 +4,30 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.ship.deployUrl = "" \(default, project\)'
 stdout 'rhiza.ship.deployTimeout = 15m \(default, project\)'
 
-exec rhiza daemon set rhiza.ship.deployUrl https://example.com/health
-exec rhiza daemon set rhiza.ship.deployTimeout 30m
-exec rhiza daemon settings --json
+rhiza daemon set rhiza.ship.deployUrl https://example.com/health
+rhiza daemon set rhiza.ship.deployTimeout 30m
+rhiza daemon settings --json
 stdout '"key": "rhiza.ship.deployUrl"'
 stdout '"value": "https://example.com/health"'
 stdout '"value": "30m"'
 stdout '"source": "git config"'
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.ship.deployUrl = https://example.com/health \(git config, project\)'
 stdout 'rhiza.ship.deployTimeout = 30m \(git config, project\)'
 
 # Bad values exit 2 with a next and write nothing.
-! exec rhiza daemon set rhiza.ship.deployUrl ftp://example.com/health
+! rhiza daemon set rhiza.ship.deployUrl ftp://example.com/health
 stderr 'http or https'
 stderr 'next: rhiza daemon settings'
-! exec rhiza daemon set rhiza.ship.deployUrl example.com
+! rhiza daemon set rhiza.ship.deployUrl example.com
 stderr 'http or https'
-! exec rhiza daemon set rhiza.ship.deployTimeout soon
+! rhiza daemon set rhiza.ship.deployTimeout soon
 stderr 'duration'
 stderr 'next: rhiza daemon settings'
 exec git config --get rhiza.ship.deployUrl

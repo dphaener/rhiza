@@ -5,44 +5,44 @@ file-server RHIZA_TEST_CHANNEL_BASE_URL channels
 env RHIZA_TEST_VERSION=v0.1.0
 
 # newer
-exec rhiza version --channel release
+rhiza version --channel release
 stdout 'release v0.2.0: newer than this build \(running v0.1.0\)'
-exec rhiza version --channel release --json
+rhiza version --channel release --json
 stdout '"newer": true'
 stdout '"newest": "v0.2.0"'
 
 # same
 env RHIZA_TEST_VERSION=v0.2.0
-exec rhiza version --channel release
+rhiza version --channel release
 stdout 'not newer than this build'
-exec rhiza version --channel release --json
+rhiza version --channel release --json
 stdout '"newer": false'
 
 # older
 env RHIZA_TEST_VERSION=v0.3.0
-exec rhiza version --channel release
+rhiza version --channel release
 stdout 'not newer than this build'
-exec rhiza version --channel release --json
+rhiza version --channel release --json
 stdout '"newer": false'
 
 # a build that is not a version (dev) is behind any published one
 env RHIZA_TEST_VERSION=dev
-exec rhiza version --channel latest
+rhiza version --channel latest
 stdout 'latest v0.2.1-5-gabc: newer than this build \(running dev\)'
 
 # an unknown channel is a usage error
-! exec rhiza version --channel nightly
+! rhiza version --channel nightly
 stderr 'unknown channel "nightly"'
-! exec rhiza version --channel
+! rhiza version --channel
 stderr 'needs a value'
 
 # an unreachable channel is an error, not a crash
 env RHIZA_TEST_CHANNEL_BASE_URL=http://127.0.0.1:1
-! exec rhiza version --channel release
+! rhiza version --channel release
 stderr 'rhiza: release:'
 
 # plain version is unchanged
-exec rhiza version
+rhiza version
 stdout '\Arhiza \S+\n\z'
 
 # nothing was written

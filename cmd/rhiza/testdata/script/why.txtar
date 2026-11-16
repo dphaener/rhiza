@@ -1,23 +1,23 @@
 # why walks back from a node: its decisions (and theirs), its sources and
 # the change sets of its history, every field printed in full.
 
-exec rhiza init
-exec rhiza change new Base
-exec rhiza add capability store
-exec rhiza add capability cache --parent store
-exec rhiza add source talk --field 'summary=The owner said caching is the point.' --json-field 'quotes=["Keep it in memory, always."]'
-exec rhiza add decision use-ram --field 'statement=We keep the hot set in RAM because disk is too slow for us.'
-exec rhiza add decision old-way
-exec rhiza link cache decided-by use-ram
-exec rhiza link use-ram derived-from talk
-exec rhiza link use-ram supersedes old-way
-exec rhiza link store relates-to old-way --note 'not walked'
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza land
+rhiza init
+rhiza change new Base
+rhiza add capability store
+rhiza add capability cache --parent store
+rhiza add source talk --field 'summary=The owner said caching is the point.' --json-field 'quotes=["Keep it in memory, always."]'
+rhiza add decision use-ram --field 'statement=We keep the hot set in RAM because disk is too slow for us.'
+rhiza add decision old-way
+rhiza link cache decided-by use-ram
+rhiza link use-ram derived-from talk
+rhiza link use-ram supersedes old-way
+rhiza link store relates-to old-way --note 'not walked'
+rhiza propose
+rhiza accept --reason ok
+rhiza land
 
 # Both texts appear in full, with how each was reached.
-exec rhiza why cache
+rhiza why cache
 stdout '^# Why cache$'
 stdout '^## Decisions$'
 stdout '^### use-ram$'
@@ -33,21 +33,21 @@ stdout '^## Change sets$'
 stdout '^- [0-9A-Z]{26} landed intention: Base$'
 
 # Asked about a decision, why leads with the decision's own words.
-exec rhiza why use-ram
+rhiza why use-ram
 stdout '^# Why use-ram$'
 stdout '^- statement: We keep the hot set in RAM because disk is too slow for us\.$'
 stdout '^- use-ram derived from talk$'
 
 # A child inherits its parent's decisions; relates-to is not walked.
-exec rhiza link store decided-by old-way --record
-exec rhiza why store
+rhiza link store decided-by old-way --record
+rhiza why store
 stdout '^- store decided by old-way$'
 stdout '^- old-way superseded by use-ram$'
 ! stdout 'relates'
 
 # --json carries the fields as JSON; old-way is now reached first as
 # inherited from store.
-exec rhiza why cache --json
+rhiza why cache --json
 stdout '"relation": "decided by"'
 stdout '"inherited": false'
 stdout '"inherited": true'
@@ -56,37 +56,37 @@ stdout '"summary": "The owner said caching is the point\."'
 stdout '"view": "as-is"'
 
 # A decision shows only the quotes of its source that contain its quote.
-exec rhiza change new Cite
-exec rhiza add source talk2 --json-field 'quotes=["we must  keep\nit small","we shall grow"]'
-exec rhiza add decision small --field 'quote=must keep it'
-exec rhiza link small derived-from talk2
-exec rhiza why small
+rhiza change new Cite
+rhiza add source talk2 --json-field 'quotes=["we must  keep\nit small","we shall grow"]'
+rhiza add decision small --field 'quote=must keep it'
+rhiza link small derived-from talk2
+rhiza why small
 stdout 'we must  keep'
 ! stdout 'we shall grow'
 stdout 'Quotes left out: 1'
-exec rhiza why small --json
+rhiza why small --json
 stdout '"quotes_left_out": 1'
 
 # Quotes stored as objects match by their text; a second decision on the
 # same source adds the quote it cites.
-exec rhiza add source talk3 --json-field 'quotes=[{"text":"alpha one","by":"owner"},{"text":"beta two"},{"text":"gamma three"}]'
-exec rhiza add decision d1 --field 'quote=alpha one'
-exec rhiza add decision d2 --field 'quote=beta two'
-exec rhiza link d1 derived-from talk3
-exec rhiza link d2 derived-from talk3
-exec rhiza link d2 supersedes d1
-exec rhiza why d2
+rhiza add source talk3 --json-field 'quotes=[{"text":"alpha one","by":"owner"},{"text":"beta two"},{"text":"gamma three"}]'
+rhiza add decision d1 --field 'quote=alpha one'
+rhiza add decision d2 --field 'quote=beta two'
+rhiza link d1 derived-from talk3
+rhiza link d2 derived-from talk3
+rhiza link d2 supersedes d1
+rhiza why d2
 stdout 'alpha one'
 stdout 'beta two'
 ! stdout 'gamma three'
 stdout 'Quotes left out: 1'
 
 # Nothing to say: None.
-exec rhiza why talk
+rhiza why talk
 stdout -count=2 '^None\.$'
 
 # An unknown ref is not_found, exit 4.
-! exec rhiza why nosuch --json
+! rhiza why nosuch --json
 stdout '"code": "not_found"'
 stdout '"next": "rhiza ls"'
-! exec rhiza why nosuch
+! rhiza why nosuch

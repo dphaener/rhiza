@@ -7,27 +7,27 @@ env REX_SERVER=
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza inbox --json
+rhiza inbox --json
 cp stdout ../want-empty.json
-exec rhiza tui app inbox --once
+rhiza tui app inbox --once
 cmp stdout ../want-empty.json
 
-exec rhiza change new Titled --title Titled
-exec rhiza add intent one-thing
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Titled --title Titled
+rhiza add intent one-thing
+rhiza propose
+rhiza accept --reason ok
 mkdir .git/rhiza/runs
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
 
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"kind": "failed"'
 stdout '"detail": "boom"'
 cp stdout ../want-failed.json
-exec rhiza tui app inbox --once
+rhiza tui app inbox --once
 cmp stdout ../want-failed.json
 
 ! exists .git/rhiza/daemon.lock

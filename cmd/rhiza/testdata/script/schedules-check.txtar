@@ -6,25 +6,25 @@ env XDG_CONFIG_HOME=$WORK/xdg
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 fold-ok
-exec rhiza render
+rhiza render
 mkdir .rhiza/workflows
 cp $WORK/mine.toml .rhiza/workflows/bugfix.toml
 
 cp $WORK/ok.toml .rhiza/dispatch.toml
-exec rhiza check
+rhiza check
 
 cp $WORK/missing.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: schedule "intake": workflow: names workflow "nothing-here"'
 
 cp $WORK/unknown-key.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: .*schedule "intake": unknown key "evry"'
 
 cp $WORK/bad-cron.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: .*schedule "nightly": cron'
 
 -- mine.toml --

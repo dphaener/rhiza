@@ -11,14 +11,14 @@ env PATH=$WORK/bin:$PATH
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Run the agent' --title 'Agent runs' --json
-exec rhiza session start --permission-mode manual --json
+rhiza change new 'Run the agent' --title 'Agent runs' --json
+rhiza session start --permission-mode manual --json
 stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
 
-exec rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988
+rhiza session run 158fe87f-5cf3-4ff0-ae50-01a16dc84988
 stdout '^Session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 ended: the agent exited with code 0\.$'
 
 # Two launches: the first starts the session, the second resumes it.

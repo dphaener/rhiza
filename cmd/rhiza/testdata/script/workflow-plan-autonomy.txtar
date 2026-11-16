@@ -15,14 +15,14 @@ mkdir r1/repo
 exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r1/rhiza.toml'
 cd r1/repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec git config rhiza.autonomy.plan owner
 mkdir .rhiza/workflows
 cp $WORK/plan-autonomous.toml .rhiza/workflows/plan.toml
-exec rhiza request 'Add exports'
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza request 'Add exports'
+rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
 exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add exports .* --autonomous" $WORK/auto.log'
 stdout '^1$'
@@ -34,14 +34,14 @@ mkdir r2/repo
 exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r2/rhiza.toml'
 cd r2/repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec git config rhiza.autonomy.plan auto
 mkdir .rhiza/workflows
 cp $WORK/plan-owner.toml .rhiza/workflows/plan.toml
-exec rhiza request 'Add imports'
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza request 'Add imports'
+rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
 exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add imports" $WORK/owner.log'
 stdout '^1$'
@@ -55,14 +55,14 @@ mkdir r3/repo
 exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n" > r3/rhiza.toml'
 cd r3/repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec git config rhiza.autonomy.plan owner
 mkdir .rhiza/workflows
 cp $WORK/ship-plan-auto.toml .rhiza/workflows/ship-change.toml
-exec rhiza request 'Add reports'
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza request 'Add reports'
+rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
 exec sh -c 'grep -c "run start --foreground --workflow plan --pick default --new Add reports" $WORK/ship.log'
 stdout '^1$'
