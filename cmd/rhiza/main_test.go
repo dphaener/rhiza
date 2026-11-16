@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,6 +14,7 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -23,19 +27,42 @@ import (
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 	"github.com/rogpeppe/go-internal/testscript"
+	"github.com/rogpeppe/go-internal/txtar"
 )
 
 func TestMain(m *testing.M) {
+	// Started as rhiza (exec rhiza, a fake bin/ callback, ctx.Self), the
+	// test binary is a rhiza process. RunMain gets no rhiza entry, so a
+	// script's bare rhiza line reaches TestScripts' in-process command.
+	if filepath.Base(os.Args[0]) == "rhiza" {
+		os.Exit(rhizaProcess())
+	}
 	os.Exit(rootguard.Main(func() int {
-		return testscript.RunMain(m, map[string]func() int{
-			"rhiza": func() int {
-				return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
-					wd, _ := os.Getwd()
-					return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
-				})
-			},
-		})
+		return testscript.RunMain(m, map[string]func() int{"rhiza-process": rhizaProcess})
 	}))
+}
+
+// rhizaProcess is the test binary run as a rhiza process. Under a script
+// (RHIZA_TEST_SCRIPT set by setup) it exits 2 unless the script is on
+// processScripts: every other script runs rhiza in-process.
+func rhizaProcess() int {
+	if name := os.Getenv("RHIZA_TEST_SCRIPT"); name != "" {
+		if _, ok := processScripts[name]; !ok {
+			fmt.Fprintf(os.Stderr, "rhiza: script %s started rhiza as a process but is not on processScripts, the process list in cmd/rhiza/main_test.go: run its rhiza lines in-process (a bare rhiza line), or add it to the list with its reason\n", name)
+			return 2
+		}
+	}
+	if log := os.Getenv("RHIZA_TEST_PROCESS_LOG"); log != "" {
+		// TestInProcessCommand counts the rhiza processes a script starts.
+		if f, err := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+			fmt.Fprintln(f, strings.Join(os.Args[1:], " "))
+			f.Close()
+		}
+	}
+	return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
+		wd, _ := os.Getwd()
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
+	})
 }
 
 // -update rewrites a script's archive file when a `cmp stdout <file>` fails,
@@ -50,12 +77,586 @@ func TestScripts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testscript.Run(t, testscript.Params{
-		Files:         files,
-		Setup:         setup,
-		Cmds:          map[string]func(ts *testscript.TestScript, neg bool, args []string){"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock, "edit-sessions": editSessions},
-		UpdateScripts: *update,
+	p := scriptParams(t, files)
+	p.UpdateScripts = *update
+	testscript.Run(t, p)
+}
+
+// scriptParams is TestScripts' testscript.Params over files: setup, the
+// script commands and the in-process rhiza. It links rhiza on PATH first,
+// so setup finds it for RHIZA_TEST_BIN.
+func scriptParams(t *testing.T, files []string) testscript.Params {
+	self := rhizaLink(t)
+	paths := map[string]string{}
+	for _, f := range files {
+		paths[scriptName(f)] = f
+	}
+	return testscript.Params{
+		Files: files,
+		Setup: func(env *testscript.Env) error {
+			if err := setup(env); err != nil {
+				return err
+			}
+			return keepScriptEnv(env, paths[scriptWorkName(env.WorkDir)])
+		},
+		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
+			"rhiza":   func(ts *testscript.TestScript, neg bool, args []string) { rhizaInProcess(ts, neg, args, self) },
+			"fold-ok": foldOK, "quickstart-doc": quickstartDoc, "chtimes": chtimes, "health-server": healthServer, "run-lock": runLock, "file-server": fileServer, "root-daemon-lock": rootDaemonLock, "edit-sessions": editSessions,
+		},
+	}
+}
+
+var (
+	rhizaLinkOnce sync.Once
+	rhizaLinkPath string
+	rhizaLinkErr  error
+)
+
+// rhizaLink hard-links, once per test binary, a rhiza beside the
+// rhiza-process RunMain put in its bin directory on PATH, and returns the
+// link's path: exec rhiza, fake bin/ callbacks and ctx.Self start the test
+// binary under the name rhiza, which TestMain runs as rhiza. A hard link,
+// not a symlink or a copy: os.Args[0] must name rhiza, and a copy would be
+// a second binary to keep in step.
+func rhizaLink(t *testing.T) string {
+	rhizaLinkOnce.Do(func() {
+		bin, err := exec.LookPath("rhiza-process")
+		if err != nil {
+			rhizaLinkErr = err
+			return
+		}
+		link := filepath.Join(filepath.Dir(bin), "rhiza")
+		if err := os.Link(bin, link); err != nil && !errors.Is(err, fs.ErrExist) {
+			rhizaLinkErr = err
+			return
+		}
+		rhizaLinkPath = link
 	})
+	if rhizaLinkErr != nil {
+		t.Fatalf("link rhiza beside rhiza-process: %v", rhizaLinkErr)
+	}
+	return rhizaLinkPath
+}
+
+// scriptWorkName is the script name in a testscript work dir
+// (.../script-<name>).
+func scriptWorkName(workDir string) string {
+	return strings.TrimPrefix(filepath.Base(workDir), "script-")
+}
+
+// processScripts is the one list of scripts allowed to start rhiza as a
+// process (exec rhiza, a fake bin/ command that calls rhiza, rhiza with &,
+// a stdin or ttyin feed, a command that starts ctx.Self, or a line whose
+// run or daemon lock a later line must find held by an exited process),
+// each with its reason. Every other script's rhiza lines run in-process,
+// and a rhiza process it starts exits 2 naming this list.
+var processScripts = map[string]string{
+	// The fixtures of script_inprocess_test.go, compared with exec rhiza.
+	"process-list-fixture": "TestProcessScripts' fixture on the list",
+	"in-process-fixture":   "TestInProcessCommand compares its in-process lines with exec rhiza",
+
+	"add":                                  notConverted,
+	"anchor-fields":                        notConverted,
+	"anchor-refresh":                       notConverted,
+	"apply":                                notConverted,
+	"apply-concurrent":                     notConverted,
+	"arbiter-agent-tabs":                   notConverted,
+	"arbiter-answer":                       notConverted,
+	"arbiter-question":                     notConverted,
+	"arbiter-step":                         notConverted,
+	"autonomous-gate-rule":                 notConverted,
+	"autonomous-permissions":               notConverted,
+	"autonomous-review":                    notConverted,
+	"autonomy-accept-rule":                 notConverted,
+	"brief-files":                          notConverted,
+	"bugfix-workflow-autonomous":           notConverted,
+	"build-check":                          notConverted,
+	"build-evidence-commit":                notConverted,
+	"build-leaf-fails":                     notConverted,
+	"build-leaves-status":                  notConverted,
+	"build-tabs":                           notConverted,
+	"build-verifier-checkout":              notConverted,
+	"build-verifier-findings":              notConverted,
+	"build-workflow":                       notConverted,
+	"carve":                                notConverted,
+	"carve-children":                       notConverted,
+	"carve-dependents":                     notConverted,
+	"carve-guards":                         notConverted,
+	"change":                               notConverted,
+	"change-diff":                          notConverted,
+	"change-new-workflow-flag":             notConverted,
+	"change-notes":                         notConverted,
+	"change-request-kind":                  notConverted,
+	"change-set-ref":                       notConverted,
+	"change-show-canonical-text":           notConverted,
+	"change-show-serves":                   notConverted,
+	"change-title":                         notConverted,
+	"change-workflow-pin":                  notConverted,
+	"change-worktree-unique-slug":          notConverted,
+	"check":                                notConverted,
+	"check-anchors":                        notConverted,
+	"check-clone":                          notConverted,
+	"check-constraint":                     notConverted,
+	"check-evidence-actor":                 notConverted,
+	"check-fingerprint":                    notConverted,
+	"check-git":                            notConverted,
+	"check-move":                           notConverted,
+	"check-orphan-log":                     notConverted,
+	"check-overlaps":                       notConverted,
+	"check-text-refs":                      notConverted,
+	"check-unclaimed-commits":              notConverted,
+	"check-unclaimed-cutoff":               notConverted,
+	"check-unclaimed-full-history":         notConverted,
+	"ci-install":                           notConverted,
+	"custom-workflows-doc":                 notConverted,
+	"daemon-continue-slot":                 notConverted,
+	"daemon-event-hook":                    notConverted,
+	"daemon-headless-runs":                 notConverted,
+	"daemon-install":                       notConverted,
+	"daemon-load-hold":                     notConverted,
+	"daemon-load-settings":                 notConverted,
+	"daemon-lock":                          notConverted,
+	"daemon-max-runs-pending":              notConverted,
+	"daemon-milestone-request":             notConverted,
+	"daemon-no-root":                       "starts rhiza through sh -c",
+	"daemon-notify":                        notConverted,
+	"daemon-notify-disk-low":               notConverted,
+	"daemon-notify-hook":                   notConverted,
+	"daemon-pause":                         notConverted,
+	"daemon-picks":                         notConverted,
+	"daemon-picks-backlog":                 notConverted,
+	"daemon-plans-proposals":               notConverted,
+	"daemon-projects":                      notConverted,
+	"daemon-queued-start-slot":             notConverted,
+	"daemon-repo-session":                  notConverted,
+	"daemon-request-slot":                  notConverted,
+	"daemon-resume":                        notConverted,
+	"daemon-resume-landed":                 notConverted,
+	"daemon-resume-landed-plan":            notConverted,
+	"daemon-resume-slot":                   notConverted,
+	"daemon-rex-session":                   notConverted,
+	"daemon-root-ship-workflow":            notConverted,
+	"daemon-round-robin":                   notConverted,
+	"daemon-settings":                      notConverted,
+	"daemon-settings-scope":                notConverted,
+	"daemon-start-stop":                    notConverted,
+	"daemon-status":                        notConverted,
+	"daemon-status-projects":               notConverted,
+	"daemon-version-in-health":             notConverted,
+	"describe":                             notConverted,
+	"describe-golden":                      notConverted,
+	"dispatch-check":                       notConverted,
+	"docs-commands-exist":                  notConverted,
+	"docs-reference-cli":                   notConverted,
+	"docs-reference-config":                notConverted,
+	"docs-reference-stale":                 notConverted,
+	"docs-reference-workflow":              notConverted,
+	"e2e":                                  notConverted,
+	"evidence-actor-show":                  notConverted,
+	"feed":                                 notConverted,
+	"feed-follow":                          notConverted,
+	"field-schema":                         notConverted,
+	"findings-concurrent":                  notConverted,
+	"findings-concurrent-rounds":           notConverted,
+	"frame":                                notConverted,
+	"free-bytes-default":                   notConverted,
+	"guide":                                notConverted,
+	"guide-install":                        notConverted,
+	"headless-run-agent-tabs":              notConverted,
+	"headless-run-blocked-notice":          notConverted,
+	"health":                               notConverted,
+	"health-ci":                            notConverted,
+	"health-load-hold":                     notConverted,
+	"health-machine-part":                  notConverted,
+	"health-projects":                      notConverted,
+	"health-risk-warning":                  notConverted,
+	"health-runs-cap":                      notConverted,
+	"hook-commands":                        notConverted,
+	"import-autonomous-decisions":          notConverted,
+	"import-friction-recorded":             notConverted,
+	"import-owner-credited-decisions":      notConverted,
+	"import-records-built":                 notConverted,
+	"import-retires-docs":                  notConverted,
+	"import-unbuilt-as-drafts":             notConverted,
+	"inbox-advisor":                        notConverted,
+	"inbox-api-error":                      notConverted,
+	"inbox-blocker-advice":                 notConverted,
+	"inbox-blocking-questions":             notConverted,
+	"inbox-disk-low":                       notConverted,
+	"inbox-gate-questions":                 notConverted,
+	"inbox-landed-plan-run":                notConverted,
+	"inbox-landed-resumable":               notConverted,
+	"inbox-list":                           notConverted,
+	"inbox-load-hold":                      notConverted,
+	"inbox-main-stale":                     notConverted,
+	"inbox-open":                           notConverted,
+	"inbox-owner-run-accept":               notConverted,
+	"inbox-permission":                     notConverted,
+	"inbox-projects":                       notConverted,
+	"inbox-question-advisor":               notConverted,
+	"inbox-signoff":                        notConverted,
+	"inbox-stale":                          notConverted,
+	"inbox-stalled":                        notConverted,
+	"inbox-uncovered-proposal":             notConverted,
+	"init":                                 notConverted,
+	"leaf-cycle":                           notConverted,
+	"leaf-order":                           notConverted,
+	"lifecycle":                            notConverted,
+	"link":                                 notConverted,
+	"log":                                  notConverted,
+	"log-entries-read-only":                notConverted,
+	"log-paged":                            notConverted,
+	"ls":                                   notConverted,
+	"machine-show":                         notConverted,
+	"machine-trust-bypass":                 notConverted,
+	"machine-trust-unwritten":              notConverted,
+	"model-commit-untracked":               notConverted,
+	"mv":                                   notConverted,
+	"old-folder":                           notConverted,
+	"overlaps":                             notConverted,
+	"owner-run-gate-accept":                notConverted,
+	"plan-milestone-backlog":               notConverted,
+	"plan-milestone-check":                 notConverted,
+	"plan-milestone-interview-waiting":     notConverted,
+	"plan-milestone-number":                notConverted,
+	"plan-milestone-workflow":              notConverted,
+	"plan-requests":                        notConverted,
+	"plan-review-visit-round":              notConverted,
+	"plan-review-workflow":                 notConverted,
+	"plan-run-milestone-env":               notConverted,
+	"plan-workflow":                        notConverted,
+	"plan-workflow-autonomous":             notConverted,
+	"plan-workflow-autonomous-left":        notConverted,
+	"plan-workflow-ci-flake":               notConverted,
+	"plan-workflow-ci-flake-red":           notConverted,
+	"plan-workflow-ci-infra-timeout":       notConverted,
+	"plan-workflow-ci-infra-wait":          notConverted,
+	"plan-workflow-merge-main-moved":       notConverted,
+	"plan-workflow-merge-main-moved-often": notConverted,
+	"plan-workflow-open":                   notConverted,
+	"plan-workflow-pr":                     notConverted,
+	"policy-check":                         notConverted,
+	"printout-counts-used-tokens":          notConverted,
+	"printout-gap-names-reason":            notConverted,
+	"project-add-path":                     notConverted,
+	"project-add-url":                      notConverted,
+	"project-agent":                        notConverted,
+	"project-ls-rm":                        notConverted,
+	"question-answer":                      notConverted,
+	"quickstart":                           notConverted,
+	"ready":                                notConverted,
+	"record":                               notConverted,
+	"render":                               notConverted,
+	"render-generate":                      notConverted,
+	"render-refuses-damaged-log":           notConverted,
+	"reopen":                               notConverted,
+	"reopen-base":                          notConverted,
+	"repair":                               notConverted,
+	"request-ref":                          notConverted,
+	"request-ref-risk-note":                notConverted,
+	"request-workflow-flag":                notConverted,
+	"retire":                               notConverted,
+	"retire-after-update":                  notConverted,
+	"review-check-worktree":                notConverted,
+	"review-checks-step":                   notConverted,
+	"review-code-check":                    notConverted,
+	"review-code-check-override":           notConverted,
+	"review-findings":                      notConverted,
+	"review-signoff":                       notConverted,
+	"review-signoff-autonomous":            notConverted,
+	"review-signoff-changes":               notConverted,
+	"review-summary":                       notConverted,
+	"review-workflow":                      notConverted,
+	"rex-install":                          notConverted,
+	"rhiza-root":                           notConverted,
+	"roadmap":                              notConverted,
+	"roadmap-milestones":                   notConverted,
+	"roadmap-paged":                        notConverted,
+	"roadmap-projects":                     notConverted,
+	"roadmap-statement":                    notConverted,
+	"roadmap-umbrella":                     notConverted,
+	"root-init":                            notConverted,
+	"run-abandon":                          notConverted,
+	"run-abandon-dirty":                    notConverted,
+	"run-abandon-failed":                   notConverted,
+	"run-abandon-shared":                   notConverted,
+	"run-abandon-unmerged":                 notConverted,
+	"run-abandon-unpushed":                 notConverted,
+	"run-agent-done":                       notConverted,
+	"run-agent-step":                       notConverted,
+	"run-agent-tabs":                       notConverted,
+	"run-amend":                            notConverted,
+	"run-arbitrate-asked":                  notConverted,
+	"run-autonomous":                       notConverted,
+	"run-autonomy-source":                  notConverted,
+	"run-blocked":                          notConverted,
+	"run-cleanup-steps":                    notConverted,
+	"run-command-step":                     notConverted,
+	"run-command-step-output":              notConverted,
+	"run-continue-queue":                   notConverted,
+	"run-end-removes-leftovers":            notConverted,
+	"run-failure-classifier":               notConverted,
+	"run-gate":                             notConverted,
+	"run-handback":                         notConverted,
+	"run-journal":                          notConverted,
+	"run-log":                              notConverted,
+	"run-ls":                               notConverted,
+	"run-max-visits":                       notConverted,
+	"run-nested-workflow-session":          notConverted,
+	"run-one-live":                         notConverted,
+	"run-records-dispatch":                 notConverted,
+	"run-resume":                           notConverted,
+	"run-resume-agent-session":             notConverted,
+	"run-resume-landed-past-land":          notConverted,
+	"run-resume-landed-plan":               notConverted,
+	"run-resume-lost-fixer":                notConverted,
+	"run-resume-lost-session":              notConverted,
+	"run-resume-retry":                     notConverted,
+	"run-resume-retry-wait":                notConverted,
+	"run-resume-unaccepted":                notConverted,
+	"run-review-check":                     notConverted,
+	"run-review-check-handles":             notConverted,
+	"run-review-check-landed":              notConverted,
+	"run-review-journal":                   notConverted,
+	"run-send-back":                        notConverted,
+	"run-ship-change":                      notConverted,
+	"run-ship-change-fail":                 notConverted,
+	"run-ship-change-rebase":               notConverted,
+	"run-ship-ci-fix":                      notConverted,
+	"run-ship-ci-lint-fix":                 notConverted,
+	"run-ship-conflict-fix":                notConverted,
+	"run-ship-conflict-fix-more":           notConverted,
+	"run-ship-deploy-check":                notConverted,
+	"run-ship-deploy-timeout":              notConverted,
+	"run-ship-infra-wait":                  notConverted,
+	"run-ship-land-conflict":               notConverted,
+	"run-ship-landed-infra-wait":           notConverted,
+	"run-ship-main-dispatch":               notConverted,
+	"run-ship-main-dispatch-fail":          notConverted,
+	"run-ship-main-dispatch-resume":        notConverted,
+	"run-ship-merge-draft":                 notConverted,
+	"run-ship-merge-main-moved":            notConverted,
+	"run-ship-model-conflict":              notConverted,
+	"run-ship-needs-leaves":                notConverted,
+	"run-ship-rerun-fail":                  notConverted,
+	"run-ship-rerun-pass":                  notConverted,
+	"run-ship-retry-ci-triage":             notConverted,
+	"run-ship-retry-pending":               notConverted,
+	"run-ship-rspec-failure":               notConverted,
+	"run-ship-signoff":                     notConverted,
+	"run-signoff-workflow-owner":           notConverted,
+	"run-spawn":                            notConverted,
+	"run-start":                            notConverted,
+	"run-start-agent-session":              notConverted,
+	"run-start-milestone-autonomous":       notConverted,
+	"run-start-new":                        notConverted,
+	"run-start-new-main-clean":             notConverted,
+	"run-start-queue":                      notConverted,
+	"run-start-ready-dispatch":             notConverted,
+	"run-start-skill-missing":              notConverted,
+	"run-status":                           notConverted,
+	"run-status-messages":                  notConverted,
+	"run-status-stalled":                   notConverted,
+	"run-status-tokens":                    notConverted,
+	"run-tail":                             notConverted,
+	"run-worktree-carries-accept":          notConverted,
+	"runs-need-root":                       notConverted,
+	"schedules-check":                      notConverted,
+	"search":                               notConverted,
+	"session-done-captures":                notConverted,
+	"session-hook-log-guard":               notConverted,
+	"session-hook-message":                 notConverted,
+	"session-interview":                    notConverted,
+	"session-interview-landed":             notConverted,
+	"session-interview-recorded":           notConverted,
+	"session-interview-source":             notConverted,
+	"session-journal":                      notConverted,
+	"session-message":                      notConverted,
+	"session-message-busy":                 notConverted,
+	"session-message-idle-fallback":        notConverted,
+	"session-message-permission":           notConverted,
+	"session-pane-key":                     notConverted,
+	"session-run":                          notConverted,
+	"session-run-blocked-notice":           notConverted,
+	"session-run-tokens":                   notConverted,
+	"session-run-usage-limit":              notConverted,
+	"session-start":                        notConverted,
+	"set":                                  notConverted,
+	"ship-change-one-ci":                   notConverted,
+	"ship-check-ci-test-findings":          notConverted,
+	"ship-check-follows-moved-head":        notConverted,
+	"ship-check-settles-conflict":          notConverted,
+	"ship-close-out-forget-retry":          notConverted,
+	"ship-close-out-log-copies":            notConverted,
+	"ship-deploy-settings":                 notConverted,
+	"ship-follows-pr-head":                 notConverted,
+	"ship-gate-head-check":                 notConverted,
+	"ship-land-branch-build":               notConverted,
+	"ship-local-gate":                      notConverted,
+	"ship-main-dispatch-select":            notConverted,
+	"ship-prepush-check":                   notConverted,
+	"show":                                 notConverted,
+	"skill-check":                          notConverted,
+	"skill-check-roles":                    notConverted,
+	"slice":                                notConverted,
+	"slice-budget":                         notConverted,
+	"slice-change":                         notConverted,
+	"slice-errors":                         notConverted,
+	"source-add":                           notConverted,
+	"source-raw-session":                   notConverted,
+	"stacked":                              notConverted,
+	"stacked-cycle":                        notConverted,
+	"stacked-dropped":                      notConverted,
+	"stacked-revised":                      notConverted,
+	"stacked-revised-disjoint":             notConverted,
+	"stacked-revised-drop":                 notConverted,
+	"stacked-revised-rewrite":              notConverted,
+	"stage-autonomy":                       notConverted,
+	"status":                               notConverted,
+	"status-terminal-current":              notConverted,
+	"testscript-root":                      notConverted,
+	"text-refs-display":                    notConverted,
+	"text-refs-engine-writes":              notConverted,
+	"text-refs-write":                      notConverted,
+	"tree":                                 notConverted,
+	"tui-autonomy-app":                     notConverted,
+	"tui-inbox-app":                        notConverted,
+	"tui-launch-usage":                     notConverted,
+	"tui-old-apps-gone":                    notConverted,
+	"tui-open-usage":                       notConverted,
+	"tui-request-app":                      notConverted,
+	"tui-runs-app":                         notConverted,
+	"unknown":                              notConverted,
+	"usage":                                notConverted,
+	"usage-hold":                           notConverted,
+	"usage-live-record":                    notConverted,
+	"usage-settings":                       notConverted,
+	"version":                              notConverted,
+	"version-channel":                      notConverted,
+	"wait-timeout":                         notConverted,
+	"watchdog-health":                      notConverted,
+	"watchdog-policy":                      notConverted,
+	"why":                                  notConverted,
+	"why-paged":                            notConverted,
+	"workflow-check":                       notConverted,
+	"workflow-check-invoke":                notConverted,
+	"workflow-check-loop":                  notConverted,
+	"workflow-check-merge":                 notConverted,
+	"workflow-check-risk":                  notConverted,
+	"workflow-describe":                    notConverted,
+	"workflow-env":                         notConverted,
+	"workflow-invoke":                      notConverted,
+	"workflow-ls":                          notConverted,
+	"workflow-new":                         notConverted,
+	"workflow-personal-override":           notConverted,
+	"workflow-plan-autonomy":               notConverted,
+	"workflow-stage-autonomy":              notConverted,
+}
+
+const notConverted = "not converted yet"
+
+// scriptEnvKey is the key of a script's environment names in env.Values.
+type scriptEnvKey struct{}
+
+// keepScriptEnv keeps, for the in-process rhiza, the names of the script's
+// environment: setup's (env.Vars) and those the script's own env lines set
+// (file, the script's txtar; none when it is unknown).
+func keepScriptEnv(env *testscript.Env, file string) error {
+	var names []string
+	seen := map[string]bool{}
+	add := func(n string) {
+		if n != "" && !seen[n] {
+			seen[n] = true
+			names = append(names, n)
+		}
+	}
+	for _, kv := range env.Vars {
+		n, _, _ := strings.Cut(kv, "=")
+		add(n)
+	}
+	if file != "" {
+		a, err := txtar.ParseFile(file)
+		if err != nil {
+			return err
+		}
+		for _, n := range envLineNames(string(a.Comment)) {
+			add(n)
+		}
+	}
+	env.Values[scriptEnvKey{}] = names
+	return nil
+}
+
+// envLineNames is every NAME a script's `env NAME=...` lines set, in
+// order, conditions and ! prefixes skipped.
+func envLineNames(script string) []string {
+	var names []string
+	for _, line := range strings.Split(script, "\n") {
+		f := strings.Fields(line)
+		for len(f) > 0 && (f[0] == "!" || strings.HasPrefix(f[0], "[")) {
+			f = f[1:]
+		}
+		if len(f) < 2 || f[0] != "env" {
+			continue
+		}
+		for _, a := range f[1:] {
+			if strings.HasPrefix(a, "#") {
+				break
+			}
+			a = strings.Trim(a, "'")
+			if n, _, ok := strings.Cut(a, "="); ok && n != "" {
+				names = append(names, n)
+			}
+		}
+	}
+	return names
+}
+
+// scriptEnv is the environment the in-process rhiza gets: every name
+// keepScriptEnv kept, with its current value (ts.Getenv). An empty value
+// is kept as NAME=, as an exec'd rhiza gets it after `env NAME=`.
+func scriptEnv(ts *testscript.TestScript) []string {
+	names, _ := ts.Value(scriptEnvKey{}).([]string)
+	env := make([]string, 0, len(names))
+	for _, n := range names {
+		env = append(env, n+"="+ts.Getenv(n))
+	}
+	return env
+}
+
+// rhizaInProcess is the script command `rhiza args...`: it runs run() in
+// the test process with the script's working directory, environment and
+// streams, self as its own path, and fails or passes as `exec rhiza` would.
+func rhizaInProcess(ts *testscript.TestScript, neg bool, args []string, self string) {
+	if len(args) > 0 && strings.HasPrefix(args[len(args)-1], "&") {
+		ts.Fatalf("rhiza: an in-process rhiza cannot run in the background; use exec rhiza ... & and put the script on processScripts")
+	}
+	var mu sync.Mutex
+	stdout := &lockedWriter{mu: &mu, w: ts.Stdout()}
+	stderr := &lockedWriter{mu: &mu, w: ts.Stderr()}
+	code := run(args, ts.MkAbs("."), self, strings.NewReader(""), stdout, stderr, scriptEnv(ts))
+	switch {
+	case code == 0 && neg:
+		ts.Fatalf("unexpected command success")
+	case code != 0:
+		ts.Logf("[exit status %d]", code)
+		if !neg {
+			ts.Fatalf("unexpected command failure")
+		}
+	}
+}
+
+// lockedWriter serialises writes to w: run() may write from more than one
+// goroutine, and ts.Stdout() is a strings.Builder.
+type lockedWriter struct {
+	mu *sync.Mutex
+	w  io.Writer
+}
+
+func (l *lockedWriter) Write(p []byte) (int, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.w.Write(p)
 }
 
 // shardNames returns the files shard (RHIZA_TEST_SHARD, "i/n", 1-based)
@@ -151,6 +752,8 @@ func setup(env *testscript.Env) error {
 	if err := checkWorkOutsideRepo(env.WorkDir); err != nil {
 		return err
 	}
+	// The rhiza process entry checks the script against processScripts.
+	env.Setenv("RHIZA_TEST_SCRIPT", scriptWorkName(env.WorkDir))
 	env.Setenv("RHIZA_TEST_NOW", testNow)
 	env.Setenv("RHIZA_TEST_SEED", testSeed)
 	env.Setenv("RHIZA_TEST_FREE_BYTES", testFreeBytes)
