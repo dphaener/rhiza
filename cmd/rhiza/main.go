@@ -94,9 +94,12 @@ func usage() string {
 	return b.String()
 }
 
-// run is the testable entry point: it returns the exit code.
-func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+// run is the testable entry point: it returns the exit code. wd is the
+// working directory the command runs in and self the absolute path of this
+// rhiza binary (empty when unknown); run reads neither from the process.
+func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
 	g, rest, err := parseGlobals(args)
+	g.wd, g.self, g.stderr = wd, self, stderr
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
@@ -228,7 +231,10 @@ func describeOp() api.Operation {
 
 func main() {
 	os.Exit(profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
-		return run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+		// An unknown working directory is left empty: a command that needs
+		// it fails with a "working directory" error.
+		wd, _ := os.Getwd()
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Getenv)
 	}))
 }
 

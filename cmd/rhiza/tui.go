@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync/atomic"
 
 	"github.com/charmbracelet/colorprofile"
 	"github.com/dphaener/rexuikit/ui"
@@ -26,7 +27,7 @@ import (
 
 func tuiCommand(g globals, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	if len(args) >= 3 && args[1] == "open" {
-		return tuiOpen(args[2], args[3:], stdout, stderr, getenv)
+		return tuiOpen(g, args[2], args[3:], stdout, stderr, getenv)
 	}
 	if len(args) >= 3 && args[1] == "app" {
 		// The opener names a file for the app to report its content's
@@ -106,9 +107,15 @@ type tuiModels struct {
 	// mergedRuns is the runs app over every registered project.
 	mergedRuns func(projects []string, folder func(string) string) *runsapp.Model
 	autonomy   func() *autonomyapp.Model
+	// wd is the folder the apps run in: g's working directory until the
+	// project switcher or the request app moves them to another project.
+	wd *atomic.Pointer[string]
 }
 
 func newTUIModels(g globals, getenv func(string) string) tuiModels {
+	wd := &atomic.Pointer[string]{}
+	start := g.wd
+	wd.Store(&start)
 	callWith := func(g globals, op string, record, dry bool, args []string) ([]byte, error) {
 		o, ok := api.Lookup(op)
 		if !ok {
@@ -131,28 +138,39 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 		}
 		return canon.Marshal(resp)
 	}
+	// here is g in the apps' current folder; in is g in dir.
+	here := func() globals {
+		gg := g
+		gg.wd = *wd.Load()
+		return gg
+	}
+	in := func(dir string) globals {
+		gg := g
+		gg.wd = dir
+		return gg
+	}
+	callIn := func(g globals) func(op string, record, dry bool, args []string) ([]byte, error) {
+		return func(op string, record, dry bool, args []string) ([]byte, error) {
+			return callWith(g, op, record, dry, args)
+		}
+	}
 	call := func(op string, record, dry bool, args []string) ([]byte, error) {
-		return callWith(g, op, record, dry, args)
+		return callWith(here(), op, record, dry, args)
 	}
 	inboxModel := func() *inboxapp.Model {
 		return inboxapp.NewModel(func(op string, args []string) ([]byte, error) {
-			return inboxRun(g, call, callWith, op, args)
+			gg := here()
+			return inboxRun(gg, callIn(gg), callWith, op, args)
 		})
 	}
 	var mergedInbox func(projects []string, folder func(string) string) *inboxapp.Model
 	mergedInbox = func(projects []string, folder func(string) string) *inboxapp.Model {
-		// Each call runs in its project's folder, and the app's own
-		// directory comes back after it.
-		in := func(project, op string, args []string) ([]byte, error) {
-			if wd, err := os.Getwd(); err == nil {
-				defer os.Chdir(wd)
-			}
-			if err := os.Chdir(folder(project)); err != nil {
-				return nil, err
-			}
-			return inboxRun(g, call, callWith, op, args)
+		// Each call runs in its project's folder.
+		run := func(project, op string, args []string) ([]byte, error) {
+			gg := in(folder(project))
+			return inboxRun(gg, callIn(gg), callWith, op, args)
 		}
-		return inboxapp.NewMergedModel(in, projects)
+		return inboxapp.NewMergedModel(run, projects)
 	}
 	runsModel := func() *runsapp.Model {
 		return runsapp.NewModel(func(op string, args []string) ([]byte, error) {
@@ -165,18 +183,12 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 		})
 	}
 	mergedRuns := func(projects []string, folder func(string) string) *runsapp.Model {
-		in := func(project, op string, args []string) ([]byte, error) {
-			if wd, err := os.Getwd(); err == nil {
-				defer os.Chdir(wd)
-			}
-			if err := os.Chdir(folder(project)); err != nil {
-				return nil, err
-			}
-			return call(op, false, false, args)
+		run := func(project, op string, args []string) ([]byte, error) {
+			return callWith(in(folder(project)), op, false, false, args)
 		}
-		return runsapp.NewMergedModel(in, projects, nil)
+		return runsapp.NewMergedModel(run, projects, nil)
 	}
-	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, mergedRuns: mergedRuns, runs: runsModel, autonomy: autonomyModel}
+	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, mergedRuns: mergedRuns, runs: runsModel, autonomy: autonomyModel, wd: wd}
 }
 
 // inboxRun runs one of the inbox app's operations. The app passes
@@ -225,13 +237,23 @@ func runSwitching(name string, apps tuiModels, stdout, stderr io.Writer) int {
 // be built, before any pane opens.
 func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 	call := apps.call
-	wd, _ := os.Getwd()
-	names, folder := projectctx.Folders(wd)
+	wdNow := func() string { return *apps.wd.Load() }
+	// moveTo moves the apps to dir, as a cd would: it must be a folder.
+	moveTo := func(dir string) error {
+		d, err := workingDir(dir)
+		if err != nil {
+			return err
+		}
+		apps.wd.Store(&d)
+		return nil
+	}
+	names, folder := projectctx.Folders(wdNow())
 	sw := modalshell.Switching{
 		Projects: names,
 		Folder:   folder,
+		Chdir:    moveTo,
 		Header: func() string {
-			if wd, err := os.Getwd(); err == nil {
+			if wd := wdNow(); wd != "" {
 				return projectctx.Header(wd)
 			}
 			return projectctx.NoProject
@@ -268,12 +290,12 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 			sh := modalshell.New(rm)
 			return modalshell.Built{Model: sh, Result: rm.Result}
 		default:
-			wd, _ := os.Getwd()
+			wd := wdNow()
 			current, _ := projectctx.Current(wd)
 			names, folder := projectctx.Folders(wd)
 			sh := modalshell.New(requestapp.NewIn(func(project, op string, args []string) ([]byte, error) {
 				if project != "" && folder != nil {
-					if err := os.Chdir(folder(project)); err != nil {
+					if err := moveTo(folder(project)); err != nil {
 						return nil, err
 					}
 				}
@@ -291,5 +313,3 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 	}
 	return modalshell.NewSwitcher(sw), nil
 }
-
-func wdNow() string { wd, _ := os.Getwd(); return wd }

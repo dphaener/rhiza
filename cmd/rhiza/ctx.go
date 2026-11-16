@@ -39,9 +39,13 @@ import (
 // run draws fresh, deterministic IDs, and a dry run predicts the next real
 // run.
 func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, error) {
-	wd, err := os.Getwd()
+	wd, err := workingDir(g.wd)
 	if err != nil {
-		return nil, fmt.Errorf("working directory: %w", err)
+		return nil, err
+	}
+	stderr := g.stderr
+	if stderr == nil {
+		stderr = io.Discard
 	}
 	root, found := findRoot(wd), false
 	if _, ok := api.FindRoot(wd); ok {
@@ -63,7 +67,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		DryRun:    g.dryRun,
 		Now:       time.Now,
 		IDs:       id.Default(),
-		GitConfig: gitConfig,
+		GitConfig: func(key string) (string, error) { return gitConfig(wd, key) },
 		Version:   versionString(),
 		Commit:    commitString(getenv),
 		Stdin:     stdin,
@@ -71,7 +75,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Getenv:    getenv,
 		Exec:      execIn,
 		LookPath:  exec.LookPath,
-		Self:      selfPath(),
+		Self:      g.self,
 		Start:     startProgram,
 		Detach:    detachProgram,
 		Reap:      reapDrivers,
@@ -80,18 +84,18 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		// terminal runs in; Rex sets them in every shell it starts.
 		RexSession: getenv("REX_SESSION"),
 		RexBlock:   getenv("REX_BLOCK"),
-		Stderr:     os.Stderr,
+		Stderr:     stderr,
 		Interrupts: interrupts,
 	}
 	// A person at a terminal can answer a question: it is asked on
 	// standard error, so standard output keeps the response alone.
 	if isTerminal(stdin) {
-		ctx.Terminal = os.Stderr
+		ctx.Terminal = stderr
 	}
 	// Inside Rex, standard error is the terminal Rex shows: status
 	// reports written there become Rex's notifications.
 	if ctx.RexBlock != "" {
-		ctx.Rex = os.Stderr
+		ctx.Rex = stderr
 	}
 	ctx.Git = gitIn(ctx.Root)
 	ctx.Verdict = func(output string) api.FailureVerdict {
@@ -433,10 +437,31 @@ func selfPath() string {
 	return abs
 }
 
-// gitConfig returns the trimmed value of a git config key, or an error if
-// it is unset or empty.
-func gitConfig(key string) (string, error) {
-	out, err := exec.Command("git", "config", "--get", key).Output()
+// workingDir is the working directory run() was given: an absolute path to
+// an existing folder, or a "working directory" error.
+func workingDir(wd string) (string, error) {
+	if wd == "" {
+		return "", errors.New("working directory: unknown")
+	}
+	if !filepath.IsAbs(wd) {
+		return "", fmt.Errorf("working directory: %s is not absolute", wd)
+	}
+	fi, err := os.Stat(wd)
+	if err != nil {
+		return "", fmt.Errorf("working directory: %w", err)
+	}
+	if !fi.IsDir() {
+		return "", fmt.Errorf("working directory: %s is not a directory", wd)
+	}
+	return filepath.Clean(wd), nil
+}
+
+// gitConfig returns the trimmed value of a git config key, read in dir, or
+// an error if it is unset or empty.
+func gitConfig(dir, key string) (string, error) {
+	cmd := exec.Command("git", "config", "--get", key)
+	cmd.Dir = dir
+	out, err := cmd.Output()
 	v := strings.TrimSpace(string(out))
 	if err != nil || v == "" {
 		return "", fmt.Errorf("git config %s is not set", key)
