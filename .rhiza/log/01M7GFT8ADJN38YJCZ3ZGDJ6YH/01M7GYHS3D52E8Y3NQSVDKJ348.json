@@ -1,0 +1,40 @@
+{
+  "actor": "01M7GYE14E10K5K1EBM6FTYJKS",
+  "after": [
+    "01M7GXZWH7PWMQ7RA8MAHDZQ9R"
+  ],
+  "at": "2026-11-16T01:11:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 89905bae9 (capped scope): go test -trimpath -p 2 -count=1 ./internal/check exit 0; TestWhatIfOnceMatches/Listed (landed base, dependent A/B clean, stale op, duplicate handle, bad in-flight link, broken text ref, listed exactly) and /Once (stale op, bad link, broken ref each reported once on A, never on dependents B, C) pass; go test ./cmd/rhiza -run 'TestScripts/(check|check-.*|text-refs-.*)$' with RHIZA_/SHIP_/REX_ unset exit 0. Built base 6f8de2300 and this commit; in ~/code/rhiza, rhiza check text and --json output byte-identical (cmp), both exit 0. pprof -top -cum: base model.WhatIf 45.5% and model.asIs 24.8% under check.Run; after, model.WhatIf and model.ToBe are absent under check.Run (focus/show filter empty), model.WhatIfFrom 21.7%, model.asIs 0.47% called only from model.AsIsSeed (-peek), which check.go calls once in checker.model. Diff touches only internal/check/check.go, textrefs.go, whatif_test.go plus the builder's actor record and render; no TODOs."
+        },
+        "handle": "check-whatif-once-verified",
+        "id": "01M7GYHS1ESBYB698ZAZPHFAFY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GYHS1ESBYB698ZAZDF9GZ5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GYHS1ESBYB698ZAZDF9GZ5",
+        "id": "01M7GYHS2B6310RJB5W41XYM1A",
+        "link": "01M7GYHS2B6310RJB5W0HQY7TT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "id": "01M7GYHS3D52E8Y3NQSVDKJ348",
+  "type": "ops",
+  "v": 1
+}

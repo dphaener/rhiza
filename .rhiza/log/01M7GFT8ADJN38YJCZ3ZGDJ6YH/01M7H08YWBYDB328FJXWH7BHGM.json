@@ -1,0 +1,86 @@
+{
+  "actor": "01M7H03C9DZDTRY6JW4D4A298W",
+  "after": [
+    "01M7GZAZ70HJS1DKK9ZG5D30Y2"
+  ],
+  "at": "2026-11-16T01:41:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA built 3bcbde2fe to $TMPDIR/rhiza-x and main 5180b25eb to $TMPDIR/rhiza-main. On a scratch repo with a landed base, in-flight A (forged verifies link, forged dangling @{01ZZ...} text ref, ref to a since-retired node), B depends-on A and edits A's node, and C whose set on store is stale after a record retire, rhiza check reported the bad in-flight link, the broken text ref, the retired-ref warning and C's what-if conflict once each, exit 1; human and --json output were byte-identical to main, also under GOMAXPROCS=1. rhiza check --json on ~/code/rhiza (5180b25eb), on this worktree and on a fresh init repo (unrendered and rendered) were byte-identical to main."
+        },
+        "handle": "check-whatif-once-qa-1",
+        "id": "01M7H08YP6DS068H4FXD00KMAM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H08YP6DS068H4FX97XCH0D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H08YP6DS068H4FX97XCH0D",
+        "id": "01M7H08YQAKR05R3SDJH82016B",
+        "link": "01M7H08YQAKR05R3SDJH6TZXFR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA exercised AsIsSeed, ToBeFrom and WhatIfFrom through the built rhiza check (3bcbde2fe): on the scratch repo with dependent, stale and bad-link in-flight change sets and on ~/code/rhiza, every in-flight and to-be finding and the whole --json report matched main 5180b25eb (which uses ToBe and WhatIf) byte for byte, so the seed views gave the same models and problems."
+        },
+        "handle": "model-seed-views-qa-1",
+        "id": "01M7H08YRAM8NN4W5DHDS02WJV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H08YRAM8NN4W5DH9WKEHXE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H08YRAM8NN4W5DH9WKEHXE",
+        "id": "01M7H08YSA6905SSMZ08XMHTD0",
+        "link": "01M7H08YSA6905SSMZ05VYBPVW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA ran the built rhiza check (3bcbde2fe) on a scratch log with an unreadable entry (chmod 000), an entry that does not decode and an entry copied under a non-matching file name: each was one fail log finding in path order, with the fold findings after, and human and --json output under default GOMAXPROCS and GOMAXPROCS=1 were byte-identical to main 5180b25eb. On ~/code/rhiza, check --json matched main byte for byte; main took 14.14 s, the branch 7.46 s (6.80 s human, 11.09 s at GOMAXPROCS=1); the 5 s miss is ruled (check-time-gap-carried)."
+        },
+        "handle": "read-entries-parallel-qa-1",
+        "id": "01M7H08YTCFWCW4MM3FV2C337C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H08YTCFWCW4MM3FSPT7NWV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H08YTCFWCW4MM3FSPT7NWV",
+        "id": "01M7H08YVCXX71K1S5H7WYSFR6",
+        "link": "01M7H08YVCXX71K1S5H715RFNV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXTNFE5TRP176PWG9TATG",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "id": "01M7H08YWBYDB328FJXWH7BHGM",
+  "type": "ops",
+  "v": 1
+}

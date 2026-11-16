@@ -153,6 +153,16 @@ func WhatIfFrom(seed Seed, sets []changeset.ChangeSet, cs id.ID) (Model, []Probl
 	return whatIf(seed.builder(), sets, cs, false)
 }
 
+// ToBeFrom is ToBe over a seed: the as-is view is the seed instead of the
+// landed change sets of sets, and the accepted change sets of sets are
+// layered on a copy of it. It gives ToBe's result over the whole log whose
+// as-is view is the seed, and shares nothing with the seed.
+func ToBeFrom(seed Seed, sets []changeset.ChangeSet) (Model, []Problem) {
+	b := seed.builder()
+	layer(b, inState(sets, changeset.StateAccepted))
+	return b.finishModel(false)
+}
+
 // builder returns a builder holding a copy of the seed: the views built
 // from one seed never change it.
 func (s Seed) builder() *builder {

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7GXXYZBBVVT352JKEHJ8ZPP",
+  "after": [
+    "01M7GXQ5EH6CE7C6M553TGJCD2"
+  ],
+  "at": "2026-11-16T01:01:52Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 96cd07870: re-ran the Checks: block: capped go test -trimpath -p 2 -count=1 ./internal/model exit 0 (ok); rhiza ship generate exit 0 (0 changed); rhiza render exit 0 (only this verifier's own actor page written). go test -run TestAsIsSeedWhatIfFrom -v: rapid 100 tests passed, what-ifs 123, in-flight dependencies 13, skipped ops 273, duplicate handles 48 (non-vacuous). Diff: internal/model/seed.go adds ToBeFrom = seed.builder() (the existing copying builder, no second seed constructor) + layer(accepted) + finishModel(false), mirroring ToBe (asIs + layer(accepted) + finish); seed_test.go calls ToBeFrom on the shared seed before every WhatIfFrom, compares it with ToBe (model and problems via sameModel) only after all WhatIfFrom calls ran, and the existing fresh-AsIsSeed DeepEqual check of the seed still follows, so aliasing between ToBeFrom, the what-ifs and the seed would fail. Only seed.go, seed_test.go and the builder's actor record/render changed; no new rule, no existing function changed, no TODOs."
+        },
+        "handle": "model-seed-views-verified",
+        "id": "01M7GXZWCGPAJ7THF6GZYMM1C0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GXZWCGPAJ7THF6GYYW046B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GXZWCGPAJ7THF6GYYW046B",
+        "id": "01M7GXZWF2V79452GT9QK80E7E",
+        "link": "01M7GXZWF2V79452GT9N7XQYPC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "id": "01M7GXZWH7PWMQ7RA8MAHDZQ9R",
+  "type": "ops",
+  "v": 1
+}

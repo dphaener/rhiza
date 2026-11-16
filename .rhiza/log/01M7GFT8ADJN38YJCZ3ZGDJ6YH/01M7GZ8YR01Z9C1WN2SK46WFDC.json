@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "after": [
+    "01M7GZ7HB877YP1X8T866RWFF7"
+  ],
+  "at": "2026-11-16T01:24:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "read-entries-parallel's 5 s clause is unmet, not passed (Decision check-time-gap-carried): rhiza check went from 20.6 s at base to 7.3-11.7 s on the shared VM at load 2-3 (verifier 11.67 s wall, 16.25 s user + 4.14 s sys at e4d148ed5). The gap to 5 s is carried by draft change set 01M7GZ8K2B (Check within 5 s); the target stays as written."
+        },
+        "handle": "note-01m7gz8yn19y8w",
+        "id": "01M7GZ8YN19Y8WFB22FR9V9J5V",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GZ8YN19Y8WFB22FPDXPY0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GZ8YN19Y8WFB22FPDXPY0H",
+        "id": "01M7GZ8YPMCHT0MF8SF4JN7CX3",
+        "link": "01M7GZ8YPMCHT0MF8SF2E5HM3K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GZ8YR01Z9C1WN2SK46WFDC",
+  "type": "ops",
+  "v": 1
+}

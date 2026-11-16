@@ -29,6 +29,8 @@ Milestone 39 holds four change sets, in this order: a parity harness with intern
 - decided-by [milestone-39](../intent/milestone-39.md)
 - decided-by [projection-parity-property](../capability/rhiza/views/fast-reads/projection-parity-property.md)
 - decided-by [api-tests-on-index](../capability/rhiza/integrity/self-check/api-tests-on-index.md)
+- decided-by [check-whatif-once](../capability/rhiza/integrity/check/check-whatif-once.md)
+- decided-by [read-entries-parallel](../capability/rhiza/integrity/check/read-entries-parallel.md)
 
 ## History
 
