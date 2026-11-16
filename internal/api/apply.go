@@ -239,7 +239,7 @@ func buildApply(w *workspace, cs id.ID, ids *id.Generator, items []applyItem) (e
 	for i, it := range items {
 		e, err := it.build(writeBase{root: s.root, m: s.model(target), ops: ops, ids: ids, changeSet: s.resolveChangeSet, changeSets: s.changeSets})
 		if err == nil {
-			err = s.ix.failure()
+			err = s.projectionFailure()
 		}
 		if err == nil {
 			err = e.check(it.op)

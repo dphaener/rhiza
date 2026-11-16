@@ -568,6 +568,9 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	}
 	rc := *ctx
 	rc.ChangeSet = pend
+	// The dry write's disk read is kept; drop it so the count shows the
+	// reader goes through the log, not the index.
+	w.disk = nil
 	*folds = 0
 	var gotCS id.ID
 	var gotState changeset.State

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -135,5 +136,142 @@ func TestDaemonNotifyOverlapByTitle(t *testing.T) {
 		if strings.Contains(notices[0], cs) {
 			t.Errorf("notice %q names change set %s by ID", notices[0], cs)
 		}
+	}
+}
+
+// TestInboxIndexedReadsNoLog: an inbox with overlapping in-flight change
+// sets and a plan run stopped at its gate on a question reads the log zero
+// times with an index (the workspace's projection answers the states and
+// overlaps, the worktree's projection the question) and lists the same
+// items as over the log. A gate-stopped run whose worktree is gone keeps
+// its item, without its question's statement, and no error.
+//
+// Serial: it calls t.Setenv (XDG_CACHE_HOME, HOME) so the worktree's index
+// goes to a temp folder, process-wide state.
+func TestInboxIndexedReadsNoLog(t *testing.T) {
+	cache := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", cache)
+	t.Setenv("HOME", cache)
+	f := newDaemonFoldFix(t)
+	// Two in-flight change sets that both write done-0: an overlap. The
+	// second asks the question the plan run stops on.
+	var sets []string
+	for i := range 2 {
+		cs := f.call("change.new", fmt.Sprintf(`{"intent":"Rename %d"}`, i)).(ChangeNewResponse).ChangeSet
+		sets = append(sets, cs.String())
+		f.call("set", fmt.Sprintf(`{"ref":"done-0","fields":["statement=Done %d"]}`, i))
+		if i == 1 {
+			f.call("add", `{"kind":"question","handle":"gate-ask","fields":["statement=Which name wins?"]}`)
+		}
+		f.call("propose", `{}`)
+	}
+	at := time.Date(2026, 11, 10, 1, 0, 0, 0, time.UTC)
+	gated := func(rid, worktree string) {
+		t.Helper()
+		es := []run.Entry{
+			{Type: run.TypeStarted, At: at, Started: &run.Started{Workflow: "plan", Change: sets[1], Worktree: worktree, Plan: true}},
+			{Type: run.TypeEntered, At: at.Add(time.Second), Step: "gate", Visit: 1},
+			{Type: run.TypeGated, At: at.Add(2 * time.Second), Changes: []string{sets[1]}},
+			{Type: run.TypeStopped, At: at.Add(3 * time.Second), Step: "gate", Detail: run.OpenStop + "gate-ask; answer each with a Decision, then rhiza run resume " + rid},
+		}
+		if err := f.rs.Create(rid, es[0]); err != nil {
+			t.Fatal(err)
+		}
+		for _, e := range es[1:] {
+			if err := f.rs.Append(rid, e); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	gated("RGATE", f.ctx.Root)
+	gated("RGONE", filepath.Join(t.TempDir(), "gone"))
+	inbox := func(ctx *Ctx) InboxResponse {
+		t.Helper()
+		resp, err := callOp(t, ctx, "inbox", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(InboxResponse)
+	}
+	inbox(f.ctx) // catch both indexes up with the log
+
+	f.logReads = 0
+	resp := inbox(f.ctx)
+	if f.logReads != 0 {
+		t.Errorf("inbox with an index read the log %d times, want 0", f.logReads)
+	}
+	// The log side: no index on purpose, to compare against the indexed
+	// inbox. The inbox op itself needs an index (its reader), so its
+	// overlaps, titles and gate questions are read over the log directly.
+	folded := *f.ctx
+	folded.IndexPath = ""
+	byLog := newInboxFold(&folded)
+	defer byLog.close()
+	f.logReads = 0
+	ol, err := byLog.overlaps()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.logReads != 1 {
+		t.Errorf("the log fold read the log %d times, want 1", f.logReads)
+	}
+	var oi []InboxItem
+	for _, it := range resp.Items {
+		if it.Kind == InboxOverlap {
+			// The inbox titles the overlap's change sets after the fold;
+			// the titles are compared below.
+			if it.OtherTitle != byLog.titleOf(it.Other) {
+				t.Errorf("overlap %s: other title %q over the index, %q over the log", it.ID, it.OtherTitle, byLog.titleOf(it.Other))
+			}
+			it.ChangeTitle, it.OtherTitle = "", ""
+			oi = append(oi, it)
+		}
+	}
+	if !reflect.DeepEqual(oi, ol) || len(oi) != 1 {
+		t.Errorf("overlaps: index %+v, log %+v", oi, ol)
+	}
+	for _, it := range resp.Items {
+		if it.Change == "" {
+			continue
+		}
+		if s, _ := byLog.stateOf(it.Change); it.Kind == InboxOpen && s != "proposed" {
+			t.Errorf("item %s: change set %s is %q over the log, want proposed", it.ID, it.Change, s)
+		}
+		if it.ChangeTitle != "" && it.ChangeTitle != byLog.titleOf(it.Change) {
+			t.Errorf("item %s: title %q over the index, %q over the log", it.ID, it.ChangeTitle, byLog.titleOf(it.Change))
+		}
+	}
+	for _, rid := range []string{"RGATE", "RGONE"} {
+		j, err := f.rs.Read(rid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := inboxGateQuestions(&folded, j.State())
+		var got []InboxGateQuestion
+		for _, it := range resp.Items {
+			if it.Kind == InboxOpen && it.Run == rid {
+				got = it.Questions
+			}
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("%s questions: inbox over the index %+v, over the log %+v", rid, got, want)
+		}
+	}
+	kinds := map[string]int{}
+	questions := map[string][]InboxGateQuestion{}
+	for _, it := range resp.Items {
+		kinds[it.Kind]++
+		if it.Kind == InboxOpen {
+			questions[it.Run] = it.Questions
+		}
+	}
+	if kinds[InboxOverlap] != 1 {
+		t.Errorf("got kinds %v, want one overlap", kinds)
+	}
+	if q := questions["RGATE"]; len(q) != 1 || q[0].Handle != "gate-ask" || q[0].Statement != "Which name wins?" {
+		t.Errorf("RGATE questions = %+v, want gate-ask with its statement", q)
+	}
+	if q, ok := questions["RGONE"]; !ok || len(q) != 1 || q[0].Handle != "gate-ask" || q[0].Statement != "" {
+		t.Errorf("RGONE questions = %+v (listed %v), want gate-ask without a statement", q, ok)
 	}
 }

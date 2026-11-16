@@ -24,7 +24,7 @@ import (
 )
 
 // This file is the projection parity harness: on drawn logs, the interim
-// model (newModel), the index's write model (writeIndex.model) and a fresh
+// model (newModel), the projection (projection.go) and a fresh
 // strict fold (changeset.FoldLog, then internal/model's AsIs, or WhatIf for
 // an in-flight change set) must give the same write views. The strict
 // engine is the spec.
@@ -289,11 +289,11 @@ func interimView(p parityLog, cs id.ID) parityView {
 	return v
 }
 
-// indexView is the index's write model of cs, every node and link the
-// drawn logs can hold queried by ID.
-func indexView(t *rapid.T, ix *writeIndex, pending []entry.Entry, cs id.ID) parityView {
-	m := ix.model(&workspace{pending: pending}, cs).(*writeModel)
-	if err := ix.failure(); err != nil {
+// indexView is the projection's view of cs, every node and link the drawn
+// logs can hold queried by ID.
+func indexView(t *rapid.T, p projection, pending []entry.Entry, cs id.ID) parityView {
+	m := p.model(pending, cs).(*writeModel)
+	if err := p.failure(); err != nil {
 		t.Fatalf("index model of %s: %v", viewName(cs), err)
 	}
 	v := parityView{nodes: map[id.ID]Node{}, links: map[id.ID]Link{}}
@@ -433,7 +433,7 @@ func twoLandedHeads(sets []changeset.ChangeSet) bool {
 // checkParity compares the three sides on every view of p: as-is and each
 // change set's write view, and, when p has pending entries, only the write
 // view of their change set.
-func checkParity(t *rapid.T, ix *writeIndex, p parityLog, c *parityCounts) {
+func checkParity(t *rapid.T, ix projection, p parityLog, c *parityCounts) {
 	views := []id.ID{{}}
 	for _, s := range p.sets {
 		views = append(views, s.ID)
@@ -496,7 +496,7 @@ func TestPropertyProjectionParity(t *testing.T) {
 		if err != nil {
 			t.Fatalf("index.Open: %v", err)
 		}
-		ix := &writeIndex{ctx: ctx, x: x}
+		var ix projection = &writeIndex{ctx: ctx, x: x}
 		defer ix.close()
 
 		rebuilt, heads := false, false

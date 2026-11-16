@@ -17,6 +17,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
@@ -655,21 +656,26 @@ type ChangeSetSummary struct {
 	Current bool            `json:"current" desc:"Whether it is the current change set"`
 }
 
-// runChangeLs folds the whole log. Log and fold problems are listed beside
-// the change sets, never hidden.
+// runChangeLs lists every change set with the log and fold problems,
+// listed beside the change sets, never hidden. With an index they are the
+// projection's folded change sets and stored problems, and the log is not
+// read; without one the whole log is folded.
 func runChangeLs(ctx *Ctx, _ any) (any, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
 	}
+	w.useProjection(ctx)
+	defer w.closeProjection()
 	current, err := w.current()
 	if err != nil {
 		return nil, err
 	}
-	l := w.log()
-	sets, problems := changeset.FoldLog(l)
-	resp := ChangeLsResponse{ChangeSets: []ChangeSetSummary{}, Problems: logProblems(l.Problems)}
-	resp.Problems = append(resp.Problems, foldProblems(problems)...)
+	sets, problems, err := changeLsSets(w)
+	if err != nil {
+		return nil, err
+	}
+	resp := ChangeLsResponse{ChangeSets: []ChangeSetSummary{}, Problems: problems}
 	for _, c := range sets {
 		resp.ChangeSets = append(resp.ChangeSets, ChangeSetSummary{
 			ID: c.ID, Kind: c.Open.Kind, State: c.State, Intent: c.Open.Intent, Title: c.Open.DisplayTitle(),
@@ -677,6 +683,43 @@ func runChangeLs(ctx *Ctx, _ any) (any, error) {
 		})
 	}
 	return resp, nil
+}
+
+// changeLsSets is every change set, folded, with the log problems then the
+// fold problems rendered: from the projection's stored folds and problems
+// when w has an index, else from folding the log.
+func changeLsSets(w *workspace) ([]changeset.ChangeSet, []string, error) {
+	if p := w.projection(); p != nil {
+		sets := p.changeSets(w.pending)
+		stored := p.problems()
+		if err := p.failure(); err != nil {
+			return nil, nil, err
+		}
+		return sets, storedLogFoldProblems(stored), nil
+	}
+	l := w.log()
+	sets, problems := changeset.FoldLog(l)
+	return sets, append(logProblems(l.Problems), foldProblems(problems)...), nil
+}
+
+// storedLogFoldProblems renders the index's stored log and fold problems as
+// logProblems and foldProblems render them, log first; the as-is and to-be
+// problems are left out.
+func storedLogFoldProblems(ps []index.Problem) []string {
+	logs, folds := []string{}, []string{}
+	for _, p := range ps {
+		switch p.Source {
+		case "log":
+			logs = append(logs, fmt.Sprintf("log: %s: %s", p.Path, p.Message))
+		case "fold":
+			where := p.ChangeSet.String()
+			if !p.Entry.IsZero() {
+				where += "/" + p.Entry.String()
+			}
+			folds = append(folds, fmt.Sprintf("fold: %s: %s", where, p.Message))
+		}
+	}
+	return append(logs, folds...)
 }
 
 // Human lists the change sets, one per line, then any problems.

@@ -10,6 +10,7 @@ package api
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -186,22 +187,18 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	if err != nil {
 		return nil, err
 	}
-	if ctx.IndexPath != "" {
-		if w.ix, err = openWriteIndex(ctx); err != nil {
-			return nil, err
-		}
-		defer w.ix.close()
-	}
+	w.useProjection(ctx)
+	defer w.closeProjection()
 	var cs id.ID
 	if !ctx.Record {
 		if cs, err = writeTarget(w, ctx); err != nil {
-			return nil, err
+			return nil, cmp.Or(w.projectionFailure(), err)
 		}
 	}
 	buildEdit := func() (edit, error) {
 		e, err := build(w, cs)
 		if err == nil {
-			err = w.ix.failure()
+			err = w.projectionFailure()
 		}
 		if err != nil {
 			return edit{}, err
@@ -215,7 +212,7 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	before := w.written
 	actor, forID, err := w.resolveActor(cs, ctx)
 	if err != nil {
-		return nil, err
+		return nil, cmp.Or(w.projectionFailure(), err)
 	}
 	if w.written != before {
 		if e, err = buildEdit(); err != nil {

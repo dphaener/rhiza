@@ -69,6 +69,9 @@ type daemonFoldCache struct {
 	stamp  string
 	folded *daemonFolded
 	pick   daemonPickMemo
+	// folds counts the folds taken; tests read it to see a poll reuse the
+	// cache or fold again.
+	folds int
 }
 
 // daemonPickMemo is the last pick, with the fold and the inputs it was made
@@ -174,6 +177,7 @@ func daemonFoldOf(ctx *Ctx) (*daemonFolded, error) {
 		return c.folded, nil
 	}
 	c.invalidate()
+	c.folds++
 	f, err := daemonFold(ctx)
 	if err != nil {
 		return nil, err
@@ -184,7 +188,10 @@ func daemonFoldOf(ctx *Ctx) (*daemonFolded, error) {
 	return f, nil
 }
 
-// daemonFold folds the log and derives what the poll passes need of it.
+// daemonFold folds the change sets and derives what the poll passes need of
+// them. With an index (ctx.IndexPath) the change sets and the models come
+// from the workspace's projection, and the log is not read; without one the
+// log is folded once and the models are built over the folded list.
 func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
@@ -194,8 +201,32 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	if err != nil {
 		return nil, err
 	}
-	l := ws.log()
-	list, _ := changeset.FoldLog(l)
+	var list []changeset.ChangeSet
+	var view func(cs id.ID) Model
+	ws.useProjection(ctx)
+	defer ws.closeProjection()
+	p := ws.projection()
+	if p != nil {
+		list = p.changeSets(ws.pending)
+		view = func(cs id.ID) Model { return p.model(ws.pending, cs) }
+	} else {
+		list, _ = changeset.FoldLog(ws.log())
+		// One as-is view for every candidate's model.
+		view = newModelBase(list).model
+	}
+	f := daemonDerive(ctx, res, list, view)
+	if p != nil {
+		if err := p.failure(); err != nil {
+			return nil, Errorf("%s", err.Error())
+		}
+	}
+	return f, nil
+}
+
+// daemonDerive is what the poll passes need of the plan res and the folded
+// change sets list, view giving the model of a change set (zero for
+// as-is).
+func daemonDerive(ctx *Ctx, res planResult, list []changeset.ChangeSet, view func(cs id.ID) Model) *daemonFolded {
 	f := &daemonFolded{res: res, sets: make(map[id.ID]changeset.ChangeSet, len(list))}
 	for _, c := range list {
 		f.sets[c.ID] = c
@@ -210,18 +241,16 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 		c, ok := f.sets[cs]
 		return ok && changeConducts(ctx.Root, c.Open)
 	}
-	// One as-is view for every candidate's model.
-	base := newModelBase(list)
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]
-		return ok && len(changeLeaves(base.model(cs), c.Ops)) > 0
+		return ok && len(changeLeaves(view(cs), c.Ops)) > 0
 	}, sched)
 	for _, c := range list {
-		if c.State == changeset.StateProposed && len(changeLeaves(base.model(c.ID), c.Ops)) > 0 {
+		if c.State == changeset.StateProposed && len(changeLeaves(view(c.ID), c.Ops)) > 0 {
 			f.proposed = append(f.proposed, c.ID.String())
 		}
 	}
-	m0 := base.model(id.ID{})
+	m0 := view(id.ID{})
 	if ovs := gmodel.Overlaps(list); len(ovs) > 0 {
 		f.overlaps = overlapItems(ovs, m0)
 	}
@@ -238,7 +267,7 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 		}
 	}
 	slices.SortFunc(f.moves, func(a, b daemonMove) int { return id.Compare(a.id, b.id) })
-	return f, nil
+	return f
 }
 
 // acceptedSince is when change set c was last accepted or reopened.

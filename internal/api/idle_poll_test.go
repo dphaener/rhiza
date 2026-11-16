@@ -17,14 +17,15 @@ import (
 // 0.05 core at the 5 s poll is 250 ms; the budget is well inside that.
 const idleBudget = 100 * time.Millisecond
 
-// idleCounts is what a poll did: log reads (both projects), plan reads, the
-// change sets folded, the picks computed and the transcript files read.
-type idleCounts struct{ logReads, planReads, folds, picks, transcripts int64 }
+// idleCounts is what a poll did: the daemon folds taken (both projects' fold
+// caches; a poll reads the projection, not the log), plan reads, the change
+// sets folded, the picks computed and the transcript files read.
+type idleCounts struct{ daemonFolds, planReads, folds, picks, transcripts int64 }
 
 func (f *idleFix) counts() idleCounts {
 	_, reads := claudecode.UsageScanStats()
 	return idleCounts{
-		logReads:    int64(f.home.logReads + f.other.logReads),
+		daemonFolds: int64(f.home.folds() + f.other.folds()),
 		planReads:   planReadCount.Load(),
 		folds:       planFoldCount.Load(),
 		picks:       daemonPickCount.Load(),
@@ -33,7 +34,7 @@ func (f *idleFix) counts() idleCounts {
 }
 
 func (c idleCounts) minus(o idleCounts) idleCounts {
-	return idleCounts{c.logReads - o.logReads, c.planReads - o.planReads, c.folds - o.folds, c.picks - o.picks, c.transcripts - o.transcripts}
+	return idleCounts{c.daemonFolds - o.daemonFolds, c.planReads - o.planReads, c.folds - o.folds, c.picks - o.picks, c.transcripts - o.transcripts}
 }
 
 // settle makes the log's folders old news again, so their stamp is trusted.
@@ -58,7 +59,7 @@ func TestRootIdlePoll(t *testing.T) {
 	f := newIdleFix(t)
 	f.rootPoll(t)
 	first := f.counts()
-	if first.logReads == 0 || first.planReads == 0 || first.picks == 0 {
+	if first.daemonFolds == 0 || first.planReads == 0 || first.picks == 0 {
 		t.Fatalf("first poll did no work: %+v", first)
 	}
 	f.rootPoll(t)
@@ -80,20 +81,20 @@ func TestRootIdlePoll(t *testing.T) {
 			f.home.call("change.new", fmt.Sprintf(`{"intent":"Fresh %d"}`, step))
 			f.settle(t)
 		}, func(d idleCounts) string {
-			if d.logReads == 0 || d.planReads == 0 || d.picks == 0 {
-				return "want a log read, a plan read and a pick"
+			if d.daemonFolds == 0 || d.planReads == 0 || d.picks == 0 {
+				return "want a daemon fold, a plan read and a pick"
 			}
 			return ""
 		}},
 		{"ref move", func() { f.other.refs = fmt.Sprintf("%040d refs/heads/main\n", step) }, func(d idleCounts) string {
-			if d.logReads == 0 || d.planReads == 0 || d.picks == 0 {
-				return "want a log read, a plan read and a pick"
+			if d.daemonFolds == 0 || d.planReads == 0 || d.picks == 0 {
+				return "want a daemon fold, a plan read and a pick"
 			}
 			return ""
 		}},
 		{"setting", func() { f.home.config["rhiza.maxRuns"] = fmt.Sprint(step) }, func(d idleCounts) string {
-			if d.logReads == 0 || d.planReads == 0 || d.picks == 0 {
-				return "want a log read, a plan read and a pick"
+			if d.daemonFolds == 0 || d.planReads == 0 || d.picks == 0 {
+				return "want a daemon fold, a plan read and a pick"
 			}
 			return ""
 		}},

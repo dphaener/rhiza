@@ -1,0 +1,224 @@
+{
+  "actor": "01M7H9EFFA03T85SEPC7TGV97C",
+  "after": [
+    "01M7H8DBV2SFDJ56ZMX8K469E4"
+  ],
+  "at": "2026-11-16T04:26:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). In a scratch repo, apply --dry-run of four chained writes (add sso, add question, link to sso, set sso) gave the same output as base (IDs aside) and wrote nothing; the real apply then showed sso in slice and show. A garbage index file was rebuilt and status, change ls and render answered as before; an unopenable cache dir gives 'open index: ... permission denied' instead of a silent fold, as the leaf requires."
+        },
+        "handle": "projection-interface-qa-1",
+        "id": "01M7H9P7TZ486T22AZ73KXJXT2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P7TZ486T22AZ72Y0JXJH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P7TZ486T22AZ72Y0JXJH",
+        "id": "01M7H9P7WBBB7ECQE6GRXYRNG6",
+        "link": "01M7H9P7WBBB7ECQE6GQV6XZER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). Every read op (status, inbox, change ls, slice, change show, overlaps) with an empty IndexPath (no HOME/XDG_CACHE_HOME) gave the same bytes as with the index, in a clean log, with a damaged entry plus junk.json, and after a folder vanished; the chained dry run saw its earlier pending writes."
+        },
+        "handle": "workspace-log-once-qa-1",
+        "id": "01M7H9P7XMVJ0KVJAKN4WP4H0Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P7XMVJ0KVJAKN3W5VXX7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P7XMVJ0KVJAKN3W5VXX7",
+        "id": "01M7H9P7Z3JSR75C24ARN1RM97",
+        "link": "01M7H9P7Z3JSR75C24AN1WX0NZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101RT64ATZVGM94276F58",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). rhiza render (as-is) over the index in a scratch repo with a landed evidence node, a retired constraint and a retired link endpoint wrote files byte-identical to base's render and to the no-index render; slice and status in the main checkout matched base."
+        },
+        "handle": "index-as-is-model-qa-1",
+        "id": "01M7H9P80GSW3TAMJM3WAYA8FP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P80GSW3TAMJM3RHK1PEZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P80GSW3TAMJM3RHK1PEZ",
+        "id": "01M7H9P820D96QRAR1JENDBTFY",
+        "link": "01M7H9P81Z37QFDQZ532JET303",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101ZYJWDMD0XH748H3H6C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). Scratch repo: render byte-identical to base 03b972942's and to the no-index path (diff -r), incl. evidence/logout-ev.md and 'constrains fast (retired)'; with an undecodable entry both refuse with the same 'damaged log, nothing rendered' error, exit 1; after a corrupt index, render reported 5 unchanged."
+        },
+        "handle": "render-from-projection-qa-1",
+        "id": "01M7H9P8400K9J09VB9RVSGQ13",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P8400K9J09VB9P87ZZC6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P8400K9J09VB9P87ZZC6",
+        "id": "01M7H9P85KMCYJQ244AH9JN703",
+        "link": "01M7H9P85KMCYJQ244ADKEW63D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). status, status --json and status --hook byte-identical to base in /home/rhiza/code/rhiza and in a scratch repo (clean, damaged log, vanished folder, no index). Warm in the main checkout: status 0.06 s (base 2.01 s), within 200 ms. --hook outside a repo: silent, exit 0; with an unopenable index: exit 0."
+        },
+        "handle": "status-from-projection-qa-1",
+        "id": "01M7H9P876YPC3SZRCHEGA6C45",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P876YPC3SZRCHDHZBZEE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P876YPC3SZRCHDHZBZEE",
+        "id": "01M7H9P88RAM2W2DX7BSB66GX3",
+        "link": "01M7H9P88RAM2W2DX7BPQPVHN4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY0KNAMKMJK1MHE68E99",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). inbox and inbox --json byte-identical to base in /home/rhiza/code/rhiza and in a scratch root project with a failed run and overlapping in-flight change sets; with that run's change set folder deleted the item still lists, no error. Warm inbox in the main checkout 0.57 s (base 0.57 s; no target)."
+        },
+        "handle": "inbox-from-projection-qa-1",
+        "id": "01M7H9P8A8D18666F237EZCZEG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P8A8D18666F236KSF45P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P8A8D18666F236KSF45P",
+        "id": "01M7H9P8BP0VCD4C38F251TVA7",
+        "link": "01M7H9P8BP0VCD4C38EZQFAD0X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY2VQJHCVC83XPQFR2EA",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). change ls and --json byte-identical to base in /home/rhiza/code/rhiza (6864 / 54880 lines) and in a scratch repo with a junk.json and an undecodable entry (both problems listed); after rm -rf of a draft change set's folder the warm index lists the rest with no stale one, same as base."
+        },
+        "handle": "change-reads-from-projection-qa-1",
+        "id": "01M7H9P8D4JAPYBNY9MT946Y7Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P8D4JAPYBNY9MQYW2FAH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P8D4JAPYBNY9MQYW2FAH",
+        "id": "01M7H9P8EPAZ55Z2VP4GFK36KC",
+        "link": "01M7H9P8EPAZ55Z2VP4DY4PSWY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY75HKKZF3E9JKJBT985",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). rhiza daemon --once in two scratch roots (base and HEAD) over a log with a proposed change set with a leaf, one without and two overlapping drafts: same output, both picked 'Proposed with leaf' for plan-review and skipped the leafless one; daemon status --json identical."
+        },
+        "handle": "daemon-fold-from-projection-qa-1",
+        "id": "01M7H9P8GEWEV8ZBRAQFCG66H5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P8GEWEV8ZBRAQE7WTN4Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P8GEWEV8ZBRAQE7WTN4Q",
+        "id": "01M7H9P8HR7S5TED07VNP4M8DZ",
+        "link": "01M7H9P8HR7S5TED07VM244YYN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scratch builds of HEAD 9f005fded and of base 03b972942 (go build -trimpath, capped scope). slice, slice --json, change show and --json byte-identical to base in /home/rhiza/code/rhiza (780 / 1266 lines for the current change set) and in a scratch repo (what-if with an in-flight overlap, after a vanished folder: 'no change set' as base). slice outside a repo: not_found, next rhiza init; change show with none current: the same usage error, exit 2."
+        },
+        "handle": "slice-and-show-from-projection-qa-1",
+        "id": "01M7H9P8K9H0N3WWBD6FH4FAWX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H9P8K9H0N3WWBD6D14MHHP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H9P8K9H0N3WWBD6D14MHHP",
+        "id": "01M7H9P8MXQ802EP33XASFW1WN",
+        "link": "01M7H9P8MXQ802EP33X8TAN9C2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1E0YWEKQ7YB02B4KH9WSH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H9P8PJ17HJHHZBN7H54ZS6",
+  "type": "ops",
+  "v": 1
+}

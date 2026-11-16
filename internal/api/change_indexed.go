@@ -37,7 +37,7 @@ func newIndexModel(x *index.Index, cs id.ID, state changeset.State) (*indexModel
 	m := &indexModel{x: x}
 	if inFlightState(state) {
 		ix := &writeIndex{x: x}
-		wm := ix.buildModel(&workspace{}, cs).(*writeModel)
+		wm := ix.buildModel(nil, cs).(*writeModel)
 		if err := ix.failure(); err != nil {
 			return nil, err
 		}
@@ -212,20 +212,24 @@ func (m *indexModel) rank(leaves []Node) map[id.ID]int {
 	return rank
 }
 
-// runChangeShowIndexed is runChangeShow over the index.
+// runChangeShowIndexed is runChangeShow over the index, read through w's
+// projection: its change sets and the change set's entries, and its open
+// index for the view, the diff and the notes.
 func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, error) {
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
-	if err != nil {
-		return nil, Errorf("%s", err.Error())
+	w.useProjection(ctx)
+	defer w.closeProjection()
+	p := w.projection()
+	x := p.store()
+	if x == nil {
+		return nil, p.failure()
 	}
-	defer x.Close()
 	current, err := w.current()
 	if err != nil {
 		return nil, err
 	}
-	infos, err := x.ChangeSets()
-	if err != nil {
-		return nil, Errorf("%s", err.Error())
+	infos := p.changeSetInfos(nil)
+	if err := p.failure(); err != nil {
+		return nil, err
 	}
 	var cs id.ID
 	if ref := strings.TrimSpace(r.Ref); ref != "" {
@@ -239,9 +243,9 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 	if cs.IsZero() {
 		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
 	}
-	es, err := x.Entries(cs)
-	if err != nil {
-		return nil, Errorf("%s", err.Error())
+	es := p.entries(nil, cs)
+	if err := p.failure(); err != nil {
+		return nil, err
 	}
 	if len(es) == 0 {
 		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)

@@ -96,9 +96,12 @@ type workspace struct {
 	// readLog reads the log from disk; nil means st.ReadLog. A test sets it
 	// through Ctx to count the folds a read costs.
 	readLog func() store.Log
-	// ix is the index a write validates against, nil when it reads the
-	// log. See write_indexed.go.
-	ix *writeIndex
+	// disk is the log's disk read, kept from the first log call until a
+	// write to disk drops it; nil before that call.
+	disk *store.Log
+	// proj is the projection the reads go through, opened on first use;
+	// nil when they read the log. See projection.go.
+	proj *projectionSlot
 	// written counts the entries written to disk.
 	written int
 	// mirror copies each entry written to disk into the worktree of its
@@ -146,9 +149,18 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 	return w, nil
 }
 
-// log reads the log, plus the entries a dry run has built so far.
+// log reads the log, plus the entries a dry run has built so far. The disk
+// is read once, on the first call, and kept until a write to disk; each
+// call gets its own copy of the slices, with the pending entries laid on.
 func (w *workspace) log() store.Log {
-	l := w.diskLog()
+	if w.disk == nil {
+		d := w.diskLog()
+		w.disk = &d
+	}
+	l := store.Log{
+		Entries:  slices.Clone(w.disk.Entries),
+		Problems: slices.Clone(w.disk.Problems),
+	}
 	if len(w.pending) > 0 {
 		l.Entries = append(l.Entries, w.pending...)
 		slices.SortFunc(l.Entries, func(a, b entry.Entry) int {
@@ -162,8 +174,8 @@ func (w *workspace) log() store.Log {
 // change set (zero for none), or, in a write over the index, the view of
 // the index.
 func (w *workspace) model(current id.ID) Model {
-	if w.ix != nil {
-		return w.ix.model(w, current)
+	if p := w.projection(); p != nil {
+		return p.model(w.pending, current)
 	}
 	return newModel(w.log(), current)
 }
@@ -172,8 +184,8 @@ func (w *workspace) model(current id.ID) Model {
 // index's and the dry run's pending ones in a write over the index, else
 // the log's.
 func (w *workspace) entriesOfSet(cs id.ID) []entry.Entry {
-	if w.ix != nil {
-		return w.ix.entries(w, cs)
+	if p := w.projection(); p != nil {
+		return p.entries(w.pending, cs)
 	}
 	return entriesOf(w.log(), cs)
 }
@@ -202,8 +214,8 @@ func (w *workspace) changeSet(cs id.ID) (changeset.ChangeSet, bool) {
 
 // changeSets folds every change set in the log.
 func (w *workspace) changeSets() []changeset.ChangeSet {
-	if w.ix != nil {
-		return w.ix.changeSets(w)
+	if p := w.projection(); p != nil {
+		return p.changeSets(w.pending)
 	}
 	sets, _ := changeset.FoldLog(w.log())
 	return sets
@@ -283,8 +295,8 @@ const minPrefix = 4
 // of 4+ characters (any case), over the change sets in the log. No match is
 // not_found; several are a usage error listing them.
 func (w *workspace) resolveChangeSet(ref string) (id.ID, error) {
-	if w.ix != nil {
-		return matchChangeSet(w.ix.setIDs(w), ref)
+	if p := w.projection(); p != nil {
+		return matchChangeSet(p.changeSetIDs(w.pending), ref)
 	}
 	var sets []id.ID
 	for _, e := range w.log().Entries {
@@ -421,12 +433,13 @@ func (w *workspace) writeEntry(e entry.Entry) error {
 		w.pending = append(w.pending, e)
 		return nil
 	}
+	w.disk = nil
 	if err := w.st.Write(e); err != nil {
 		return Errorf("%s", err.Error())
 	}
 	w.written++
-	if w.ix != nil {
-		w.ix.stale = true
+	if w.proj != nil && w.proj.p != nil {
+		w.proj.p.wrote()
 	}
 	if w.mirror != nil {
 		if err := w.mirror(e); err != nil {

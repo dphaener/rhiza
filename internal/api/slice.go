@@ -7,9 +7,11 @@ package api
 // A fresh read stays fast by never reading the log through the store: the
 // workspace is opened only to check the repository and read the current
 // change set file, and everything else comes from the index, whose open
-// catches up with the log from the folder listing. Change set refs resolve
-// over index.ChangeSets() by the workspace's rules (matchChangeSet), and
-// the change sets are folded from index.Entries. Only what-if reads the
+// catches up with the log from the folder listing. With ctx.IndexPath set
+// the index is the workspace's projection's; with it empty, openIndex
+// opens the default path's. Change set refs resolve over the index's
+// change sets by the workspace's rules (matchChangeSet), and the change
+// sets are folded from their entries in the index. Only what-if reads the
 // whole log, refolded by index.WhatIf.
 //
 // The response is the slice's JSON document field for field, so --json
@@ -26,6 +28,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
+	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
@@ -137,15 +140,16 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	x, err := openIndex(ctx.Root)
+	src, err := openSliceSource(ctx, w)
 	if err != nil {
 		return nil, err
 	}
-	defer x.Close()
+	defer src.close()
+	x := src.x
 
-	infos, err := x.ChangeSets()
+	infos, err := src.changeSets()
 	if err != nil {
-		return nil, Errorf("read change sets: %v", err)
+		return nil, err
 	}
 	all := make([]id.ID, len(infos))
 	for i, c := range infos {
@@ -157,7 +161,7 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 	}
 	var change *changeset.ChangeSet
 	if !csID.IsZero() {
-		cs, err := foldIndexed(x, csID)
+		cs, err := src.fold(csID)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +174,7 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 	for _, c := range infos {
 		switch c.State {
 		case changeset.StateDraft, changeset.StateProposed, changeset.StateAccepted:
-			cs, err := foldIndexed(x, c.ID)
+			cs, err := src.fold(c.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -252,11 +256,73 @@ func sliceChangeSet(ctx *Ctx, w *workspace, sets []id.ID) (id.ID, error) {
 	return w.current()
 }
 
-// foldIndexed folds change set cs from its entries in the index.
-func foldIndexed(x *index.Index, cs id.ID) (changeset.ChangeSet, error) {
-	es, err := x.Entries(cs)
+// sliceSource is the index slice reads: the workspace's projection when
+// ctx.IndexPath is set, else the index of the default path that openIndex
+// opens.
+type sliceSource struct {
+	x *index.Index
+	p projection
+	w *workspace
+}
+
+// openSliceSource opens the index slice reads through w's projection, or
+// by openIndex when ctx.IndexPath is empty. The caller closes it.
+func openSliceSource(ctx *Ctx, w *workspace) (sliceSource, error) {
+	if ctx.IndexPath == "" {
+		x, err := openIndex(ctx.Root)
+		if err != nil {
+			return sliceSource{}, err
+		}
+		return sliceSource{x: x}, nil
+	}
+	w.useProjection(ctx)
+	p := w.projection()
+	x := p.store()
+	if x == nil {
+		err := p.failure()
+		w.closeProjection()
+		return sliceSource{}, err
+	}
+	return sliceSource{x: x, p: p, w: w}, nil
+}
+
+func (s sliceSource) close() {
+	if s.w != nil {
+		s.w.closeProjection()
+		return
+	}
+	s.x.Close()
+}
+
+// changeSets is every change set's ID and state, sorted by ID.
+func (s sliceSource) changeSets() ([]index.ChangeSetInfo, error) {
+	if s.p != nil {
+		infos := s.p.changeSetInfos(nil)
+		if err := s.p.failure(); err != nil {
+			return nil, Errorf("read change sets: %v", err)
+		}
+		return infos, nil
+	}
+	infos, err := s.x.ChangeSets()
 	if err != nil {
-		return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
+		return nil, Errorf("read change sets: %v", err)
+	}
+	return infos, nil
+}
+
+// fold folds change set cs from its entries in the index.
+func (s sliceSource) fold(cs id.ID) (changeset.ChangeSet, error) {
+	var es []entry.Entry
+	if s.p != nil {
+		es = s.p.entries(nil, cs)
+		if err := s.p.failure(); err != nil {
+			return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
+		}
+	} else {
+		var err error
+		if es, err = s.x.Entries(cs); err != nil {
+			return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
+		}
 	}
 	c, _ := changeset.Fold(cs, es)
 	return c, nil

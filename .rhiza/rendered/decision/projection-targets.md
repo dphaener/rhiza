@@ -28,6 +28,8 @@ Milestone 39's own targets are rhiza status and rhiza inbox within 200 ms warm a
 - decided-by [m39-one-read-path](../intent/milestone-39/m39-one-read-path.md)
 - decided-by [m39-nothing-lost](../intent/milestone-39/m39-nothing-lost.md)
 - decided-by [read-entries-parallel](../capability/rhiza/integrity/check/read-entries-parallel.md)
+- decided-by [status-from-projection](../capability/rhiza/views/fast-reads/status-from-projection.md)
+- decided-by [inbox-from-projection](../capability/rhiza/views/fast-reads/inbox-from-projection.md)
 
 ## History
 

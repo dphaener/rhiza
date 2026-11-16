@@ -29,8 +29,10 @@ Where the parity test finds the model rules disagree, the strict engine in inter
 - decided-by [milestone-39](../intent/milestone-39.md)
 - decided-by [m39-parity](../intent/milestone-39/m39-parity.md)
 - decided-by [projection-parity-property](../capability/rhiza/views/fast-reads/projection-parity-property.md)
+- decided-by [projection-interface](../capability/rhiza/views/fast-reads/projection-interface.md)
 - decided-by [parity-interim-from-strict](../capability/rhiza/views/fast-reads/parity-interim-from-strict.md)
 - decided-by [parity-write-index-from-strict](../capability/rhiza/views/fast-reads/parity-write-index-from-strict.md)
+- decided-by [index-as-is-model](../capability/rhiza/views/fast-reads/index-as-is-model.md)
 
 ## History
 

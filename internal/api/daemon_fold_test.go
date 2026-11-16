@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
@@ -23,9 +26,9 @@ type daemonFoldFix struct {
 	state    daemon.State
 	picked   []string
 	logReads int
-	// pickReads is logReads when the last detach ran: the reads the poll
+	// pickFolds is folds() when the last detach ran: the folds the poll
 	// took before the start dropped the cache.
-	pickReads int
+	pickFolds int
 	events    string
 	cmd       string
 	target    string
@@ -122,7 +125,7 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 	}
 	ctx.Detach = func(p Program, _ string) error {
 		f.picked = append(f.picked, p.Args[3])
-		f.pickReads = f.logReads
+		f.pickFolds = f.folds()
 		return nil
 	}
 	ctx.Self = "rhiza"
@@ -192,13 +195,22 @@ func (f *daemonFoldFix) poll(t testing.TB) {
 	}
 }
 
+// folds is the folds the daemon's fold cache has taken.
+func (f *daemonFoldFix) folds() int {
+	if f.ctx.daemonFold == nil {
+		return 0
+	}
+	return f.ctx.daemonFold.folds
+}
+
 func (f *daemonFoldFix) eventLines() []string {
 	data, _ := os.ReadFile(f.events)
 	return strings.Fields(string(data))
 }
 
 // A poll with the log, refs and settings unchanged reuses the last fold:
-// no log read, no plan read, no change set folded. The clock-driven hold
+// no fold, no plan read, no change set folded; over the index no poll reads
+// the log. The clock-driven hold
 // still lapses, and a lifecycle move reads again and runs the event
 // command.
 func TestDaemonIdlePollSkipsFold(t *testing.T) {
@@ -207,18 +219,22 @@ func TestDaemonIdlePollSkipsFold(t *testing.T) {
 	f.unj[f.target] = daemonPending{at: f.clock}
 
 	f.poll(t) // the first poll folds and seeds the events
-	if f.logReads == 0 || planReadCount.Load() == 0 {
-		t.Fatalf("first poll: %d log reads, %d plan reads; want some", f.logReads, planReadCount.Load())
+	if f.folds() == 0 || planReadCount.Load() == 0 {
+		t.Fatalf("first poll: %d folds, %d plan reads; want some", f.folds(), planReadCount.Load())
+	}
+	if f.logReads != 0 {
+		t.Errorf("first poll over the index read the log %d times", f.logReads)
 	}
 	if len(f.picked) != 0 {
 		t.Fatalf("held change set picked: %v", f.picked)
 	}
 
 	f.logReads = 0
+	cached := f.folds()
 	reads0, folds0 := planReadCount.Load(), planFoldCount.Load()
 	f.poll(t)
-	if f.logReads != 0 {
-		t.Errorf("idle poll read the log %d times", f.logReads)
+	if f.logReads != 0 || f.folds() != cached {
+		t.Errorf("idle poll read the log %d times and folded %d times", f.logReads, f.folds()-cached)
 	}
 	if n := planReadCount.Load() - reads0; n != 0 {
 		t.Errorf("idle poll ran planRead %d times", n)
@@ -254,10 +270,14 @@ func TestDaemonIdlePollSkipsFold(t *testing.T) {
 		}
 	}
 	f.logReads = 0
+	cached = f.folds()
 	reads0 = planReadCount.Load()
 	f.poll(t)
-	if f.logReads == 0 || planReadCount.Load() == reads0 {
-		t.Errorf("poll after a log entry: %d log reads, %d plan reads; want both", f.logReads, planReadCount.Load()-reads0)
+	if f.folds() == cached || planReadCount.Load() == reads0 {
+		t.Errorf("poll after a log entry: %d folds, %d plan reads; want both", f.folds()-cached, planReadCount.Load()-reads0)
+	}
+	if f.logReads != 0 {
+		t.Errorf("poll after a log entry read the log %d times", f.logReads)
 	}
 	if got := f.eventLines(); len(got) != before+1 || got[len(got)-1] != "proposed" {
 		t.Errorf("events = %v, want one more, proposed", got)
@@ -275,26 +295,26 @@ func BenchmarkDaemonIdlePoll(b *testing.B) {
 }
 
 // Each of a new log entry, a moved ref, a changed daemon setting and a run
-// the daemon starts or resumes drops the cache: the next poll reads the log
-// again and acts on the change.
+// the daemon starts or resumes drops the cache: the next poll folds again
+// and acts on the change.
 func TestDaemonPollCacheInvalidates(t *testing.T) {
 	t.Parallel()
 	f := newDaemonFoldFix(t)
 	f.unj[f.target] = daemonPending{at: f.clock}
 	f.config["rhiza.autonomy.ship"] = "owner"
 
-	// readsNext polls and returns the log reads it took.
+	// readsNext polls and returns the folds it took.
 	readsNext := func() int {
-		f.logReads = 0
+		n := f.folds()
 		f.poll(t)
-		return f.logReads
+		return f.folds() - n
 	}
 	idle := func(what string) {
 		t.Helper()
 		f.backdate(t, time.Now().Add(-time.Hour))
 		readsNext() // refill
 		if n := readsNext(); n != 0 {
-			t.Fatalf("%s: idle poll read the log %d times", what, n)
+			t.Fatalf("%s: idle poll folded %d times", what, n)
 		}
 	}
 	accept := func(i int) string {
@@ -318,21 +338,22 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 	// is seen and skipped, not picked.
 	late1 := accept(1)
 	if n := readsNext(); n == 0 || !skipped(late1) || len(f.picked) != 0 {
-		t.Fatalf("after an accept: %d log reads, picked %v, skips %+v; want reads and %s skipped", f.logReads, f.picked, f.skips, late1)
+		t.Fatalf("after an accept: %d folds, picked %v, skips %+v; want a fold and %s skipped", n, f.picked, f.skips, late1)
 	}
 	idle("accept")
 
 	// A setting: the same cached log, now picked under the new value. The
-	// pick itself drops the cache, so count only the reads taken before it:
+	// pick itself drops the cache, so count only the folds taken before it:
 	// those come from the setting changing the stamp.
 	f.config["rhiza.autonomy.ship"] = "auto"
-	f.pickReads = -1
+	f.pickFolds = -1
+	before := f.folds()
 	readsNext()
 	if len(f.picked) != 1 || f.picked[0] != late1 {
 		t.Fatalf("after daemon set: picked %v; want %s picked", f.picked, late1)
 	}
-	if f.pickReads <= 0 {
-		t.Fatalf("after daemon set: the poll read the log %d times before the pick; want reads", f.pickReads)
+	if f.pickFolds <= before {
+		t.Fatalf("after daemon set: the poll folded %d times before the pick; want a fold", f.pickFolds-before)
 	}
 	idle("pick")
 
@@ -341,14 +362,14 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 		t.Fatal(err)
 	}
 	if n := readsNext(); n == 0 {
-		t.Error("poll after the daemon started a run did not read the log")
+		t.Error("poll after the daemon started a run did not fold again")
 	}
 	idle("start")
 
 	// A moved ref.
 	f.refs = "abc123 refs/heads/main\n"
 	if n := readsNext(); n == 0 {
-		t.Error("poll after a ref moved did not read the log")
+		t.Error("poll after a ref moved did not fold again")
 	}
 	idle("ref")
 
@@ -357,6 +378,125 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 		t.Fatal(err)
 	}
 	if n := readsNext(); n == 0 {
-		t.Error("poll after the daemon resumed a run did not read the log")
+		t.Error("poll after the daemon resumed a run did not fold again")
+	}
+}
+
+// TestDaemonFoldIndexedMatchesLog: over the index the poll's fold reads the
+// log zero times and gives the candidates, proposed list, plan skips,
+// overlaps and lifecycle moves the fold over the log gives, for proposed
+// change sets with and without leaves, an accepted one and two in-flight
+// change sets that set the same node. An entry file that vanishes (the
+// index rebuilds) changes the stamp, and the next poll still matches the
+// log.
+func TestDaemonFoldIndexedMatchesLog(t *testing.T) {
+	t.Parallel()
+	f := newDaemonFoldFixN(t, 2, nil)
+	bare := f.call("change.new", `{"intent":"No leaves"}`).(ChangeNewResponse).ChangeSet
+	f.call("add", `{"kind":"intent","handle":"bare-intent"}`)
+	f.call("propose", `{}`)
+	for _, v := range []string{"A", "B"} {
+		f.call("change.new", fmt.Sprintf(`{"intent":"Rename %s"}`, v))
+		f.call("set", fmt.Sprintf(`{"ref":"done-0","fields":["statement=%s"]}`, v))
+		f.call("propose", `{}`)
+	}
+	f.backdate(t, time.Now().Add(-time.Hour))
+
+	same := func(step string) *daemonFolded {
+		t.Helper()
+		f.logReads = 0
+		before := f.folds()
+		f.poll(t)
+		if f.folds() == before {
+			t.Fatalf("%s: the poll did not fold", step)
+		}
+		if f.logReads != 0 {
+			t.Errorf("%s: the poll over the index read the log %d times, want 0", step, f.logReads)
+		}
+		indexed := f.ctx.daemonFold.folded
+		if indexed == nil {
+			t.Fatalf("%s: no cached fold", step)
+		}
+		// The log side: the change sets folded from the log and the models
+		// built over them, as the fold without an index does.
+		ws, err := openCtxWorkspace(f.ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		list, _ := changeset.FoldLog(ws.log())
+		logged := daemonDerive(f.ctx, indexed.res, list, newModelBase(list).model)
+		if f.logReads == 0 {
+			t.Errorf("%s: the fold over the log did not read it", step)
+		}
+		for _, c := range []struct {
+			what   string
+			ix, lg any
+		}{
+			{"candidates", indexed.cands, logged.cands},
+			{"proposed", indexed.proposed, logged.proposed},
+			{"plan skips", indexed.planSkips, logged.planSkips},
+			{"overlaps", indexed.overlaps, logged.overlaps},
+			{"moves", indexed.moves, logged.moves},
+		} {
+			if !reflect.DeepEqual(c.ix, c.lg) {
+				t.Errorf("%s: %s over the index %+v, over the log %+v", step, c.what, c.ix, c.lg)
+			}
+		}
+		if len(indexed.sets) != len(logged.sets) {
+			t.Errorf("%s: %d change sets over the index, %d over the log", step, len(indexed.sets), len(logged.sets))
+		}
+		for cs, c := range logged.sets {
+			if got, ok := indexed.changeSet(cs); !ok || got.State != c.State {
+				t.Errorf("%s: change set %s over the index %q (%v), over the log %q", step, cs, got.State, ok, c.State)
+			}
+		}
+		return indexed
+	}
+	got := same("all")
+	if !slices.Contains(got.cands, f.target) {
+		t.Errorf("candidates %v lack the accepted change set %s", got.cands, f.target)
+	}
+	if len(got.proposed) != 3 || slices.Contains(got.proposed, bare.String()) {
+		t.Errorf("proposed = %v, want the three with leaves, not %s", got.proposed, bare)
+	}
+	if len(got.overlaps) == 0 {
+		t.Error("no overlap for the two change sets that set done-0")
+	}
+	if len(got.moves) == 0 {
+		t.Error("no lifecycle moves")
+	}
+
+	// A proposed change set's propose entry vanishes (a rebase): the index
+	// rebuilds, and it is no longer proposed.
+	gone := got.proposed[0]
+	dir := filepath.Join(f.ctx.Root, store.Dir, store.LogDir, gone)
+	es, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	removed := false
+	for _, e := range es {
+		p := filepath.Join(dir, e.Name())
+		data, err := os.ReadFile(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(data), `"type": "propose"`) {
+			if err := os.Remove(p); err != nil {
+				t.Fatal(err)
+			}
+			removed = true
+		}
+	}
+	if !removed {
+		t.Fatalf("no propose entry in %s", dir)
+	}
+	f.backdate(t, time.Now().Add(-time.Hour))
+	got = same("vanished")
+	if slices.Contains(got.proposed, gone) {
+		t.Errorf("proposed %v still lists %s after its propose entry vanished", got.proposed, gone)
+	}
+	if !slices.Contains(got.cands, f.target) {
+		t.Errorf("after the rebuild candidates %v lack %s", got.cands, f.target)
 	}
 }

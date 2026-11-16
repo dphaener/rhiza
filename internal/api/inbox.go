@@ -11,17 +11,16 @@ import (
 	"fmt"
 	"github.com/oklog/ulid/v2"
 	"io"
+	"maps"
 	"os"
 	"reflect"
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
-	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
@@ -558,19 +557,22 @@ func changeStateOf(ctx *Ctx) func(change string) (string, bool) {
 // inboxFold is one read of the change sets, shared by every lookup of one
 // inbox call: a change set's state and title, and the overlaps. Reading the
 // log decodes every entry, so a log read per lookup made rhiza inbox cost
-// seconds. With an index (ctx.IndexPath) the states come from its change
-// set rows and a change set is folded from its own entries only when a
-// lookup needs it; without one the log is read and folded once. Either
-// way nothing is read until the first lookup. close releases the index.
+// seconds. With an index (ctx.IndexPath) the workspace's projection answers:
+// the states come from its change set rows and a change set is folded from
+// its own entries only when a lookup needs it; without one the log is read
+// and folded once. Either way nothing is read until the first lookup. close
+// releases the projection.
 type inboxFold struct {
 	ctx  *Ctx
 	done bool
 	err  error
-	// x is the index, nil when the log was read instead.
-	x      *index.Index
+	// ws is the workspace read, nil until the first lookup.
+	ws *workspace
+	// p is ws's projection, nil when the log was read instead.
+	p      projection
 	states map[id.ID]changeset.State
 	sets   map[id.ID]changeset.ChangeSet
-	// list is every change set folded, from the log; nil with an index.
+	// list is every change set folded, from the log; nil with a projection.
 	list []changeset.ChangeSet
 }
 
@@ -578,12 +580,12 @@ type inboxFold struct {
 // until a lookup asks.
 func newInboxFold(ctx *Ctx) *inboxFold { return &inboxFold{ctx: ctx} }
 
-// close closes the index, if one was opened.
+// close closes the projection, if one was opened.
 func (f *inboxFold) close() {
-	if f.x != nil {
-		f.x.Close()
-		f.x = nil
+	if f.ws != nil {
+		f.ws.closeProjection()
 	}
+	f.p = nil
 }
 
 // load reads the change sets the first time it is called.
@@ -599,18 +601,15 @@ func (f *inboxFold) load() error {
 		f.err = err
 		return err
 	}
-	if f.ctx.IndexPath != "" && len(ws.pending) == 0 {
-		x, err := index.Open(f.ctx.Root, f.ctx.IndexPath)
-		if err != nil {
+	f.ws = ws
+	ws.useProjection(f.ctx)
+	if p := ws.projection(); p != nil {
+		infos := p.changeSetInfos(ws.pending)
+		if err := p.failure(); err != nil {
 			f.err = Errorf("%s", err.Error())
 			return f.err
 		}
-		f.x = x
-		infos, err := x.ChangeSets()
-		if err != nil {
-			f.err = Errorf("%s", err.Error())
-			return f.err
-		}
+		f.p = p
 		for _, c := range infos {
 			f.states[c.ID] = c.State
 		}
@@ -624,6 +623,18 @@ func (f *inboxFold) load() error {
 	return nil
 }
 
+// fold folds change set cs from the projection's entries, false when it
+// has none or they do not read.
+func (f *inboxFold) fold(cs id.ID) (changeset.ChangeSet, bool) {
+	es := f.p.entries(f.ws.pending, cs)
+	if f.p.failure() != nil || len(es) == 0 {
+		return changeset.ChangeSet{}, false
+	}
+	c, _ := changeset.Fold(cs, es)
+	f.sets[cs] = c
+	return c, true
+}
+
 // changeSet is the folded change set of change, false when the ID does not
 // parse, the log has none or the change sets cannot be read.
 func (f *inboxFold) changeSet(change string) (changeset.ChangeSet, bool) {
@@ -634,19 +645,13 @@ func (f *inboxFold) changeSet(change string) (changeset.ChangeSet, bool) {
 	if c, ok := f.sets[cs]; ok {
 		return c, true
 	}
-	if f.x == nil {
+	if f.p == nil {
 		return changeset.ChangeSet{}, false
 	}
 	if _, ok := f.states[cs]; !ok {
 		return changeset.ChangeSet{}, false
 	}
-	es, err := f.x.Entries(cs)
-	if err != nil || len(es) == 0 {
-		return changeset.ChangeSet{}, false
-	}
-	c, _ := changeset.Fold(cs, es)
-	f.sets[cs] = c
-	return c, true
+	return f.fold(cs)
 }
 
 // stateOf gives the state of a change set by ID, and whether the log has it.
@@ -670,44 +675,46 @@ func (f *inboxFold) titleOf(change string) string {
 
 // overlaps is one overlap item per overlap between in-flight change sets
 // (model.Overlaps), with no run. It began to wait when the later of the
-// two change sets was opened, which its ID dates. With an index only the
-// in-flight change sets are folded, and targets are named from its as-is
-// view, as the landed model names them.
+// two change sets was opened, which its ID dates. With a projection only
+// the in-flight change sets are folded, and targets are named from its
+// as-is view, as the landed model names them.
 func (f *inboxFold) overlaps() ([]InboxItem, error) {
 	if err := f.load(); err != nil {
 		return nil, err
 	}
-	if f.x == nil {
+	if f.p == nil {
 		ovs := gmodel.Overlaps(f.list)
 		if len(ovs) == 0 {
 			return []InboxItem{}, nil
 		}
 		return overlapItems(ovs, newModelSets(f.list, id.ID{})), nil
 	}
-	// EachInFlight calls back from several goroutines at once.
-	var mu sync.Mutex
+	// In ID order, as the log's fold lists them.
 	var flight []changeset.ChangeSet
-	if err := f.x.EachInFlight(func(cs id.ID, es []entry.Entry) {
-		c, _ := changeset.Fold(cs, es)
-		mu.Lock()
-		defer mu.Unlock()
-		f.sets[cs] = c
-		flight = append(flight, c)
-	}); err != nil {
+	for _, cs := range slices.SortedFunc(maps.Keys(f.states), id.Compare) {
+		if !inFlightState(f.states[cs]) {
+			continue
+		}
+		c, ok := f.sets[cs]
+		if !ok {
+			c, ok = f.fold(cs)
+		}
+		if ok {
+			flight = append(flight, c)
+		}
+	}
+	if err := f.p.failure(); err != nil {
 		return nil, Errorf("%s", err.Error())
 	}
-	// In ID order, as the log's fold lists them.
-	slices.SortFunc(flight, func(a, b changeset.ChangeSet) int { return id.Compare(a.ID, b.ID) })
 	ovs := gmodel.Overlaps(flight)
 	if len(ovs) == 0 {
 		return []InboxItem{}, nil
 	}
-	return overlapItemsNamed(ovs, func(t id.ID) (string, string) {
-		if n, ok, err := f.x.Node(index.AsIs, t); err == nil && ok {
-			return n.Handle, fieldStatement(n.Fields)
-		}
-		return "", ""
-	}), nil
+	items := overlapItems(ovs, f.p.model(f.ws.pending, id.ID{}))
+	if err := f.p.failure(); err != nil {
+		return nil, Errorf("%s", err.Error())
+	}
+	return items, nil
 }
 
 // hasSignoff reports whether the current visit of the current step is
@@ -1414,10 +1421,9 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 	// a usable index the log is read, as before.
 	if p, err := index.DefaultPath(st.Worktree); err == nil {
 		c.IndexPath = p
-		if ix, err := openWriteIndex(&c); err == nil {
-			defer ix.close()
-			ix.models = map[id.ID]Model{}
-			w.ix = ix
+		if pj, err := openProjection(&c, true); err == nil {
+			w.setProjection(pj)
+			defer w.closeProjection()
 		}
 	}
 	own, err := id.Parse(st.Change)

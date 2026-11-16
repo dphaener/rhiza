@@ -2,8 +2,10 @@ package api
 
 // This file holds the render operation: it writes the as-is model as
 // markdown under .rhiza/rendered, the files check compares against. It
-// reads the log through the store alone, never the workspace: render writes
-// no log entry and needs no change set or actor.
+// reads the log through the store alone, never the workspace (render
+// writes no log entry and needs no change set or actor), to refuse a
+// damaged log, and takes the change sets and the as-is model it renders
+// from the projection when the call has an index.
 
 import (
 	"bytes"
@@ -96,8 +98,10 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 	if _, err := store.SetEntryModes(ctx.Root); err != nil {
 		return nil, Errorf("render: %v", err)
 	}
-	sets, _ := changeset.FoldLog(log)
-	m, _ := gmodel.AsIs(sets)
+	sets, m, err := renderInput(ctx, log)
+	if err != nil {
+		return nil, err
+	}
 	want := render.Render(m, sets)
 	if v := testRenderStale(ctx); v != "" {
 		want[testStaleFile] = []byte(v + "\n")
@@ -122,6 +126,44 @@ func runRender(ctx *Ctx, _ any) (any, error) {
 		resp.Written = append(resp.Written, renderedDir+"/"+p)
 	}
 	return resp, nil
+}
+
+// renderInput is what render renders: every change set, folded, and the
+// as-is model. With ctx.IndexPath set they come from the projection (the
+// stored folds and the stored as-is rows), so the log is not folded, as
+// long as the index holds exactly log's entries; with it empty, or when an
+// entry file was edited in place after the index read it (catch-up never
+// re-reads a seen path), they are folded from log, so render always writes
+// what the log fold renders.
+func renderInput(ctx *Ctx, log store.Log) ([]changeset.ChangeSet, gmodel.Model, error) {
+	fold := func() ([]changeset.ChangeSet, gmodel.Model, error) {
+		sets, _ := changeset.FoldLog(log)
+		m, _ := gmodel.AsIs(sets)
+		return sets, m, nil
+	}
+	if ctx.IndexPath == "" {
+		return fold()
+	}
+	p, err := openProjection(ctx, false)
+	if err != nil {
+		return nil, gmodel.Model{}, err
+	}
+	defer p.close()
+	if x := p.store(); x != nil {
+		holds, err := x.HoldsLog(log)
+		if err != nil {
+			return nil, gmodel.Model{}, Errorf("render: read the index: %v", err)
+		}
+		if !holds {
+			return fold()
+		}
+	}
+	sets := p.changeSets(nil)
+	m, _ := p.asIs()
+	if err := p.failure(); err != nil {
+		return nil, gmodel.Model{}, err
+	}
+	return sets, m, nil
 }
 
 // damagedLog refuses to render over a damaged log: an entry that does not
