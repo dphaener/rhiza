@@ -1,0 +1,109 @@
+{
+  "actor": "01M7GV7W81E1XNAB5PP86RW45J",
+  "after": [
+    "01M7GTFR4GC2E4P8B4CR8VVAKD"
+  ],
+  "at": "2026-11-16T00:18:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: go test -trimpath -count=1 -p 2 -run 'TestPropertyProjectionParity|TestParity|TestWritesThroughIndexMatchFold' ./internal/api (capped scope) ok in 15s; by hand with a HEAD build in a scratch repo, set/mv/retire on a node with disjoint landed heads and on a git-merged landed same-field conflict gave the same refusal and outputs as a base 556194e52 build."
+        },
+        "handle": "projection-parity-property-qa-1",
+        "id": "01M7GVFKPX1MS15PMRZKQ4HQWK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GVFKPX1MS15PMRZHN85ERG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GVFKPX1MS15PMRZHN85ERG",
+        "id": "01M7GVFKRRE3513AA55GB41YSW",
+        "link": "01M7GVFKRRE3513AA55D41BYNG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 1, HEAD build in a scratch repo with the default index: disjoint heads (two landed updates on statement and acceptance based on one create) show merged fields, version the last applied op, and new set/mv/retire name it as base and land; a draft's child under a parent retired by a later landed set is absent (show/set: not_found, check warns retired parent). ready, overlaps, milestones, ls and daemon status match the base build. Broken: rhiza inbox --json and health drop the accept item of a proposed change set whose leaf has a landed parent (1 of 3 listed; base lists 3); see finding f1."
+        },
+        "handle": "parity-interim-from-strict-qa-1",
+        "id": "01M7GVFKVRH96QV0JYR5WRSVBK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GVFKVRH96QV0JYR496RT6E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GVFKVRH96QV0JYR496RT6E",
+        "id": "01M7GVFKZFJBEGBZRQ2KQHBYGQ",
+        "link": "01M7GVFKZFJBEGBZRQ2FRGDPZT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX1AJ24Y40XJK9GRY8P8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1, HEAD build (index path, the CLI default): dry runs with pending entries (set cap-a --dry-run after a pending set and move) give base = the node's last landed op 01M7GV9GCCYS... on disjoint heads and merge the pending update; set --rebase moved a stale update onto the landed version and the change set landed; writes on a landed same-field conflict refuse with conflict exactly as the base build does."
+        },
+        "handle": "parity-write-index-from-strict-qa-1",
+        "id": "01M7GVFM27B77N0BW2BQ3K22EY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GVFM27B77N0BW2BMM0BMNS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GVFM27B77N0BW2BMM0BMNS",
+        "id": "01M7GVFM4EDAGZR10JHEDA0MES",
+        "link": "01M7GVFM4EDAGZR10JHBRRZWZM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 1: test-only leaf; ran the scoped parity/index tests above in a capped scope, ok; confirmed by hand that the CLI's production Ctx uses index.DefaultPath (cmd/rhiza/ctx.go:116-119), the path these tests now take."
+        },
+        "handle": "api-tests-on-index-qa-1",
+        "id": "01M7GVFM637RJ608A8G9DTFYP2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GVFM637RJ608A8G6WM3WG0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GVFM637RJ608A8G6WM3WG0",
+        "id": "01M7GVFM7WY0H1VA4RC76J2J4V",
+        "link": "01M7GVFM7WY0H1VA4RC5Z6X209",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD744PD29P5BQAMF1287",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GVFMB1ZQKK67NRY2VK56WA",
+  "type": "ops",
+  "v": 1
+}
