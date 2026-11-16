@@ -23,6 +23,7 @@ The bridge is a constructor in internal/model: model.AsIsSeed(sets []changeset.C
 ### In
 
 - decided-by [parity-interim-from-strict](../capability/rhiza/views/fast-reads/parity-interim-from-strict.md)
+- decided-by [model-seed-views](../capability/rhiza/integrity/check/model-seed-views.md)
 
 ## History
 
