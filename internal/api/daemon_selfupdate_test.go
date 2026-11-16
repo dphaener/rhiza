@@ -277,7 +277,7 @@ func TestDaemonAutoUpdateSetting(t *testing.T) {
 // feed and installs a newer build over its executable, running no git fetch
 // and no make; an up-to-date daemon leaves the executable alone.
 //
-// Serial: it swaps the package's channelUpdateExe, channelUpdateURLs,
+// Serial: it swaps the package's channelUpdateURLs,
 // daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonAutoUpdateLatest(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
@@ -305,8 +305,8 @@ func TestDaemonAutoUpdateLatest(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	oldURLs, oldExe := channelUpdateURLs, channelUpdateExe
-	t.Cleanup(func() { channelUpdateURLs, channelUpdateExe = oldURLs, oldExe })
+	oldURLs := channelUpdateURLs
+	t.Cleanup(func() { channelUpdateURLs = oldURLs })
 	channelUpdateURLs = map[string]string{release.ChannelLatest: srv.URL + "/manifest.json"}
 
 	for _, c := range []struct{ current, newest, want string }{
@@ -317,10 +317,9 @@ func TestDaemonAutoUpdateLatest(t *testing.T) {
 		if err := os.WriteFile(exe, []byte("old"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		channelUpdateExe = func() (string, error) { return exe, nil }
 		version = c.newest
 		ctx, ran := autoUpdateRepo(t, "latest", daemon.RhizaModule)
-		ctx.Version = c.current
+		ctx.Version, ctx.Self = c.current, exe
 		if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
 			t.Fatal(err)
 		}
@@ -337,7 +336,7 @@ func TestDaemonAutoUpdateLatest(t *testing.T) {
 // channel only: a newer official release installs, an incremental build of
 // the same version does not.
 //
-// Serial: it swaps the package's channelUpdateExe, channelUpdateURLs,
+// Serial: it swaps the package's channelUpdateURLs,
 // daemonReexec and daemonTicker, which every daemon in the binary reads.
 func TestDaemonAutoUpdateRelease(t *testing.T) {
 	start := daemon.Image{Size: 10, Mod: time.Unix(1700000000, 0)}
@@ -370,8 +369,8 @@ func TestDaemonAutoUpdateRelease(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	oldURLs, oldExe := channelUpdateURLs, channelUpdateExe
-	t.Cleanup(func() { channelUpdateURLs, channelUpdateExe = oldURLs, oldExe })
+	oldURLs := channelUpdateURLs
+	t.Cleanup(func() { channelUpdateURLs = oldURLs })
 	channelUpdateURLs = map[string]string{
 		release.ChannelRelease: srv.URL + "/release.json",
 		release.ChannelLatest:  srv.URL + "/latest.json",
@@ -387,10 +386,9 @@ func TestDaemonAutoUpdateRelease(t *testing.T) {
 		if err := os.WriteFile(exe, []byte("old"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		channelUpdateExe = func() (string, error) { return exe, nil }
 		version = c.newest
 		ctx, ran := autoUpdateRepo(t, "release", daemon.RhizaModule)
-		ctx.Version = c.current
+		ctx.Version, ctx.Self = c.current, exe
 		if err := runDaemonTicks(t, ctx, 2, nil); err != nil {
 			t.Fatal(err)
 		}

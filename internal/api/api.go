@@ -117,7 +117,8 @@ type Ctx struct {
 	// it (childEnv), with the operation's own additions appended, so a
 	// caller running in-process for another environment (a test script)
 	// hands its children that environment, not the process's. Nil, for a
-	// programmatic caller that gives none, is the process's.
+	// programmatic caller that gives none, is no environment: never the
+	// process's.
 	Environ []string
 	// IndexPath is the index database file for Root, given by the caller,
 	// since nothing here reads the environment or the user cache dir (the

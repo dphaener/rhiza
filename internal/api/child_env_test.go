@@ -52,9 +52,10 @@ func TestChildEnv(t *testing.T) {
 	if got := base[:2][1]; got != "" {
 		t.Errorf("childEnv wrote %q into Environ's backing array", got)
 	}
-	// A Ctx with no Environ, a programmatic caller's, gives the process's.
-	if got := childEnv(&Ctx{}); !contains(got, "RHIZA_CHILD_ENV_PROCESS_ONLY=process") {
-		t.Errorf("nil Environ: child env lacks the process's variables")
+	// A Ctx with no Environ, a programmatic caller's, gives no environment,
+	// never the process's, and never a nil one a child would inherit.
+	if got := childEnv(&Ctx{}); got == nil || len(got) != 0 {
+		t.Errorf("nil Environ: child env = %q, want empty", got)
 	}
 }
 

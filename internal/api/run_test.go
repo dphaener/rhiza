@@ -1051,9 +1051,9 @@ func TestResolveWorkflowPersonalShadows(t *testing.T) {
 	pm := writePersonal(t, xdg, "mine", personalWorkflow)
 	ps := writePersonal(t, xdg, "ship-change", personalWorkflow)
 	for ref, want := range map[string]string{"mine": pm, "ship-change": ps, "": ps} {
-		path, def, _, err := resolveWorkflow(root, ref, nil)
+		path, def, _, err := resolveWorkflow(root, ref, os.Getenv)
 		if err != nil || path != want || def.Start != "mine" {
-			t.Errorf("resolveWorkflow(%q, nil) = %q, %v, %v; want %q", ref, path, def, err, want)
+			t.Errorf("resolveWorkflow(%q) = %q, %v, %v; want %q", ref, path, def, err, want)
 		}
 	}
 
@@ -1063,7 +1063,7 @@ func TestResolveWorkflowPersonalShadows(t *testing.T) {
 kind = "workflow"
 workflow = "mine"
 `)
-	_, def, _, err := resolveWorkflow(root, "outer", nil)
+	_, def, _, err := resolveWorkflow(root, "outer", os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1083,12 +1083,15 @@ func TestPersonalWorkflowsDirFallsBackToHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", "")
 	t.Setenv("HOME", home)
-	if got, want := personalWorkflowsDir(nil), filepath.Join(home, ".config", "rhiza", "workflows"); got != want {
-		t.Errorf("personalWorkflowsDir(nil) = %q, want %q", got, want)
+	if got, want := personalWorkflowsDir(os.Getenv), filepath.Join(home, ".config", "rhiza", "workflows"); got != want {
+		t.Errorf("personalWorkflowsDir = %q, want %q", got, want)
 	}
 	t.Setenv("XDG_CONFIG_HOME", "/x")
-	if got := personalWorkflowsDir(nil); got != "/x/rhiza/workflows" {
+	if got := personalWorkflowsDir(os.Getenv); got != "/x/rhiza/workflows" {
 		t.Errorf("with XDG_CONFIG_HOME: %q", got)
+	}
+	if got := personalWorkflowsDir(nil); got != "" {
+		t.Errorf("with no environment: %q", got)
 	}
 }
 

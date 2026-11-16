@@ -1661,11 +1661,11 @@ func isWorkflowPath(ref string) bool {
 
 // personalWorkflowsDir is the user's own workflows directory:
 // $XDG_CONFIG_HOME/rhiza/workflows, else ~/.config/rhiza/workflows, both
-// read through getenv (nil is the process's environment). It is empty
-// when neither can be known.
+// read through getenv (nil is no environment). It is empty when neither
+// can be known.
 func personalWorkflowsDir(getenv func(string) string) string {
 	if getenv == nil {
-		getenv = os.Getenv
+		return ""
 	}
 	if x := getenv("XDG_CONFIG_HOME"); x != "" {
 		return filepath.Join(x, "rhiza", "workflows")

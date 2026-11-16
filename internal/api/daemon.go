@@ -814,13 +814,16 @@ func daemonRunsOf(runs []run.Journal, cs string) int {
 var (
 	channelUpdateClient *http.Client
 	channelUpdateURLs   map[string]string
-	channelUpdateExe    = os.Executable
 )
 
 // newChannelUpdate is the daemon's auto-update of channel, replacing the
-// running executable; nil when the executable cannot be found.
+// running executable: ctx.Self with its symlinks resolved, as
+// os.Executable reports it; nil when it is unknown.
 func newChannelUpdate(ctx *Ctx, channel string) *daemon.ChannelUpdate {
-	exe, err := channelUpdateExe()
+	if ctx.Self == "" {
+		return nil
+	}
+	exe, err := filepath.EvalSymlinks(ctx.Self)
 	if err != nil {
 		return nil
 	}
