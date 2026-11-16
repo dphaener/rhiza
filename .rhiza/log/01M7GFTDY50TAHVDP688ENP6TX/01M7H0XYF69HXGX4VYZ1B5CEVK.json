@@ -1,0 +1,33 @@
+{
+  "actor": "01M7H0P8AXH3PCAMJMX3E8HQZG",
+  "after": [
+    "01M7GFYYBJNGRC6VWRFMWVNSJQ"
+  ],
+  "at": "2026-11-16T01:53:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "87a2065fbf7dd62cd9dd8e255aa8b60e342b0268964dc9e2b4de4c81e985835d",
+          "session": "da57a0d6-2dc0-4cb8-95be-01a1e20b013f",
+          "summary": "Autonomous plan run for change set 01M7GFTDY50TAHVDP688ENP6TX, re-planning the leaves the milestone plan (#596) wrote, after the parity harness (#599) and check without rebuilds (#600) landed. The orchestrator (arbiter) asked that design choices be recorded as assumed rulings, that each leaf stay one concern, that the planner stay out of 01M7GFTS0N's leaves and keep the interim model's deletion in 01M7GFTKCA. Research found: newModelSets and the daemon fold already build as-is once (newModelBase) since #599; inboxGateRead already reads the worktree's own index; inbox with an index reads no log, and one probe on the main checkout at 6ebf119de measured rhiza inbox at 0.62 s (40% of its CPU in run.Store.List parsing run journals) and rhiza status at 1.93 s; writeIndex in write_indexed.go is already an index with the dry run's pending entries laid over it; the index has no read that returns the whole as-is model.Model that render.Render takes. Leaves were rescoped to that: the projection interface grows from writeIndex and is opened lazily, the log-once memo is its own leaf, the inbox leaf only moves its reads onto the interface, the inbox's remaining time goes to a discovered-from change set, render gets an index as-is read as its own leaf and keeps its damage read of the log.",
+          "title": "Planning Reads from the projection, autonomous (2026-11-16)"
+        },
+        "handle": "reads-projection-plan-2026-11-16",
+        "id": "01M7H0XYE27BMPZ66KZVZYE2CY",
+        "key": null,
+        "kind": "source",
+        "node": "01M7H0XYE27BMPZ66KZRVX6K8H",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H0XYF69HXGX4VYZ1B5CEVK",
+  "type": "ops",
+  "v": 1
+}

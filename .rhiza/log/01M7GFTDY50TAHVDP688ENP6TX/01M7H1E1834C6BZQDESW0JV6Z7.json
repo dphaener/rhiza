@@ -1,0 +1,50 @@
+{
+  "actor": "01M7H1CB0Q7YQNQ0TG5N10Q3KX",
+  "after": [
+    "01M7H102AMCS0VFXAFT2HHPXD4"
+  ],
+  "at": "2026-11-16T02:02:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestSlice|TestChangeShow)' passes; go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(slice|change-show)' passes for every slice*.txtar and change-show*.txtar script. grep -n 'index.Open' internal/api/change_indexed.go prints nothing, and in internal/api/slice.go openIndex is called only on the empty-IndexPath branch. A test with ctx.IndexPath set counts index opens through projection-interface's opener hook and shows slice and change show each open the index once, through the projection, with the same answers as before. Failure case: slice outside a repository is still not_found with next rhiza init, and change show with no change set named or current is still the same usage error. Touches internal/api/slice.go, change_indexed.go and their tests. Must not change slice's or change show's text or --json output, nor the answers indexModel gives, and must not delete openIndex (01M7GFTKCA does).",
+          "statement": "rhiza slice (internal/api/slice.go:107-140, its own openIndex and index.Open) and rhiza change show over the index (runChangeShowIndexed, internal/api/change_indexed.go:217, its own index.Open) take their index reads (change sets, a change set's entries, the view's model) from the workspace's projection when ctx.IndexPath is set instead of opening internal/index themselves; with ctx.IndexPath empty, slice keeps its openIndex of the default path, which 01M7GFTKCA's throwaway-index-fallback removes"
+        },
+        "handle": "slice-and-show-from-projection",
+        "id": "01M7H1E0YWEKQ7YB02B7KSVM64",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7H1E0YWEKQ7YB02B4KH9WSH",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1E0YWEKQ7YB02B4KH9WSH",
+        "id": "01M7H1E12H991XPJEZ2W6RS95D",
+        "link": "01M7H1E12H991XPJEZ2W31W7GK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1E0YWEKQ7YB02B4KH9WSH",
+        "id": "01M7H1E15ASSFKPY9FM230NV52",
+        "link": "01M7H1E15ASSFKPY9FKZT91PDX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYXY7FTRWHX1NNNSW8BWA",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H1E1834C6BZQDESW0JV6Z7",
+  "type": "ops",
+  "v": 1
+}
