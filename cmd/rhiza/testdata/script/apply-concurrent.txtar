@@ -15,8 +15,8 @@ rhiza check
 stdout '^warn fold .*concurrent entries'
 ! stdout '^fail'
 
-exec rhiza apply --dry-run writes.json
-exec rhiza apply writes.json
+rhiza apply --dry-run writes.json
+rhiza apply writes.json
 stdout '^Wrote entry '
 rhiza change show
 stdout 'node.create'
@@ -32,9 +32,9 @@ rhiza change new Other
 cp $WORK/bad-entry.json .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE/01M5PWGQ00000000000000000A.json
 exec sh -c 'ls .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE | wc -l'
 stdout '^2$'
-! exec rhiza apply --dry-run writes2.json
+! rhiza apply --dry-run writes2.json
 stderr 'changeset: illegal revision'
-! exec rhiza apply writes2.json
+! rhiza apply writes2.json
 stderr 'changeset: illegal revision'
 exec sh -c 'ls .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE | wc -l'
 stdout '^2$'

@@ -8,12 +8,12 @@ env PATH=$WORK/bin:$PATH
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Twin work' --title 'Twin work' --json
+rhiza change new 'Twin work' --title 'Twin work' --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
-exec rhiza change new 'Twin work' --title 'Twin work' --json
+rhiza change new 'Twin work' --title 'Twin work' --json
 stdout '"change_set": "01M5PWGJC82P7YGZTWYFFZ0VJG"'
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
@@ -22,16 +22,16 @@ exec git commit -qm changes
 
 # A dry run predicts the suffixed worktree for the later change set, and for
 # a plan run that would open a third change set with the same title.
-exec rhiza run start --foreground --workflow plan 01M5PWGJC82P7YGZTWYFFZ0VJG --permission-mode manual --dry-run --json
+rhiza run start --foreground --workflow plan 01M5PWGJC82P7YGZTWYFFZ0VJG --permission-mode manual --dry-run --json
 stdout '"worktree": ".*repo\.twin-work-01m5pwgjc82p"'
-exec rhiza run start --foreground --workflow plan --new 'Twin work' --permission-mode manual --dry-run --json
+rhiza run start --foreground --workflow plan --new 'Twin work' --permission-mode manual --dry-run --json
 stdout '"change": "(01[0-9A-Z]{24})"'
 stdout '"worktree": ".*repo\.twin-work-01[0-9a-z]{10}"'
 ! stdout 'repo\.twin-work"'
 ! stdout 'twin-work-01m5pwgjc82p'
 
-exec rhiza session start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
-exec rhiza session start 01M5PWGJC82P7YGZTWYFFZ0VJG --permission-mode manual --json
+rhiza session start 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json
+rhiza session start 01M5PWGJC82P7YGZTWYFFZ0VJG --permission-mode manual --json
 
 exec git worktree list
 stdout 'repo\.twin-work '
