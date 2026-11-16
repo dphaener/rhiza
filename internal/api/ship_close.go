@@ -234,6 +234,7 @@ func runShipLand(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	actor, err := shipActorHandle(w, t.cs, ctx)
 	if err != nil {
 		return nil, err
@@ -321,6 +322,7 @@ func shipRecordEvidence(ctx *Ctx, t shipTarget, st shipState, resp *ShipLandResp
 	if err != nil {
 		return err
 	}
+	defer w.closeProjection()
 	c, ok := w.changeSet(t.cs)
 	if !ok {
 		return NotFoundf("no change set %s", t.cs).WithNext(changeLsNext)

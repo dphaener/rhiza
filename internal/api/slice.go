@@ -7,9 +7,9 @@ package api
 // A fresh read stays fast by never reading the log through the store: the
 // workspace is opened only to check the repository and read the current
 // change set file, and everything else comes from the index, whose open
-// catches up with the log from the folder listing. With ctx.IndexPath set
-// the index is the workspace's projection's; with it empty, openIndex
-// opens the default path's. Change set refs resolve over the index's
+// catches up with the log from the folder listing. The index is the
+// workspace's projection's: ctx.IndexPath's, or a throwaway one for the
+// call when it is empty. Change set refs resolve over the index's
 // change sets by the workspace's rules (matchChangeSet), and the change
 // sets are folded from their entries in the index. Only what-if reads the
 // whole log, refolded by index.WhatIf.
@@ -28,7 +28,6 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/changeset"
-	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
@@ -104,24 +103,6 @@ func init() {
 // sliceNext is the next command for a change slice with no change set.
 const sliceNext = "rhiza slice <ref>"
 
-// openIndex opens the index of the worktree at root, caught up with its
-// log, under the user cache dir getenv places. No repository is not_found
-// with next "rhiza init". The caller closes it.
-func openIndex(root string, getenv func(string) string) (*index.Index, error) {
-	if _, err := openStore(root); err != nil {
-		return nil, err
-	}
-	p, err := index.DefaultPath(root, getenv)
-	if err != nil {
-		return nil, Errorf("%v", err)
-	}
-	x, err := index.Open(root, p)
-	if err != nil {
-		return nil, Errorf("%v", err)
-	}
-	return x, nil
-}
-
 // runSlice picks the change set and the view, resolves the ref, builds
 // the slice and fits it to the budget in both formats.
 func runSlice(ctx *Ctx, req any) (any, error) {
@@ -140,7 +121,7 @@ func runSlice(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	src, err := openSliceSource(ctx, w)
+	src, err := openSliceSource(w)
 	if err != nil {
 		return nil, err
 	}
@@ -256,26 +237,16 @@ func sliceChangeSet(ctx *Ctx, w *workspace, sets []id.ID) (id.ID, error) {
 	return w.current()
 }
 
-// sliceSource is the index slice reads: the workspace's projection when
-// ctx.IndexPath is set, else the index of the default path that openIndex
-// opens.
+// sliceSource is the index slice reads: the workspace's projection.
 type sliceSource struct {
 	x *index.Index
 	p projection
 	w *workspace
 }
 
-// openSliceSource opens the index slice reads through w's projection, or
-// by openIndex when ctx.IndexPath is empty. The caller closes it.
-func openSliceSource(ctx *Ctx, w *workspace) (sliceSource, error) {
-	if ctx.IndexPath == "" {
-		x, err := openIndex(ctx.Root, ctx.Getenv)
-		if err != nil {
-			return sliceSource{}, err
-		}
-		return sliceSource{x: x}, nil
-	}
-	w.useProjection(ctx)
+// openSliceSource opens the index slice reads through w's projection (a
+// throwaway index when ctx has none). The caller closes it.
+func openSliceSource(w *workspace) (sliceSource, error) {
 	p := w.projection()
 	x := p.store()
 	if x == nil {
@@ -286,25 +257,12 @@ func openSliceSource(ctx *Ctx, w *workspace) (sliceSource, error) {
 	return sliceSource{x: x, p: p, w: w}, nil
 }
 
-func (s sliceSource) close() {
-	if s.w != nil {
-		s.w.closeProjection()
-		return
-	}
-	s.x.Close()
-}
+func (s sliceSource) close() { s.w.closeProjection() }
 
 // changeSets is every change set's ID and state, sorted by ID.
 func (s sliceSource) changeSets() ([]index.ChangeSetInfo, error) {
-	if s.p != nil {
-		infos := s.p.changeSetInfos(nil)
-		if err := s.p.failure(); err != nil {
-			return nil, Errorf("read change sets: %v", err)
-		}
-		return infos, nil
-	}
-	infos, err := s.x.ChangeSets()
-	if err != nil {
+	infos := s.p.changeSetInfos(s.w.pending)
+	if err := s.p.failure(); err != nil {
 		return nil, Errorf("read change sets: %v", err)
 	}
 	return infos, nil
@@ -312,17 +270,9 @@ func (s sliceSource) changeSets() ([]index.ChangeSetInfo, error) {
 
 // fold folds change set cs from its entries in the index.
 func (s sliceSource) fold(cs id.ID) (changeset.ChangeSet, error) {
-	var es []entry.Entry
-	if s.p != nil {
-		es = s.p.entries(nil, cs)
-		if err := s.p.failure(); err != nil {
-			return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
-		}
-	} else {
-		var err error
-		if es, err = s.x.Entries(cs); err != nil {
-			return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
-		}
+	es := s.p.entries(s.w.pending, cs)
+	if err := s.p.failure(); err != nil {
+		return changeset.ChangeSet{}, Errorf("read change set %s: %v", cs, err)
 	}
 	c, _ := changeset.Fold(cs, es)
 	return c, nil

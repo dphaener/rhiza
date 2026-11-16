@@ -141,10 +141,11 @@ func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefIn
 	if sl.Change != nil {
 		in.Intent = sl.Change.Intent
 	}
-	w, err := openWorkspace(c.Root, c.Now, c.IDs, true)
+	w, err := openRootWorkspace(c, c.Root, true)
 	if err != nil {
 		return in, err
 	}
+	defer w.closeProjection()
 	ch, ok := w.changeSet(cs)
 	if !ok {
 		return in, fmt.Errorf("change set %s is not in the log", cs)

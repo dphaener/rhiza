@@ -501,11 +501,20 @@ func (m *writeModel) DependsOn(n id.ID) []id.ID {
 	return slices.Compact(out)
 }
 
+// Children is the live nodes of kind under parent, by key. A kind outside
+// the tree (an actor, a source) has no parent: its nodes are the zero
+// parent's children, which the index lists by kind, not by parent.
 func (m *writeModel) Children(kind op.Kind, parent id.ID) []Node {
 	if !m.ok() {
 		return nil
 	}
-	ns, err := m.ov.Children(parent)
+	var ns []gmodel.Node
+	var err error
+	if op.HasParent(kind) {
+		ns, err = m.ov.Children(parent)
+	} else if parent.IsZero() {
+		ns, err = m.rootsOf(kind)
+	}
 	m.ix.fail(err)
 	var out []Node
 	for _, n := range ns {
@@ -515,6 +524,25 @@ func (m *writeModel) Children(kind op.Kind, parent id.ID) []Node {
 	}
 	slices.SortStableFunc(out, func(a, b Node) int { return cmp.Compare(a.Key, b.Key) })
 	return out
+}
+
+// rootsOf is every live node of kind, a kind outside the tree, read a page
+// at a time.
+func (m *writeModel) rootsOf(kind op.Kind) ([]gmodel.Node, error) {
+	const page = 1000
+	q := index.ListQuery{Kinds: []op.Kind{kind}, HasParent: true, Limit: page}
+	var out []gmodel.Node
+	for {
+		ns, err := m.ov.List(q)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ns...)
+		if len(ns) < page {
+			return out, nil
+		}
+		q.After = ns[len(ns)-1].ID
+	}
 }
 
 func (m *writeModel) HandleTaken(h string) (id.ID, bool) {

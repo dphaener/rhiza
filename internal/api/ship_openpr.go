@@ -150,6 +150,7 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer w.closeProjection()
 		summary = planSummary(rr.state, w.changeSets())
 	}
 	_, werr := io.WriteString(body, summary+prBodyRef(t.ref))

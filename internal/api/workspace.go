@@ -2,8 +2,8 @@ package api
 
 // This file holds the workspace: an open repository plus everything a write
 // needs around it, namely the current change set (.rhiza/local/change),
-// change set refs, the interim model, actor resolution and the one helper
-// that appends entries. Operations open one per call with openWorkspace and
+// change set refs, the projection the model is read through, actor
+// resolution and the one helper that appends entries. Operations open one per call with openWorkspace and
 // pass every input explicitly; nothing here reads the environment or runs
 // git.
 
@@ -24,6 +24,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -101,7 +102,8 @@ type workspace struct {
 	// write to disk drops it; nil before that call.
 	disk *store.Log
 	// proj is the projection the reads go through, opened on first use;
-	// nil when they read the log. See projection.go.
+	// nil until openCtxWorkspace, openRootWorkspace or the first read
+	// sets it. See projection.go.
 	proj *projectionSlot
 	// written counts the entries written to disk.
 	written int
@@ -145,8 +147,32 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 		return nil, err
 	}
 	w.readLog = ctx.readLog
+	w.useProjection(ctx)
 	w.mirror = liveRunMirror(ctx)
 	w.modelBranch = modelBranchStep(ctx)
+	return w, nil
+}
+
+// openRootWorkspace opens the workspace of root, ctx's root or another
+// (a run's worktree, a session's checkout), with ctx's clock and IDs, whose
+// projection is root's own index: ctx's when root is ctx.Root, else root's
+// default index path, or a throwaway one when it has none. The caller
+// closes it with closeProjection.
+func openRootWorkspace(ctx *Ctx, root string, dryRun bool) (*workspace, error) {
+	w, err := openWorkspace(root, ctx.Now, ctx.IDs, dryRun)
+	if err != nil {
+		return nil, err
+	}
+	c := *ctx
+	if root == ctx.Root {
+		w.readLog = ctx.readLog
+	} else {
+		c.Root, c.IndexPath = root, ""
+		if p, err := index.DefaultPath(root, ctx.Getenv); err == nil {
+			c.IndexPath = p
+		}
+	}
+	w.useProjection(&c)
 	return w, nil
 }
 
@@ -171,24 +197,16 @@ func (w *workspace) log() store.Log {
 	return l
 }
 
-// model builds the interim model over the log with current as the current
-// change set (zero for none), or, in a write over the index, the view of
-// the index.
+// model is the projection's view of change set current (zero for as-is),
+// with the dry run's pending entries laid over it.
 func (w *workspace) model(current id.ID) Model {
-	if p := w.projection(); p != nil {
-		return p.model(w.pending, current)
-	}
-	return newModel(w.log(), current)
+	return w.projection().model(w.pending, current)
 }
 
 // entriesOfSet returns the entries of change set cs, sorted by ID: the
-// index's and the dry run's pending ones in a write over the index, else
-// the log's.
+// projection's and the dry run's pending ones.
 func (w *workspace) entriesOfSet(cs id.ID) []entry.Entry {
-	if p := w.projection(); p != nil {
-		return p.entries(w.pending, cs)
-	}
-	return entriesOf(w.log(), cs)
+	return w.projection().entries(w.pending, cs)
 }
 
 // entriesOf returns the log's entries of change set cs.
@@ -213,13 +231,10 @@ func (w *workspace) changeSet(cs id.ID) (changeset.ChangeSet, bool) {
 	return c, true
 }
 
-// changeSets folds every change set in the log.
+// changeSets folds every change set: the projection's, with the dry run's
+// pending entries laid over them.
 func (w *workspace) changeSets() []changeset.ChangeSet {
-	if p := w.projection(); p != nil {
-		return p.changeSets(w.pending)
-	}
-	sets, _ := changeset.FoldLog(w.log())
-	return sets
+	return w.projection().changeSets(w.pending)
 }
 
 func (w *workspace) currentPath() string {
@@ -293,19 +308,11 @@ func (w *workspace) clearCurrent() error {
 const minPrefix = 4
 
 // resolveChangeSet resolves a change set ref, a full ID or a unique prefix
-// of 4+ characters (any case), over the change sets in the log. No match is
-// not_found; several are a usage error listing them.
+// of 4+ characters (any case), over the projection's change sets and the
+// pending ones. No match is not_found; several are a usage error listing
+// them.
 func (w *workspace) resolveChangeSet(ref string) (id.ID, error) {
-	if p := w.projection(); p != nil {
-		return matchChangeSet(p.changeSetIDs(w.pending), ref)
-	}
-	var sets []id.ID
-	for _, e := range w.log().Entries {
-		if len(sets) == 0 || sets[len(sets)-1] != e.ChangeSet {
-			sets = append(sets, e.ChangeSet)
-		}
-	}
-	return matchChangeSet(sets, ref)
+	return matchChangeSet(w.projection().changeSetIDs(w.pending), ref)
 }
 
 // matchChangeSet resolves a change set ref over sets by resolveChangeSet's

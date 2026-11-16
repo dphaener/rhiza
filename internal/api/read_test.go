@@ -551,11 +551,17 @@ func TestDefaultViewFoldsNothing(t *testing.T) {
 	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
 		t.Error("ChangeSet and ChangeRef together: no error")
 	}
+	// A change set the log does not hold is not_found, by ref or by ID.
 	bad = *ctx
 	bad.ChangeRef = "ZZZZZZZZ"
-	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
-		t.Error("unknown ChangeRef: no error")
-	}
+	_, err := openReader(&bad, "show", "", defaultView)
+	wantExit(t, err, 4)
+	wantNext(t, err, changeLsNext)
+	bad = *ctx
+	bad.ChangeSet = ctxWorkspace(t, ctx).mustID(t)
+	_, err = openReader(&bad, "show", "", defaultView)
+	wantExit(t, err, 4)
+	wantNext(t, err, changeLsNext)
 }
 
 func TestDefaultViewSeesPending(t *testing.T) {
@@ -571,8 +577,6 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	}
 	rc := *ctx
 	rc.ChangeSet = pend
-	// The dry write's disk read is kept; drop it so the count shows the
-	// reader goes through the log, not the index.
 	w.disk = nil
 	*folds = 0
 	var gotCS id.ID
@@ -588,7 +592,9 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	if gotCS != pend || gotState != changeset.StateDraft {
 		t.Errorf("rule saw %v in %q, want %v in draft", gotCS, gotState, pend)
 	}
-	if *folds == 0 {
-		t.Error("a workspace with pending writes folded nothing")
+	// The pending change set is laid over the projection: the log is
+	// not read.
+	if *folds != 0 {
+		t.Errorf("a workspace with pending writes read the log %d times", *folds)
 	}
 }

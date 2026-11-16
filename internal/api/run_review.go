@@ -371,6 +371,7 @@ func runRunFindings(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	r2 := planResolver{w: w, run: rr.change}
 	found := make([]run.Finding, 0, len(*f.Findings))
 	for i, in := range *f.Findings {
@@ -444,7 +445,8 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 	if f.Findings == nil {
 		return nil, Usagef(`%s file: want {"findings":[...]}; a clean check is {"findings":[]}`, cmd).WithNext(runFindingsNext)
 	}
-	leafOf := changeLeafResolver(ctx, rr)
+	leafOf, closeLeaves := changeLeafResolver(ctx, rr)
+	defer closeLeaves()
 	found := make([]run.Finding, 0, len(*f.Findings))
 	for i, in := range *f.Findings {
 		n := i + 1
@@ -500,15 +502,24 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 
 // changeLeafResolver resolves a finding's leaf ref among the leaves of
 // rr's change set, reading the model only on its first call. A ref that
-// names nothing, or a node that is not one of the leaves, is usage.
-func changeLeafResolver(ctx *Ctx, rr reviewRun) func(ref string) (Node, error) {
+// names nothing, or a node that is not one of the leaves, is usage. The
+// model stays open for later calls until the caller calls close.
+func changeLeafResolver(ctx *Ctx, rr reviewRun) (resolve func(ref string) (Node, error), close func()) {
 	var m Model
 	var leaves []ChangeLeaf
+	var w *workspace
+	close = func() {
+		if w != nil {
+			w.closeProjection()
+		}
+	}
 	return func(ref string) (Node, error) {
 		if leaves == nil {
-			w, err := openCtxWorkspace(ctx)
-			if err != nil {
-				return Node{}, err
+			var err error
+			if w == nil {
+				if w, err = openCtxWorkspace(ctx); err != nil {
+					return Node{}, err
+				}
 			}
 			c, ok := w.changeSet(rr.change)
 			if !ok {
@@ -525,7 +536,7 @@ func changeLeafResolver(ctx *Ctx, rr reviewRun) func(ref string) (Node, error) {
 			return Node{}, Usagef("%s is not one of change set %s's leaves", ref, rr.change)
 		}
 		return node, nil
-	}
+	}, close
 }
 
 // envCheckCycle is the cycle the caller's RHIZA_CYCLE names, which the
@@ -564,6 +575,7 @@ func runLeafFindings(ctx *Ctx, rr reviewRun, r RunFindingsRequest) (any, error) 
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	c, ok := w.changeSet(rr.change)
 	if !ok {
 		return nil, Errorf("run %s's change set %s is not in the log", rr.id, rr.change)
@@ -1105,6 +1117,7 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	c, ok := w.changeSet(rr.change)
 	if !ok {
 		return nil, NotFoundf("run %s's change set %s is not in the log", rr.id, rr.change).WithNext("rhiza run status " + rr.id)
@@ -1483,6 +1496,7 @@ func runRunGate(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	m := w.model(rr.change)
 	sets := w.changeSets()
 	plan, err := planChangeSets(sets, m, rr.change)

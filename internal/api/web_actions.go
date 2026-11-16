@@ -109,6 +109,7 @@ func gateAnswered(ctx *Ctx, ref, q string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer w.closeProjection()
 	cs, err := id.Parse(c.ChangeRef)
 	if err != nil {
 		return false, err

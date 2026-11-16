@@ -134,6 +134,7 @@ func runCarve(ctx *Ctx, r CarveRequest) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	build := func() (carvePlan, error) {
 		p, err := planCarve(w, r)
 		if err != nil {

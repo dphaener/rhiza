@@ -223,6 +223,7 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	current, err := w.current()
 	if err != nil {
 		return nil, err

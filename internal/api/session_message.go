@@ -204,6 +204,7 @@ func messageSender(ctx *Ctx) (sender, error) {
 	if err != nil {
 		return sender{}, err
 	}
+	defer w.closeProjection()
 	current, err := w.current()
 	if err != nil {
 		return sender{}, err

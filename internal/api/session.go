@@ -332,6 +332,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer ww.closeProjection()
 	var actorCS id.ID
 	if rec.Actor, actorCS, err = recordAgentActor(ww, a.Name(), sid, cs, launcher, forID); err != nil {
 		return nil, err
@@ -399,6 +400,7 @@ func resolveChangeWorktreeIn(ctx *Ctx, ref, refusal string, landedOK bool) (chan
 	if err != nil {
 		return t, err
 	}
+	defer w.closeProjection()
 	var cs id.ID
 	if ref = strings.TrimSpace(ref); ref != "" {
 		cs, err = w.resolveChangeSet(ref)
@@ -712,7 +714,7 @@ func addWorktree(ctx *Ctx, prefix, path, branch string) error {
 // file a later merge brings.
 func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspace, error) {
 	open := func() (*workspace, error) {
-		ww, err := openWorkspace(root, ctx.Now, ctx.IDs, false)
+		ww, err := openRootWorkspace(ctx, root, false)
 		if err != nil {
 			if e := AsError(err); e != nil && e.Code == CodeNotFound {
 				return nil, Conflictf("the worktree has no Rhiza repository at %s", root).WithNext("git worktree list")

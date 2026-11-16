@@ -138,6 +138,7 @@ func feedItems(ctx *Ctx, all bool, since time.Time, after id.ID) ([]FeedItem, er
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	m := w.model(id.ID{})
 	var items []FeedItem
 	for _, c := range w.changeSets() {

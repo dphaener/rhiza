@@ -64,6 +64,7 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer w.closeProjection()
 		cs, err := w.resolveChangeSet(r.Change)
 		if err != nil {
 			return nil, err

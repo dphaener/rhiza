@@ -75,6 +75,7 @@ func runChangeDiff(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	var cs id.ID
 	if ref := strings.TrimSpace(r.Ref); ref != "" {
 		cs, err = w.resolveChangeSet(ref)

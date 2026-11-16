@@ -389,7 +389,8 @@ func runRunRequestChanges(ctx *Ctx, req any) (any, error) {
 	if rr.change, err = id.Parse(sr.state.Change); err != nil {
 		return nil, Errorf("run %s names change set %q: %v", sr.j.ID, sr.state.Change, err)
 	}
-	leafOf := changeLeafResolver(ctx, rr)
+	leafOf, closeLeaves := changeLeafResolver(ctx, rr)
+	defer closeLeaves()
 	found := make([]run.Finding, 0, len(f.Findings))
 	for i, in := range f.Findings {
 		n := i + 1

@@ -154,6 +154,7 @@ func (r *stepRunner) CommitCheckWrites(session string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer w.closeProjection()
 	m := w.model(cs)
 	actor, err := liveActor(m, rec.Actor)
 	if err != nil {
@@ -228,6 +229,7 @@ func (r *stepRunner) AddReviewQuestion(text string) (run.Question, error) {
 	if err != nil {
 		return run.Question{}, err
 	}
+	defer ww.closeProjection()
 	c, ok := ww.changeSet(cs)
 	if !ok {
 		return run.Question{}, NotFoundf("change set %s is not in the log", cs)

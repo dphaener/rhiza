@@ -197,26 +197,31 @@ func TestChangeShowIndexedMatchesFoldGenerated(t *testing.T) {
 	}
 }
 
-// TestChangeShowProjectionOpensOnce: with ctx.IndexPath set, change show
-// opens the index once, through the workspace's projection, and answers
-// what the fold of the log answers. With no change set named or current it
-// is still the same usage error.
+// TestChangeShowProjectionOpensOnce: change show opens the index once,
+// through the workspace's projection, with ctx.IndexPath set or empty (a
+// throwaway index), and both answer the same. With no change set named or
+// current it is still the same usage error.
 func TestChangeShowProjectionOpensOnce(t *testing.T) {
 	t.Parallel()
 	ctx, sets := indexedLog(t)
 	folded := *ctx
-	// The fold side: no index on purpose, to compare against the indexed read.
+	// The throwaway side: no index path on purpose.
 	folded.IndexPath = ""
 	opens := 0
 	ctx.openedProjection = func() { opens++ }
-	folded.openedProjection = func() { t.Error("change show over the log opened a projection") }
+	folded.openedProjection = func() { opens++ }
 	for _, ref := range append([]string{""}, idStrings(sets)...) {
 		opens = 0
 		got := showJSON(t, ctx, ref)
 		if opens != 1 {
 			t.Errorf("change show %q opened the index %d times, want 1", ref, opens)
 		}
-		if want := showJSON(t, &folded, ref); got != want {
+		opens = 0
+		want := showJSON(t, &folded, ref)
+		if opens != 1 {
+			t.Errorf("change show %q with no IndexPath opened the index %d times, want 1", ref, opens)
+		}
+		if got != want {
 			t.Errorf("change show %q\nindexed %s\nfolded  %s", ref, got, want)
 		}
 	}

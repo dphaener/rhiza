@@ -216,7 +216,6 @@ func (m *indexModel) rank(leaves []Node) map[id.ID]int {
 // projection: its change sets and the change set's entries, and its open
 // index for the view, the diff and the notes.
 func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, error) {
-	w.useProjection(ctx)
 	defer w.closeProjection()
 	p := w.projection()
 	x := p.store()
@@ -227,7 +226,7 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 	if err != nil {
 		return nil, err
 	}
-	infos := p.changeSetInfos(nil)
+	infos := p.changeSetInfos(w.pending)
 	if err := p.failure(); err != nil {
 		return nil, err
 	}
@@ -243,7 +242,7 @@ func runChangeShowIndexed(ctx *Ctx, w *workspace, r ChangeShowRequest) (any, err
 	if cs.IsZero() {
 		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
 	}
-	es := p.entries(nil, cs)
+	es := p.entries(w.pending, cs)
 	if err := p.failure(); err != nil {
 		return nil, err
 	}

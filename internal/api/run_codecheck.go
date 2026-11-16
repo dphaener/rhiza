@@ -225,12 +225,13 @@ func codeCheckLints(ctx *Ctx, change, worktree string) ([]RunLintHit, error) {
 			return nil, Errorf("%v", err)
 		}
 		dir = filepath.Join(worktree, strings.TrimSpace(prefix))
-		if w, err = openWorkspace(dir, ctx.Now, ctx.IDs, true); err != nil {
+		if w, err = openRootWorkspace(ctx, dir, true); err != nil {
 			return nil, err
 		}
 	} else if w, err = openCtxWorkspace(ctx); err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	c, ok := w.changeSet(cs)
 	if !ok {
 		return out, nil

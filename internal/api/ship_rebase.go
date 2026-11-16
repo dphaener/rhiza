@@ -456,6 +456,7 @@ func shipCommitStaged(ctx *Ctx, t shipTarget, pathspec, message string) (string,
 	if err != nil {
 		return "", err
 	}
+	defer w.closeProjection()
 	actor, err := shipActorHandle(w, t.cs, ctx)
 	if err != nil {
 		return "", err

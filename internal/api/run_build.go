@@ -94,13 +94,14 @@ func buildCheckRun(ctx *Ctx, rid, change, worktree string) (RunBuildCheckRespons
 			return RunBuildCheckResponse{}, Errorf("%v", err)
 		}
 		dir = filepath.Join(worktree, strings.TrimSpace(prefix))
-		w, err = openWorkspace(dir, ctx.Now, ctx.IDs, true)
+		w, err = openRootWorkspace(ctx, dir, true)
 		if err != nil {
 			return RunBuildCheckResponse{}, err
 		}
 	} else if w, err = openCtxWorkspace(ctx); err != nil {
 		return RunBuildCheckResponse{}, err
 	}
+	defer w.closeProjection()
 	c, ok := w.changeSet(cs)
 	if !ok {
 		return RunBuildCheckResponse{}, Errorf("run %s names change set %s, which is not in the log", rid, cs).WithNext("rhiza run status " + rid)
