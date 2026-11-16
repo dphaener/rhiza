@@ -1,0 +1,50 @@
+{
+  "actor": "01M7GZ9TVFXCWYPAGNER3SKZ3Q",
+  "after": [
+    "01M7GZ8YR01Z9C1WN2SK46WFDC"
+  ],
+  "at": "2026-11-16T01:25:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Second verifier, at builder commit e4d148ed5 (internal/store and go.mod unchanged through HEAD e7a5084d1). Ran under the capped scope: go test -trimpath -p 2 -count=1 ./internal/store: exit 0. go test -race -trimpath -p 2 -count=1 ./internal/store -run ReadEntries: exit 0, race-clean; TestReadEntriesParallelSame (300 entries over 7 change sets plus an unreadable file, an undecodable entry and an ID/path mismatch; 2, 4 and len(paths) workers and reversed paths deep-equal the serial Log) and TestReadEntriesOneProc (GOMAXPROCS=1 gives decodeWorkers 1 and the same Log) pass. Diff read: each path's result goes to its own slot, gathered in path order before the unchanged sort, so Entries and Problems keep their order and content; workers = max(1, min(4, GOMAXPROCS, n)); imports only runtime, sync and sync/atomic, no go.mod or go.sum change; only read.go, read_test.go and the builder's actor record are touched. The 5 s clause is UNMET, not passed: the first verifier measured rhiza check at 11.67 s wall (16.25 s user + 4.14 s sys, load ~3), and the builder measured 7.34-9.53 s (load ~2), against a 5 s target. Per Decision check-time-gap-carried, the leaf is settled on the rest of its acceptance and the gap is carried to draft change set 01M7GZ8K2B; check was not re-timed here."
+        },
+        "handle": "read-entries-parallel-verified",
+        "id": "01M7GZAZ456JY6VSQQZVF0828J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GZAZ456JY6VSQQZRGRX724",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GZAZ456JY6VSQQZRGRX724",
+        "id": "01M7GZAZ53DHR6A94N3J1N0FVX",
+        "link": "01M7GZAZ53DHR6A94N3G6WEFA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXTNFE5TRP176PWG9TATG",
+        "type": "verifies"
+      },
+      {
+        "decision": null,
+        "from": "01M7GZAZ456JY6VSQQZRGRX724",
+        "id": "01M7GZAZ63PW0DW0K9HPYS1MX1",
+        "link": "01M7GZAZ63PW0DW0K9HNC34DQ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GZ7H98QNRXCHTGS72ASM1D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "id": "01M7GZAZ70HJS1DKK9ZG5D30Y2",
+  "type": "ops",
+  "v": 1
+}
