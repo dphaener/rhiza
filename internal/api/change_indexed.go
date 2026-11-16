@@ -37,7 +37,7 @@ func newIndexModel(x *index.Index, cs id.ID, state changeset.State) (*indexModel
 	m := &indexModel{x: x}
 	if inFlightState(state) {
 		ix := &writeIndex{x: x}
-		wm := ix.buildModel(&workspace{}, cs).(*writeModel)
+		wm := ix.buildModel(nil, cs).(*writeModel)
 		if err := ix.failure(); err != nil {
 			return nil, err
 		}

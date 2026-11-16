@@ -23,8 +23,10 @@ import (
 	"github.com/dphaener/rhiza/internal/op"
 )
 
-// writeIndex is the index of one write. A write to disk makes it stale; the
-// next read opens it again, which catches it up with the entry written.
+// writeIndex is the projection (projection.go): the index of one call with
+// the dry run's pending entries laid over it. A write to disk makes it
+// stale; the next read opens it again, which catches it up with the entry
+// written.
 type writeIndex struct {
 	ctx   *Ctx
 	x     *index.Index
@@ -40,6 +42,9 @@ type writeIndex struct {
 
 // openWriteIndex opens the index of ctx's repository for a write.
 func openWriteIndex(ctx *Ctx) (*writeIndex, error) {
+	if ctx.openedProjection != nil {
+		ctx.openedProjection()
+	}
 	x, err := index.Open(ctx.Root, ctx.IndexPath)
 	if err != nil {
 		return nil, Errorf("%s", err.Error())
@@ -60,6 +65,16 @@ func (ix *writeIndex) failure() error {
 		return nil
 	}
 	return Errorf("%s", ix.err.Error())
+}
+
+// wrote marks the index stale after a write to disk.
+func (ix *writeIndex) wrote() { ix.stale = true }
+
+// problems returns the problems the index stores.
+func (ix *writeIndex) problems() []index.Problem {
+	ps, err := ix.index().Problems()
+	ix.fail(err)
+	return ps
 }
 
 func (ix *writeIndex) fail(err error) {
@@ -84,7 +99,7 @@ func (ix *writeIndex) index() *index.Index {
 
 // entries returns change set cs's stored entries and the dry run's pending
 // ones, sorted by ID.
-func (ix *writeIndex) entries(w *workspace, cs id.ID) []entry.Entry {
+func (ix *writeIndex) entries(pending []entry.Entry, cs id.ID) []entry.Entry {
 	var es []entry.Entry
 	if !cs.IsZero() {
 		var err error
@@ -92,7 +107,7 @@ func (ix *writeIndex) entries(w *workspace, cs id.ID) []entry.Entry {
 			ix.fail(err)
 		}
 	}
-	for _, e := range w.pending {
+	for _, e := range pending {
 		if e.ChangeSet == cs {
 			es = append(es, e)
 		}
@@ -101,13 +116,13 @@ func (ix *writeIndex) entries(w *workspace, cs id.ID) []entry.Entry {
 	return es
 }
 
-// setIDs returns the IDs of the change sets in the index and in pending,
+// changeSetIDs returns the IDs of the change sets in the index and in pending,
 // sorted.
-func (ix *writeIndex) setIDs(w *workspace) []id.ID {
+func (ix *writeIndex) changeSetIDs(pending []entry.Entry) []id.ID {
 	infos, err := ix.index().ChangeSets()
 	ix.fail(err)
 	ids := infoIDs(infos)
-	for _, e := range w.pending {
+	for _, e := range pending {
 		if !slices.Contains(ids, e.ChangeSet) {
 			ids = append(ids, e.ChangeSet)
 		}
@@ -119,18 +134,18 @@ func (ix *writeIndex) setIDs(w *workspace) []id.ID {
 // changeSets folds every change set: the stored ones, with those pending
 // entries touch folded again. Only a depends-on link between change sets
 // asks for it.
-func (ix *writeIndex) changeSets(w *workspace) []changeset.ChangeSet {
-	ids := ix.setIDs(w)
+func (ix *writeIndex) changeSets(pending []entry.Entry) []changeset.ChangeSet {
+	ids := ix.changeSetIDs(pending)
 	got, err := ix.index().FoldedOf(ids)
 	ix.fail(err)
 	touched := map[id.ID]bool{}
-	for _, e := range w.pending {
+	for _, e := range pending {
 		touched[e.ChangeSet] = true
 	}
 	var out []changeset.ChangeSet
 	for _, cs := range ids {
 		if touched[cs] {
-			c, _ := changeset.Fold(cs, ix.entries(w, cs))
+			c, _ := changeset.Fold(cs, ix.entries(pending, cs))
 			out = append(out, c)
 		} else if c, ok := got[cs]; ok {
 			out = append(out, c)
@@ -147,29 +162,29 @@ func (ix *writeIndex) changeSets(w *workspace) []changeset.ChangeSet {
 // its stored entries and the dry run's pending ones; else it is as-is.
 // Version and Conflict follow the strict rule from the view's histories
 // and problems, as newModel's do.
-func (ix *writeIndex) model(w *workspace, current id.ID) Model {
-	if ix.models != nil && len(w.pending) == 0 {
+func (ix *writeIndex) model(pending []entry.Entry, current id.ID) Model {
+	if ix.models != nil && len(pending) == 0 {
 		if m, ok := ix.models[current]; ok {
 			return m
 		}
-		m := ix.buildModel(w, current)
+		m := ix.buildModel(pending, current)
 		if ix.err == nil {
 			ix.models[current] = m
 		}
 		return m
 	}
-	return ix.buildModel(w, current)
+	return ix.buildModel(pending, current)
 }
 
 // buildModel is model without the memo.
-func (ix *writeIndex) buildModel(w *workspace, current id.ID) Model {
+func (ix *writeIndex) buildModel(pending []entry.Entry, current id.ID) Model {
 	if ix.ctx != nil && ix.ctx.builtModel != nil {
 		ix.ctx.builtModel(current)
 	}
 	m := &writeModel{ix: ix}
 	var over *changeset.ChangeSet
 	if !current.IsZero() {
-		if es := ix.entries(w, current); len(es) > 0 {
+		if es := ix.entries(pending, current); len(es) > 0 {
 			if c, _ := changeset.Fold(current, es); inFlightState(c.State) {
 				over = &c
 			}

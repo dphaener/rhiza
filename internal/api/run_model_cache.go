@@ -97,12 +97,12 @@ func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) 
 	if k, ok := rm.vals[key]; ok {
 		return k.v, nil
 	}
-	w.ix = rm.ix
+	w.setProjection(rm.ix)
 	v, err := compute(w)
 	if err != nil {
 		return nil, err
 	}
-	if ferr := w.ix.failure(); ferr != nil {
+	if ferr := rm.ix.failure(); ferr != nil {
 		rm.x.Close()
 		r.rm = nil
 		return nil, ferr

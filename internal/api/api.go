@@ -154,6 +154,9 @@ type Ctx struct {
 	// read builds (memo misses only); tests count folds per change set
 	// with it.
 	builtModel func(cs id.ID)
+	// openedProjection, when set, is told each time a projection opens its
+	// index; tests count the opens of one call with it.
+	openedProjection func()
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
 	// commonDirs keeps gitCommonDir's answers by Root; copies of the Ctx

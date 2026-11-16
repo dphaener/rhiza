@@ -1414,10 +1414,9 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 	// a usable index the log is read, as before.
 	if p, err := index.DefaultPath(st.Worktree); err == nil {
 		c.IndexPath = p
-		if ix, err := openWriteIndex(&c); err == nil {
-			defer ix.close()
-			ix.models = map[id.ID]Model{}
-			w.ix = ix
+		if pj, err := openProjection(&c, true); err == nil {
+			w.setProjection(pj)
+			defer w.closeProjection()
 		}
 	}
 	own, err := id.Parse(st.Change)

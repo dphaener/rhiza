@@ -16,7 +16,7 @@ import (
 )
 
 // This file holds the parity cases the harness found on the index's write
-// model (writeIndex.model), each on the smallest log that shows it: the
+// model (the projection, projection.go), each on the smallest log that shows it: the
 // write model now takes its view from the index's strict what-if, so each
 // one agrees with the strict engine. The notes on leaf
 // parity-write-index-from-strict name each case's results before the fix.
@@ -43,7 +43,7 @@ func (b *logBuilder) changeSetAs(cs id.ID, kind changeset.Kind, bodies ...change
 
 // indexOf writes b's entries to a new repository and returns the index of
 // it, caught up.
-func indexOf(t *testing.T, b *logBuilder) *writeIndex {
+func indexOf(t *testing.T, b *logBuilder) projection {
 	t.Helper()
 	root := t.TempDir()
 	gdir := filepath.Join(root, store.Dir)
@@ -77,7 +77,7 @@ func indexAgrees(t *testing.T, b *logBuilder, cs id.ID) {
 	t.Helper()
 	p := parityOf(t, b)
 	ix := indexOf(t, b)
-	m := ix.model(&workspace{}, cs).(*writeModel)
+	m := ix.model(nil, cs).(*writeModel)
 	if err := ix.failure(); err != nil {
 		t.Fatalf("index model of %s: %v", viewName(cs), err)
 	}

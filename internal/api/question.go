@@ -174,10 +174,9 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	// Without a usable index both read the log, as before.
 	if p, err := index.DefaultPath(dir); err == nil {
 		c.IndexPath = p
-		if ix, err := openWriteIndex(&c); err == nil {
-			defer ix.close()
-			ix.models = map[id.ID]Model{}
-			w.ix = ix
+		if pj, err := openProjection(&c, true); err == nil {
+			w.setProjection(pj)
+			defer w.closeProjection()
 		} else {
 			c.IndexPath = ""
 		}
