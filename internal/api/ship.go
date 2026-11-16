@@ -1212,6 +1212,7 @@ func runShipModelConflict(ctx *Ctx) (any, error) {
 	}
 	v := &ShipModelConflictView{Node: mc.Node, Op: mc.Op, Aspects: mc.Aspects, Head: mc.Head, ChangeSetID: t.cs.String(), OtherChangeSet: mc.ChangeSet}
 	if w, err := openCtxWorkspace(ctx); err == nil {
+		defer w.closeProjection()
 		if c, ok := w.changeSet(t.cs); ok {
 			v.Intent = c.Open.Intent
 		}

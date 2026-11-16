@@ -170,9 +170,11 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	if err != nil {
 		return nil, err
 	}
-	if pj, err := openProjection(&c, true); err == nil {
-		w.setProjection(pj)
+	pj, err := openProjection(&c, true)
+	if err != nil {
+		return nil, err
 	}
+	w.setProjection(pj)
 	defer w.closeProjection()
 	own, err := id.Parse(st.Change)
 	if err != nil {

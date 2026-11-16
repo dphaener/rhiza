@@ -1567,6 +1567,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	if len(st.Gated) > 0 {
 		if w, err := openCtxWorkspace(ctx); err == nil {
 			info.Waiting = runWaiting(st.Gated, w.changeSets())
+			w.closeProjection()
 		}
 	}
 	spawnedStatements(ctx, st, info.Spawned)

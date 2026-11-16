@@ -452,6 +452,7 @@ func (t changeWorktree) open(ctx *Ctx) (*workspace, error) {
 		return nil, err
 	}
 	if err := ww.setCurrent(t.cs); err != nil {
+		ww.closeProjection()
 		return nil, err
 	}
 	return ww, nil
@@ -731,6 +732,7 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 	// Even when the worktree has the change set, the main clone may hold
 	// entries it lacks (an accept made there and never pushed).
 	if _, serr := os.Stat(filepath.Join(w.root, store.Dir, store.LogDir, cs.String())); serr == nil || !had {
+		ww.closeProjection()
 		if err := copyChangeSetLog(w.root, root, cs); err != nil {
 			return nil, err
 		}
@@ -739,6 +741,7 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 		}
 	}
 	if _, ok := ww.changeSet(cs); !ok {
+		ww.closeProjection()
 		return nil, Errorf("change set %s is not in the worktree's log at %s after copying it", cs, root)
 	}
 	return ww, nil

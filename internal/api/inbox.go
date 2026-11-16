@@ -1403,9 +1403,11 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 	if err != nil {
 		return nil, nil
 	}
-	if pj, err := openProjection(&c, true); err == nil {
-		w.setProjection(pj)
+	pj, err := openProjection(&c, true)
+	if err != nil {
+		return nil, nil
 	}
+	w.setProjection(pj)
 	defer w.closeProjection()
 	own, err := id.Parse(st.Change)
 	if err != nil {

@@ -118,8 +118,8 @@ func status(ctx *Ctx) (StatusResponse, error) {
 		return StatusResponse{}, err
 	}
 	w.logRead = ctx.logRead
-	// With an index, the change sets are the projection's stored rows, so
-	// the log is not read; without one they are folded from the log.
+	// The change sets are the projection's stored rows, so the log is not
+	// read; without an index path the projection is a throwaway index.
 	w.useProjection(ctx)
 	defer w.closeProjection()
 	cs, err := w.effectiveChangeSet(ctx)
