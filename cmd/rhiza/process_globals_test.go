@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -94,13 +95,18 @@ func TestRunConcurrentDirs(t *testing.T) {
 // process: TestNoProcessGlobals parses their non-test Go files.
 var guardedDirs = []string{"cmd/rhiza", "internal/api", "internal/run", "internal/daemon", "internal/gosweep", "internal/index"}
 
-// processGlobals are the os functions and variables that read or change
-// the process's working directory, arguments, executable, environment or
-// user folders.
-var processGlobals = map[string]bool{
-	"Getwd": true, "Chdir": true, "Args": true, "Executable": true,
-	"Getenv": true, "LookupEnv": true, "Environ": true, "Setenv": true, "Unsetenv": true,
-	"UserCacheDir": true, "UserHomeDir": true, "TempDir": true,
+// processGlobals are, by import path, the functions and variables that
+// read or change the process's working directory, arguments, executable,
+// environment or user folders: os's, and path/filepath's Abs, which joins
+// a relative path onto os.Getwd (a path a command takes is joined onto
+// the Ctx's working directory instead).
+var processGlobals = map[string]map[string]bool{
+	"os": {
+		"Getwd": true, "Chdir": true, "Args": true, "Executable": true,
+		"Getenv": true, "LookupEnv": true, "Environ": true, "Setenv": true, "Unsetenv": true,
+		"UserCacheDir": true, "UserHomeDir": true, "TempDir": true,
+	},
+	"path/filepath": {"Abs": true},
 }
 
 // processGlobalsAllowed names each remaining site that may read the
@@ -108,14 +114,15 @@ var processGlobals = map[string]bool{
 // function ("" is the whole file), with its reason.
 var processGlobalsAllowed = []struct{ file, fn, reason string }{
 	{"cmd/rhiza/main.go", "main", "the process's entry point: it hands run() the process's working directory, arguments, environment and RHIZA_CPUPROFILE"},
-	{"cmd/rhiza/ctx.go", "selfPath", "main() alone calls it to find the running binary from os.Args[0]; run() is given the result"},
+	{"cmd/rhiza/ctx.go", "selfPath", "main() alone calls it to find the running binary from os.Args[0] (made absolute with filepath.Abs against the process's own working directory, where os.Args[0] is relative to); run() is given the result"},
 	{"internal/daemon/reexec.go", "", "the daemon re-execs its own process image, with the process's own arguments and environment"},
 }
 
 // TestNoProcessGlobals checks that no non-test Go file of the guarded
-// packages reads the process's working directory, arguments, executable,
-// environment or user folders outside processGlobalsAllowed; each site it
-// finds is named by file and line. Its fixtures show it failing.
+// packages reads the process's working directory (filepath.Abs included),
+// arguments, executable, environment or user folders outside
+// processGlobalsAllowed; each site it finds is named by file and line. Its
+// fixtures show it failing.
 func TestNoProcessGlobals(t *testing.T) {
 	root, err := filepath.Abs(filepath.Join("..", ".."))
 	if err != nil {
@@ -143,9 +150,15 @@ func TestNoProcessGlobals(t *testing.T) {
 		write("internal/index/cache.go", "package index\n\nimport goos \"os\"\n\nvar cacheDir = goos.UserCacheDir\n")
 		write("internal/index/cache_test.go", "package index\n\nimport \"os\"\n\nvar _ = os.Getenv(\"X\")\n")
 		write("internal/daemon/reexec.go", "package daemon\n\nimport \"os\"\n\nvar _ = os.Args\n")
+		// filepath.Abs is flagged under any import name, filepath.Join is
+		// not, and selfPath's Abs is allowlisted.
+		write("internal/api/apply.go", "package api\n\nimport fp \"path/filepath\"\n\nfunc read(f string) string {\n\tabs, _ := fp.Abs(f)\n\treturn fp.Join(abs, f)\n}\n")
+		write("cmd/rhiza/ctx.go", "package main\n\nimport \"path/filepath\"\n\nfunc selfPath() string { p, _ := filepath.Abs(\"x\"); return p }\n\nfunc root(v string) string {\n\tp, _ := filepath.Abs(v)\n\treturn p\n}\n")
 		got := findProcessGlobals(t, fix, guardedDirs)
 		want := []string{
+			"cmd/rhiza/ctx.go:8: filepath.Abs",
 			"cmd/rhiza/main.go:8: os.Getenv",
+			"internal/api/apply.go:6: filepath.Abs",
 			"internal/index/cache.go:5: os.UserCacheDir",
 		}
 		if strings.Join(got, "\n") != strings.Join(want, "\n") {
@@ -156,7 +169,8 @@ func TestNoProcessGlobals(t *testing.T) {
 
 // findProcessGlobals parses the non-test Go files under dirs (relative to
 // root; a missing one is skipped) and returns each use of a processGlobals
-// name outside processGlobalsAllowed as "file:line: os.Name", sorted.
+// name outside processGlobalsAllowed as "file:line: pkg.Name" (os.Getenv,
+// filepath.Abs), sorted.
 func findProcessGlobals(t *testing.T, root string, dirs []string) []string {
 	t.Helper()
 	var found []string
@@ -189,7 +203,7 @@ func findProcessGlobals(t *testing.T, root string, dirs []string) []string {
 			}
 			for _, s := range processGlobalUses(fset, f) {
 				if !processGlobalAllowed(rel, s.fn) {
-					found = append(found, fmt.Sprintf("%s:%d: os.%s", rel, s.line, s.name))
+					found = append(found, fmt.Sprintf("%s:%d: %s", rel, s.line, s.name))
 				}
 			}
 			return nil
@@ -209,7 +223,7 @@ func findProcessGlobals(t *testing.T, root string, dirs []string) []string {
 	return found
 }
 
-// splitSite splits "file:line: os.Name" into its file and line.
+// splitSite splits "file:line: pkg.Name" into its file and line.
 func splitSite(s string) (string, int) {
 	file, rest, _ := strings.Cut(s, ":")
 	line, _, _ := strings.Cut(rest, ":")
@@ -223,19 +237,25 @@ type processGlobalUse struct {
 }
 
 // processGlobalUses lists f's selectors of a processGlobals name on its
-// import of "os", called or not, each with its line and the top-level
-// function it sits in ("" outside any).
+// import of that name's package, under any import name, called or not,
+// each named pkg.Name by the package's last path element, with its line
+// and the top-level function it sits in ("" outside any).
 func processGlobalUses(fset *token.FileSet, f *ast.File) []processGlobalUse {
-	osName := ""
+	pkgs := map[string]string{} // local import name -> import path
 	for _, im := range f.Imports {
-		if p, _ := strconv.Unquote(im.Path.Value); p == "os" {
-			osName = "os"
-			if im.Name != nil {
-				osName = im.Name.Name
-			}
+		p, _ := strconv.Unquote(im.Path.Value)
+		if processGlobals[p] == nil {
+			continue
+		}
+		name := path.Base(p)
+		if im.Name != nil {
+			name = im.Name.Name
+		}
+		if name != "_" && name != "." {
+			pkgs[name] = p
 		}
 	}
-	if osName == "" || osName == "_" {
+	if len(pkgs) == 0 {
 		return nil
 	}
 	var uses []processGlobalUse
@@ -249,8 +269,10 @@ func processGlobalUses(fset *token.FileSet, f *ast.File) []processGlobalUse {
 			if !ok {
 				return true
 			}
-			if x, ok := sel.X.(*ast.Ident); ok && x.Name == osName && processGlobals[sel.Sel.Name] {
-				uses = append(uses, processGlobalUse{sel.Sel.Name, fn, fset.Position(sel.Pos()).Line})
+			if x, ok := sel.X.(*ast.Ident); ok {
+				if p, ok := pkgs[x.Name]; ok && processGlobals[p][sel.Sel.Name] {
+					uses = append(uses, processGlobalUse{path.Base(p) + "." + sel.Sel.Name, fn, fset.Position(sel.Pos()).Line})
+				}
 			}
 			return true
 		})

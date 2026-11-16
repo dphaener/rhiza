@@ -139,12 +139,13 @@ func (r *stepRunner) mirroredPaths() ([]string, error) {
 
 // gitDirsOf finds the checkout's top folder and the git common dir above
 // dir: a .git folder is the common dir itself, a .git file of a linked
-// worktree names <common>/worktrees/<name>.
+// worktree names <common>/worktrees/<name>. A relative dir is not found:
+// it is never read against the process's working directory.
 func gitDirsOf(dir string) (top, common string, ok bool) {
-	d, err := filepath.Abs(dir)
-	if err != nil {
+	if !filepath.IsAbs(dir) {
 		return "", "", false
 	}
+	d := filepath.Clean(dir)
 	for {
 		g := filepath.Join(d, ".git")
 		if fi, err := os.Lstat(g); err == nil {

@@ -100,7 +100,7 @@ func daemonHome(ctx *Ctx, root string, reg rootcfg.Config) (string, *Ctx, bool) 
 		return "", nil, false
 	}
 	dir := reg.Dir(root, name)
-	if abs, err := filepath.Abs(ctx.Root); err == nil && abs == filepath.Clean(dir) {
+	if abs, err := ctx.abs(ctx.Root); err == nil && abs == filepath.Clean(dir) {
 		// The caller's own context, with the poll's bounded git when it
 		// can start programs; without Start its own Git stays.
 		if ctx.Start == nil {
@@ -649,7 +649,7 @@ func milestoneHoldsOwner(ctx *Ctx, j run.Journal, host string) bool {
 		return false
 	}
 	var def *workflow.Definition
-	if _, d, _, err := resolveWorkflow(ctx.Root, st.Workflow, ctx.Getenv); err == nil {
+	if _, d, _, err := resolveWorkflow(ctx.Root, ctx.Wd, st.Workflow, ctx.Getenv); err == nil {
 		def = d
 	}
 	if st.Stopped != "" && !st.Autonomous && def != nil {

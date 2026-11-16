@@ -122,7 +122,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 	}
 	// Every run the daemon starts is a ship-change run with this mode: one
 	// that run start would refuse is refused here, before any tab opens.
-	_, def, _, err := resolveWorkflow(homeCtx.Root, "", homeCtx.Getenv)
+	_, def, _, err := resolveWorkflow(homeCtx.Root, homeCtx.Wd, "", homeCtx.Getenv)
 	if err != nil {
 		return nil, err
 	}
@@ -1438,7 +1438,7 @@ func changeConducts(root string, o changeset.Open, getenv func(string) string) b
 	if err != nil {
 		return false
 	}
-	_, def, _, err := resolveWorkflow(root, name, getenv)
+	_, def, _, err := resolveWorkflow(root, root, name, getenv)
 	return err == nil && conductorWorkflow(def)
 }
 
@@ -2296,7 +2296,7 @@ func daemonUnresolvedReady(ctx *Ctx, fold *daemonFolded, cands []string) ([]stri
 			skips = append(skips, daemon.Skip{Change: cs, Reason: daemon.SkipWorkflow, Detail: []string{dispatch.TableReady + "." + kind, "the [ready] rule for " + kind + " in " + dispatch.File, err.Error()}})
 			continue
 		}
-		if _, _, _, err := resolveWorkflow(ctx.Root, name, ctx.Getenv); err != nil {
+		if _, _, _, err := resolveWorkflow(ctx.Root, ctx.Wd, name, ctx.Getenv); err != nil {
 			source := "the [ready] rule for " + c.Open.DispatchKind() + " in " + dispatch.File
 			if c.Open.Workflow != "" {
 				source = "recorded on the change set by its request"

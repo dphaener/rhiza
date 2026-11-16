@@ -105,7 +105,7 @@ func runSourceAdd(ctx *Ctx, req any) (any, error) {
 	if r.File == "" {
 		return nil, Usagef("source add needs a file").WithNext(next)
 	}
-	data, err := readSourceFile("source file", r.File)
+	data, err := readSourceFile(ctx, "source file", r.File)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func runSourceAdd(ctx *Ctx, req any) (any, error) {
 	var extra []string
 	switch {
 	case r.Raw != "":
-		raw, err := readSourceFile("--raw", r.Raw)
+		raw, err := readSourceFile(ctx, "--raw", r.Raw)
 		if err != nil {
 			return nil, err
 		}
@@ -172,10 +172,15 @@ func sessionTranscript(ctx *Ctx, ref string) (string, []byte, error) {
 	return rec.ID, raw, nil
 }
 
-// readSourceFile reads file; a missing one is not_found, any other failure
+// readSourceFile reads file, resolved against the Ctx's working
+// directory; a missing one is not_found, any other failure
 // a usage error. what names the file in messages.
-func readSourceFile(what, file string) ([]byte, error) {
-	data, err := os.ReadFile(file)
+func readSourceFile(ctx *Ctx, what, file string) ([]byte, error) {
+	path, err := ctx.abs(file)
+	if err != nil {
+		return nil, Usagef("%s: cannot read %s: %v", what, file, err)
+	}
+	data, err := os.ReadFile(path)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
 		return nil, NotFoundf("%s: no file %s", what, file)

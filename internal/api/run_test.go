@@ -70,11 +70,7 @@ on.pass = "done"
 
 func TestWorkflowFile(t *testing.T) {
 	t.Parallel()
-	root := t.TempDir()
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
+	root, wd := t.TempDir(), t.TempDir()
 	for _, c := range []struct{ ref, want string }{
 		{"hello", filepath.Join(root, ".rhiza", "workflows", "hello.toml")},
 		{" hello ", filepath.Join(root, ".rhiza", "workflows", "hello.toml")},
@@ -82,16 +78,16 @@ func TestWorkflowFile(t *testing.T) {
 		{"hello.toml", filepath.Join(wd, "hello.toml")},
 		{"/abs/x", "/abs/x"},
 	} {
-		got, err := workflowFile(root, c.ref)
+		got, err := workflowFile(root, wd, c.ref)
 		if err != nil || got != c.want {
 			t.Errorf("workflowFile(%q) = %q, %v; want %q", c.ref, got, err, c.want)
 		}
 	}
-	if got, err := workflowFile(root, ""); err != nil || got != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
+	if got, err := workflowFile(root, wd, ""); err != nil || got != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
 		t.Errorf("workflowFile(\"\") = %q, %v; want the ship-change name", got, err)
 	}
 	for _, ref := range []string{".", ".."} {
-		_, err := workflowFile(root, ref)
+		_, err := workflowFile(root, wd, ref)
 		wantExit(t, err, 2)
 	}
 }
@@ -108,6 +104,8 @@ func TestRunStartWorkflowRefusals(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			f := newSessionFixture(t, "x")
+			// A relative workflow path resolves against the Ctx's folder.
+			f.ctx.Wd = f.ctx.Root
 			newChange(t, f.ctx, `{"intent":"X"}`)
 			if c.body != "" {
 				writeWorkflow(t, f.ctx.Root, c.workflow, c.body)
@@ -772,18 +770,18 @@ func TestResolveWorkflow(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	for _, ref := range []string{"", "ship-change"} {
-		path, def, data, err := resolveWorkflow(root, ref, nil)
+		path, def, data, err := resolveWorkflow(root, root, ref, nil)
 		if err != nil || path != "builtin:ship-change" || def.Name != "ship-change" || len(data) == 0 {
 			t.Errorf("resolveWorkflow(%q, nil) = %q, %v, %v; want the built-in", ref, path, def, err)
 		}
 	}
 	writeWorkflow(t, root, "ship-change", twoCommands)
-	path, def, _, err := resolveWorkflow(root, "", nil)
+	path, def, _, err := resolveWorkflow(root, root, "", nil)
 	want := filepath.Join(root, ".rhiza", "workflows", "ship-change.toml")
 	if err != nil || path != want || def.Start != "one" {
 		t.Errorf("a repo file did not replace the built-in: %q, %v, %v", path, def, err)
 	}
-	_, _, _, err = resolveWorkflow(root, "nope", nil)
+	_, _, _, err = resolveWorkflow(root, root, "nope", nil)
 	wantExit(t, err, 2)
 	if e := AsError(err); !strings.Contains(e.Message, "ship-change") {
 		t.Errorf("error %q does not name the built-ins", e.Message)
@@ -1043,7 +1041,7 @@ func TestResolveWorkflowPersonalShadows(t *testing.T) {
 	writeWorkflow(t, root, "ship-change", twoCommands)
 
 	// A repo file shadows a built-in.
-	path, _, _, err := resolveWorkflow(root, "ship-change", nil)
+	path, _, _, err := resolveWorkflow(root, root, "ship-change", nil)
 	if err != nil || path != filepath.Join(root, ".rhiza", "workflows", "ship-change.toml") {
 		t.Fatalf("repo over built-in: %q, %v", path, err)
 	}
@@ -1051,7 +1049,7 @@ func TestResolveWorkflowPersonalShadows(t *testing.T) {
 	pm := writePersonal(t, xdg, "mine", personalWorkflow)
 	ps := writePersonal(t, xdg, "ship-change", personalWorkflow)
 	for ref, want := range map[string]string{"mine": pm, "ship-change": ps, "": ps} {
-		path, def, _, err := resolveWorkflow(root, ref, os.Getenv)
+		path, def, _, err := resolveWorkflow(root, root, ref, os.Getenv)
 		if err != nil || path != want || def.Start != "mine" {
 			t.Errorf("resolveWorkflow(%q) = %q, %v, %v; want %q", ref, path, def, err, want)
 		}
@@ -1063,7 +1061,7 @@ func TestResolveWorkflowPersonalShadows(t *testing.T) {
 kind = "workflow"
 workflow = "mine"
 `)
-	_, def, _, err := resolveWorkflow(root, "outer", os.Getenv)
+	_, def, _, err := resolveWorkflow(root, root, "outer", os.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1073,7 +1071,7 @@ workflow = "mine"
 	// A built-in with no file anywhere still resolves to builtin:<name>.
 	os.Remove(ps)
 	os.Remove(filepath.Join(root, ".rhiza", "workflows", "ship-change.toml"))
-	if path, _, _, err := resolveWorkflow(root, "ship-change", nil); err != nil || path != "builtin:ship-change" {
+	if path, _, _, err := resolveWorkflow(root, root, "ship-change", nil); err != nil || path != "builtin:ship-change" {
 		t.Errorf("fell back to %q, %v", path, err)
 	}
 }

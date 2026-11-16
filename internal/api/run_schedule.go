@@ -29,7 +29,7 @@ const scheduleCommandStep = "command"
 // workflow with a single command step.
 func scheduleWorkflow(root string, sc dispatch.Schedule, getenv func(string) string) (string, *workflow.Definition, []byte, error) {
 	if sc.Workflow != "" {
-		return resolveWorkflow(root, sc.Workflow, getenv)
+		return resolveWorkflow(root, root, sc.Workflow, getenv)
 	}
 	var buf bytes.Buffer
 	doc := map[string]any{"step": map[string]any{scheduleCommandStep: map[string]any{"kind": workflow.KindCommand, "run": sc.Command}}}

@@ -16,14 +16,14 @@ import (
 // a sweep learns the worktree is gone.
 const metaRoot = "root"
 
-// recordRoot stores the resolved path of root in the index at dbPath.
+// recordRoot stores the resolved path of root, which must be absolute, in
+// the index at dbPath.
 // Errors are skipped: the record only serves the orphan sweep.
 func recordRoot(x *Index, root string) {
-	abs, err := filepath.Abs(root)
-	if err != nil {
+	if !filepath.IsAbs(root) {
 		return
 	}
-	resolved, err := filepath.EvalSymlinks(abs)
+	resolved, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		return
 	}

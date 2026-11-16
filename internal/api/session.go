@@ -561,7 +561,7 @@ func gitCommonDir(ctx *Ctx) (string, error) {
 	}
 	d = strings.TrimSpace(out)
 	if !filepath.IsAbs(d) {
-		root, err := filepath.Abs(ctx.Root)
+		root, err := ctx.abs(ctx.Root)
 		if err != nil {
 			return "", Errorf("project root: %v", err)
 		}

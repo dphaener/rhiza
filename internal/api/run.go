@@ -723,7 +723,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			r.Pick = PickExplicit
 		}
 	}
-	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow, ctx.Getenv)
+	path, def, data, err := resolveWorkflow(ctx.Root, ctx.Wd, r.Workflow, ctx.Getenv)
 	if err != nil {
 		return nil, err
 	}
@@ -864,7 +864,7 @@ func milestonePlanWorkflow(ctx *Ctx, def *workflow.Definition, path string, data
 	if !milestone || def.Name != planWorkflow {
 		return def, path, data, nil
 	}
-	p, d, src, err := resolveWorkflow(ctx.Root, planMilestoneWorkflow, ctx.Getenv)
+	p, d, src, err := resolveWorkflow(ctx.Root, ctx.Wd, planMilestoneWorkflow, ctx.Getenv)
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -908,7 +908,7 @@ func planOwnerJournaled(ctx *Ctx, st run.State) bool {
 			return a.Source == run.SourceWorkflow && a.Mode == workflow.AutonomyOwner
 		}
 	}
-	if _, def, _, err := resolveWorkflow(ctx.Root, st.Workflow, ctx.Getenv); err == nil {
+	if _, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, st.Workflow, ctx.Getenv); err == nil {
 		m, ok := def.Autonomy(workflow.StagePlan)
 		return ok && m == workflow.AutonomyOwner
 	}
@@ -1633,16 +1633,16 @@ const defaultWorkflow = "ship-change"
 const builtinPrefix = "builtin:"
 
 // workflowFile is the file ref names: a path when it has a separator or
-// ends in .toml (made absolute against the working directory, as apply
-// reads its file), else <root>/.rhiza/workflows/<ref>.toml. An empty ref
-// names the default workflow.
-func workflowFile(root, ref string) (string, error) {
+// ends in .toml (made absolute against wd, the caller's working directory,
+// as apply reads its file), else <root>/.rhiza/workflows/<ref>.toml. An
+// empty ref names the default workflow.
+func workflowFile(root, wd, ref string) (string, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
 		ref = defaultWorkflow
 	}
 	if strings.ContainsRune(ref, '/') || strings.ContainsRune(ref, filepath.Separator) || strings.HasSuffix(ref, ".toml") {
-		abs, err := filepath.Abs(ref)
+		abs, err := absIn(wd, ref)
 		if err != nil {
 			return "", Errorf("workflow %s: %v", ref, err)
 		}
@@ -1705,13 +1705,15 @@ func lookupWorkflow(root, name string, getenv func(string) string) (path string,
 // resolveWorkflow finds the workflow ref names and returns the path to
 // record in the journal (the file, or builtin:<name> for an embedded
 // one), its definition and its source. A bare name goes through
-// lookupWorkflow: personal file, repo file, built-in.
-func resolveWorkflow(root, ref string, getenv func(string) string) (string, *workflow.Definition, []byte, error) {
+// lookupWorkflow: personal file, repo file, built-in. A file ref is made
+// absolute against wd (workflowFile); callers with no caller's folder,
+// such as the daemon reading dispatch.toml, pass the root.
+func resolveWorkflow(root, wd, ref string, getenv func(string) string) (string, *workflow.Definition, []byte, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
 		ref = defaultWorkflow
 	}
-	path, err := workflowFile(root, ref)
+	path, err := workflowFile(root, wd, ref)
 	if err != nil {
 		return "", nil, nil, err
 	}

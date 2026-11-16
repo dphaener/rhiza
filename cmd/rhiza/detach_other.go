@@ -6,7 +6,7 @@ import "errors"
 
 // detachProgram returns api.Ctx.Detach; detached children need a unix
 // system.
-func detachProgram(env []string) func(p apiProgram, logPath string) error {
+func detachProgram(wd string, env []string) func(p apiProgram, logPath string) error {
 	return func(p apiProgram, logPath string) error {
 		return errors.New("detached runs need a unix system")
 	}

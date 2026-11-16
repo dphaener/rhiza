@@ -158,13 +158,13 @@ type stats struct {
 // DefaultPath returns the index file for the worktree at root:
 // <user cache dir>/rhiza/index/<hex SHA-256 of root's absolute,
 // symlink-resolved path>.db, the user cache dir placed by os.UserCacheDir's
-// rules over getenv (userdir.Cache; nil is the process's). root must exist.
+// rules over getenv (userdir.Cache; nil is the process's). root must be
+// absolute and exist.
 func DefaultPath(root string, getenv func(string) string) (string, error) {
-	abs, err := filepath.Abs(root)
-	if err != nil {
-		return "", fmt.Errorf("index path: %w", err)
+	if !filepath.IsAbs(root) {
+		return "", fmt.Errorf("index path: %s is not absolute", root)
 	}
-	resolved, err := filepath.EvalSymlinks(abs)
+	resolved, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		return "", fmt.Errorf("index path: %w", err)
 	}

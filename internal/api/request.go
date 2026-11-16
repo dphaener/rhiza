@@ -538,7 +538,7 @@ func planRunAutonomous(ctx *Ctx, q daemon.Request, planSetting string) (bool, er
 	if err != nil {
 		return false, err
 	}
-	_, def, _, err := resolveWorkflow(ctx.Root, name, ctx.Getenv)
+	_, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, name, ctx.Getenv)
 	if err != nil {
 		return false, err
 	}
@@ -566,7 +566,7 @@ func requestUnresolved(root string, q daemon.Request, getenv func(string) string
 		picks = append(picks, struct{ name, source string }{q.Workflow, "named by the request (--workflow)"})
 	}
 	for _, p := range picks {
-		if _, _, _, err := resolveWorkflow(root, p.name, getenv); err != nil {
+		if _, _, _, err := resolveWorkflow(root, root, p.name, getenv); err != nil {
 			return daemon.Skip{Request: q.ID, Title: q.Text, Reason: daemon.SkipWorkflow, Detail: []string{p.name, p.source, err.Error()}}, true
 		}
 	}

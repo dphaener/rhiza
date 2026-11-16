@@ -160,7 +160,7 @@ func runWorkflowNew(ctx *Ctx, req any) (any, error) {
 	} else {
 		var data []byte
 		if isWorkflowPath(from) {
-			p, err := workflowFile(ctx.Root, from)
+			p, err := workflowFile(ctx.Root, ctx.Wd, from)
 			if err != nil {
 				return nil, err
 			}

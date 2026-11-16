@@ -61,7 +61,7 @@ func runInit(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("init does not take --dry-run: it writes no log entry").WithNext("rhiza init")
 	}
-	root, err := filepath.Abs(ctx.Root)
+	root, err := ctx.abs(ctx.Root)
 	if err != nil {
 		return nil, Errorf("project root: %v", err)
 	}

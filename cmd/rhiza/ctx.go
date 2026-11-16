@@ -56,7 +56,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		found = true
 	}
 	if env := getenv(envRoot); env != "" {
-		if root, err = rootFromEnv(env); err != nil {
+		if root, err = rootFromEnv(wd, env); err != nil {
 			return nil, err
 		}
 		found = true
@@ -79,11 +79,11 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Home:      getenv("HOME"),
 		Getenv:    getenv,
 		Environ:   g.environ,
-		Exec:      execIn(g.environ),
+		Exec:      execIn(wd, g.environ),
 		LookPath:  exec.LookPath,
 		Self:      g.self,
-		Start:     startProgram(g.environ),
-		Detach:    detachProgram(g.environ),
+		Start:     startProgram(wd, g.environ),
+		Detach:    detachProgram(wd, g.environ),
 		Reap:      reapDrivers,
 		Adopt:     adoptChildren,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this
@@ -210,13 +210,10 @@ func pick(flag string, set bool, env string) string {
 // envRoot names the root to use in place of the working directory's.
 const envRoot = "RHIZA_ROOT"
 
-// rootFromEnv is RHIZA_ROOT's value made absolute, or an error when it
-// holds no .rhiza folder.
-func rootFromEnv(v string) (string, error) {
-	abs, err := filepath.Abs(v)
-	if err != nil {
-		return "", api.Usagef("%s %q: %v", envRoot, v, err)
-	}
+// rootFromEnv is RHIZA_ROOT's value made absolute against wd, run()'s
+// working directory, or an error when it holds no .rhiza folder.
+func rootFromEnv(wd, v string) (string, error) {
+	abs := childDir(wd, v)
 	for _, name := range []string{store.Dir, store.OldDir} {
 		if fi, err := os.Stat(filepath.Join(abs, name)); err == nil && fi.IsDir() {
 			return abs, nil
@@ -270,16 +267,17 @@ func gitIn(root string, env []string) func(args ...string) (string, error) {
 	}
 }
 
-// execIn returns api.Ctx.Exec: it runs name with args in dir, with env
-// (nil for base, the environment run() was given), and returns its
-// standard output. A failure carries the program's trimmed standard error.
-func execIn(base []string) func(name string, args []string, dir string, env []string) ([]byte, error) {
+// execIn returns api.Ctx.Exec: it runs name with args in dir (childDir of
+// wd, run()'s working directory), with env (nil for base, the environment
+// run() was given), and returns its standard output. A failure carries the
+// program's trimmed standard error.
+func execIn(wd string, base []string) func(name string, args []string, dir string, env []string) ([]byte, error) {
 	return func(name string, args []string, dir string, env []string) ([]byte, error) {
 		if env == nil {
 			env = base
 		}
 		cmd := exec.Command(name, args...)
-		cmd.Dir = dir
+		cmd.Dir = childDir(wd, dir)
 		cmd.Env = env
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -330,20 +328,20 @@ func shellWithStdin(command, stdin string, env []string) (string, error) {
 const streamGrace = 2 * time.Second
 
 // startProgram returns api.Ctx.Start, over os/exec: each program gets env,
-// the environment run() was given, with its own changes (programEnv).
-func startProgram(env []string) func(p api.Program) (api.Process, error) {
-	return func(p api.Program) (api.Process, error) { return startProgramIn(env, p) }
+// the environment run() was given, with its own changes (programEnv), and
+// runs in its Dir made absolute against wd, run()'s working directory
+// (childDir).
+func startProgram(wd string, env []string) func(p api.Program) (api.Process, error) {
+	return func(p api.Program) (api.Process, error) { return startProgramIn(wd, env, p) }
 }
 
-func startProgramIn(env []string, p api.Program) (api.Process, error) {
+func startProgramIn(wd string, env []string, p api.Program) (api.Process, error) {
 	cmd := exec.Command(p.Name, p.Args...)
-	cmd.Dir = p.Dir
+	cmd.Dir = childDir(wd, p.Dir)
 	set := p.Env
 	if p.Dir != "" {
 		// As a shell would: the inherited PWD names another folder.
-		if abs, err := filepath.Abs(p.Dir); err == nil {
-			set = append([]string{"PWD=" + abs}, set...)
-		}
+		set = append([]string{"PWD=" + cmd.Dir}, set...)
 	}
 	cmd.Env = programEnv(env, set, p.Unset)
 	proc := &process{cmd: cmd}
@@ -455,6 +453,20 @@ func selfPath() string {
 		return ""
 	}
 	return abs
+}
+
+// childDir is dir made absolute against wd, run()'s working directory,
+// never the process's: dir cleaned when absolute, joined onto wd when
+// relative, and wd itself when dir is empty (a child starts where run()
+// works).
+func childDir(wd, dir string) string {
+	switch {
+	case dir == "":
+		return wd
+	case filepath.IsAbs(dir):
+		return filepath.Clean(dir)
+	}
+	return filepath.Join(wd, dir)
 }
 
 // workingDir is the working directory run() was given: an absolute path to

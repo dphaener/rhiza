@@ -58,12 +58,13 @@ func isOldFolderError(err error) bool {
 // directory, or the old .genesis one, and returns its absolute path. An
 // old-style root counts as found so that Open can report the rename; the
 // nearest of the two wins, and within one folder .rhiza. It reports false
-// if no ancestor of dir has either.
+// if no ancestor of dir has either, or if dir is relative: it is never
+// read against the process's working directory.
 func FindRoot(dir string) (string, bool) {
-	d, err := filepath.Abs(dir)
-	if err != nil {
+	if !filepath.IsAbs(dir) {
 		return "", false
 	}
+	d := filepath.Clean(dir)
 	for {
 		for _, name := range []string{store.Dir, store.OldDir} {
 			if fi, err := os.Stat(filepath.Join(d, name)); err == nil && fi.IsDir() {

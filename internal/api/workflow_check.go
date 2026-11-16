@@ -87,7 +87,7 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 		name string
 	)
 	if isWorkflowPath(ref) {
-		p, err := workflowFile(ctx.Root, ref)
+		p, err := workflowFile(ctx.Root, ctx.Wd, ref)
 		if err != nil {
 			return nil, err
 		}

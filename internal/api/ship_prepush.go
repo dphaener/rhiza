@@ -150,10 +150,10 @@ func journalPrePush(ctx *Ctx, dir, head string, checkErr error) {
 		if err != nil {
 			return
 		}
-		abs, _ := filepath.Abs(dir)
+		abs, _ := ctx.abs(dir)
 		for _, j := range js {
 			st := j.State()
-			if w, _ := filepath.Abs(st.Worktree); !st.Ended && st.Worktree != "" && w == abs {
+			if w, _ := ctx.abs(st.Worktree); !st.Ended && st.Worktree != "" && w == abs {
 				id, e.Step = j.ID, st.Current
 			}
 		}

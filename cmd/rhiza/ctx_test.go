@@ -13,7 +13,9 @@ import (
 // TestRunWorkingDir checks that run() works in the working directory it is
 // given, not the process's: from a process outside any repo it initialises
 // and reads a scratch repo, its errors land in the stderr it was given, and
-// a working directory that does not exist fails with exit code 1.
+// a working directory that does not exist fails with exit code 1. apply
+// and source add read a relative file argument under the given folder, not
+// the process's, which holds other files at the same paths.
 func TestRunWorkingDir(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
@@ -50,6 +52,37 @@ func TestRunWorkingDir(t *testing.T) {
 	}
 	if code, out, errs := rhiza(repo, "show", "nosuch"); code != 4 || out != "" || !strings.Contains(errs, `no node or link matches "nosuch"`) {
 		t.Errorf("show nosuch: exit %d\nstdout %q\nstderr %q", code, out, errs)
+	}
+
+	// A relative file argument is read under the given working directory:
+	// the same paths under the process's hold other writes and another
+	// source, which must not be read.
+	for dir, v := range map[string][2]string{repo: {"q-given", "Given call"}, outside: {"q-process", "Process call"}} {
+		writeFile(t, filepath.Join(dir, "in", "writes.json"), `{"writes":[{"op":"add","kind":"question","handle":"`+v[0]+`"}]}`)
+		writeFile(t, filepath.Join(dir, "in", "s.json"), `{"title":"`+v[1]+`","summary":"The owner agreed.","quotes":[{"text":"yes","by":"owner"}]}`)
+		writeFile(t, filepath.Join(dir, "in", "raw.txt"), v[1]+"\n")
+	}
+	writeFile(t, filepath.Join(home, "gitconfig"), "[user]\n\temail = given@example.test\n\tname = Given\n")
+	if code, out, errs := rhiza(repo, "change", "new", "Relative files"); code != 0 {
+		t.Fatalf("change new: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "apply", filepath.Join("in", "writes.json")); code != 0 {
+		t.Fatalf("apply in/writes.json: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "source", "add", "founding", filepath.Join("in", "s.json"), "--raw", filepath.Join("in", "raw.txt")); code != 0 {
+		t.Fatalf("source add in/s.json: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "show", "q-given"); code != 0 {
+		t.Errorf("apply did not read the given folder's file: show q-given: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "show", "q-process"); code != 4 {
+		t.Errorf("apply read the process's file: show q-process: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "show", "founding"); code != 0 || !strings.Contains(out, "Given call") || strings.Contains(out, "Process call") {
+		t.Errorf("source add did not read the given folder's file: show founding: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, errs := rhiza(repo, "apply", filepath.Join("in", "none.json")); code != 2 || !strings.Contains(errs, "apply: cannot read "+filepath.Join("in", "none.json")) {
+		t.Errorf("apply of a missing relative file: exit %d\nstdout %q\nstderr %q", code, out, errs)
 	}
 
 	missing := filepath.Join(outside, "missing")

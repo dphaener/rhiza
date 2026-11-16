@@ -181,7 +181,7 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	if ref == "" {
 		ref = defaultWorkflow
 	}
-	path, def, _, err := resolveWorkflow(ctx.Root, ref, ctx.Getenv)
+	path, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, ref, ctx.Getenv)
 	if err != nil {
 		return nil, err
 	}

@@ -733,7 +733,7 @@ func healthWorkflowAutonomy(ctx *Ctx) []string {
 	sort.Strings(names)
 	var out []string
 	for _, n := range names {
-		file, def, _, err := resolveWorkflow(ctx.Root, n, ctx.Getenv)
+		file, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, n, ctx.Getenv)
 		if err != nil {
 			continue
 		}

@@ -68,8 +68,6 @@ func human(t *testing.T, resp any) string {
 	return buf.String()
 }
 
-// Serial: it calls t.Chdir (RelativeRootIsMadeAbsolute), process-wide
-// state.
 func TestInit(t *testing.T) {
 	t.Run("Fresh", func(t *testing.T) {
 		root := t.TempDir()
@@ -118,14 +116,20 @@ func TestInit(t *testing.T) {
 	})
 
 	t.Run("RelativeRootIsMadeAbsolute", func(t *testing.T) {
-		root := t.TempDir()
-		t.Chdir(root)
-		resp, err := callOp(t, testCtx(t, "."), "init", `{}`)
+		// A relative root is made absolute against the Ctx's working
+		// directory, not the process's.
+		wd := t.TempDir()
+		if err := os.Mkdir(filepath.Join(wd, "proj"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		ctx := testCtx(t, "proj")
+		ctx.Wd = wd
+		resp, err := callOp(t, ctx, "init", `{}`)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got := resp.(InitResponse).Root; !filepath.IsAbs(got) {
-			t.Errorf("root = %q, want absolute", got)
+		if got, want := resp.(InitResponse).Root, filepath.Join(wd, "proj"); got != want {
+			t.Errorf("root = %q, want %q", got, want)
 		}
 	})
 

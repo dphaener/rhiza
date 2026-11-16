@@ -298,7 +298,11 @@ func readReviewFile(ctx *Ctx, cmd, next, file string, v any) error {
 			return Usagef("%s -: cannot read stdin: %v", cmd, err).WithNext(next)
 		}
 	default:
-		if data, err = os.ReadFile(file); err != nil {
+		path, perr := ctx.abs(file)
+		if perr != nil {
+			return Usagef("%s: cannot read %s: %v", cmd, file, perr).WithNext(next)
+		}
+		if data, err = os.ReadFile(path); err != nil {
 			return Usagef("%s: cannot read %s: %v", cmd, file, errors.Unwrap(err)).WithNext(next)
 		}
 	}
