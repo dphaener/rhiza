@@ -17,7 +17,6 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
@@ -37,16 +36,12 @@ func projectInitialised(dir string) bool {
 // set, actor or session.
 func projectCtx(ctx *Ctx, dir string) *Ctx {
 	c := *ctx
-	c.Root, c.Wd = dir, dir
+	c.Root, c.Wd, c.IndexPath = dir, dir, rootIndexPath(ctx, dir)
 	c.ChangeSet, c.Actor, c.For = id.ID{}, id.ID{}, id.ID{}
 	c.ChangeRef, c.ActorRef, c.ForRef = "", "", ""
 	c.daemonFold, c.readLog, c.builtModel, c.repoSession = nil, nil, nil, false
 	c.RexBlock = ""
 	c.ProjectName = ""
-	c.IndexPath = ""
-	if p, err := index.DefaultPath(dir, ctx.Getenv); err == nil {
-		c.IndexPath = p
-	}
 	boundGit(&c, dir)
 	return &c
 }

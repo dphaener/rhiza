@@ -104,7 +104,6 @@ func gateAnswered(ctx *Ctx, ref, q string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	c.IndexPath = ""
 	w, err := openCtxWorkspace(c)
 	if err != nil {
 		return false, err

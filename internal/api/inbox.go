@@ -22,7 +22,6 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -1411,21 +1410,17 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 // handle); nil when the worktree does not read.
 func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestion, []string) {
 	c := *ctx
-	c.Root, c.IndexPath = st.Worktree, ""
+	// The worktree's own index answers the reads, so the full disk log is
+	// never decoded; the memo folds each change set's model once.
+	c.Root, c.IndexPath = st.Worktree, rootIndexPath(ctx, st.Worktree)
 	w, err := openCtxWorkspace(&c)
 	if err != nil {
 		return nil, nil
 	}
-	// The worktree's own index answers the reads, so the full disk log is
-	// never decoded; the memo folds each change set's model once. Without
-	// a usable index the log is read, as before.
-	if p, err := index.DefaultPath(st.Worktree, ctx.Getenv); err == nil {
-		c.IndexPath = p
-		if pj, err := openProjection(&c, true); err == nil {
-			w.setProjection(pj)
-			defer w.closeProjection()
-		}
+	if pj, err := openProjection(&c, true); err == nil {
+		w.setProjection(pj)
 	}
+	defer w.closeProjection()
 	own, err := id.Parse(st.Change)
 	if err != nil {
 		return nil, nil

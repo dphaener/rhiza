@@ -6,8 +6,10 @@ package api
 // verifier's Evidence) must cost nothing while the log has not changed: the
 // runner keeps the run worktree's index open, catches it up with a stat of
 // the log's folders, and keeps each answer until the index's stamp moves.
-// Without an index path (ctx.IndexPath empty) the index is a throwaway one,
-// built when the runner opens it and removed when it closes.
+// The index is the worktree's own (rootIndexPath): ctx.IndexPath for the
+// caller's root, else the worktree's default index path; without one it is
+// a throwaway index, built when the runner opens it and removed when it
+// closes.
 
 import (
 	"path/filepath"
@@ -118,16 +120,10 @@ func (r *stepRunner) catchUpModel(root string) (*runModel, error) {
 		rm = nil
 	}
 	if rm == nil {
-		path := r.ctx.IndexPath
-		if r.ctx.Root != root {
-			p, err := index.DefaultPath(root, r.ctx.Getenv)
-			if err != nil {
-				return nil, Errorf("%s", err.Error())
-			}
-			path = p
-		}
 		c := *r.ctx
-		c.Root, c.IndexPath = root, path
+		if r.ctx.Root != root {
+			c.Root, c.IndexPath = root, rootIndexPath(r.ctx, root)
+		}
 		ix, err := openWriteIndex(&c)
 		if err != nil {
 			return nil, err

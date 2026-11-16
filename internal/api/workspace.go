@@ -167,13 +167,24 @@ func openRootWorkspace(ctx *Ctx, root string, dryRun bool) (*workspace, error) {
 	if root == ctx.Root {
 		w.readLog = ctx.readLog
 	} else {
-		c.Root, c.IndexPath = root, ""
-		if p, err := index.DefaultPath(root, ctx.Getenv); err == nil {
-			c.IndexPath = p
-		}
+		c.Root, c.IndexPath = root, rootIndexPath(ctx, root)
 	}
 	w.useProjection(&c)
 	return w, nil
+}
+
+// rootIndexPath is the index path of root's own projection, for a Ctx
+// moved to root: root's default index path under ctx's user cache folder,
+// or empty when it has none (no user cache folder, a root that does not
+// resolve), which opens a throwaway index for the call (openWriteIndex).
+// Every op that reads another root takes its index path from here, never
+// folding that root's log.
+func rootIndexPath(ctx *Ctx, root string) string {
+	p, err := index.DefaultPath(root, ctx.Getenv)
+	if err != nil {
+		return ""
+	}
+	return p
 }
 
 // log reads the log, plus the entries a dry run has built so far. The disk
