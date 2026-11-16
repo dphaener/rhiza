@@ -34,11 +34,11 @@ func genSeedLog(t *rapid.T) []changeset.ChangeSet {
 	return sets
 }
 
-// TestAsIsSeedWhatIfFrom: AsIsSeed's model and problems are AsIs's, and
-// WhatIfFrom over its seed is WhatIf over the whole log for every in-flight
-// change set. Every WhatIfFrom goes on from one shared seed, the results
-// are compared only after every call has run, and the seed is then still a
-// fresh AsIsSeed's.
+// TestAsIsSeedWhatIfFrom: AsIsSeed's model and problems are AsIs's,
+// ToBeFrom over its seed is ToBe over the whole log, and WhatIfFrom over it
+// is WhatIf for every in-flight change set. ToBeFrom and every WhatIfFrom go
+// on from one shared seed, the results are compared only after every call
+// has run, and the seed is then still a fresh AsIsSeed's.
 func TestAsIsSeedWhatIfFrom(t *testing.T) {
 	var deps, skips, handles, views int
 	rapid.Check(t, func(t *rapid.T) {
@@ -52,6 +52,7 @@ func TestAsIsSeedWhatIfFrom(t *testing.T) {
 			m  Model
 			ps []Problem
 		}
+		tm, tps := ToBeFrom(seed, sets)
 		var got []view
 		for _, s := range sets {
 			if !inFlight(s.State) {
@@ -60,6 +61,8 @@ func TestAsIsSeedWhatIfFrom(t *testing.T) {
 			m, ps := WhatIfFrom(seed, sets, s.ID)
 			got = append(got, view{s.ID, m, ps})
 		}
+		wtm, wtps := ToBe(sets)
+		sameModel(t, "ToBeFrom", tm, wtm, tps, wtps)
 		for _, v := range got {
 			views++
 			if len(changeset.Closure(sets, v.cs)) > 0 {
