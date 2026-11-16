@@ -390,15 +390,15 @@ func TestDefaultPath(t *testing.T) {
 	if err := os.Symlink(a, link); err != nil {
 		t.Fatal(err)
 	}
-	pa, err := DefaultPath(a)
+	pa, err := DefaultPath(a, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pl, err := DefaultPath(link)
+	pl, err := DefaultPath(link, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pb, err := DefaultPath(b)
+	pb, err := DefaultPath(b, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -411,8 +411,27 @@ func TestDefaultPath(t *testing.T) {
 	if dir := filepath.Join(cache, "rhiza", "index"); filepath.Dir(pa) != dir || filepath.Ext(pa) != ".db" {
 		t.Fatalf("path %s not a .db in %s", pa, dir)
 	}
-	if _, err := DefaultPath(filepath.Join(base, "missing")); err == nil {
+	if _, err := DefaultPath(filepath.Join(base, "missing"), nil); err == nil {
 		t.Fatal("missing root: no error")
+	}
+	// A getenv places the cache from its own XDG_CACHE_HOME, not the
+	// process's.
+	other := filepath.Join(t.TempDir(), "other-cache")
+	getenv := func(k string) string {
+		if k == "XDG_CACHE_HOME" {
+			return other
+		}
+		return os.Getenv(k)
+	}
+	pg, err := DefaultPath(a, getenv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(other, "rhiza", "index", filepath.Base(pa)); pg != want {
+		t.Fatalf("DefaultPath with getenv = %s, want %s", pg, want)
+	}
+	if dir, err := IndexDir(getenv); err != nil || dir != filepath.Dir(pg) {
+		t.Fatalf("IndexDir with getenv = %s, %v; want %s", dir, err, filepath.Dir(pg))
 	}
 }
 
@@ -490,7 +509,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 		if err := os.Mkdir(d, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := DefaultPath(d)
+		p, err := DefaultPath(d, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -504,7 +523,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 		}
 		paths[d] = p
 	}
-	if err := Remove(a); err != nil {
+	if err := Remove(a, nil); err != nil {
 		t.Fatal(err)
 	}
 	for _, f := range []string{paths[a], paths[a] + "-wal", paths[a] + "-shm"} {
@@ -515,7 +534,7 @@ func TestRemoveDeletesTheWorktreesDatabaseOnly(t *testing.T) {
 	if _, err := os.Stat(paths[b]); err != nil {
 		t.Fatalf("another worktree's index went: %v", err)
 	}
-	if err := Remove(a); err != nil {
+	if err := Remove(a, nil); err != nil {
 		t.Fatalf("Remove with no database: %v", err)
 	}
 }

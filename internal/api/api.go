@@ -111,6 +111,13 @@ type Ctx struct {
 	// that needs it finds nothing there, and session.run captures no
 	// answers when Home is empty too.
 	Getenv func(key string) string
+	// Environ is the caller's environment as a list in os.Environ() form;
+	// the CLI derives Getenv from it. Every child an operation starts gets
+	// it (childEnv), with the operation's own additions appended, so a
+	// caller running in-process for another environment (a test script)
+	// hands its children that environment, not the process's. Nil, for a
+	// programmatic caller that gives none, is the process's.
+	Environ []string
 	// IndexPath is the index database file for Root, given by the caller,
 	// since nothing here reads the environment or the user cache dir (the
 	// CLI uses index.DefaultPath). Empty is an error from any read.

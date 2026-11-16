@@ -44,7 +44,7 @@ func TestInboxGateQuestionsBudget(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx := testCtx(t, root)
-	p, err := index.DefaultPath(root)
+	p, err := index.DefaultPath(root, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,7 +259,7 @@ func TestGateAnswerUsesWorktreeIndex(t *testing.T) {
 		return []byte(common + "\n"), nil
 	}
 	// The worktree's index is current, as the run's own steps leave it.
-	p, err := index.DefaultPath(ctx.Root)
+	p, err := index.DefaultPath(ctx.Root, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

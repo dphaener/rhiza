@@ -145,7 +145,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	}
 	wf := strings.TrimSpace(r.Workflow)
 	if wf != "" {
-		_, _, found, err := lookupWorkflow(ctx.Root, wf)
+		_, _, found, err := lookupWorkflow(ctx.Root, wf, ctx.Getenv)
 		if err != nil {
 			return nil, Errorf("workflow %q: %v", wf, err)
 		}
@@ -262,7 +262,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, Errorf("read requests: %v", err)
 	}
-	runs, err := run.NewStore(run.Dir(common)).List()
+	runs, err := runStore(ctx, common).List()
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
 	}
@@ -361,7 +361,7 @@ func daemonPlanRequests(ctx *Ctx, rs *run.Store, runs []run.Journal, running, ma
 			if q.Run != "" {
 				continue
 			}
-			sk, bad := requestUnresolved(ctx.Root, q)
+			sk, bad := requestUnresolved(ctx.Root, q, ctx.Getenv)
 			if !bad {
 				// A plan run whose workflow names a skill the held guide
 				// lacks is not started while the hold stands.
@@ -538,7 +538,7 @@ func planRunAutonomous(ctx *Ctx, q daemon.Request, planSetting string) (bool, er
 	if err != nil {
 		return false, err
 	}
-	_, def, _, err := resolveWorkflow(ctx.Root, name)
+	_, def, _, err := resolveWorkflow(ctx.Root, name, ctx.Getenv)
 	if err != nil {
 		return false, err
 	}
@@ -553,7 +553,7 @@ func planRunAutonomous(ctx *Ctx, q daemon.Request, planSetting string) (bool, er
 // named itself for its change set's ready pick. It returns the skip naming
 // the workflow and where the pick came from. A dispatch file that does not
 // load is not this: the start reports it.
-func requestUnresolved(root string, q daemon.Request) (daemon.Skip, bool) {
+func requestUnresolved(root string, q daemon.Request, getenv func(string) string) (daemon.Skip, bool) {
 	picks := []struct{ name, source string }{}
 	if wf, err := requestWorkflow(root, q); err == nil {
 		kind := q.Kind
@@ -566,7 +566,7 @@ func requestUnresolved(root string, q daemon.Request) (daemon.Skip, bool) {
 		picks = append(picks, struct{ name, source string }{q.Workflow, "named by the request (--workflow)"})
 	}
 	for _, p := range picks {
-		if _, _, _, err := resolveWorkflow(root, p.name); err != nil {
+		if _, _, _, err := resolveWorkflow(root, p.name, getenv); err != nil {
 			return daemon.Skip{Request: q.ID, Title: q.Text, Reason: daemon.SkipWorkflow, Detail: []string{p.name, p.source, err.Error()}}, true
 		}
 	}

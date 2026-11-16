@@ -168,7 +168,7 @@ func openRun(ctx *Ctx, cmd, next string, finished bool) (reviewRun, error) {
 	if err != nil {
 		return reviewRun{}, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	j, err := rs.Read(ref)
 	var nf *run.NotFoundError
 	var amb *run.AmbiguousError

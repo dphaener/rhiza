@@ -97,7 +97,7 @@ func webGateFixture(t *testing.T) (*Ctx, id.ID, string) {
 		return []byte(common + "\n"), nil
 	}
 	ctx.Start = (&shStart{}).start
-	p, err := index.DefaultPath(ctx.Root)
+	p, err := index.DefaultPath(ctx.Root, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

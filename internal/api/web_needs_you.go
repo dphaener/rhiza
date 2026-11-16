@@ -77,7 +77,7 @@ func WebNeedsYou(base *Ctx, now time.Time) []web.InboxItemView {
 	if err != nil {
 		return projectNeedsYou(items, nil, nil, now)
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(base, common)
 	runs, _ := rs.List()
 	return projectNeedsYou(items, runs, rs.Live, now)
 }

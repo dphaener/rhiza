@@ -19,7 +19,6 @@ import (
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -129,7 +128,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	sources = slices.Compact(sources)
 	wf := strings.TrimSpace(r.Workflow)
 	if wf != "" {
-		_, _, found, err := lookupWorkflow(ctx.Root, wf)
+		_, _, found, err := lookupWorkflow(ctx.Root, wf, ctx.Getenv)
 		if err != nil {
 			return nil, Errorf("workflow %q: %v", wf, err)
 		}
@@ -200,7 +199,7 @@ func runChangeWorkflow(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("name a workflow to pin, or pass --clear").WithNext("rhiza workflow ls")
 	}
 	if name != "" {
-		_, _, found, err := lookupWorkflow(ctx.Root, name)
+		_, _, found, err := lookupWorkflow(ctx.Root, name, ctx.Getenv)
 		if err != nil {
 			return nil, Errorf("workflow %q: %v", name, err)
 		}
@@ -234,7 +233,7 @@ func runChangeWorkflow(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := refuseLiveRun(run.NewStore(run.Dir(common)), cs.String(), ""); err != nil {
+	if err := refuseLiveRun(runStore(ctx, common), cs.String(), ""); err != nil {
 		return nil, err
 	}
 	actor, forID, err := w.resolveActor(cs, ctx)

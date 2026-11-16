@@ -41,6 +41,7 @@ import (
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
+	"github.com/dphaener/rhiza/internal/userdir"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -714,7 +715,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			r.Pick = PickExplicit
 		}
 	}
-	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow)
+	path, def, data, err := resolveWorkflow(ctx.Root, r.Workflow, ctx.Getenv)
 	if err != nil {
 		return nil, err
 	}
@@ -727,7 +728,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		req, err := requestRun(common, q, run.NewStore(run.Dir(common)))
+		req, err := requestRun(common, q, runStore(ctx, common))
 		if err != nil {
 			return nil, err
 		}
@@ -780,7 +781,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
-	rs := run.NewStore(run.Dir(t.common))
+	rs := runStore(ctx, t.common)
 	rid := reqRun
 	if rid == "" {
 		if rid, err = newRunID(ctx, rs); err != nil {
@@ -855,7 +856,7 @@ func milestonePlanWorkflow(ctx *Ctx, def *workflow.Definition, path string, data
 	if !milestone || def.Name != planWorkflow {
 		return def, path, data, nil
 	}
-	p, d, src, err := resolveWorkflow(ctx.Root, planMilestoneWorkflow)
+	p, d, src, err := resolveWorkflow(ctx.Root, planMilestoneWorkflow, ctx.Getenv)
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -899,7 +900,7 @@ func planOwnerJournaled(ctx *Ctx, st run.State) bool {
 			return a.Source == run.SourceWorkflow && a.Mode == workflow.AutonomyOwner
 		}
 	}
-	if _, def, _, err := resolveWorkflow(ctx.Root, st.Workflow); err == nil {
+	if _, def, _, err := resolveWorkflow(ctx.Root, st.Workflow, ctx.Getenv); err == nil {
 		m, ok := def.Autonomy(workflow.StagePlan)
 		return ok && m == workflow.AutonomyOwner
 	}
@@ -1162,7 +1163,7 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	j, err := readRun(rs, ref)
 	if err != nil {
 		return nil, err
@@ -1308,7 +1309,7 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	j, err := readRun(rs, ref)
 	if err != nil {
 		return nil, err
@@ -1533,7 +1534,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	var j run.Journal
 	if ref := strings.TrimSpace(r.Run); ref != "" {
 		if j, err = readRun(rs, ref); err != nil {
@@ -1651,13 +1652,17 @@ func isWorkflowPath(ref string) bool {
 }
 
 // personalWorkflowsDir is the user's own workflows directory:
-// $XDG_CONFIG_HOME/rhiza/workflows, else ~/.config/rhiza/workflows. It is
-// empty when neither can be known.
-func personalWorkflowsDir() string {
-	if x := os.Getenv("XDG_CONFIG_HOME"); x != "" {
+// $XDG_CONFIG_HOME/rhiza/workflows, else ~/.config/rhiza/workflows, both
+// read through getenv (nil is the process's environment). It is empty
+// when neither can be known.
+func personalWorkflowsDir(getenv func(string) string) string {
+	if getenv == nil {
+		getenv = os.Getenv
+	}
+	if x := getenv("XDG_CONFIG_HOME"); x != "" {
 		return filepath.Join(x, "rhiza", "workflows")
 	}
-	if h, err := os.UserHomeDir(); err == nil && h != "" {
+	if h, err := userdir.Home(getenv); err == nil && h != "" {
 		return filepath.Join(h, ".config", "rhiza", "workflows")
 	}
 	return ""
@@ -1668,9 +1673,9 @@ func personalWorkflowsDir() string {
 // the personal file, else the repo's .rhiza/workflows/<name>.toml, else the
 // built-in. It returns the path to record (the file, or builtin:<name>) and
 // the source; found is false when no layer has the name.
-func lookupWorkflow(root, name string) (path string, data []byte, found bool, err error) {
+func lookupWorkflow(root, name string, getenv func(string) string) (path string, data []byte, found bool, err error) {
 	var files []string
-	if d := personalWorkflowsDir(); d != "" {
+	if d := personalWorkflowsDir(getenv); d != "" {
 		files = append(files, filepath.Join(d, name+".toml"))
 	}
 	files = append(files, filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
@@ -1693,7 +1698,7 @@ func lookupWorkflow(root, name string) (path string, data []byte, found bool, er
 // record in the journal (the file, or builtin:<name> for an embedded
 // one), its definition and its source. A bare name goes through
 // lookupWorkflow: personal file, repo file, built-in.
-func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, error) {
+func resolveWorkflow(root, ref string, getenv func(string) string) (string, *workflow.Definition, []byte, error) {
 	ref = strings.TrimSpace(ref)
 	if ref == "" {
 		ref = defaultWorkflow
@@ -1703,7 +1708,7 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 		return "", nil, nil, err
 	}
 	if !isWorkflowPath(ref) {
-		found, data, ok, lerr := lookupWorkflow(root, ref)
+		found, data, ok, lerr := lookupWorkflow(root, ref, getenv)
 		if lerr != nil {
 			return "", nil, nil, Usagef("workflow %q: %v", ref, lerr).WithNext(runStartNext)
 		}
@@ -1711,7 +1716,7 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 			return "", nil, nil, Usagef("no workflow %q: %s does not exist and there is no built-in of that name (built-in: %s)",
 				ref, path, strings.Join(workflow.BuiltinNames(), ", ")).WithNext(runStartNext)
 		}
-		def, perr := workflow.ParseWith(ref, data, workflowResolver(root))
+		def, perr := workflow.ParseWith(ref, data, workflowResolver(root, getenv))
 		if perr != nil {
 			if strings.HasPrefix(found, builtinPrefix) {
 				return "", nil, nil, Errorf("built-in workflow %s: %v", ref, perr)
@@ -1720,7 +1725,7 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 		}
 		return found, def, data, nil
 	}
-	def, data, err := loadWorkflow(root, path, ref)
+	def, data, err := loadWorkflow(root, path, ref, getenv)
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -1729,9 +1734,9 @@ func resolveWorkflow(root, ref string) (string, *workflow.Definition, []byte, er
 
 // workflowResolver resolves the workflow a workflow step names as run
 // start resolves a bare name, through lookupWorkflow.
-func workflowResolver(root string) workflow.Resolver {
+func workflowResolver(root string, getenv func(string) string) workflow.Resolver {
 	return func(name string) ([]byte, error) {
-		_, data, ok, err := lookupWorkflow(root, name)
+		_, data, ok, err := lookupWorkflow(root, name, getenv)
 		if err != nil {
 			return nil, err
 		}
@@ -1744,7 +1749,7 @@ func workflowResolver(root string) workflow.Resolver {
 
 // loadWorkflow reads and validates the workflow at path. A missing file
 // and an invalid workflow are usage errors carrying the reason.
-func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) {
+func loadWorkflow(root, path, ref string, getenv func(string) string) (*workflow.Definition, []byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -1753,7 +1758,7 @@ func loadWorkflow(root, path, ref string) (*workflow.Definition, []byte, error) 
 		return nil, nil, Usagef("workflow %q: %v", ref, err).WithNext(runStartNext)
 	}
 	name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	def, err := workflow.ParseWith(name, data, workflowResolver(root))
+	def, err := workflow.ParseWith(name, data, workflowResolver(root, getenv))
 	if err != nil {
 		return nil, nil, Usagef("workflow %s: %v", path, err).WithNext(runStartNext)
 	}
@@ -2250,7 +2255,7 @@ func (r *stepRunner) runState() run.State {
 	if err != nil {
 		return run.State{}
 	}
-	j, err := run.NewStore(run.Dir(common)).Read(r.run)
+	j, err := runStore(r.ctx, common).Read(r.run)
 	if err != nil {
 		return run.State{}
 	}

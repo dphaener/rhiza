@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"reflect"
 	"sort"
@@ -101,7 +100,7 @@ func runShipGenerate(ctx *Ctx, req any) (any, error) {
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", gen)
 	cmd.Dir = dir
-	cmd.Env = os.Environ()
+	cmd.Env = childEnv(ctx)
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second

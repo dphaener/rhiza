@@ -18,7 +18,7 @@ func TestPruneOrphansRemovesOnlyGoneWorktrees(t *testing.T) {
 	}
 	paths := map[string]string{}
 	for _, r := range []string{live, gone} {
-		p, err := DefaultPath(r)
+		p, err := DefaultPath(r, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -37,7 +37,7 @@ func TestPruneOrphansRemovesOnlyGoneWorktrees(t *testing.T) {
 	if err := os.RemoveAll(gone); err != nil {
 		t.Fatal(err)
 	}
-	dir, err := IndexDir()
+	dir, err := IndexDir(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

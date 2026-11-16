@@ -110,6 +110,9 @@ type tuiModels struct {
 	// wd is the folder the apps run in: g's working directory until the
 	// project switcher or the request app moves them to another project.
 	wd *atomic.Pointer[string]
+	// environ is the environment run() was given; the apps' color profile
+	// is detected from it.
+	environ []string
 }
 
 func newTUIModels(g globals, getenv func(string) string) tuiModels {
@@ -188,7 +191,7 @@ func newTUIModels(g globals, getenv func(string) string) tuiModels {
 		}
 		return runsapp.NewMergedModel(run, projects, nil)
 	}
-	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, mergedRuns: mergedRuns, runs: runsModel, autonomy: autonomyModel, wd: wd}
+	return tuiModels{call: call, inbox: inboxModel, mergedInbox: mergedInbox, mergedRuns: mergedRuns, runs: runsModel, autonomy: autonomyModel, wd: wd, environ: g.environ}
 }
 
 // inboxRun runs one of the inbox app's operations. The app passes
@@ -269,10 +272,10 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 			cur, _ := projectctx.Current(wdNow())
 			da, err := daemonapp.NewIn(func(op string, args []string) ([]byte, error) {
 				return call(op, false, false, args)
-			}, theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()), cur)
+			}, theme.Dark(), colorprofile.Detect(os.Stdout, apps.environ), cur)
 			if err != nil {
 				daemonErr = err
-				return modalshell.Built{Model: modalshell.New(modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.Detect(os.Stdout, os.Environ()), "Daemon", []string{err.Error()})))}
+				return modalshell.Built{Model: modalshell.New(modalshell.Dialog(ui.NewDialog(theme.Dark(), colorprofile.Detect(os.Stdout, apps.environ), "Daemon", []string{err.Error()})))}
 			}
 			sh := modalshell.New(da)
 			return modalshell.Built{Model: sh, Result: sh.Result}
@@ -300,7 +303,7 @@ func appSwitcher(name string, apps tuiModels) (*modalshell.Switcher, error) {
 					}
 				}
 				return call(op, false, false, args)
-			}, colorprofile.Detect(os.Stdout, os.Environ()), current, names))
+			}, colorprofile.Detect(os.Stdout, apps.environ), current, names))
 			return modalshell.Built{Model: sh, Result: sh.Result}
 		}
 	}

@@ -34,13 +34,7 @@ func TestDocsExampleWorkflows(t *testing.T) {
 	if out, err := exec.Command("git", "-C", dir, "init", "-q").CombinedOutput(); err != nil {
 		t.Fatalf("git init: %v %s", err, out)
 	}
-	env := func(k string) string {
-		switch k {
-		case "HOME", "XDG_CONFIG_HOME":
-			return dir
-		}
-		return ""
-	}
+	env := []string{"HOME=" + dir, "XDG_CONFIG_HOME=" + dir, "PATH=" + os.Getenv("PATH")}
 	for _, f := range files {
 		var out, errb bytes.Buffer
 		if code := run([]string{"workflow", "check", f}, dir, "", strings.NewReader(""), &out, &errb, env); code != 0 || !strings.Contains(out.String(), "is valid") {

@@ -829,7 +829,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	runs, err := rs.List()
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
@@ -1223,7 +1223,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	if err != nil {
 		return nil, nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	runs, err := rs.List()
 	if err != nil {
 		return nil, nil, Errorf("read runs: %v", err)
@@ -1419,7 +1419,7 @@ func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestio
 	// The worktree's own index answers the reads, so the full disk log is
 	// never decoded; the memo folds each change set's model once. Without
 	// a usable index the log is read, as before.
-	if p, err := index.DefaultPath(st.Worktree); err == nil {
+	if p, err := index.DefaultPath(st.Worktree, ctx.Getenv); err == nil {
 		c.IndexPath = p
 		if pj, err := openProjection(&c, true); err == nil {
 			w.setProjection(pj)

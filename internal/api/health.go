@@ -718,7 +718,7 @@ func healthOriginAhead(ctx *Ctx, commit string) string {
 // run's autonomy will come from. A workflow that cannot be read is skipped.
 func healthWorkflowAutonomy(ctx *Ctx) []string {
 	seen := map[string]bool{}
-	for _, d := range []string{personalWorkflowsDir(), filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir))} {
+	for _, d := range []string{personalWorkflowsDir(ctx.Getenv), filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir))} {
 		for _, n := range workflowNames(d) {
 			seen[n] = true
 		}
@@ -733,7 +733,7 @@ func healthWorkflowAutonomy(ctx *Ctx) []string {
 	sort.Strings(names)
 	var out []string
 	for _, n := range names {
-		file, def, _, err := resolveWorkflow(ctx.Root, n)
+		file, def, _, err := resolveWorkflow(ctx.Root, n, ctx.Getenv)
 		if err != nil {
 			continue
 		}

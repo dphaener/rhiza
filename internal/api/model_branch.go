@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/entry"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -56,7 +55,7 @@ func modelBranchStep(ctx *Ctx) func(entry.Entry) error {
 		if !ok || !samePath(filepath.Join(top, ".git"), common) {
 			return nil // not a git repo, or a linked worktree
 		}
-		if _, live, err := run.NewStore(run.Dir(common)).LiveOf(e.ChangeSet.String(), ""); err != nil || live {
+		if _, live, err := runStore(ctx, common).LiveOf(e.ChangeSet.String(), ""); err != nil || live {
 			return nil
 		}
 		if _, err := ctx.Exec("git", []string{"rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"}, top, nil); err != nil {

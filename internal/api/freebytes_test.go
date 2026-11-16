@@ -1,6 +1,7 @@
 package api
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -12,6 +13,9 @@ const pinnedFreeBytes = "1099511627776"
 // pinFreeBytes makes ctx see pinnedFreeBytes of free disk, beside
 // RHIZA_TEST_NOW, keeping whatever Getenv it already has. Tests reach
 // repoFreeBytes only through a ctx so pinned: the real read fails the test.
+// A ctx with no Getenv keeps the process's user folders (userDirVars): a
+// nil Getenv placed the index and the run temp folders by them, and a
+// project's index still goes there.
 func pinFreeBytes(ctx *Ctx) {
 	prev := ctx.Getenv
 	ctx.Getenv = func(k string) string {
@@ -24,9 +28,16 @@ func pinFreeBytes(ctx *Ctx) {
 		if prev != nil {
 			return prev(k)
 		}
+		if userDirVars[k] {
+			return os.Getenv(k)
+		}
 		return ""
 	}
 }
+
+// userDirVars are the variables that place the user's home, cache, config
+// and temp folders.
+var userDirVars = map[string]bool{"HOME": true, "XDG_CACHE_HOME": true, "XDG_CONFIG_HOME": true, "TMPDIR": true}
 
 // setFreeBytes overrides the pinned figure on ctx with its own.
 func setFreeBytes(ctx *Ctx, n string) {

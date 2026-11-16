@@ -150,7 +150,7 @@ func (d *daemonSchedules) due(ctx *Ctx, project string, runs []run.Journal) []du
 			d.problem(ctx, project, sc.Name, "")
 			continue
 		}
-		if _, _, _, err := scheduleWorkflow(ctx.Root, sc); err != nil {
+		if _, _, _, err := scheduleWorkflow(ctx.Root, sc, ctx.Getenv); err != nil {
 			d.problem(ctx, project, sc.Name, fmt.Sprintf("schedule %s not started: %v", sc.Name, err))
 			continue
 		}

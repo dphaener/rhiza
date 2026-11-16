@@ -24,12 +24,11 @@ func TestRunWorkingDir(t *testing.T) {
 	if out, err := exec.Command("git", "-C", repo, "init", "-q").CombinedOutput(); err != nil {
 		t.Fatalf("git init: %v\n%s", err, out)
 	}
-	env := map[string]string{"HOME": home, "RHIZA_TEST_NOW": "2026-10-24T12:00:00Z", "RHIZA_TEST_SEED": "1"}
-	getenv := func(k string) string { return env[k] }
+	env := []string{"HOME=" + home, "GIT_CONFIG_GLOBAL=" + filepath.Join(home, "gitconfig"), "PATH=" + os.Getenv("PATH"), "RHIZA_TEST_NOW=2026-10-24T12:00:00Z", "RHIZA_TEST_SEED=1"}
 	rhiza := func(wd string, args ...string) (int, string, string) {
 		t.Helper()
 		var stdout, stderr bytes.Buffer
-		code := run(args, wd, "", strings.NewReader(""), &stdout, &stderr, getenv)
+		code := run(args, wd, "", strings.NewReader(""), &stdout, &stderr, env)
 		return code, stdout.String(), stderr.String()
 	}
 
@@ -101,7 +100,7 @@ func TestShellWithStdinTimesOut(t *testing.T) {
 	t.Cleanup(func() { classifierTimeout = old })
 
 	start := time.Now()
-	out, err := shellWithStdin("sleep 20; echo real: slow", "")
+	out, err := shellWithStdin("sleep 20; echo real: slow", "", os.Environ())
 	if err == nil || !strings.Contains(err.Error(), "timed out") {
 		t.Fatalf("err = %v, want a timeout", err)
 	}
@@ -116,8 +115,118 @@ func TestShellWithStdinTimesOut(t *testing.T) {
 // TestShellWithStdin checks that a classifier within the timeout reads its
 // stdin and returns its output.
 func TestShellWithStdin(t *testing.T) {
-	out, err := shellWithStdin("cat", "flake: network")
+	out, err := shellWithStdin("cat", "flake: network", os.Environ())
 	if err != nil || out != "flake: network" {
 		t.Fatalf("got %q, %v", out, err)
+	}
+}
+
+// TestChildEnv checks that run() hands the children it starts the
+// environment it was given, not the process's: git reads the given HOME's
+// GIT_CONFIG_GLOBAL, the index database and the run's temp folder go under
+// the given XDG_CACHE_HOME, a workflow step sees the given variables, and a
+// variable only the process has stays unset in it.
+func TestChildEnv(t *testing.T) {
+	proc := t.TempDir()
+	t.Setenv("HOME", proc)
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(proc, "cache"))
+	t.Setenv("GIT_CONFIG_GLOBAL", filepath.Join(proc, "gitconfig"))
+	t.Setenv("RHIZA_CHILD_ENV_PROCESS_ONLY", "process")
+	writeFile(t, filepath.Join(proc, "gitconfig"), "[user]\n\temail = process@example.test\n\tname = Process\n[rhiza \"ship\"]\n\tlocalGate = process-gate\n")
+
+	home := t.TempDir()
+	cache := filepath.Join(home, "given-cache")
+	writeFile(t, filepath.Join(home, "gitconfig"), "[user]\n\temail = given@example.test\n\tname = Given\n[rhiza \"ship\"]\n\tlocalGate = given-gate\n")
+	env := []string{
+		"HOME=" + home,
+		"XDG_CACHE_HOME=" + cache,
+		"GIT_CONFIG_GLOBAL=" + filepath.Join(home, "gitconfig"),
+		"PATH=" + os.Getenv("PATH"),
+		"RHIZA_CHILD_ENV_MARKER=given",
+		"RHIZA_TEST_NOW=2026-10-24T12:00:00Z",
+		"RHIZA_TEST_SEED=1",
+	}
+	// The repo is project repo of its own Rhiza root, as in the scripts.
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "rhiza.toml"), "[projects.repo]\npath = \"repo\"\n\n[daemon]\n\"rhiza.daemon.failureClassifier\" = \"\"\n")
+	repo := filepath.Join(root, "repo")
+	if err := os.Mkdir(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	git := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", repo}, args...)...)
+		cmd.Env = env
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	rhiza := func(args ...string) string {
+		t.Helper()
+		var stdout, stderr bytes.Buffer
+		if code := run(args, repo, "", strings.NewReader(""), &stdout, &stderr, env); code != 0 {
+			t.Fatalf("rhiza %v: exit %d\n%s%s", args, code, stdout.String(), stderr.String())
+		}
+		return stdout.String()
+	}
+
+	git("init", "-q")
+	rhiza("init")
+	git("add", "-A")
+	git("commit", "-qm", "init")
+
+	// git config, read by a git child, is the given GIT_CONFIG_GLOBAL's.
+	settings := rhiza("daemon", "settings", "--json")
+	if !strings.Contains(settings, `"given-gate"`) || strings.Contains(settings, "process-gate") {
+		t.Errorf("daemon settings read the process's git config, not the given one:\n%s", settings)
+	}
+
+	// The index database is under the given XDG_CACHE_HOME.
+	rhiza("status", "--json")
+	if dbs, _ := filepath.Glob(filepath.Join(cache, "rhiza", "index", "*.db")); len(dbs) == 0 {
+		t.Errorf("no index database under the given %s/rhiza/index", cache)
+	}
+	if _, err := os.Stat(filepath.Join(proc, "cache", "rhiza", "index")); err == nil {
+		t.Errorf("an index database was written under the process's cache dir")
+	}
+
+	// A workflow step sees the given environment, its run's temp folder
+	// under the given XDG_CACHE_HOME, and not the process's variable.
+	rhiza("change", "new", "Env", "--title", "Env", "--json")
+	out := filepath.Join(t.TempDir(), "step.env")
+	writeFile(t, filepath.Join(repo, ".rhiza", "workflows", "childenv.toml"), `name = "childenv"
+
+[env]
+FOO = "{run_tmp}"
+
+[step.a]
+kind = "command"
+run = "echo \"marker=${RHIZA_CHILD_ENV_MARKER-unset} process=${RHIZA_CHILD_ENV_PROCESS_ONLY-unset} home=$HOME foo=$FOO\" > `+out+`"
+on.pass = "done"
+`)
+	if resp := rhiza("run", "start", "--foreground", "--workflow", "childenv", "--json"); !strings.Contains(resp, `"state": "succeeded"`) {
+		t.Fatalf("run start: %s", resp)
+	}
+	b, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.TrimSpace(string(b))
+	want := "marker=given process=unset home=" + home + " foo=" + filepath.Join(cache, "rhiza", "run-tmp") + string(filepath.Separator)
+	if !strings.HasPrefix(got, want) {
+		t.Errorf("step env = %q, want it to start %q", got, want)
+	}
+	if _, err := os.Stat(filepath.Join(proc, "cache", "rhiza", "run-tmp")); err == nil {
+		t.Errorf("a run temp folder was made under the process's cache dir")
+	}
+}
+
+func writeFile(t *testing.T, path, data string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
 	}
 }

@@ -143,7 +143,7 @@ func journalPrePush(ctx *Ctx, dir, head string, checkErr error) {
 	if err != nil {
 		return
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	id := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if id == "" {
 		js, err := rs.List()
@@ -244,13 +244,13 @@ func prePushHeadCheck(ctx *Ctx, tmp, cmd string) (CheckResponse, []string, error
 	}
 	defer os.RemoveAll(bdir)
 	bin := filepath.Join(bdir, "rhiza")
-	env := append(os.Environ(), envShipRhiza+"="+bin)
+	env := childEnv(ctx, envShipRhiza+"="+bin)
 	if out, err := ctx.Exec("sh", []string{"-c", cmd}, tmp, env); err != nil {
 		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head with %s (%s): %v", envShipBuild, cmd, err)}, out), nil
 	}
 	// Without SHIP_HEAD_RHIZA (headChildEnv): the head's check checks
 	// itself, never execs the run's head build.
-	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, headChildEnv())
+	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, headChildEnv(ctx))
 	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
 		if err == nil {
 			err = jerr

@@ -97,7 +97,7 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 		}
 		name = strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	} else {
-		p, d, ok, err := lookupWorkflow(ctx.Root, ref)
+		p, d, ok, err := lookupWorkflow(ctx.Root, ref, ctx.Getenv)
 		if err != nil {
 			return nil, Usagef("workflow %q: %v", ref, err).WithNext(runStartNext)
 		}
@@ -108,13 +108,13 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 		path, data, name = p, d, ref
 	}
 	out := WorkflowCheckResponse{Name: name, Path: path, Problems: []WorkflowProblem{}}
-	name, problems := workflow.Validate(name, data, workflowResolver(ctx.Root))
+	name, problems := workflow.Validate(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 	out.Name = name
 	for _, p := range problems {
 		out.Problems = append(out.Problems, WorkflowProblem{Step: p.Step, Message: p.Message})
 	}
 	if len(out.Problems) == 0 {
-		def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+		def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 		if err != nil {
 			return nil, err
 		}
@@ -136,7 +136,7 @@ func runWorkflowCheck(ctx *Ctx, req any) (any, error) {
 // (workflow.UngatedMerges), naming the step and one such path. It never
 // makes the workflow invalid.
 func mergeGateWarnings(name string, data []byte, ctx *Ctx) []string {
-	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 	if err != nil {
 		return nil
 	}
@@ -154,7 +154,7 @@ func mergeGateWarnings(name string, data []byte, ctx *Ctx) []string {
 // outcome and its target and suggests handback:<agent step>. It never
 // makes the workflow invalid.
 func loopWarnings(name string, data []byte, ctx *Ctx) []string {
-	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 	if err != nil {
 		return nil
 	}
@@ -169,7 +169,7 @@ func loopWarnings(name string, data []byte, ctx *Ctx) []string {
 // placeholderWarnings warns for each command step still running the
 // skeleton's placeholder test command. It never makes the workflow invalid.
 func placeholderWarnings(name string, data []byte, ctx *Ctx) []string {
-	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 	if err != nil {
 		return nil
 	}
@@ -191,7 +191,7 @@ func placeholderWarnings(name string, data []byte, ctx *Ctx) []string {
 // cannot be listed it warns so and names no install command. It never makes the
 // workflow invalid; an agent no adapter knows is agentProblems' to report.
 func invokeWarnings(name string, data []byte, ctx *Ctx) []string {
-	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root))
+	def, err := workflow.ParseWith(name, data, workflowResolver(ctx.Root, ctx.Getenv))
 	if err != nil {
 		return nil
 	}

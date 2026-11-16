@@ -99,6 +99,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/store"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // SchemaVersion is the schema this package writes, kept in PRAGMA
@@ -155,9 +156,10 @@ type stats struct {
 }
 
 // DefaultPath returns the index file for the worktree at root:
-// os.UserCacheDir()/rhiza/index/<hex SHA-256 of root's absolute,
-// symlink-resolved path>.db. root must exist.
-func DefaultPath(root string) (string, error) {
+// <user cache dir>/rhiza/index/<hex SHA-256 of root's absolute,
+// symlink-resolved path>.db, the user cache dir placed by os.UserCacheDir's
+// rules over getenv (userdir.Cache; nil is the process's). root must exist.
+func DefaultPath(root string, getenv func(string) string) (string, error) {
 	abs, err := filepath.Abs(root)
 	if err != nil {
 		return "", fmt.Errorf("index path: %w", err)
@@ -166,7 +168,7 @@ func DefaultPath(root string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("index path: %w", err)
 	}
-	cache, err := os.UserCacheDir()
+	cache, err := userdir.Cache(getenv)
 	if err != nil {
 		return "", fmt.Errorf("index path: %w", err)
 	}
@@ -177,8 +179,9 @@ func DefaultPath(root string) (string, error) {
 // Remove deletes the index database of the worktree at root, with its WAL
 // and shared-memory files. Call it before the worktree is removed: the path
 // is hashed resolved, so root must still exist. No database is no error.
-func Remove(root string) error {
-	p, err := DefaultPath(root)
+// getenv places the user cache dir, as for DefaultPath.
+func Remove(root string, getenv func(string) string) error {
+	p, err := DefaultPath(root, getenv)
 	if err != nil {
 		return err
 	}

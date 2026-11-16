@@ -91,7 +91,7 @@ func (r *stepRunner) fillSession(dir string) error {
 			// The worktree's own index, as slice opens it with no
 			// IndexPath: the caller's is its own checkout's.
 			if cc.IndexPath != "" {
-				if p, perr := index.DefaultPath(root); perr == nil {
+				if p, perr := index.DefaultPath(root, r.ctx.Getenv); perr == nil {
 					cc.IndexPath = p
 				} else {
 					cc.IndexPath = ""

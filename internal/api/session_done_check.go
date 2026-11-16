@@ -32,7 +32,7 @@ func reviewRecordMissing(ctx *Ctx, rec session.Record) string {
 	if err != nil {
 		return ""
 	}
-	j, err := run.NewStore(run.Dir(common)).Read(rec.Run)
+	j, err := runStore(ctx, common).Read(rec.Run)
 	if err != nil {
 		return ""
 	}

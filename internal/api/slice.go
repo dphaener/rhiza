@@ -105,13 +105,13 @@ func init() {
 const sliceNext = "rhiza slice <ref>"
 
 // openIndex opens the index of the worktree at root, caught up with its
-// log. No repository is not_found with next "rhiza init". The caller
-// closes it.
-func openIndex(root string) (*index.Index, error) {
+// log, under the user cache dir getenv places. No repository is not_found
+// with next "rhiza init". The caller closes it.
+func openIndex(root string, getenv func(string) string) (*index.Index, error) {
 	if _, err := openStore(root); err != nil {
 		return nil, err
 	}
-	p, err := index.DefaultPath(root)
+	p, err := index.DefaultPath(root, getenv)
 	if err != nil {
 		return nil, Errorf("%v", err)
 	}
@@ -269,7 +269,7 @@ type sliceSource struct {
 // by openIndex when ctx.IndexPath is empty. The caller closes it.
 func openSliceSource(ctx *Ctx, w *workspace) (sliceSource, error) {
 	if ctx.IndexPath == "" {
-		x, err := openIndex(ctx.Root)
+		x, err := openIndex(ctx.Root, ctx.Getenv)
 		if err != nil {
 			return sliceSource{}, err
 		}

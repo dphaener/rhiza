@@ -93,7 +93,7 @@ func workflowNames(dir string) []string {
 
 // runWorkflowLs finds each name in the three layers lookupWorkflow reads.
 func runWorkflowLs(ctx *Ctx, req any) (any, error) {
-	personal := personalWorkflowsDir()
+	personal := personalWorkflowsDir(ctx.Getenv)
 	repo := filepath.Join(ctx.Root, filepath.FromSlash(workflowsDir))
 	layers := []struct{ name, dir string }{{layerPersonal, personal}, {layerRepo, repo}}
 	seen := map[string]bool{}

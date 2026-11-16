@@ -130,7 +130,7 @@ func openSignoffRun(ctx *Ctx, cmd, ref string) (signoffRun, error) {
 	if err != nil {
 		return signoffRun{}, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	var j run.Journal
 	if ref = strings.TrimSpace(ref); ref != "" {
 		j, err = readRun(rs, ref)

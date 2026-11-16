@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // metaRoot is the meta key holding the resolved path of the worktree the
@@ -74,9 +76,10 @@ func PruneOrphans(dir string) Pruned {
 	return p
 }
 
-// IndexDir is the folder holding every worktree's index database.
-func IndexDir() (string, error) {
-	cache, err := os.UserCacheDir()
+// IndexDir is the folder holding every worktree's index database, under
+// the user cache dir placed over getenv as for DefaultPath.
+func IndexDir(getenv func(string) string) (string, error) {
+	cache, err := userdir.Cache(getenv)
 	if err != nil {
 		return "", err
 	}

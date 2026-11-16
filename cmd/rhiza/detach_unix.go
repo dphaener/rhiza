@@ -8,15 +8,25 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
-// detachProgram is api.Ctx.Detach: it starts p in a session of its own, so
-// it outlives this process and its terminal, with no input and its output
-// appended to logPath. This process reaps it when it exits. In a test run RHIZA_TEST_DETACH_LOG, when set, names
-// a file that receives the environment set and the command line instead; nothing starts, and logPath is
-// only created, so a script can see which log the child would write.
-func detachProgram(p apiProgram, logPath string) error {
-	if rec := os.Getenv("RHIZA_TEST_DETACH_LOG"); rec != "" && os.Getenv("RHIZA_TEST_NOW") != "" {
+// detachProgram returns api.Ctx.Detach: it starts p in a session of its
+// own, so it outlives this process and its terminal, with no input, its
+// output appended to logPath and env (the environment run() was given)
+// with p's changes. This process reaps it when it exits. In a test run
+// RHIZA_TEST_DETACH_LOG in env, when set, names a file that receives the
+// environment set and the command line instead; nothing starts, and
+// logPath is only created, so a script can see which log the child would
+// write.
+func detachProgram(env []string) func(p apiProgram, logPath string) error {
+	getenv := userdir.Getenv(env)
+	return func(p apiProgram, logPath string) error { return detachProgramIn(env, getenv, p, logPath) }
+}
+
+func detachProgramIn(env []string, getenv func(string) string, p apiProgram, logPath string) error {
+	if rec := getenv("RHIZA_TEST_DETACH_LOG"); rec != "" && getenv("RHIZA_TEST_NOW") != "" {
 		if err := os.MkdirAll(filepath.Dir(logPath), 0o755); err != nil {
 			return err
 		}
@@ -41,7 +51,7 @@ func detachProgram(p apiProgram, logPath string) error {
 	defer log.Close()
 	cmd := exec.Command(p.Name, p.Args...)
 	cmd.Dir = p.Dir
-	cmd.Env = programEnv(os.Environ(), p.Env, p.Unset)
+	cmd.Env = programEnv(env, p.Env, p.Unset)
 	cmd.Stdout, cmd.Stderr = log, log
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	if err := cmd.Start(); err != nil {

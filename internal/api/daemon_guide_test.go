@@ -360,7 +360,7 @@ func TestDaemonGuideHoldPlansAndResumes(t *testing.T) {
 	}
 
 	// An interrupted run of ship-change, whose conduct step starts /rhiza-conduct.
-	_, def, data, err := resolveWorkflow(ctx.Root, shipChangeWorkflow)
+	_, def, data, err := resolveWorkflow(ctx.Root, shipChangeWorkflow, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

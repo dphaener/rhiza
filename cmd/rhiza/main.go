@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
@@ -95,11 +96,19 @@ func usage() string {
 }
 
 // run is the testable entry point: it returns the exit code. wd is the
-// working directory the command runs in and self the absolute path of this
-// rhiza binary (empty when unknown); run reads neither from the process.
-func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+// working directory the command runs in, self the absolute path of this
+// rhiza binary (empty when unknown) and environ the environment in
+// os.Environ() form: what the command reads (its getenv is derived from
+// it) and what every child it starts gets. run reads none of them from the
+// process.
+func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string) int {
+	if environ == nil {
+		// Never nil: a child's nil Env would inherit the process's.
+		environ = []string{}
+	}
+	getenv := userdir.Getenv(environ)
 	g, rest, err := parseGlobals(args)
-	g.wd, g.self, g.stderr = wd, self, stderr
+	g.wd, g.self, g.stderr, g.environ = wd, self, stderr, environ
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
@@ -234,7 +243,7 @@ func main() {
 		// An unknown working directory is left empty: a command that needs
 		// it fails with a "working directory" error.
 		wd, _ := os.Getwd()
-		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
 	}))
 }
 

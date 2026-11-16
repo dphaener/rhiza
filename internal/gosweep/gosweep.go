@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 const (
@@ -39,8 +41,8 @@ func (f Freed) Any() bool { return f.CacheEntries > 0 || f.TempFolders > 0 }
 // when it is unset. It is empty when the cache is off or cannot be placed.
 func CacheDir() string { return CacheDirFrom(os.Getenv) }
 
-// CacheDirFrom is CacheDir reading GOCACHE (and, to place the user cache
-// dir, the environment itself) through getenv for GOCACHE only.
+// CacheDirFrom is CacheDir reading GOCACHE, and the variables that place
+// the user cache dir (userdir.Cache), through getenv.
 func CacheDirFrom(getenv func(string) string) string {
 	if v := getenv("GOCACHE"); v != "" {
 		if v == "off" {
@@ -48,7 +50,7 @@ func CacheDirFrom(getenv func(string) string) string {
 		}
 		return v
 	}
-	d, err := os.UserCacheDir()
+	d, err := userdir.Cache(getenv)
 	if err != nil {
 		return ""
 	}

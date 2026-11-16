@@ -74,7 +74,7 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	runs, err := rs.List()
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
@@ -127,4 +127,12 @@ func runRunOpen(ctx *Ctx, req any) (any, error) {
 	}
 	resp.Opened = true
 	return resp, nil
+}
+
+// runStore is the run store of the repository whose git common dir is
+// common, placing the runs' temp folders from ctx's environment.
+func runStore(ctx *Ctx, common string) *run.Store {
+	rs := run.NewStore(run.Dir(common))
+	rs.Getenv = ctx.Getenv
+	return rs
 }

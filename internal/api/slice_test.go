@@ -98,7 +98,7 @@ func TestSliceBytesAreFit(t *testing.T) {
 // fitDirect slices ref in as-is straight from the index, in both formats.
 func fitDirect(t *testing.T, ctx *Ctx, ref string, budget int) (js, md []byte) {
 	t.Helper()
-	x, err := openIndex(ctx.Root)
+	x, err := openIndex(ctx.Root, ctx.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +249,7 @@ func TestSliceErrors(t *testing.T) {
 func TestSliceResolveInModel(t *testing.T) {
 	ctx := sliceCtx(t)
 	sliceModel(t, ctx)
-	x, err := openIndex(ctx.Root)
+	x, err := openIndex(ctx.Root, ctx.Getenv)
 	if err != nil {
 		t.Fatal(err)
 	}

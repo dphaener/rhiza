@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/entry"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -35,7 +34,7 @@ func liveRunMirror(ctx *Ctx) func(entry.Entry) error {
 		if !ok {
 			return nil
 		}
-		j, ok, err := run.NewStore(run.Dir(common)).LiveOf(e.ChangeSet.String(), "")
+		j, ok, err := runStore(ctx, common).LiveOf(e.ChangeSet.String(), "")
 		if err != nil || !ok {
 			return nil
 		}

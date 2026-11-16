@@ -52,7 +52,7 @@ func TestRemoveWorktreeIndexKeepsOtherIndexes(t *testing.T) {
 		if err := os.Mkdir(d, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := index.DefaultPath(d)
+		p, err := index.DefaultPath(d, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -105,7 +105,7 @@ func TestRemoveCheckoutRemovesItsIndex(t *testing.T) {
 	}
 	dbs := map[string]string{}
 	for n, d := range map[string]string{"checkout": dir, "worktree": repo} {
-		p, err := index.DefaultPath(d)
+		p, err := index.DefaultPath(d, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

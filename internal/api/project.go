@@ -226,6 +226,7 @@ func runProjectClone(ctx *Ctx, root string, r ProjectAddRequest) (any, error) {
 		return ProjectAddResponse{Name: name, Path: name}, nil
 	}
 	cmd := exec.Command("git", "clone", "--quiet", "--", r.Path, dest)
+	cmd.Env = childEnv(ctx)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		os.RemoveAll(dest)
 		return nil, Usagef("cannot clone %s: %s", r.Path, strings.TrimSpace(string(out))).

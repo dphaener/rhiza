@@ -206,7 +206,7 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	cmd := exec.CommandContext(c, "sh", "-c", gate)
 	cmd.Dir = t.dir()
 	base, _ := gitAt(ctx, t.dir(), "merge-base", "HEAD", "origin/"+shipMain)
-	cmd.Env = append(os.Environ(), "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base))
+	cmd.Env = childEnv(ctx, "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base))
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second
@@ -268,7 +268,7 @@ func shipWriteGateLog(ctx *Ctx, t *shipTarget, out []byte) string {
 		return ""
 	}
 	if id := strings.TrimSpace(ctxGetenv(ctx)(envRun)); id != "" {
-		if j, err := run.NewStore(run.Dir(t.common)).Read(id); err == nil {
+		if j, err := runStore(ctx, t.common).Read(id); err == nil {
 			id = j.ID
 		}
 		if strings.ContainsAny(id, `/\`) || strings.HasPrefix(id, ".") {

@@ -25,7 +25,7 @@ func TestAbandonRemovesRunGoTmp(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(tmp, "go-build123"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	other := run.TmpDir("run-2")
+	other := run.TmpDir("run-2", nil)
 	if err := os.MkdirAll(other, 0o755); err != nil {
 		t.Fatal(err)
 	}

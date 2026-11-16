@@ -235,7 +235,7 @@ func TestPickNoLeaves(t *testing.T) {
 	writeWorkflow(t, root, "conductor", "name = \"conductor\"\n\n[step.conduct]\nkind = \"agent\"\nprompt = \"Conduct {change}\"\non.pass = \"done\"\n\n[[step.conduct.check]]\nname = \"plan\"\n")
 	writeWorkflow(t, root, "classic", "name = \"classic\"\n\n[step.build]\nkind = \"leaves\"\non.pass = \"done\"\n\n[step.build.builder]\nprompt = \"b\"\n\n[step.build.verifier]\nprompt = \"v\"\n")
 	for _, name := range []string{"conductor", "classic"} {
-		if _, _, _, err := resolveWorkflow(root, name); err != nil {
+		if _, _, _, err := resolveWorkflow(root, name, nil); err != nil {
 			t.Fatalf("workflow %s: %v", name, err)
 		}
 	}
@@ -247,7 +247,7 @@ func TestPickNoLeaves(t *testing.T) {
 	}
 	hasLeaves := func(cs id.ID) bool { return cs == first }
 	open := changeset.Open{Kind: changeset.KindIntention}
-	sched := daemonSchedule{Backlog: policy.BacklogAfter, Conducts: func(id.ID) bool { return changeConducts(root, open) }}
+	sched := daemonSchedule{Backlog: policy.BacklogAfter, Conducts: func(id.ID) bool { return changeConducts(root, open, nil) }}
 	pick := func() ([]string, map[string]string) {
 		t.Helper()
 		cands, skips := daemonCandidates(f.core(), hasLeaves, sched)

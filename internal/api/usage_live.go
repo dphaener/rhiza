@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"os"
 	"os/exec"
 	"reflect"
 	"time"
@@ -103,7 +102,7 @@ func runUserStatusLine(ctx *Ctx, command string, payload []byte) string {
 	c, cancel := context.WithTimeout(context.Background(), userStatusLineTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(c, "sh", "-c", command)
-	cmd.Env = os.Environ()
+	cmd.Env = childEnv(ctx)
 	cmd.Stdin = bytes.NewReader(payload)
 	var out bytes.Buffer
 	cmd.Stdout = &out

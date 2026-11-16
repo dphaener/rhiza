@@ -144,7 +144,7 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	if err != nil {
 		return nil, err
 	}
-	j, err := readRun(run.NewStore(run.Dir(common)), ref)
+	j, err := readRun(runStore(ctx, common), ref)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	// The worktree's own index answers the gate's reads and the answer's
 	// write, as in inboxGateRead, so the full disk log is never decoded.
 	// Without a usable index both read the log, as before.
-	if p, err := index.DefaultPath(dir); err == nil {
+	if p, err := index.DefaultPath(dir, ctx.Getenv); err == nil {
 		c.IndexPath = p
 		if pj, err := openProjection(&c, true); err == nil {
 			w.setProjection(pj)

@@ -129,7 +129,7 @@ func TestParseGlobals(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := globals{json: true, dryRun: true, record: true, help: true, change: "C1", actor: "A", forRef: "F", changeSet: true, actorSet: true, forSet: true}
-	if g != want {
+	if !reflect.DeepEqual(g, want) {
 		t.Errorf("globals = %+v, want %+v", g, want)
 	}
 	if !slices.Equal(rest, []string{"change", "new", "x", "--", "--json"}) {

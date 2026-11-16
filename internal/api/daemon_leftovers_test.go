@@ -47,7 +47,7 @@ func TestDaemonSweepLeftoversPrunesOnlyOrphans(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(root, ".rhiza", "log"), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := index.DefaultPath(root)
+		p, err := index.DefaultPath(root, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

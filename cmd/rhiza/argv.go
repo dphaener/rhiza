@@ -18,12 +18,15 @@ type globals struct {
 	// over the environment even when empty.
 	change, actor, forRef       string
 	changeSet, actorSet, forSet bool
-	// wd, self and stderr are not flags: run() sets them from its
-	// parameters. wd is the working directory commands resolve the repo
-	// from, self the absolute path of this rhiza binary (empty when
-	// unknown), and stderr where questions and Rex status reports go.
+	// wd, self, stderr and environ are not flags: run() sets them from
+	// its parameters. wd is the working directory commands resolve the
+	// repo from, self the absolute path of this rhiza binary (empty when
+	// unknown), stderr where questions and Rex status reports go, and
+	// environ the environment, in os.Environ() form, that commands read
+	// and every child they start gets.
 	wd, self string
 	stderr   io.Writer
+	environ  []string
 }
 
 // parseGlobals takes the global flags out of args, wherever they are, and

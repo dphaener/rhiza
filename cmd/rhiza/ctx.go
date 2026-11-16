@@ -27,8 +27,10 @@ import (
 // newCtx fills an api.Ctx from the global flags and the environment. Flags
 // win over RHIZA_CHANGE, RHIZA_ACTOR and RHIZA_FOR; the workspace
 // resolves the raw refs. The index path is index.DefaultPath of the root,
-// under the user cache dir, when a root was found; otherwise, or when the
-// cache dir is unknown, it is empty and reads fail. RHIZA_TEST_NOW
+// under the user cache dir that getenv places, when a root was found;
+// otherwise, or when the cache dir is unknown, it is empty and reads fail.
+// Every child the Ctx starts gets g.environ, the environment run() was
+// given, with its own additions. RHIZA_TEST_NOW
 // (RFC 3339) and RHIZA_TEST_SEED fix the clock and ID seed for tests.
 // RHIZA_ROOT, when set, is the root instead of the one found from the
 // working directory: it must hold .rhiza, else the call fails rather than
@@ -67,17 +69,18 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		DryRun:    g.dryRun,
 		Now:       time.Now,
 		IDs:       id.Default(),
-		GitConfig: func(key string) (string, error) { return gitConfig(wd, key) },
+		GitConfig: func(key string) (string, error) { return gitConfig(wd, key, g.environ) },
 		Version:   versionString(),
 		Commit:    commitString(getenv),
 		Stdin:     stdin,
 		Home:      getenv("HOME"),
 		Getenv:    getenv,
-		Exec:      execIn,
+		Environ:   g.environ,
+		Exec:      execIn(g.environ),
 		LookPath:  exec.LookPath,
 		Self:      g.self,
-		Start:     startProgram,
-		Detach:    detachProgram,
+		Start:     startProgram(g.environ),
+		Detach:    detachProgram(g.environ),
 		Reap:      reapDrivers,
 		Adopt:     adoptChildren,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this
@@ -97,13 +100,15 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 	if ctx.RexBlock != "" {
 		ctx.Rex = stderr
 	}
-	ctx.Git = gitIn(ctx.Root)
+	ctx.Git = gitIn(ctx.Root, g.environ)
 	ctx.Verdict = func(output string) api.FailureVerdict {
 		cmd := api.FailureClassifierCommand(ctx)
 		if cmd == "" {
 			return api.FailureVerdict{Reason: "classifier off"}
 		}
-		return api.ClassifyFailure(cmd, output, shellWithStdin)
+		return api.ClassifyFailure(cmd, output, func(command, stdin string) (string, error) {
+			return shellWithStdin(command, stdin, g.environ)
+		})
 	}
 	ctx.Classify = func(output string) bool {
 		if api.FailureClassifierCommand(ctx) == "" {
@@ -118,7 +123,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		return v.Transient
 	}
 	if found {
-		if p, err := index.DefaultPath(ctx.Root); err == nil {
+		if p, err := index.DefaultPath(ctx.Root, getenv); err == nil {
 			ctx.IndexPath = p
 		}
 	}
@@ -243,11 +248,14 @@ func findRoot(dir string) string {
 	return dir
 }
 
-// gitIn returns an api.Ctx.Git that runs `git -C root <args...>` and returns
-// its standard output. A failure carries git's trimmed standard error.
-func gitIn(root string) func(args ...string) (string, error) {
+// gitIn returns an api.Ctx.Git that runs `git -C root <args...>` with env
+// and returns its standard output. A failure carries git's trimmed standard
+// error.
+func gitIn(root string, env []string) func(args ...string) (string, error) {
 	return func(args ...string) (string, error) {
-		out, err := exec.Command("git", append([]string{"-C", root}, args...)...).Output()
+		cmd := exec.Command("git", append([]string{"-C", root}, args...)...)
+		cmd.Env = env
+		out, err := cmd.Output()
 		if err != nil {
 			var ee *exec.ExitError
 			if errors.As(err, &ee) && len(bytes.TrimSpace(ee.Stderr)) > 0 {
@@ -259,25 +267,28 @@ func gitIn(root string) func(args ...string) (string, error) {
 	}
 }
 
-// execIn is api.Ctx.Exec: it runs name with args in dir, with env (nil for
-// this process's environment), and returns its standard output. A failure
-// carries the program's trimmed standard error.
-func execIn(name string, args []string, dir string, env []string) ([]byte, error) {
-	cmd := exec.Command(name, args...)
-	cmd.Dir = dir
-	if env != nil {
-		cmd.Env = env
-	}
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
-	if err != nil {
-		if msg := bytes.TrimSpace(stderr.Bytes()); len(msg) > 0 {
-			return out, fmt.Errorf("%s %s: %s", name, strings.Join(args, " "), msg)
+// execIn returns api.Ctx.Exec: it runs name with args in dir, with env
+// (nil for base, the environment run() was given), and returns its
+// standard output. A failure carries the program's trimmed standard error.
+func execIn(base []string) func(name string, args []string, dir string, env []string) ([]byte, error) {
+	return func(name string, args []string, dir string, env []string) ([]byte, error) {
+		if env == nil {
+			env = base
 		}
-		return out, fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
+		cmd := exec.Command(name, args...)
+		cmd.Dir = dir
+		cmd.Env = env
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		out, err := cmd.Output()
+		if err != nil {
+			if msg := bytes.TrimSpace(stderr.Bytes()); len(msg) > 0 {
+				return out, fmt.Errorf("%s %s: %s", name, strings.Join(args, " "), msg)
+			}
+			return out, fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
+		}
+		return out, nil
 	}
-	return out, nil
 }
 
 // classifierTimeout bounds one failure classifier call. The watchdog calls
@@ -285,13 +296,14 @@ func execIn(name string, args []string, dir string, env []string) ([]byte, error
 // project; one that runs out of time is killed and its failure is real.
 var classifierTimeout = 60 * time.Second
 
-// shellWithStdin runs command through sh -c with stdin and returns its
-// standard output, for the failure classifier. It kills the command, and
-// every process it started, after classifierTimeout.
-func shellWithStdin(command, stdin string) (string, error) {
+// shellWithStdin runs command through sh -c with stdin and env and returns
+// its standard output, for the failure classifier. It kills the command,
+// and every process it started, after classifierTimeout.
+func shellWithStdin(command, stdin string, env []string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), classifierTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	cmd.Env = env
 	ownGroup(cmd)
 	cmd.WaitDelay = streamGrace
 	cmd.Stdin = strings.NewReader(stdin)
@@ -314,8 +326,13 @@ func shellWithStdin(command, stdin string) (string, error) {
 // of it that still holds it.
 const streamGrace = 2 * time.Second
 
-// startProgram is api.Ctx.Start, over os/exec.
-func startProgram(p api.Program) (api.Process, error) {
+// startProgram returns api.Ctx.Start, over os/exec: each program gets env,
+// the environment run() was given, with its own changes (programEnv).
+func startProgram(env []string) func(p api.Program) (api.Process, error) {
+	return func(p api.Program) (api.Process, error) { return startProgramIn(env, p) }
+}
+
+func startProgramIn(env []string, p api.Program) (api.Process, error) {
 	cmd := exec.Command(p.Name, p.Args...)
 	cmd.Dir = p.Dir
 	set := p.Env
@@ -325,7 +342,7 @@ func startProgram(p api.Program) (api.Process, error) {
 			set = append([]string{"PWD=" + abs}, set...)
 		}
 	}
-	cmd.Env = programEnv(os.Environ(), set, p.Unset)
+	cmd.Env = programEnv(env, set, p.Unset)
 	proc := &process{cmd: cmd}
 	if p.Terminal {
 		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
@@ -456,11 +473,12 @@ func workingDir(wd string) (string, error) {
 	return filepath.Clean(wd), nil
 }
 
-// gitConfig returns the trimmed value of a git config key, read in dir, or
-// an error if it is unset or empty.
-func gitConfig(dir, key string) (string, error) {
+// gitConfig returns the trimmed value of a git config key, read in dir with
+// env, or an error if it is unset or empty.
+func gitConfig(dir, key string, env []string) (string, error) {
 	cmd := exec.Command("git", "config", "--get", key)
 	cmd.Dir = dir
+	cmd.Env = env
 	out, err := cmd.Output()
 	v := strings.TrimSpace(string(out))
 	if err != nil || v == "" {

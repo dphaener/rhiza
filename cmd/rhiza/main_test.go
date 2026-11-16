@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 			"rhiza": func() int {
 				return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
 					wd, _ := os.Getwd()
-					return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+					return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
 				})
 			},
 		})

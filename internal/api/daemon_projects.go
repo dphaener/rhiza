@@ -44,7 +44,7 @@ func projectCtx(ctx *Ctx, dir string) *Ctx {
 	c.RexBlock = ""
 	c.ProjectName = ""
 	c.IndexPath = ""
-	if p, err := index.DefaultPath(dir); err == nil {
+	if p, err := index.DefaultPath(dir, ctx.Getenv); err == nil {
 		c.IndexPath = p
 	}
 	boundGit(&c, dir)
@@ -162,7 +162,7 @@ func newDaemonProj(pctx *Ctx, name, dir string, self daemon.Holder, home bool, r
 	}
 	hooks := resolveHooks(pctx, r.NotifyCommand, r.EventCommand)
 	p.notifyCmd, p.eventCmd = hookCommand(hooks, HookNotify), hookCommand(hooks, HookEvent)
-	p.rs = run.NewStore(run.Dir(common))
+	p.rs = runStore(pctx, common)
 	p.state, p.unjournaled = daemonStartState(common, self, pctx.Version, pctx.Commit, conf.maxRuns, r.Autonomous)
 	p.pending = map[string]daemonPending{}
 	p.state.Settings = conf.stateRows()
@@ -401,7 +401,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	// The pick is a function of the fold, the workflow and dispatch files,
 	// the runs (and whether each is live), what is held and the slots: it is
 	// recomputed only when one of them changed.
-	fmt.Fprintf(&sig, "|%s|%d|%d|%s", strings.Join(held, ","), running, len(fold.cands), workflowFilesStamp(ctx.Root))
+	fmt.Fprintf(&sig, "|%s|%d|%d|%s", strings.Join(held, ","), running, len(fold.cands), workflowFilesStamp(ctx.Root, ctx.Getenv))
 	for cs := range unjournaled {
 		sig.WriteString("|u" + cs)
 	}
@@ -649,7 +649,7 @@ func milestoneHoldsOwner(ctx *Ctx, j run.Journal, host string) bool {
 		return false
 	}
 	var def *workflow.Definition
-	if _, d, _, err := resolveWorkflow(ctx.Root, st.Workflow); err == nil {
+	if _, d, _, err := resolveWorkflow(ctx.Root, st.Workflow, ctx.Getenv); err == nil {
 		def = d
 	}
 	if st.Stopped != "" && !st.Autonomous && def != nil {

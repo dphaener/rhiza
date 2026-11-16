@@ -8,7 +8,6 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/leftovers"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -35,7 +34,7 @@ func daemonSweepLeftovers(ctx *Ctx, sched *daemon.SweepSchedule, commons []strin
 // a test replaces it to hold the sweep.
 var sweepLeftoversWork = func(ctx *Ctx, commons []string) (index.Pruned, leftovers.Freed) {
 	var idx index.Pruned
-	if dir, err := index.IndexDir(); err == nil {
+	if dir, err := index.IndexDir(ctx.Getenv); err == nil {
 		idx = index.PruneOrphans(dir)
 	}
 	var scr leftovers.Freed
@@ -68,7 +67,7 @@ func sweepSessionScratch(ctx *Ctx, common string) leftovers.Freed {
 	if err != nil {
 		return leftovers.Freed{}
 	}
-	runs, err := run.NewStore(run.Dir(common)).List()
+	runs, err := runStore(ctx, common).List()
 	if err != nil {
 		return leftovers.Freed{}
 	}

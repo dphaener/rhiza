@@ -14,6 +14,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // MinPrefix is the shortest ID prefix Read accepts.
@@ -40,28 +42,32 @@ func Dir(gitCommonDir string) string {
 }
 
 // TmpDir is the run's own temp folder, outside every git repository:
-// os.UserCacheDir()/rhiza/run-tmp/<run id>, or
-// os.TempDir()/rhiza-run-tmp-<uid>/<run id> when there is no user cache
-// dir. A workflow's [env] values name it as {run_tmp}. The engine creates
-// it as a step starts and removes it (that folder only, never the shared
-// run-tmp parent) when the run ends.
-func TmpDir(id string) string {
-	if c, err := os.UserCacheDir(); err == nil && c != "" {
+// <user cache dir>/rhiza/run-tmp/<run id>, or
+// <temp dir>/rhiza-run-tmp-<uid>/<run id> when there is no user cache
+// dir, both placed by the os package's rules over getenv (userdir; nil is
+// the process's environment). A workflow's [env] values name it as
+// {run_tmp}. The engine creates it as a step starts and removes it (that
+// folder only, never the shared run-tmp parent) when the run ends.
+func TmpDir(id string, getenv func(string) string) string {
+	if c, err := userdir.Cache(getenv); err == nil && c != "" {
 		return filepath.Join(c, "rhiza", "run-tmp", id)
 	}
-	return filepath.Join(os.TempDir(), fmt.Sprintf("rhiza-run-tmp-%d", os.Getuid()), id)
+	return filepath.Join(userdir.Temp(getenv), fmt.Sprintf("rhiza-run-tmp-%d", os.Getuid()), id)
 }
 
 // Store keeps one append-only JSONL journal per run in a directory.
 type Store struct {
 	dir string
+	// Getenv places the runs' temp folders (TmpDir); nil is the process's
+	// environment.
+	Getenv func(string) string
 }
 
 // NewStore returns a store over dir. The directory is created on first write.
 func NewStore(dir string) *Store { return &Store{dir: dir} }
 
 // TmpDir is TmpDir for a run of this store.
-func (s *Store) TmpDir(id string) string { return TmpDir(id) }
+func (s *Store) TmpDir(id string) string { return TmpDir(id, s.Getenv) }
 
 // RunDir is the directory a run keeps its files in, such as a gate's failing
 // output: <store>/<id>. It is not created.
