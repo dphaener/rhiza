@@ -1,0 +1,30 @@
+{
+  "actor": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "after": [
+    "01M7GYHS3D52E8Y3NQSVDKJ348"
+  ],
+  "at": "2026-11-16T01:22:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "903fe4d8-83ee-438a-b6fd-01a1e1d9fa1c",
+          "statement": "Change set 'check without what-if rebuilds': all three leaves are built. The read-entries-parallel verifier fails that leaf only on the 5 s check target (check-time-target). At e4d148ed5, rhiza check in ~/code/rhiza took 11.67 s wall at load ~3 (16.25 s user + 4.14 s sys, which is ≥5.1 s even on 4 perfect cores). The builder measured 7.3–9.5 s at load ~2, down from 20.6 s at base. The decode it parallelised was only ~1.3 s of CPU. The rest is WhatIfFrom (~19%), checker.model/inFlightLinks and render, all outside this leaf. Everything else (tests, -race, same output order, no dependency) passes. check-time-target says the leaf fails and the gap is raised, not the target loosened. How should it be settled?"
+        },
+        "handle": "question-903fe4d8-1",
+        "id": "01M7GZ5BM1JN6WYTY7VF9G8V01",
+        "key": null,
+        "kind": "question",
+        "node": "01M7GZ5BM1JN6WYTY7VCC2CJFZ",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GZ5E7HC616N0SMZ24RXT87",
+  "type": "ops",
+  "v": 1
+}

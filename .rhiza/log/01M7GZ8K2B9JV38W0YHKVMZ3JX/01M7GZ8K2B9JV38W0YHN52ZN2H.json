@@ -1,0 +1,16 @@
+{
+  "actor": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "after": [],
+  "at": "2026-11-16T01:24:07Z",
+  "body": {
+    "intent": "rhiza check on this repo takes at most 5 s (m39-check-fast, projection-targets), closing the gap check-without-what-if-rebuilds left: after it, check took 7.3-11.7 s on the shared 4-core VM (about 20 s of CPU). Profiled at e4d148ed5 the remaining cost is model.WhatIfFrom (~19% cumulative, finishModel's clone of each what-if view), checker.model and checker.inFlightLinks (~24% and ~15%) and the render comparison (~5.5%), not the log decode (~1.3 s of CPU, now parallel). Decision check-time-gap-carried.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Check within 5 s"
+  },
+  "change_set": "01M7GZ8K2B9JV38W0YHKVMZ3JX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GZ8K2B9JV38W0YHN52ZN2H",
+  "type": "open",
+  "v": 2
+}
