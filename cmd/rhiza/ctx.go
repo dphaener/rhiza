@@ -31,7 +31,8 @@ import (
 // resolves the raw refs. The index path is index.DefaultPath of the root,
 // under the user cache dir that getenv places, when a root was found;
 // otherwise, or when the cache dir is unknown, it is empty and reads fail.
-// Every child the Ctx starts gets g.environ, the environment run() was
+// Adopt and Reap are g.own's: nil unless run()'s caller is a real rhiza
+// process. Every child the Ctx starts gets g.environ, the environment run() was
 // given, with its own additions. Its run clock is the one
 // RHIZA_TEST_CLOCK_SCALE chooses in getenv's environment. RHIZA_TEST_NOW
 // (RFC 3339) and RHIZA_TEST_SEED fix the clock and ID seed for tests.
@@ -85,8 +86,8 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Self:      g.self,
 		Start:     startProgram(wd, g.environ),
 		Detach:    detachProgram(wd, g.environ),
-		Reap:      reapDrivers,
-		Adopt:     adoptChildren,
+		Reap:      g.own.reap,
+		Adopt:     g.own.adopt,
 		// REX_SESSION and REX_BLOCK are the Rex session and block this
 		// terminal runs in; Rex sets them in every shell it starts.
 		RexSession: getenv("REX_SESSION"),

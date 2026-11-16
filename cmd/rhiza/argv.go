@@ -27,6 +27,9 @@ type globals struct {
 	wd, self string
 	stderr   io.Writer
 	environ  []string
+	// own is what run()'s caller passed for api.Ctx.Adopt and Reap; zero
+	// (both nil) for an in-process call.
+	own ownChildren
 }
 
 // parseGlobals takes the global flags out of args, wherever they are, and

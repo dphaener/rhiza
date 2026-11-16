@@ -100,8 +100,10 @@ func usage() string {
 // rhiza binary (empty when unknown) and environ the environment in
 // os.Environ() form: what the command reads (its getenv is derived from
 // it) and what every child it starts gets. run reads none of them from the
-// process.
-func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string) int {
+// process. own, given only by a real rhiza process (main), lets the daemon
+// adopt and reap that process's children; an in-process call passes none,
+// and its Ctx's Adopt and Reap stay nil.
+func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string, own ...ownChildren) int {
 	if environ == nil {
 		// Never nil: a child's nil Env would inherit the process's.
 		environ = []string{}
@@ -109,6 +111,9 @@ func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writ
 	getenv := userdir.Getenv(environ)
 	g, rest, err := parseGlobals(args)
 	g.wd, g.self, g.stderr, g.environ = wd, self, stderr, environ
+	for _, o := range own {
+		g.own = o
+	}
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
@@ -243,9 +248,22 @@ func main() {
 		// An unknown working directory is left empty: a command that needs
 		// it fails with a "working directory" error.
 		wd, _ := os.Getwd()
-		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ(), processChildren)
 	}))
 }
+
+// ownChildren are api.Ctx.Adopt and Reap: acts on every child of the
+// running process, so only a real rhiza process, which owns all of its
+// children, passes them to run(). In a process that runs rhiza in-process
+// beside other work (a test binary), they would adopt and wait on children
+// that are not rhiza's.
+type ownChildren struct {
+	adopt, reap func(common string)
+}
+
+// processChildren is what main() passes: the running rhiza adopts and reaps
+// its own children.
+var processChildren = ownChildren{adopt: adoptChildren, reap: reapDrivers}
 
 // profiled runs f, writing a CPU profile to path when path is set. It is
 // a hidden diagnostic: RHIZA_CPUPROFILE=<file> rhiza <cmd>, then

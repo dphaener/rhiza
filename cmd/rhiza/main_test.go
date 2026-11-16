@@ -61,7 +61,8 @@ func rhizaProcess() int {
 	}
 	return profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
 		wd, _ := os.Getwd()
-		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ())
+		// A real rhiza process: it adopts and reaps its own children.
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ(), processChildren)
 	})
 }
 
