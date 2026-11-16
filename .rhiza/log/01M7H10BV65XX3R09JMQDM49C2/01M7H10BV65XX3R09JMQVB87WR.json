@@ -1,0 +1,15 @@
+{
+  "actor": "01M7H0P8AXH3PCAMJMX3E8HQZG",
+  "after": [],
+  "at": "2026-11-16T01:54:35Z",
+  "body": {
+    "intent": "Inbox within 200 ms (rhiza inbox answers within 200 ms warm on this repo (m39-reads-fast) once it no longer folds the log: on 2026-11-16 at 6ebf119de it took 0.62 s with the index, 40% of its CPU in run.Store.List parsing every run journal file (internal/run Store.readFile/parseFile via inboxOne and mergeInbox). Found while planning 01M7GFTDY50TAHVDP688ENP6TX; Decision inbox-rescoped-after-parity kept it out of that change set.)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7H10BV65XX3R09JMQDM49C2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H10BV65XX3R09JMQVB87WR",
+  "type": "open",
+  "v": 1
+}
