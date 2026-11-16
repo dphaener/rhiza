@@ -1,0 +1,412 @@
+{
+  "actor": "01M7H1BD94G8YY22M5DCP6T7FJ",
+  "after": [
+    "01M7H0ZBS1CKAPJ7QZ3XVE904S"
+  ],
+  "at": "2026-11-16T02:03:14Z",
+  "body": {
+    "drop": [
+      "01M7GG0GEKJBGGNZNT0HEBDYKW",
+      "01M7GG0GF39R53XENQS7F6C3RY",
+      "01M7GG0GFQ0JSFT473Z1E3SFQX",
+      "01M7H0YQSN2Z8W11B7BDATAC0F",
+      "01M7H0YQTHN3C1ZH7F6VASTX5S",
+      "01M7H0YQVHP87K47XZNAFMVCPV"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "question": "How do in-process script lines and the lines that need a real rhiza process coexist, and how is the list of process scripts enforced?",
+          "reasoning": "go-internal v1.14.1's testscript looks up scriptCmds (builtins, and every RunMain command, which RunMain registers there: testscript/exe.go:93) before Params.Cmds (testscript.go:723-725), so neither `exec rhiza` nor a bare `rhiza` can be redirected in-process while RunMain has a `rhiza` entry; RunMain's entry is renamed and TestMain dispatches the `rhiza` name itself, which RunMain's own basename dispatch would otherwise do. The scripts' lines have to change, and the `exec` prefix is already the honest marker of a process start. Custom commands cannot run with & and cannot read the `stdin` builtin's input (ts.stdin is private), so those lines must stay processes. A hard link to the binary RunMain already placed on PATH gives a working `rhiza` with no separate build. Enforcing the list at the process entry, by script name, catches every way a process gets started, including ctx.Self children and fake bin/ callbacks, which a text scan of the script would miss.",
+          "statement": "In cmd/rhiza's scripts a bare `rhiza ...` line runs in-process, through a custom testscript command `rhiza` in TestScripts' Cmds that calls run() with the script's working directory (ts.MkAbs(\".\")), environment, ts.Stdout() and ts.Stderr(); `exec rhiza ...` stays the way to start a process. For the bare line to reach Cmds, testscript.RunMain gets no `rhiza` entry: its one entry is named `rhiza-process`, and TestMain itself, before calling RunMain, runs run() when the binary was started under the name `rhiza` (filepath.Base(os.Args[0])); TestScripts adds, once per test binary, a hard link named `rhiza` beside RunMain's `rhiza-process` in the bin directory RunMain put on PATH, so `exec rhiza`, fake bin/ callbacks and ctx.Self (run() is given that link's path as its own) start the test binary as rhiza and no second binary is built. A script may have `exec rhiza` lines, or start rhiza as a process any other way (a fake bin/ command that calls rhiza, rhiza with &, a `stdin` or `ttyin` feed, a command that starts ctx.Self such as run start or daemon run), only when it is named in one list in cmd/rhiza/main_test.go with its reason; Setup gives every script RHIZA_TEST_SCRIPT=<name>, and TestMain's `rhiza` entry exits 2 with a message naming the list when that script is not on it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scripts-mark-process-lines-exec",
+        "id": "01M7H0YQ3NV130SDW77HXQQMCD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "question": "testscript has no accessor for a script's whole environment; how does the in-process rhiza command get the environment it passes to run()?",
+          "reasoning": "testscript v1.14.1 exposes ts.Getenv per name but not the whole environment, and the children rhiza starts (git above all, whose hermetic config comes from HOME and GIT_CONFIG_GLOBAL) need the whole environment the script would have given an exec'd rhiza. The names in play are exactly Setup's plus those the script's env lines set, and both are known: Setup's from env.Vars, the script's from its own text. Upgrading go-internal for an accessor would be a dependency change, which a plan must not add.",
+          "statement": "The in-process `rhiza` command builds the environment it passes to run() as the script's Setup environment (env.Vars, kept per script with env.Values) with, for every name that environment holds or that one of the script's `env NAME=...` lines sets, the current value from ts.Getenv; a name whose value is empty is kept as `NAME=` (set and empty), as testscript's `env NAME=` appends `NAME=` to the environment an exec'd rhiza and its children get (testscript.go:1237, 983, 1036). ts.Getenv cannot tell a name a later env line sets, still unset, from an empty one, so such a name is passed set and empty too; a script where that difference shows (a fake bin/ command or check that tells unset from empty, such as ${NAME-unset}) is put on the process list.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scripts-in-process-env-from-setup",
+        "id": "01M7H0YQ5CKJQJ8845KC9BNJPR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(ProcessScripts|ScriptEnv|InProcessCommand)$' passes, with new tests: TestProcessScripts shows that a fixture script off the list whose fake bin/ command calls rhiza fails with exit 2 and a message naming the list, and that the same script on the list runs; TestScriptEnv shows the built environment holds Setup's names, a value an `env NAME=x` line set, and `NAME=` for a name an `env NAME=` line cleared (a git child started by run() reads the script's HOME and GIT_CONFIG_GLOBAL); TestInProcessCommand shows a fixture script's bare `rhiza version` and `! rhiza nosuch` lines run with no process started (TestMain's `rhiza` entry counts none) and report the same stdout, stderr and exit status as `exec rhiza`. go test -trimpath -count=1 ./cmd/rhiza -run TestScripts passes with every script unchanged (git diff --stat cmd/rhiza/testdata is empty); go vet ./cmd/rhiza is clean. Touches cmd/rhiza/main_test.go and new test files in cmd/rhiza only. Must not change any command's output, flags or exit codes.",
+          "statement": "cmd/rhiza's TestScripts gives scripts a custom `rhiza` command that runs run() in-process with the script's working directory, the environment built per scripts-in-process-env-from-setup and the script's standard streams; testscript.RunMain's one entry is renamed `rhiza-process`, TestMain runs run() itself when started as `rhiza`, and TestScripts hard-links a `rhiza` beside `rhiza-process` on PATH and passes its path to run() as its own; Setup gives every script RHIZA_TEST_SCRIPT=<name>, and TestMain's `rhiza` entry exits 2, naming the list, when that script is not on one list of process scripts in cmd/rhiza/main_test.go, each with its reason. The list starts with every script whose `exec rhiza` lines are not yet converted, under the reason `not converted yet`; no txtar file changes"
+        },
+        "handle": "scripts-in-process-harness",
+        "id": "01M7H1G7F352JVZ96KFC1NSMHM",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[a-d]' passes. No process-list entry for a script starting with a to d keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with a to d and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with a to d (86 scripts, about 1,420 exec rhiza lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-a-d",
+        "id": "01M7H1G7G4P94B0SPFT0NC9K9M",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[e-q]' passes. No process-list entry for a script starting with e to q keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with e to q and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with e to q (95 scripts, about 1,160 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-e-q",
+        "id": "01M7H1G7H66R2AG3DK17TZ3VG7",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^r' passes. No process-list entry for a script starting with r keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with r and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with r (117 scripts, about 1,150 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-r",
+        "id": "01M7H1G7J4D54HBAJHZ9ZG0WG8",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[s-w]' passes. No process-list entry for a script starting with s to w keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with s to w and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with s to w (90 scripts, about 1,220 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-s-w",
+        "id": "01M7H1G7K4QJGGAE3NEYPQEJF2",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(AgentDocsConsistent|DevelopingDocLessons|ClaudeMD|ProcessScripts|ProcessListConverted)$' passes, with a new test TestProcessListConverted that fails, naming the script, on a list entry whose reason is `not converted yet` (shown with a fixture list) and passes on the real list; go test -trimpath -count=1 ./cmd/rhiza passes. The commit's Checks: block records, on a quiet VM, /usr/bin/time -f '%e s %S sys' go test -trimpath -count=1 ./cmd/rhiza at the commit before the harness and after, and the number of rhiza processes started (counted by TestMain's `rhiza` entry) before and after (2026-11-15: about 4,870 exec rhiza lines in 398 scripts). Touches cmd/rhiza/main_test.go, AGENTS.md and agents/developing.md only.",
+          "statement": "No process-list entry keeps the reason `not converted yet`, and a test fails on one that does; AGENTS.md's Tests bullet and agents/developing.md:21 say that a bare `rhiza` line runs in-process and an `exec rhiza` line starts a process, allowed only in a script on the process list in cmd/rhiza/main_test.go; the before/after cost of cmd/rhiza's suite is recorded"
+        },
+        "handle": "scripts-in-process-docs",
+        "id": "01M7H1G7M59QWBW902Z4ZTSKMQ",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M7H1G7M59QWBW902Z4WN442Y",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "id": "01M7H1G7NYDS37JJRVN90S1909",
+        "link": "01M7H1G7NYDS37JJRVN5SMA5AP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "id": "01M7H1G7PZE84ZBZNDXM9M07YH",
+        "link": "01M7H1G7PZE84ZBZNDXH6XW17V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "id": "01M7H1G7R207SN9Z7FCTPEDDZR",
+        "link": "01M7H1G7R207SN9Z7FCSVE68E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "id": "01M7H1G7SEPM0Z495VK5N19PPR",
+        "link": "01M7H1G7SEPM0Z495VK44K7GJ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "id": "01M7H1G7TF7Y05DKT4KJ0199TW",
+        "link": "01M7H1G7TF7Y05DKT4KF1XFJZD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "id": "01M7H1G7VG79KJNDM8WYZ48D4M",
+        "link": "01M7H1G7VG79KJNDM8WY5X39V1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "id": "01M7H1G7WG6H0B1PFFPH8G21JR",
+        "link": "01M7H1G7WG6H0B1PFFPE25H3ZG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "id": "01M7H1G7XHFN91FTNP8XRYAW7Q",
+        "link": "01M7H1G7XHFN91FTNP8XBF3A3K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "id": "01M7H1G7YGT64FAYMCT90753A7",
+        "link": "01M7H1G7YGT64FAYMCT8263CRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "id": "01M7H1G7ZGSHZ2253DTERKQ41R",
+        "link": "01M7H1G7ZGSHZ2253DTEBA0V10",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "id": "01M7H1G80H7PSVAPGSXACKJSY2",
+        "link": "01M7H1G80H7PSVAPGSX9AY5011",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "id": "01M7H1G81GXF80J2XK77C9F90V",
+        "link": "01M7H1G81GXF80J2XK75RDJ4RG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "id": "01M7H1G82M3P0TNG9J3TYQAZNH",
+        "link": "01M7H1G82M3P0TNG9J3TNQEANF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "id": "01M7H1G83YSTXT259HRTGW5NKA",
+        "link": "01M7H1G83YSTXT259HRPWS7Q8E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "id": "01M7H1G853J8AJ0H0629P89M82",
+        "link": "01M7H1G853J8AJ0H0629CRAMSX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G866MZ2G29W97Q0566RG",
+        "link": "01M7H1G866MZ2G29W97K6YXQRY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G876HB8T3F33G5Y180VW",
+        "link": "01M7H1G876HB8T3F33G5BYXEKM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G8893FCCP8N15MPF5QGY",
+        "link": "01M7H1G8893FCCP8N15K41ZDQC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "id": "01M7H1G89AWP1HAM18KQQ4Q0GQ",
+        "link": "01M7H1G89AWP1HAM18KQDHF9RY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "id": "01M7H1G8AAXDACN39SAKVNAV71",
+        "link": "01M7H1G8AAXDACN39SAHCJFX5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "id": "01M7H1G8BDH4MRY37FRTPJ4YSC",
+        "link": "01M7H1G8BDH4MRY37FRPYGEJXD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G8CJ9AJX54KK8WT4AE82",
+        "link": "01M7H1G8CJ9AJX54KK8T84AE1F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "id": "01M7H1G8DMKFQXN2QPWW8REX64",
+        "link": "01M7H1G8DMKFQXN2QPWSEWQDY4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G8EP9JKPG70TF9K2TM13",
+        "link": "01M7H1G8EP9JKPG70TF6RE84WN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "id": "01M7H1G8FSFBZZ0HK726ZH23EG",
+        "link": "01M7H1G8FSFBZZ0HK726EJKA0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G8GXDAZHYEJ53RHWWV3V",
+        "link": "01M7H1G8GXDAZHYEJ53N7MWR44",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "id": "01M7H1G8JCY4MMX6YF3PTBM5B0",
+        "link": "01M7H1G8JCY4MMX6YF3PQRN1PF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7H1G7M59QWBW902Z4WN442Y",
+        "id": "01M7H1G8KF8EMYFYBC54SFNQET",
+        "link": "01M7H1G8KF8EMYFYBC53CM2Y6R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H1G8NKBM2P3Z8TPYESBV1Q",
+  "type": "ops",
+  "v": 1
+}

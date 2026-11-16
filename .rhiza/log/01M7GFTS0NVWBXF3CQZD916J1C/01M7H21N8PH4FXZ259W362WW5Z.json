@@ -1,0 +1,110 @@
+{
+  "actor": "01M7H1ZARW4WFFXZG7NH522EQR",
+  "after": [
+    "01M7H1G8NKBM2P3Z8TPYESBV1Q"
+  ],
+  "at": "2026-11-16T02:12:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "question": "How do in-process script lines and the lines that need a real rhiza process coexist, and how is the list of process scripts enforced?",
+          "reasoning": "go-internal v1.14.1's testscript looks up scriptCmds (builtins, and every RunMain command, which RunMain registers there: testscript/exe.go:93) before Params.Cmds (testscript.go:723-725), so neither `exec rhiza` nor a bare `rhiza` can be redirected in-process while RunMain has a `rhiza` entry; RunMain's entry is renamed and TestMain dispatches the `rhiza` name itself, which RunMain's own basename dispatch would otherwise do. The scripts' lines have to change, and the `exec` prefix is already the honest marker of a process start. Custom commands cannot run with & and cannot read the `stdin` builtin's input (ts.stdin is private), so those lines must stay processes. A hard link to the binary RunMain already placed on PATH gives a working `rhiza` with no separate build. Enforcing the list at the process entry, by script name, catches every way a process gets started, including ctx.Self children and fake bin/ callbacks, which a text scan of the script would miss.",
+          "statement": "In cmd/rhiza's scripts a bare `rhiza ...` line runs in-process, through a custom testscript command `rhiza` in TestScripts' Cmds that calls run() with the script's working directory (ts.MkAbs(\".\")), environment, ts.Stdout() and ts.Stderr(); `exec rhiza ...` stays the way to start a process. For the bare line to reach Cmds, testscript.RunMain gets no `rhiza` entry: its one entry is named `rhiza-process`, and TestMain itself, before calling RunMain, runs run() when the binary was started under the name `rhiza` (filepath.Base(os.Args[0])); TestScripts adds, once per test binary, a hard link named `rhiza` beside RunMain's `rhiza-process` in the bin directory RunMain put on PATH, so `exec rhiza`, fake bin/ callbacks and ctx.Self (run() is given that link's path as its own) start the test binary as rhiza and no second binary is built. A script may have `exec rhiza` lines, or start rhiza as a process any other way (a fake bin/ command that calls rhiza, rhiza with &, a `stdin` or `ttyin` feed, a command that starts ctx.Self such as run start or daemon run, or a line whose run or daemon lock a later line must find interrupted: a run records the pid of the process that ran it (run.ThisProcess, internal/run/process.go:70) and the daemon lock its holder's (internal/daemon/lock.go:83), and in-process that pid is the test binary, which stays alive, so such a line, for example run-abandon.txtar:17's `rhiza run start --foreground --no-wait`, needs a process that has exited), only when it is named in one list in cmd/rhiza/main_test.go with its reason; Setup gives every script RHIZA_TEST_SCRIPT=<name>, and TestMain's `rhiza` entry exits 2 with a message naming the list when that script is not on it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scripts-mark-process-lines-exec",
+        "id": "01M7H0YQ3NV130SDW77HXQQMCD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|ShellWithStdin|ChildEnv)' and go test -trimpath -count=1 ./internal/api -run '^Test(ShipGate|ShipPrePush|ShipGenerate|DaemonHook|UsageLive|ChildEnv)' pass, with a new test TestChildEnv in cmd/rhiza that calls run() with an environment whose HOME and GIT_CONFIG_GLOBAL differ from the process's (set with t.Setenv to other values) and shows the git child sees the given ones (a git config value only that GIT_CONFIG_GLOBAL holds is read back), and a test in internal/api that a gate or hook child started through a Ctx whose Environ holds a marker variable the process lacks sees it; go test -trimpath -count=1 ./internal/index ./internal/run ./internal/gosweep passes, and TestChildEnv also shows that run() given a HOME and XDG_CACHE_HOME other than the process's puts the index database under the given XDG_CACHE_HOME/rhiza/index and the run's temp folder under the given XDG_CACHE_HOME/rhiza/run-tmp, never under the process's cache dir; failure case: a Ctx whose Environ unsets a variable the process has (PATH-free, or a removed marker) leaves it unset in the child. go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-|session-hook|usage-live)' passes; go vet ./cmd/rhiza ./internal/api is clean. Touches cmd/rhiza/main.go, ctx.go, detach_unix.go, tui.go, tui_open.go, internal/api/api.go and the internal/api, internal/index, internal/run and internal/gosweep files named in the statement, and their tests. Must not change any command's output, flags or exit codes.",
+          "statement": "run() takes its environment as a list, api.Ctx carries it as Environ with Getenv derived from it, and nothing on run()'s call path reads os.Getenv, os.LookupEnv or os.Environ or starts a child with a nil Env (which inherits the process's): gitIn, gitConfig, execIn, shellWithStdin and startProgram's programEnv in cmd/rhiza/ctx.go, detach_unix.go:19, tui.go's colorprofile.Detect calls, and internal/api's ship_build.go:199, usage_live.go:106, daemon_hook.go:87, ship_prepush.go:247, ship_generate.go:104, ship_gate.go:209, run_leaves.go:690, run.go:1657 (XDG_CONFIG_HOME) and project.go:228 (git clone) take it from the Ctx, and gosweep.CacheDir's callers on that path use CacheDirFrom(ctx.Getenv); nor does anything on that path call os.UserCacheDir, os.UserHomeDir or os.TempDir, which read the process's XDG_CACHE_HOME, HOME and TMPDIR: the user cache, home and temp dirs come from ctx.Getenv by the same rules, for the index path (index.DefaultPath, used at cmd/rhiza/ctx.go:117 and internal/api's question.go:175, inbox.go:1415, run_model_cache.go:127, slice.go:111 and daemon_projects.go:47, and index.Remove), index.IndexDir (internal/index/prune.go:79, used at internal/api/daemon_leftovers.go:38), the run's temp folder (run.TmpDir and Store.TmpDir, internal/run/store.go:49-52), personalWorkflowsDir's home (internal/api/run.go:1660) and gosweep.CacheDirFrom's user cache dir (internal/gosweep/gosweep.go:51); the daemon's self re-exec (internal/daemon/reexec.go) is the one exception"
+        },
+        "handle": "cli-child-env",
+        "id": "01M7H0YQDRC85SWH2705CSVSH0",
+        "key": "zzzzyi",
+        "kind": "capability",
+        "node": "01M7H0YQDRC85SWH2704XH2WC9",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(RunConcurrentDirs|NoProcessGlobals)$' passes and go test -race -trimpath -count=1 ./cmd/rhiza -run '^TestRunConcurrentDirs$' is clean: TestRunConcurrentDirs calls run() from two goroutines, many times each, on two scratch repos with different working directories, RHIZA_ACTOR values and HOMEs, and shows each call's output names its own repo's nodes and actor. Failure case: TestNoProcessGlobals fails, naming file and line, on a fixture file that calls os.Getenv outside the allowlist, and on one that calls os.UserCacheDir. go vet ./cmd/rhiza is clean. Touches cmd/rhiza's new test file(s) only, plus whatever site the guard finds that the earlier leaves left (fixed, not allowlisted, unless it is the daemon re-exec).",
+          "statement": "Two run() calls proceed at once in one process, each answering for its own working directory and environment, and a test in cmd/rhiza keeps it so: it parses cmd/rhiza's and internal/api's, internal/run's, internal/daemon's, internal/gosweep's and internal/index's non-test Go files and fails on any use of os.Getwd, os.Chdir, os.Args, os.Executable, os.Getenv, os.LookupEnv, os.Environ, os.Setenv, os.Unsetenv, os.UserCacheDir, os.UserHomeDir or os.TempDir outside an allowlist in that test that names each remaining site (main() and selfPath, internal/daemon/reexec.go) with its reason"
+        },
+        "handle": "run-concurrent-guard",
+        "id": "01M7H0YQN1QRDYASREWY619272",
+        "key": "zzzzyw",
+        "kind": "capability",
+        "node": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[a-d]' passes. No process-list entry for a script starting with a to d keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with a to d and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with a to d (86 scripts, about 1,420 exec rhiza lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, a run or daemon lock a later line must find interrupted because the pid it recorded must have exited, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-a-d",
+        "id": "01M7H1G7G4P94B0SPFT0NC9K9M",
+        "key": "zzzzzr",
+        "kind": "capability",
+        "node": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[e-q]' passes. No process-list entry for a script starting with e to q keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with e to q and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with e to q (95 scripts, about 1,160 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, a run or daemon lock a later line must find interrupted because the pid it recorded must have exited, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-e-q",
+        "id": "01M7H1G7H66R2AG3DK17TZ3VG7",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M7H1G7H66R2AG3DK14QMFTDD",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^r' passes. No process-list entry for a script starting with r keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with r and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with r (117 scripts, about 1,150 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, a run or daemon lock a later line must find interrupted because the pid it recorded must have exited, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-r",
+        "id": "01M7H1G7J4D54HBAJHZ9ZG0WG8",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M7H1G7J4D54HBAJHZ73NQ84R",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[s-w]' passes. No process-list entry for a script starting with s to w keeps the reason `not converted yet` (grep in cmd/rhiza/main_test.go finds none). Failure case: such a script off the list that still has an `exec rhiza` line fails with the list's message. Touches the txtar files starting with s to w and the process list in cmd/rhiza/main_test.go only. Must not delete or skip a script (the count of cmd/rhiza/testdata/script/*.txtar stays 398) or weaken an assertion: each changed line differs only in its exec prefix (git diff --word-diff shows only removed `exec `).",
+          "statement": "The scripts in cmd/rhiza/testdata/script whose names start with s to w (90 scripts, about 1,220 lines on 2026-11-16) run their rhiza lines in-process: each `exec rhiza` line becomes `rhiza`, except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self, a run or daemon lock a later line must find interrupted because the pid it recorded must have exited, or a difference between unset and empty that shows), which keep `exec rhiza` and whose process-list entry's reason `not converted yet` is replaced by the reason they need a process; the converted scripts leave the list"
+        },
+        "handle": "scripts-in-process-s-w",
+        "id": "01M7H1G7K4QJGGAE3NEYPQEJF2",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M7H1G7K4QJGGAE3NEY6S18VH",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H21N8PH4FXZ259W362WW5Z",
+  "type": "ops",
+  "v": 1
+}

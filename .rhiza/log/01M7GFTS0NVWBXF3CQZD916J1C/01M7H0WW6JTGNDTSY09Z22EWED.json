@@ -1,0 +1,33 @@
+{
+  "actor": "01M7H0P67PNKWWGCEBWGHGY7TH",
+  "after": [
+    "01M7GG19HDQA2B8GWTBYYGYG11"
+  ],
+  "at": "2026-11-16T01:52:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "d1fdf96445c4df9659dec75335a0d5cd5dd65022eeacfc3d3ca37f3b99fe5957",
+          "session": "d3d753d3-18bc-4528-97d1-01a1e20afb72",
+          "summary": "Autonomous plan run for change set 01M7GFTS0N (no owner; the orchestrator acts as arbiter). The arbiter's brief: design choices are the planner's, recorded as '(assumed, would have escalated)' with reasoning; keep each leaf one concern a fresh session can finish and verify; stay out of change set 01M7GFTDY5. Research findings: scripts invoke rhiza as `exec rhiza` (about 4,870 lines in 398 scripts), and go-internal v1.14.1's testscript looks up builtin commands before Params.Cmds, so `exec rhiza` cannot be intercepted: in-process lines need a custom `rhiza` command and the scripts must change. Custom commands cannot run in the background (&) and cannot read the `stdin` builtin's input (ts.stdin is private); 12 scripts use stdin or ttyin, 6 run rhiza with &. testscript exposes ts.Getenv per name but no way to list the whole environment. testscript.RunMain already puts a `rhiza` on PATH that re-executes the test binary, so no separate build is needed for the process lines. Process-wide state on run()'s call path beyond os.Getwd (ctx.go:42) and os.Args[0] (selfPath, ctx.go:421): os.Chdir in tui.go (147-276), os.Executable and os.Getwd in tui_open.go:62-66, ctx.Stderr/Terminal/Rex set to os.Stderr (ctx.go:83-94), child processes inheriting os.Environ (gitIn, gitConfig and execIn with nil env in ctx.go; programEnv(os.Environ()) in startProgram; internal/api ship_build.go:199, usage_live.go:106, daemon_hook.go:87, ship_prepush.go:247, ship_generate.go:104, ship_gate.go:209, run_leaves.go:690), os.Getenv reads (internal/api/run.go:1657 XDG_CONFIG_HOME, gosweep.CacheDir, detach_unix.go:19), and runClock (internal/api/run.go:100), chosen once at package init from RHIZA_TEST_CLOCK_SCALE in the process environment, which in-process would put every script's waits on the real clock. internal/daemon/reexec.go uses os.Args and os.Environ for the daemon's self re-exec, which only runs in a daemon process. Package-level vars in internal/api are test seams that commands do not write.",
+          "title": "Planning Rhiza in-process in scripts (autonomous)"
+        },
+        "handle": "in-process-scripts-plan-research",
+        "id": "01M7H0WW5QJXF6E8K7R90X94TZ",
+        "key": null,
+        "kind": "source",
+        "node": "01M7H0WW5QJXF6E8K7R8SHJS76",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H0WW6JTGNDTSY09Z22EWED",
+  "type": "ops",
+  "v": 1
+}

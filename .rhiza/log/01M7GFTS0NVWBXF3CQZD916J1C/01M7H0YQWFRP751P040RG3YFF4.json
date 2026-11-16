@@ -1,0 +1,312 @@
+{
+  "actor": "01M7H0P67PNKWWGCEBWGHGY7TH",
+  "after": [
+    "01M7H0WW6JTGNDTSY09Z22EWED"
+  ],
+  "at": "2026-11-16T01:53:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|TUI|RunWorkingDir)' passes, with a new test TestRunWorkingDir that, with the process's working directory outside any root, calls run() with a scratch repo's folder as its working directory and shows the command answers for that repo, and that an error it reports lands in the stderr buffer it was given; failure case in the same test: a working directory that does not exist fails with the 'working directory' error and exit code 1. go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/tui-' passes and go vet ./cmd/rhiza is clean. Touches cmd/rhiza/main.go, ctx.go, tui.go, tui_open.go, main_test.go's TestMain entry and docs_examples_test.go's run() call. Must not change any command's output, flags or exit codes, nor environment handling (cli-child-env).",
+          "statement": "cmd/rhiza's run() takes its working directory and its own binary's path as parameters instead of reading os.Getwd (ctx.go:42) and os.Args[0] (selfPath, ctx.go:421); tui.go opens a project's app by passing the project's folder as the working directory instead of os.Chdir (tui.go:147-276 and wdNow), tui_open.go's openModal uses those parameters instead of os.Executable and os.Getwd, and ctx.Stderr, ctx.Terminal and ctx.Rex are the stderr run() was given, not os.Stderr; main() passes os.Getwd(), selfPath() and os.Stderr"
+        },
+        "handle": "cli-no-process-globals",
+        "id": "01M7GG0GD7S0MZQ888A1CZA5T3",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7GG0GD7S0MZQ888A108TB0C",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza passes, every script under cmd/rhiza/testdata/script run, and go test -trimpath -count=1 ./cmd/rhiza -run '^Test(AgentDocsConsistent|DevelopingDocLessons|ClaudeMD|ProcessScripts)' passes, with a new test TestProcessScripts showing that a fixture script off the list whose fake bin/ command calls rhiza fails with a message naming the list, and that a script on the list runs. The commit's Checks: block records, on a quiet VM, /usr/bin/time -f '%e s %S sys' go test -trimpath -count=1 ./cmd/rhiza before and after, and the number of rhiza processes started (counted by RunMain's entry) before and after (2026-11-15: about 4,870 exec rhiza lines in 398 scripts). Touches cmd/rhiza/main_test.go, the txtar files, AGENTS.md and agents/developing.md. Must not delete or skip a script (ls cmd/rhiza/testdata/script/*.txtar | wc -l stays 398) or weaken an assertion: each changed line differs only in its exec prefix.",
+          "statement": "cmd/rhiza's testscripts run each bare `rhiza` line in-process, through a custom `rhiza` script command that calls run() with the script's working directory, environment and standard streams, and every script's `exec rhiza` lines become `rhiza` except in the scripts that need a process (a fake bin/ command that calls rhiza back, rhiza with &, a stdin or ttyin feed, a command that starts ctx.Self); those keep testscript.RunMain's re-executed rhiza on PATH and are named, each with its reason, in one list in cmd/rhiza/main_test.go that RunMain's entry enforces through RHIZA_TEST_SCRIPT; AGENTS.md's Tests bullet and agents/developing.md:21 say which lines run in-process and which start a process"
+        },
+        "handle": "scripts-rhiza-in-process",
+        "id": "01M7GG0GEKJBGGNZNT0HEBDYKW",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "question": "How do in-process script lines and the lines that need a real rhiza process coexist, and how is the list of process scripts enforced?",
+          "reasoning": "go-internal v1.14.1's testscript looks up builtins before Params.Cmds (testscript.go:723), so `exec rhiza` cannot be redirected in-process; the scripts' lines have to change, and the `exec` prefix is already the honest marker of a process start. Custom commands cannot run with & and cannot read the `stdin` builtin's input (ts.stdin is private), so those lines must stay processes. RunMain already provides a working rhiza on PATH by re-executing the test binary, so building a separate binary once per test binary (the leaf's earlier wording) would add a build for nothing. Enforcing the list at the process entry, by script name, catches every way a process gets started, including ctx.Self children and fake bin/ callbacks, which a text scan of the script would miss.",
+          "statement": "In cmd/rhiza's scripts a bare `rhiza ...` line runs in-process, through a custom testscript command `rhiza` in TestScripts' Cmds that calls run() with the script's working directory (ts.MkAbs(\".\")), environment, ts.Stdout() and ts.Stderr(); `exec rhiza ...` stays the way to start a process, and testscript.RunMain's `rhiza` on PATH (the test binary re-executed) stays as that process, so no second binary is built. A script may have `exec rhiza` lines, or start rhiza as a process any other way (a fake bin/ command that calls rhiza, rhiza with &, a `stdin` or `ttyin` feed, a command that starts ctx.Self such as run start or daemon run), only when it is named in one list in cmd/rhiza/main_test.go with its reason; Setup gives every script RHIZA_TEST_SCRIPT=<name>, and RunMain's `rhiza` entry exits 2 with a message naming the list when that script is not on it.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scripts-mark-process-lines-exec",
+        "id": "01M7H0YQ3NV130SDW77HXQQMCD",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "id": "01M7H0YQ4HHF1YRDQ0ETZRERH4",
+        "link": "01M7H0YQ4HHF1YRDQ0ETM2E3HP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0WW5QJXF6E8K7R8SHJS76",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "testscript has no accessor for a script's whole environment; how does the in-process rhiza command get the environment it passes to run()?",
+          "reasoning": "testscript v1.14.1 exposes ts.Getenv per name but not the whole environment, and the children rhiza starts (git above all, whose hermetic config comes from HOME and GIT_CONFIG_GLOBAL) need the whole environment the script would have given an exec'd rhiza. The names in play are exactly Setup's plus those the script's env lines set, and both are known: Setup's from env.Vars, the script's from its own text. Upgrading go-internal for an accessor would be a dependency change, which a plan must not add.",
+          "statement": "The in-process `rhiza` command builds the environment it passes to run() as the script's Setup environment (env.Vars, kept per script with env.Values) with, for every name that environment holds or that one of the script's `env NAME=...` lines sets, the current value from ts.Getenv; a name whose value is empty is left out, as testscript's `env NAME=` clears it for exec.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "scripts-in-process-env-from-setup",
+        "id": "01M7H0YQ5CKJQJ8845KC9BNJPR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "id": "01M7H0YQ6A5Y0BG576EQYW0F16",
+        "link": "01M7H0YQ6A5Y0BG576EPVFAN46",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0WW5QJXF6E8K7R8SHJS76",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "What replaces os.Environ for the processes rhiza starts when run() runs in-process?",
+          "reasoning": "A getenv func cannot be enumerated, and git, gh, the gate, the pre-push check and generate are started with cmd.Env = os.Environ() or with a nil Env (which inherits it); in-process, that is the test binary's environment, not the script's, so git would lose its hermetic HOME and config. One list carried on Ctx serves both reads and children.",
+          "statement": "run() takes its environment as a list in os.Environ() form instead of only a getenv func; api.Ctx gains Environ (that list), Getenv is derived from it, and every child process rhiza starts on run()'s call path gets its environment from ctx.Environ (with the existing additions, such as GIT_INDEX_FILE or RHIZA_GATE_HEAD, appended), never os.Environ. main() passes os.Environ(). The daemon's self re-exec (internal/daemon/reexec.go) keeps os.Args and os.Environ: it replaces the daemon process, which only runs as a process.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "run-takes-env-list",
+        "id": "01M7H0YQ7ZYEJNZ00TETWQ2CYE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ7ZYEJNZ00TESB0B5EH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQ7ZYEJNZ00TESB0B5EH",
+        "id": "01M7H0YQ8ZG45JDC2R6RE55KR7",
+        "link": "01M7H0YQ8ZG45JDC2R6NRBAAFD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0WW5QJXF6E8K7R8SHJS76",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "How does a run's clock follow the script's RHIZA_TEST_CLOCK_SCALE once rhiza runs in-process?",
+          "reasoning": "runClock is chosen once at package init from the process environment (internal/api/run.go:100). In-process, the test binary has no RHIZA_TEST_CLOCK_SCALE, so every script's 30 s polls and backoffs would run on the real clock, and a script that clears the scale with `env RHIZA_TEST_CLOCK_SCALE=` would not get the real clock either way. 35 test sites replace runClock, so it stays as an override rather than being removed.",
+          "statement": "A run's waits go by the clock chosen from the Ctx's own environment (RHIZA_TEST_CLOCK_SCALE through ctx.Getenv, via run.ClockFromEnv taking a getenv func) when the Ctx is made, held on api.Ctx; the package variable runClock stays only as the tests' override and is nil by default.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "run-clock-chosen-per-ctx",
+        "id": "01M7H0YQ9WASMPHSJT2Z4ZW02Q",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7H0YQ9WASMPHSJT2XGW6S0Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQ9WASMPHSJT2XGW6S0Z",
+        "id": "01M7H0YQAXQFZCF1S8JYY1ACMX",
+        "link": "01M7H0YQAXQFZCF1S8JWX0KTKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0WW5QJXF6E8K7R8SHJS76",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GD7S0MZQ888A108TB0C",
+        "id": "01M7H0YQCS9P1ABB2NTGHPYHRX",
+        "link": "01M7H0YQCS9P1ABB2NTGDG9WBG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ7ZYEJNZ00TESB0B5EH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|ShellWithStdin|ChildEnv)' and go test -trimpath -count=1 ./internal/api -run '^Test(ShipGate|ShipPrePush|ShipGenerate|DaemonHook|UsageLive|ChildEnv)' pass, with a new test TestChildEnv in cmd/rhiza that calls run() with an environment whose HOME and GIT_CONFIG_GLOBAL differ from the process's (set with t.Setenv to other values) and shows the git child sees the given ones (a git config value only that GIT_CONFIG_GLOBAL holds is read back), and a test in internal/api that a gate or hook child started through a Ctx whose Environ holds a marker variable the process lacks sees it; failure case: a Ctx whose Environ unsets a variable the process has (PATH-free, or a removed marker) leaves it unset in the child. go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-|session-hook|usage-live)' passes; go vet ./cmd/rhiza ./internal/api is clean. Touches cmd/rhiza/main.go, ctx.go, detach_unix.go, tui.go, tui_open.go, internal/api/api.go and the internal/api files named in the statement, and their tests. Must not change any command's output, flags or exit codes.",
+          "statement": "run() takes its environment as a list, api.Ctx carries it as Environ with Getenv derived from it, and nothing on run()'s call path reads os.Getenv, os.LookupEnv or os.Environ: gitIn, gitConfig, execIn (nil env), shellWithStdin and startProgram's programEnv in cmd/rhiza/ctx.go, detach_unix.go:19, and internal/api's ship_build.go:199, usage_live.go:106, daemon_hook.go:87, ship_prepush.go:247, ship_generate.go:104, ship_gate.go:209, run_leaves.go:690 and run.go:1657 (XDG_CONFIG_HOME) take it from the Ctx, and gosweep.CacheDir's callers on that path use CacheDirFrom(ctx.Getenv); the daemon's self re-exec (internal/daemon/reexec.go) is the one exception"
+        },
+        "handle": "cli-child-env",
+        "id": "01M7H0YQDRC85SWH2705CSVSH0",
+        "key": "zzzzyi",
+        "kind": "capability",
+        "node": "01M7H0YQDRC85SWH2704XH2WC9",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQDRC85SWH2704XH2WC9",
+        "id": "01M7H0YQEMQ5XBDQ55XBWE0VPM",
+        "link": "01M7H0YQEMQ5XBDQ55XA2J8RY1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ7ZYEJNZ00TESB0B5EH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQDRC85SWH2704XH2WC9",
+        "id": "01M7H0YQFHTH3J61NVW7GYHQ8M",
+        "link": "01M7H0YQFHTH3J61NVW4SNZF6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQDRC85SWH2704XH2WC9",
+        "id": "01M7H0YQGH9MFCTA2E0NBAXB4J",
+        "link": "01M7H0YQGH9MFCTA2E0MWXG9WH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/run -run Clock and go test -trimpath -count=1 ./internal/api -run '^Test(RunClock|CtxSleep|RunStart|RunResume|SessionWait)' pass, with a new test in internal/api that two Ctxs made with different RHIZA_TEST_CLOCK_SCALE values (1000 and empty) in one process get a scaled and a real clock while the process environment has neither, and that a test which sets runClock still overrides both; failure case: an unparsable scale gives the real clock, as ClockFromEnv does today. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-start|run-resume|session-run)' passes; go vet ./internal/run ./internal/api is clean. Touches internal/run/clock.go, internal/api/run.go, api.go and the files that read runClock, cmd/rhiza/ctx.go, and their tests. Must not change a wait's length under either clock.",
+          "statement": "A run's waits (run.start and run.resume polls, the spawn poll, session waits, the default ctx.Sleep and ship deploy) go by a clock chosen from the Ctx's environment when the Ctx is made: run.ClockFromEnv takes a getenv func, api.Ctx holds the chosen Clock, and the package variable runClock (internal/api/run.go:100) is nil unless a test sets it as an override"
+        },
+        "handle": "run-clock-from-ctx",
+        "id": "01M7H0YQHE7WQMF5VZJEFZE6PM",
+        "key": "zzzzyr",
+        "kind": "capability",
+        "node": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "id": "01M7H0YQJERP3NC1WA204GDSWG",
+        "link": "01M7H0YQJERP3NC1WA1ZMYYY3T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ9WASMPHSJT2XGW6S0Z",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "id": "01M7H0YQK91XC3RZBV623TRK65",
+        "link": "01M7H0YQK91XC3RZBV5Z1MKZ76",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "id": "01M7H0YQM73RW67A4YEN75JR7Q",
+        "link": "01M7H0YQM73RW67A4YEM36BAW9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQDRC85SWH2704XH2WC9",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza -run '^Test(RunConcurrentDirs|NoProcessGlobals)$' passes and go test -race -trimpath -count=1 ./cmd/rhiza -run '^TestRunConcurrentDirs$' is clean: TestRunConcurrentDirs calls run() from two goroutines, many times each, on two scratch repos with different working directories, RHIZA_ACTOR values and HOMEs, and shows each call's output names its own repo's nodes and actor. Failure case: TestNoProcessGlobals fails, naming file and line, on a fixture file that calls os.Getenv outside the allowlist. go vet ./cmd/rhiza is clean. Touches cmd/rhiza's new test file(s) only, plus whatever site the guard finds that the earlier leaves left (fixed, not allowlisted, unless it is the daemon re-exec).",
+          "statement": "Two run() calls proceed at once in one process, each answering for its own working directory and environment, and a test in cmd/rhiza keeps it so: it parses cmd/rhiza's and internal/api's, internal/run's, internal/daemon's and internal/gosweep's non-test Go files and fails on any use of os.Getwd, os.Chdir, os.Args, os.Executable, os.Getenv, os.LookupEnv, os.Environ, os.Setenv or os.Unsetenv outside an allowlist in that test that names each remaining site (main() and selfPath, internal/daemon/reexec.go) with its reason"
+        },
+        "handle": "run-concurrent-guard",
+        "id": "01M7H0YQN1QRDYASREWY619272",
+        "key": "zzzzyw",
+        "kind": "capability",
+        "node": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "id": "01M7H0YQNXWM07BZA0GKVZN2Y9",
+        "link": "01M7H0YQNXWM07BZA0GHTXY7GM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ7ZYEJNZ00TESB0B5EH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "id": "01M7H0YQPTDF84S2C737QAHZ7S",
+        "link": "01M7H0YQPTDF84S2C7361V97E7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT06MX3HQ7M70CHYJ0Y85",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "id": "01M7H0YQQPNMCG84H0FVFGK3HH",
+        "link": "01M7H0YQQPNMCG84H0FSETXX7B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "id": "01M7H0YQSN2Z8W11B7BDATAC0F",
+        "link": "01M7H0YQSN2Z8W11B7B9PPTGPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ3NV130SDW77EGD0NP4",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "id": "01M7H0YQTHN3C1ZH7F6VASTX5S",
+        "link": "01M7H0YQTHN3C1ZH7F6S3F90NF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQ5CKJQJ8845KC2NVCGJ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GG0GEKJBGGNZNT0HAA9RZB",
+        "id": "01M7H0YQVHP87K47XZNAFMVCPV",
+        "link": "01M7H0YQVHP87K47XZN70PG2Q8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQN1QRDYASREWWQD9ED9",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7H0YQWFRP751P040RG3YFF4",
+  "type": "ops",
+  "v": 1
+}
