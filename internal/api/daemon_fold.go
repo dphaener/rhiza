@@ -189,9 +189,8 @@ func daemonFoldOf(ctx *Ctx) (*daemonFolded, error) {
 }
 
 // daemonFold folds the change sets and derives what the poll passes need of
-// them. With an index (ctx.IndexPath) the change sets and the models come
-// from the workspace's projection, and the log is not read; without one the
-// log is folded once and the models are built over the folded list.
+// them. The change sets and the models come from the workspace's
+// projection, and the log is not read.
 func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	res, _, _, err := planRead(ctx, "daemon", "")
 	if err != nil {
@@ -201,24 +200,14 @@ func daemonFold(ctx *Ctx) (*daemonFolded, error) {
 	if err != nil {
 		return nil, err
 	}
-	var list []changeset.ChangeSet
-	var view func(cs id.ID) Model
 	ws.useProjection(ctx)
 	defer ws.closeProjection()
 	p := ws.projection()
-	if p != nil {
-		list = p.changeSets(ws.pending)
-		view = func(cs id.ID) Model { return p.model(ws.pending, cs) }
-	} else {
-		list, _ = changeset.FoldLog(ws.log())
-		// One as-is view for every candidate's model.
-		view = newModelBase(list).model
-	}
+	list := p.changeSets(ws.pending)
+	view := func(cs id.ID) Model { return p.model(ws.pending, cs) }
 	f := daemonDerive(ctx, res, list, view)
-	if p != nil {
-		if err := p.failure(); err != nil {
-			return nil, Errorf("%s", err.Error())
-		}
+	if err := p.failure(); err != nil {
+		return nil, Errorf("%s", err.Error())
 	}
 	return f, nil
 }

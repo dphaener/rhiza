@@ -73,8 +73,8 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 // inboxUncoveredProposals is one accept item per proposed change set with
 // leaves that no run covers (uncoveredProposals), whatever
 // rhiza.autonomy.accept says: nothing is going to accept it. Only the
-// proposed change sets are folded when the fold has a projection; a leaf is
-// then read from the change set's view over its stored as-is rows. A
+// proposed change sets are folded; a leaf is read from the change set's
+// view over the projection's stored as-is rows. A
 // change set that already has an accept item in items (a gate left it for
 // the owner) is not listed again.
 func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxFold) []InboxItem {
@@ -82,8 +82,6 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 		return nil
 	}
 	var proposed []string
-	// One as-is view of the whole log for every proposal's model.
-	var base *modelBase
 	for cs, st := range fold.states {
 		if st != changeset.StateProposed {
 			continue
@@ -92,21 +90,13 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 		if !ok {
 			continue
 		}
-		var leaves []ChangeLeaf
-		if fold.p != nil {
-			// The proposal's view over the projection's stored as-is rows,
-			// so a leaf under a landed parent counts. Only whether it has a
-			// leaf matters, so the leaves are not ranked.
-			m := fold.p.model(fold.ws.pending, cs)
-			leaves = changeLeavesIn(m, c.Ops, func([]Node) map[id.ID]int { return nil })
-			if fold.p.failure() != nil {
-				continue
-			}
-		} else {
-			if base == nil {
-				base = newModelBase(fold.list)
-			}
-			leaves = changeLeaves(base.model(cs), c.Ops)
+		// The proposal's view over the projection's stored as-is rows, so a
+		// leaf under a landed parent counts. Only whether it has a leaf
+		// matters, so the leaves are not ranked.
+		m := fold.p.model(fold.ws.pending, cs)
+		leaves := changeLeavesIn(m, c.Ops, func([]Node) map[id.ID]int { return nil })
+		if fold.p.failure() != nil {
+			continue
 		}
 		if len(leaves) > 0 {
 			proposed = append(proposed, cs.String())
