@@ -10,6 +10,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/slice"
@@ -86,6 +87,15 @@ func (r *stepRunner) fillSession(dir string) error {
 			cc.Git = func(args ...string) (string, error) {
 				out, err := r.ctx.Exec("git", append([]string{"-C", root}, args...), root, nil)
 				return string(out), err
+			}
+			// The worktree's own index, as slice opens it with no
+			// IndexPath: the caller's is its own checkout's.
+			if cc.IndexPath != "" {
+				if p, perr := index.DefaultPath(root); perr == nil {
+					cc.IndexPath = p
+				} else {
+					cc.IndexPath = ""
+				}
 			}
 		}
 		resp, serr := runSlice(&cc, SliceRequest{})

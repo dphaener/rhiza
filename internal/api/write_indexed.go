@@ -90,6 +90,10 @@ func (ix *writeIndex) fail(err error) {
 	}
 }
 
+// store is the open index for the reads the projection's other methods
+// do not cover.
+func (ix *writeIndex) store() *index.Index { return ix.index() }
+
 // index returns the open index, opened again first if a write made it stale.
 func (ix *writeIndex) index() *index.Index {
 	if ix.stale {

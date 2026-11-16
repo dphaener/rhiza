@@ -44,6 +44,11 @@ type projection interface {
 	// model is the view of change set current (zero for as-is): its
 	// what-if while it is in flight, else as-is.
 	model(pending []entry.Entry, current id.ID) Model
+	// store is the open index, caught up with any write, for the reads
+	// the methods above do not cover (a node and its links, a resolve, a
+	// what-if, as slice and change show make); nil when the index did not
+	// open.
+	store() *index.Index
 	// failure is the first index error a read met, nil for none.
 	failure() error
 	// wrote notes that an entry was written to disk: the next read
@@ -153,6 +158,7 @@ func (f failedProjection) asIs() (gmodel.Model, []gmodel.Problem)             { 
 func (f failedProjection) model([]entry.Entry, id.ID) Model {
 	return &writeModel{ix: &writeIndex{err: f.err}}
 }
-func (f failedProjection) failure() error { return f.err }
-func (f failedProjection) wrote()         {}
-func (f failedProjection) close()         {}
+func (f failedProjection) store() *index.Index { return nil }
+func (f failedProjection) failure() error      { return f.err }
+func (f failedProjection) wrote()              {}
+func (f failedProjection) close()              {}

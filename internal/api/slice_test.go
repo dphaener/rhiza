@@ -276,3 +276,54 @@ func TestSliceResolveInModel(t *testing.T) {
 		t.Errorf("short prefix: %v", err)
 	}
 }
+
+// TestSliceProjectionOpensOnce: with ctx.IndexPath set, each slice opens
+// the index once, through the workspace's projection, and answers what
+// slice answers over the default path's index (ctx.IndexPath empty).
+//
+// Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
+// index and run temp folders move, process-wide state.
+func TestSliceProjectionOpensOnce(t *testing.T) {
+	ctx := sliceCtx(t)
+	sliceModel(t, ctx)
+	newChange(t, ctx, `{"intent":"Add an index"}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"index","parent":"store"}`)
+	if ctx.IndexPath == "" {
+		t.Fatal("sliceCtx has no IndexPath")
+	}
+	def := *ctx
+	def.IndexPath = ""
+	opens := 0
+	ctx.openedProjection = func() { opens++ }
+	def.openedProjection = func() { t.Error("the empty-IndexPath slice opened a projection") }
+	for _, req := range []string{`{"ref":"index"}`, `{}`, `{"ref":"log","view":"as-is"}`,
+		`{"ref":"store","view":"to-be"}`, `{"ref":"log","budget":60}`} {
+		opens = 0
+		got, err := callSlice(t, ctx, req)
+		if err != nil {
+			t.Fatalf("%s: %v", req, err)
+		}
+		if opens != 1 {
+			t.Errorf("%s: opened the index %d times, want 1", req, opens)
+		}
+		want, err := callSlice(t, &def, req)
+		if err != nil {
+			t.Fatalf("%s over the default index: %v", req, err)
+		}
+		gotJSON, _ := canon.Marshal(got)
+		wantJSON, _ := canon.Marshal(want)
+		if !bytes.Equal(gotJSON, wantJSON) || !bytes.Equal(got.markdown, want.markdown) {
+			t.Errorf("%s: through the projection\n%s\nover the default index\n%s", req, gotJSON, wantJSON)
+		}
+	}
+	// An error answers as before.
+	badRef, badDef := *ctx, def
+	badRef.ChangeRef, badDef.ChangeRef = "ZZZZZZ", "ZZZZZZ"
+	for _, c := range []struct{ proj, def *Ctx }{{ctx, &def}, {&badRef, &badDef}} {
+		_, a := callSlice(t, c.proj, `{"ref":"nope"}`)
+		_, b := callSlice(t, c.def, `{"ref":"nope"}`)
+		if a == nil || b == nil || a.Error() != b.Error() || ExitCode(a) != ExitCode(b) {
+			t.Errorf("change ref %q: through the projection %v, over the default index %v", c.proj.ChangeRef, a, b)
+		}
+	}
+}
