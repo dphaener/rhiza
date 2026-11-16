@@ -1,0 +1,362 @@
+{
+  "actor": "01M7HC4M2CSXSR0JRC641KMTRY",
+  "after": [
+    "01M7HCBXW64694RKFMYDW8XYNB"
+  ],
+  "at": "2026-11-16T05:15:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "grep -nE 'IndexPath (!=|==) \"\"|len\\(w\\.pending\\) == 0|newModel\\(|FoldLog' internal/api/workspace.go internal/api/read.go internal/api/change.go internal/api/ship.go internal/api/slice.go internal/api/run_model_cache.go internal/api/run_milestone.go prints nothing. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWorkspace|TestDefaultView|TestRead|TestChange|TestShip|TestSlice|TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites|TestRunMilestone|TestReserveMilestone|TestWrite|TestApply|TestPropertyProjectionParity)' passes. A test shows a dry-run apply whose second write names a node the first adds resolves it through the projection's pending overlay. Failure case: a read naming a change set the log does not hold is not_found with next rhiza change ls, as today. go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/(apply|change-show|slice|ship-)' passes. Touches internal/api/workspace.go, read.go, change.go, ship.go, slice.go, run_model_cache.go, run_milestone.go and their tests. Must not delete newModel yet (interim-model-deleted does) or change any --json shape.",
+          "statement": "Every read and write of the call's own root goes through the projection, with the dry run's pending entries laid over it: workspace.model, entriesOfSet and changeSets lose their log branches, and the IndexPath and no-pending branches go from read.go's openReaderIn, change.go's runChangeShow and changeLsSets, ship.go's findShipTarget, slice.go's openSliceSource and run_model_cache.go:88, and run_milestone.go:179 reads its model from the projection instead of newModel over the disk log"
+        },
+        "handle": "writes-from-projection",
+        "id": "01M7GFZT6S9W93CH78BFG9BT3G",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "grep -nE 'IndexPath = (\"\"|[A-Za-z.]+, \"\")' internal/api/*.go | grep -v _test.go prints nothing. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestDaemonHomePrefersWorkingProject|TestPollGitBounded|TestGateAnswer|TestInboxGate|TestWebAnswerAction|TestWebApproveAction|TestSessionBrief|TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites)' passes. A test per site (daemon project, gate answer, inbox gate read, web answer) shows the read answers from the other root's index (its index file exists afterwards under the user cache folder of the test's HOME) with the same answer as before, and one with no user cache folder answers through the throwaway index. Failure case: another root whose log does not read gives the same error or empty answer as today. go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/(daemon-projects|inbox-gate-questions|inbox-projects)' passes. Touches internal/api/daemon_projects.go, question.go, inbox.go (inboxGateRead), web_actions.go, run_brief.go, run_model_cache.go and their tests. Must not change which root an op reads.",
+          "statement": "An op that reads another root opens that root's own projection through one helper, never clearing IndexPath to fold that root's log: daemon_projects.go's projectCtx, question.go's gate answer (:163 and :181), inbox.go's inboxGateRead (:1414), web_actions.go's gateAnswered (:108), run_brief.go:93 and run_model_cache.go:125 take the root's default index path, or the throwaway index when it has none"
+        },
+        "handle": "other-roots-own-projection",
+        "id": "01M7GFZT8RBC63C71V0DJK36XG",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^TestProjection' passes, with TestProjectionNilWithoutIndex replaced by a test that with ctx.IndexPath empty a status, a show and an add give the same answers as with an index and leave no temporary folder behind, and TestProjectionIndexCannotOpen changed to show the same with IndexPath under a read-only folder. Failure case: when the temporary folder cannot be created either (TMPDIR unwritable) the call fails with an error naming both the index path and the temporary folder. Follows run_leaves.go:685's os.MkdirTemp pattern. Touches internal/api/projection.go, write_indexed.go and projection_test.go. Must not change the default index location or cmd/rhiza.",
+          "statement": "When a call's index path is empty or the index there cannot be opened or created (no user cache folder, a read-only cache), internal/api's projection open (openWriteIndex) builds a throwaway index in a temporary folder for that call, removed when the projection closes, so every read of every root goes through the projection and none falls back to folding the log"
+        },
+        "handle": "throwaway-index-fallback",
+        "id": "01M7GFZTA52SPV1ZK9DQ69C68J",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "acceptance": "grep -nE 'func newModel|newModelSets|newModelBase|IndexPath (!=|==) \"\"|readLog' internal/api/*.go prints nothing; go vet ./internal/api is clean; go test -trimpath -count=1 -p 2 ./internal/api passes; go test -trimpath -count=1 -p 2 ./internal/api -run '^TestPropertyProjectionParity$' -rapid.checks=1000 passes. TestDaemonIdlePollSkipsFold and the read_test.go read counts still show their reads decode no log, through the hook. go test -list '.*' ./... | grep -c '^Test' and ls cmd/rhiza/testdata/script/*.txtar | wc -l are no lower than at a98fd4051 (1,948 and 398); a deleted test is named in the commit message with the parity case or test that now covers it. Failure case: a call with a damaged index file still rebuilds it and answers (TestProjectionIndexNotADatabase), with no fold fallback left to hide a projection bug. Touches internal/api/model.go, api.go, workspace.go, parity_test.go and the _test.go files of the deleted code. Must not change any --json shape or rendered file (make self-check passes).",
+          "statement": "The interim model is gone: internal/api/model.go's newModel, newModelSets, newModelBase, chain and their apply rules, Ctx.readLog and workspace.readLog (replaced by a notify-only log-read hook for the tests that count reads) and the tests of that code only are deleted, and the parity test compares the projection with a fresh strict fold alone"
+        },
+        "handle": "interim-model-deleted",
+        "id": "01M7GFZTBT1GB2DR05VBB3TX7H",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "reasoning": "Reads of other roots (the daemon's projects, a run worktree at a gate, the web's answer) pick their own index path inside internal/api and today fall back to an empty IndexPath and the log; a fallback in cmd/rhiza would cover only the caller's root. AGENTS.md keeps cmd/rhiza a thin frame, and change set 01M7GFTS0N rebuilds cmd/rhiza's ctx.go globals next, so the fallback stays out of its way. It refines projection-no-index-fallback, which says what happens and not where.",
+          "statement": "The throwaway index is made where the projection opens (internal/api's openWriteIndex, under every root's reads) when the call's index path is empty or the index there cannot be opened or created, not in cmd/rhiza/ctx.go",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "throwaway-index-in-api",
+        "id": "01M7HCGGNXMWPVRRE13A6ZQAW3",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGGNXMWPVRRE138CBKYEJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGGNXMWPVRRE138CBKYEJ",
+        "id": "01M7HCGGPZYSD7H67DA2DRPAW8",
+        "link": "01M7HCGGPZYSD7H67D9ZETR8HT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "render must write what the log says, and the index never re-reads a path it has seen, so HoldsLog is the guard against a stale projection. That fold applies the strict engine's rules, so one set of model rules still holds; rebuilding the index there instead is index work outside this change set's intent.",
+          "statement": "render keeps its strict fold of the log (changeset.FoldLog then model.AsIs) when the index does not hold exactly the log's entries (an entry file edited in place); only its empty-IndexPath branch goes",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "render-keeps-strict-log-fold",
+        "id": "01M7HCGGR3MYZ8WAHVE8AP6PGT",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGGR3MYZ8WAHVE7RVG89G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGGR3MYZ8WAHVE7RVG89G",
+        "id": "01M7HCGGS5YK338ZYYF3AG9QQB",
+        "link": "01M7HCGGS5YK338ZYYEZX8TJ2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Every test use of readLog only counts reads, and those counts are what prove a read stays on the projection, so dropping them would lose that check. A notify-only hook keeps the check without a second way to supply the log. The hook is per Ctx, not a global counter, since global counters bumped by parallel tests made TestDaemonIdlePollSkipsFold flaky in #603.",
+          "statement": "Ctx.readLog and workspace.readLog, which replace the log read, are deleted; the tests that count log reads to show a read never decodes the log (daemon_fold_test.go:154, read_test.go:492 and :564) count through a hook on Ctx that only notes each disk read of the log and cannot change what is read",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "log-read-count-hook",
+        "id": "01M7HCGGT2520BYMYNB4TE32NE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGGT2520BYMYNB2R19HDF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGGT2520BYMYNB2R19HDF",
+        "id": "01M7HCGGV75TG02HRDAFB68D9G",
+        "link": "01M7HCGGV75TG02HRDADFPWRAK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The arbiter's brief for this plan says that if deleting the interim path won't by itself bring inbox and check under target, a leaf profiles and fixes each, one concern per leaf, with the measuring command in its acceptance. A profiled probe of each command on the main checkout at c84997915 shows the costs above. This change set is the milestone's last one about reads, so the targets would otherwise go unmet.",
+          "statement": "This change set also brings rhiza inbox under 200 ms and rhiza check under 5 s (projection-targets), with one leaf each, because profiles show neither cost is in the interim model: inbox spends about half its 0.63 s decoding all 407 run journals (45 MB) in run.Store.List, and check spends its 7.35 s mostly in model.WhatIfFrom's per-change-set seed copies (about 2 s CPU), check.badLinks (1.4 s) and the entry decode (1.4 s)",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "perf-leaves-in-one-read-path",
+        "id": "01M7HCGGWA6G4ZMXHY4Q17B92D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGGWA6G4ZMXHY4M7YDWNX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGGWA6G4ZMXHY4M7YDWNX",
+        "id": "01M7HCGGXJV75T7PNMGERW4SRK",
+        "link": "01M7HCGGXJV75T7PNMGC279PNM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Inbox uses only each journal's ID and State() (inboxItems, questionAdvice, inboxUncoveredProposals), and journals are append-only, so size and modification time show a change, the rule run.Store's in-process journalCache already uses for the daemon. A CLI call is a new process, so only a cache on disk saves the parse. Keeping it beside the runs folder shares it between worktrees, as the journals are shared.",
+          "statement": "rhiza inbox reads each run's State from a cache kept beside the run journals in the git common dir's rhiza folder: one record per journal holding its size, modification time and derived run.State, written atomically (a temporary file renamed over it), so a call parses only the journals that changed since the last one; a cache that is missing, damaged or of another format version is ignored and rewritten",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "run-state-cache",
+        "id": "01M7HCGGZDMF1X99G3V5MR9Q60",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGGZDMF1X99G3V4AWEK7B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGGZDMF1X99G3V4AWEK7B",
+        "id": "01M7HCGH0WD4MM95MZ3NMAWVHZ",
+        "link": "01M7HCGH0WD4MM95MZ3J3HFQDV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "copyNode and copyFields are about 2 s of check's CPU, paid once for each of about 48 in-flight change sets although each touches a few nodes. Copying on first write keeps the strict engine's results unchanged (strict-engine-is-spec). TestApplyInputsAreNotShared and TestApplyAccessorCopiesAreIndependent keep guarding against a what-if writing into the shared seed.",
+          "statement": "check's per-change-set what-if (model.WhatIfFrom over the one as-is seed) shares the seed's nodes and fields and copies a node only when an op of that what-if changes it, instead of copying every node and field per change set; the builder profiles again after that and fixes the next largest cost (check.badLinks, the entry decode) until check is within 5 s",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "check-whatif-shares-seed",
+        "id": "01M7HCGH2S737WZNBTMDR9TDVW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HCGH2S737WZNBTMCA2PBFP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGH2S737WZNBTMCA2PBFP",
+        "id": "01M7HCGH4BX79HSGQZF6NR5W7M",
+        "link": "01M7HCGH4BX79HSGQZF3DMF34R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "id": "01M7HCGH6NQTKDZBJ8AG78Y6MZ",
+        "link": "01M7HCGH6NQTKDZBJ8AEGNN4S8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGGNXMWPVRRE138CBKYEJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "grep -nE 'IndexPath (!=|==) \"\"|newModel(Sets|Base)?\\(|f\\.list|FoldLog' internal/api/status.go internal/api/inbox.go internal/api/proposals.go internal/api/daemon_fold.go prints nothing; grep -nE 'IndexPath (!=|==) \"\"' internal/api/render.go prints nothing, and grep -c FoldLog internal/api/render.go prints 1 (the HoldsLog fallback). go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestStatus|TestInbox|TestUncoveredProposals|TestDaemonPlansProposalsPending|TestDaemonIdlePollSkipsFold|TestDaemonPollCacheInvalidates|TestDaemonFoldIndexedMatchesLog|TestRender|TestPropertyProjectionParity)' passes. Failure case: render after an entry file is edited in place still writes what the log fold renders (TestRender's in-place edit case). go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/(status|inbox-|render|daemon-plans-proposals)' passes. Touches internal/api/status.go, inbox.go (load, overlaps), proposals.go, daemon_fold.go, render.go and their tests. Must not change any --json shape or rendered file.",
+          "statement": "The ops that fold the whole log when there is no projection read only the projection: status.go's statusSets, inbox.go's inboxFold.load and overlaps (newModelSets at :690), proposals.go:107's newModelBase, daemon_fold.go:213's FoldLog and newModelBase, and render.go's empty-IndexPath branch, which keeps its strict log fold only when the index does not hold the log"
+        },
+        "handle": "folds-from-projection",
+        "id": "01M7HCGH8X1A8C8JPV20Y9TANT",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "id": "01M7HCGHA4NKZYJXPEA0DYEBMN",
+        "link": "01M7HCGHA4NKZYJXPE9X3H5F2A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGGR3MYZ8WAHVE7RVG89G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "id": "01M7HCGHB72BNWNE6V89G84NW6",
+        "link": "01M7HCGHB72BNWNE6V87V6HRK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "id": "01M7HCGHCC1ATNX7PF729EQS88",
+        "link": "01M7HCGHCC1ATNX7PF6ZC1F6YH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "id": "01M7HCGHET96G3M6W6831029MB",
+        "link": "01M7HCGHET96G3M6W6813W0EV2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7HCGHH1SETQAD0R9JJZS74K",
+        "link": "01M7HCGHH1SETQAD0R9F7K2E0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGGT2520BYMYNB2R19HDF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "id": "01M7HCGHJ954NF0NKTEWQMYXVQ",
+        "link": "01M7HCGHJ954NF0NKTEW7CZ6WC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "In the main checkout, on a quiet VM (MemAvailable over 4 GiB), with a scratch build outside $PATH, after one warming run: /usr/bin/time -f %e <build> inbox --json prints at most 0.20, and its stdout is byte-identical to the stdout of a build of the branch's base run just before on the same checkout; both timings and the profile's top costs go in the commit message. go test -trimpath -count=1 -p 2 ./internal/run -run '^(TestStore|TestJournal|TestStateCache)' passes, with a test that a second Store over the same folder (a new process's, not the in-memory journalCache) parses no unchanged journal and does parse one appended to. Failure case: a cache that is damaged or of another format version is ignored and rewritten, and the call answers the same items. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestInbox|TestUncoveredProposals)' and go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/inbox-' pass. Touches internal/run/store.go (or a new state cache file there), internal/api/inbox.go's run listing (runInbox and findInboxItems) and their tests. Must not change inbox's --json shape or what a journal holds.",
+          "statement": "rhiza inbox answers within 200 ms warm on this repo: it reads each run's State from the run-state cache beside the journals and parses only the journals that changed since the last call, and the builder profiles the call again (RHIZA_CPUPROFILE) and removes the next largest cost until it is within target"
+        },
+        "handle": "inbox-within-target",
+        "id": "01M7HCGHKJP9BB84MEH00TNQ56",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7HCGHKJP9BB84MEGWJTZE04",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGHKJP9BB84MEGWJTZE04",
+        "id": "01M7HCGHMSFQTKBF9C9FKJJ3DF",
+        "link": "01M7HCGHMSFQTKBF9C9BMTBKNA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGGZDMF1X99G3V4AWEK7B",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGHKJP9BB84MEGWJTZE04",
+        "id": "01M7HCGHNYHW0CGW0QPVH9XZ0V",
+        "link": "01M7HCGHNYHW0CGW0QPS4QD1J1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "In the main checkout, on a quiet VM (MemAvailable over 4 GiB), with a scratch build outside $PATH, after one warming run: /usr/bin/time -f %e <build> check prints at most 5.0, and <build> check --json gives the same stdout and exit code as a build of the branch's base on the same checkout; both timings and the profile's top costs go in the commit message. go test -trimpath -count=1 -p 2 ./internal/model ./internal/check passes, TestApplyInputsAreNotShared and TestApplyAccessorCopiesAreIndependent included, with a new test that a what-if built from a seed leaves the seed's nodes and fields unchanged after it writes a node's field. Failure case: two what-ifs from one seed that change the same node each see only their own change. go test -trimpath -count=1 -p 2 ./internal/api -run '^TestCheck' and go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/check' pass. Touches internal/model (seed.go, the node copy), internal/check/check.go and their tests. Must not change check's findings, exit codes or --json shape.",
+          "statement": "rhiza check runs within 5 s warm on this repo: model.WhatIfFrom shares the as-is seed's nodes and fields and copies a node only when an op of that what-if changes it, and the builder profiles check again (RHIZA_CPUPROFILE) and removes the next largest cost (check.badLinks, the entry decode) until it is within target, with the same output"
+        },
+        "handle": "check-within-target",
+        "id": "01M7HCGHQ5KWCJ2SXSVKPF79MH",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M7HCGHQ5KWCJ2SXSVGHXY1ZV",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGHQ5KWCJ2SXSVGHXY1ZV",
+        "id": "01M7HCGHRA55AN6AMED0J5EP1P",
+        "link": "01M7HCGHRA55AN6AMECYX55QRN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGH2S737WZNBTMCA2PBFP",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCGHQ5KWCJ2SXSVGHXY1ZV",
+        "id": "01M7HCGHSDV68H5JJTSGGANGG5",
+        "link": "01M7HCGHSDV68H5JJTSEGCRD85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HCGHTGJKQ1V2JD99K5FYKA",
+  "type": "ops",
+  "v": 1
+}

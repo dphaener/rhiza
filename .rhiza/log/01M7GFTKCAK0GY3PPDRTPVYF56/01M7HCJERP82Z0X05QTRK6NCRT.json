@@ -1,0 +1,30 @@
+{
+  "actor": "01M7HC4M2CSXSR0JRC641KMTRY",
+  "after": [
+    "01M7HCJ10KW8N7Z8DWKSD7ZMCJ"
+  ],
+  "at": "2026-11-16T05:16:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "grep -nE 'IndexPath (!=|==) \"\"|len\\(w\\.pending\\) == 0|newModel\\(|FoldLog' internal/api/workspace.go internal/api/read.go internal/api/change.go internal/api/ship.go internal/api/slice.go internal/api/run_model_cache.go internal/api/run_milestone.go prints nothing, and grep -n 'index.Open(ctx.Root, ctx.IndexPath)' internal/api/read.go internal/api/ship.go internal/api/repair.go prints nothing. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWorkspace|TestDefaultView|TestRead|TestChange|TestShip|TestSlice|TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites|TestRunMilestone|TestReserveMilestone|TestWrite|TestApply|TestPropertyProjectionParity)' passes. A test shows a dry-run apply whose second write names a node the first adds resolves it through the projection's pending overlay. Failure case: a read naming a change set the log does not hold is not_found with next rhiza change ls, as today. go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/(apply|change-show|slice|ship-|repair)' passes. Touches internal/api/workspace.go, read.go, change.go, ship.go, slice.go, run_model_cache.go, run_milestone.go, repair.go and their tests. Must not delete newModel yet (interim-model-deleted does) or change any --json shape.",
+          "statement": "Every read and write of the call's own root goes through the projection, with the dry run's pending entries laid over it: workspace.model, entriesOfSet and changeSets lose their log branches, and the IndexPath and no-pending branches go from read.go's openReaderIn, change.go's runChangeShow and changeLsSets, ship.go's findShipTarget, slice.go's openSliceSource and run_model_cache.go:88, and run_milestone.go:179 reads its model from the projection instead of newModel over the disk log, and read.go:183, ship.go:398 and repair.go:161 take the open index from the projection (its store()) instead of calling index.Open on ctx.IndexPath"
+        },
+        "handle": "writes-from-projection",
+        "id": "01M7GFZT6S9W93CH78BFG9BT3G",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HCJERP82Z0X05QTRK6NCRT",
+  "type": "ops",
+  "v": 1
+}

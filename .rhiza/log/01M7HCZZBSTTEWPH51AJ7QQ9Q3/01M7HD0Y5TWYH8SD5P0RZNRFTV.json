@@ -1,0 +1,118 @@
+{
+  "actor": "01M7HCVQ1VN0BAQKG6RNXVEKFG",
+  "after": [
+    "01M7HCZZBSTTEWPH51AMYDJ5TY"
+  ],
+  "at": "2026-11-16T05:24:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7HCZZBSTTEWPH51AJ7QQ9Q3",
+        "id": "01M7HD0XT1VVFYN0GG432XVJ1Z",
+        "link": "01M7HD0XT0513K9GEG10XDZN4R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFTKCAK0GY3PPDRTPVYF56",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCZZBSTTEWPH51AJ7QQ9Q3",
+        "id": "01M7HD0XWH4T4J4K6CG2PC25NF",
+        "link": "01M7HD0XWH4T4J4K6CG0EGQKWM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT039RM7ZP4FVPP57TB46",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "copyNode and copyFields are about 2 s of check's CPU, paid once for each of about 48 in-flight change sets although each touches a few nodes. Copying on first write keeps the strict engine's results unchanged (strict-engine-is-spec). TestApplyInputsAreNotShared and TestApplyAccessorCopiesAreIndependent keep guarding against a what-if writing into the shared seed.",
+          "statement": "check's per-change-set what-if (model.WhatIfFrom over the one as-is seed) shares the seed's nodes and fields and copies a node only when an op of that what-if changes it, instead of copying every node and field per change set; the builder profiles again after that and fixes the next largest cost (check.badLinks, the entry decode) until check is within 5 s",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "check-whatif-shares-seed",
+        "id": "01M7HD0XY3PE3FJ7SBDT8YER5C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HD0XY3PE3FJ7SBDS4NQ52V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "reasoning": "The arbiter's brief for this plan says that if deleting the interim path won't by itself bring inbox and check under target, a leaf profiles and fixes each, one concern per leaf, with the measuring command in its acceptance. A profiled probe of each command on the main checkout at c84997915 shows the costs above. This change set is the milestone's last one about reads, so the targets would otherwise go unmet.",
+          "statement": "This change set brings rhiza check under 5 s (projection-targets) because a profile shows the cost is not in the interim model: check spends its 7.35 s mostly in model.WhatIfFrom's per-change-set seed copies (about 2 s CPU), check.badLinks (1.4 s) and the entry decode (1.4 s)",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "check-cost-outside-interim-model",
+        "id": "01M7HD0XZ68TTE7X70YZ8WYKGA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HD0XZ68TTE7X70YVM1XGK8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "In the main checkout, on a quiet VM (MemAvailable over 4 GiB), with a scratch build outside $PATH, after one warming run: /usr/bin/time -f %e <build> check prints at most 5.0, and <build> check --json gives the same stdout and exit code as a build of the branch's base on the same checkout; both timings and the profile's top costs go in the commit message. go test -trimpath -count=1 -p 2 ./internal/model ./internal/check passes, TestApplyInputsAreNotShared and TestApplyAccessorCopiesAreIndependent included, with a new test that a what-if built from a seed leaves the seed's nodes and fields unchanged after it writes a node's field. Failure case: two what-ifs from one seed that change the same node each see only their own change. go test -trimpath -count=1 -p 2 ./internal/api -run '^TestCheck' and go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/check' pass. Touches internal/model (seed.go, the node copy), internal/check/check.go and their tests. Must not change check's findings, exit codes or --json shape.",
+          "statement": "rhiza check runs within 5 s warm on this repo: model.WhatIfFrom shares the as-is seed's nodes and fields and copies a node only when an op of that what-if changes it, and the builder profiles check again (RHIZA_CPUPROFILE) and removes the next largest cost (check.badLinks, the entry decode) until it is within target, with the same output"
+        },
+        "handle": "check-within-target",
+        "id": "01M7HD0Y06AMQV641WK1XDS35C",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7HD0Y06AMQV641WK119WC5R",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0XY3PE3FJ7SBDS4NQ52V",
+        "id": "01M7HD0Y15E6775TG8Q9TXKNNX",
+        "link": "01M7HD0Y15E6775TG8Q5W723KZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0XZ68TTE7X70YVM1XGK8",
+        "id": "01M7HD0Y2G430FWPP2NFJKQT93",
+        "link": "01M7HD0Y2G430FWPP2NDZQWY2G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0Y06AMQV641WK119WC5R",
+        "id": "01M7HD0Y3VMWBCXG3E2FXK3XKA",
+        "link": "01M7HD0Y3VMWBCXG3E2DE9V0KD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HD0XY3PE3FJ7SBDS4NQ52V",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0Y06AMQV641WK119WC5R",
+        "id": "01M7HD0Y51FX105C335YSRYEGX",
+        "link": "01M7HD0Y51FX105C335Y4GR2P7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7HCZZBSTTEWPH51AJ7QQ9Q3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HD0Y5TWYH8SD5P0RZNRFTV",
+  "type": "ops",
+  "v": 1
+}

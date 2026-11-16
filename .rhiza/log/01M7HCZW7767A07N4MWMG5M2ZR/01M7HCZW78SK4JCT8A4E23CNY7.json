@@ -1,0 +1,16 @@
+{
+  "actor": "01M7HCVQ1VN0BAQKG6RNXVEKFG",
+  "after": [],
+  "at": "2026-11-16T05:24:00Z",
+  "body": {
+    "intent": "rhiza inbox answers within 200 ms warm on this repo (projection-targets): it reads each run's State from a cache beside the run journals and parses only the journals that changed since the last call. Evidence: a profiled probe at c84997915 put inbox at 0.63 s, about half of it run.Store.List decoding all 407 run journals (45 MB), a cost outside the interim model.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Inbox within target"
+  },
+  "change_set": "01M7HCZW7767A07N4MWMG5M2ZR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HCZW78SK4JCT8A4E23CNY7",
+  "type": "open",
+  "v": 2
+}
