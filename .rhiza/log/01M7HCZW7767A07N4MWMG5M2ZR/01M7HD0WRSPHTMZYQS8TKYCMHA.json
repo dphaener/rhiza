@@ -1,0 +1,118 @@
+{
+  "actor": "01M7HCVQ1VN0BAQKG6RNXVEKFG",
+  "after": [
+    "01M7HCZW78SK4JCT8A4E23CNY7"
+  ],
+  "at": "2026-11-16T05:24:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7HCZW7767A07N4MWMG5M2ZR",
+        "id": "01M7HD0WEZKDV8SEWDBMZ4MRQR",
+        "link": "01M7HD0WEZKDV8SEWDBH54VMZ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFTKCAK0GY3PPDRTPVYF56",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7HCZW7767A07N4MWMG5M2ZR",
+        "id": "01M7HD0WGJF42H5P07CAX7T84K",
+        "link": "01M7HD0WGJF42H5P07C80FQ1QA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT02J9RW50MCR273H3X2P",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "Inbox uses only each journal's ID and State() (inboxItems, questionAdvice, inboxUncoveredProposals), and journals are append-only, so size and modification time show a change, the rule run.Store's in-process journalCache already uses for the daemon. A CLI call is a new process, so only a cache on disk saves the parse. Keeping it beside the runs folder shares it between worktrees, as the journals are shared.",
+          "statement": "rhiza inbox reads each run's State from a cache kept beside the run journals in the git common dir's rhiza folder: one record per journal holding its size, modification time and derived run.State, written atomically (a temporary file renamed over it), so a call parses only the journals that changed since the last one; a cache that is missing, damaged or of another format version is ignored and rewritten",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "run-state-cache",
+        "id": "01M7HD0WHJ61G9GHVS66C87YHR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HD0WHJ61G9GHVS640C6GD6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "reasoning": "The arbiter's brief for this plan says that if deleting the interim path won't by itself bring inbox and check under target, a leaf profiles and fixes each, one concern per leaf, with the measuring command in its acceptance. A profiled probe of each command on the main checkout at c84997915 shows the costs above. This change set is the milestone's last one about reads, so the targets would otherwise go unmet.",
+          "statement": "This change set brings rhiza inbox under 200 ms (projection-targets) because a profile shows the cost is not in the interim model: inbox spends about half its 0.63 s decoding all 407 run journals (45 MB) in run.Store.List",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "inbox-cost-outside-interim-model",
+        "id": "01M7HD0WJFG129PAGFEG0JBQQ7",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7HD0WJFG129PAGFEC1VQ8F1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "acceptance": "In the main checkout, on a quiet VM (MemAvailable over 4 GiB), with a scratch build outside $PATH, after one warming run: /usr/bin/time -f %e <build> inbox --json prints at most 0.20, and its stdout is byte-identical to the stdout of a build of the branch's base run just before on the same checkout; both timings and the profile's top costs go in the commit message. go test -trimpath -count=1 -p 2 ./internal/run -run '^(TestStore|TestJournal|TestStateCache)' passes, with a test that a second Store over the same folder (a new process's, not the in-memory journalCache) parses no unchanged journal and does parse one appended to. Failure case: a cache that is damaged or of another format version is ignored and rewritten, and the call answers the same items. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestInbox|TestUncoveredProposals)' and go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/inbox-' pass. Touches internal/run/store.go (or a new state cache file there), internal/api/inbox.go's run listing (runInbox and findInboxItems) and their tests. Must not change inbox's --json shape or what a journal holds.",
+          "statement": "rhiza inbox answers within 200 ms warm on this repo: it reads each run's State from the run-state cache beside the journals and parses only the journals that changed since the last call, and the builder profiles the call again (RHIZA_CPUPROFILE) and removes the next largest cost until it is within target"
+        },
+        "handle": "inbox-within-target",
+        "id": "01M7HD0WKJZG8KT45JK3VF8RY8",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7HD0WKJZG8KT45JK0GF7480",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0WHJ61G9GHVS640C6GD6",
+        "id": "01M7HD0WMSMEQ3KC7SZP10PRFS",
+        "link": "01M7HD0WMSMEQ3KC7SZJTZMXKW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0WJFG129PAGFEC1VQ8F1",
+        "id": "01M7HD0WNSM739BNDCACT6VSD8",
+        "link": "01M7HD0WNSM739BNDCACA6NM5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCBXV5EBNYVYR47NG63JB1",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0WKJZG8KT45JK0GF7480",
+        "id": "01M7HD0WPWNC32S7435ZECH7P7",
+        "link": "01M7HD0WPWNC32S7435W4HGWAW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HD0WHJ61G9GHVS640C6GD6",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7HD0WKJZG8KT45JK0GF7480",
+        "id": "01M7HD0WR08WM9X5RXP22N1QQP",
+        "link": "01M7HD0WR08WM9X5RXNZJNJWQM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFT0BD4S1H8G036DW7ND7S",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7HCZW7767A07N4MWMG5M2ZR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HD0WRSPHTMZYQS8TKYCMHA",
+  "type": "ops",
+  "v": 1
+}

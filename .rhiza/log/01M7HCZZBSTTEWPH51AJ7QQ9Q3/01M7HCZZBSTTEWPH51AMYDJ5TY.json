@@ -1,0 +1,16 @@
+{
+  "actor": "01M7HCVQ1VN0BAQKG6RNXVEKFG",
+  "after": [],
+  "at": "2026-11-16T05:24:04Z",
+  "body": {
+    "intent": "rhiza check runs within 5 s warm on this repo (projection-targets): model.WhatIfFrom shares the as-is seed's nodes and fields and copies a node only when its what-if changes it, then the next largest cost goes. Evidence: a profiled probe at c84997915 put check at 7.35 s, about 2 s CPU in WhatIfFrom's per-change-set seed copies (copyNode/copyFields), 1.4 s in check.badLinks and 1.4 s in the entry decode, none of it in the interim model.",
+    "kind": "intention",
+    "sources": [],
+    "title": "Check within target"
+  },
+  "change_set": "01M7HCZZBSTTEWPH51AJ7QQ9Q3",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HCZZBSTTEWPH51AMYDJ5TY",
+  "type": "open",
+  "v": 2
+}
