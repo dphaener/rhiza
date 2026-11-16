@@ -28,6 +28,10 @@ func rootCtx(t *testing.T, dir string) *api.Ctx {
 		Wd:   dir,
 		Now:  clock,
 		IDs:  id.NewGenerator(clock, rand.New(rand.NewSource(3))),
+		// The CLI always sets Getenv; a nil one reads nothing, so each
+		// project's index path (placed under the user cache dir the test
+		// sets with t.Setenv) would be empty and its inbox unreadable.
+		Getenv: os.Getenv,
 		Exec: func(name string, args []string, d string, env []string) ([]byte, error) {
 			if name != "git" {
 				return nil, errors.New("not run in tests: " + name)
