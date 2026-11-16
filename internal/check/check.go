@@ -16,7 +16,8 @@
 //     for a change set; the endpoint table (endpoints.go) says which pairs
 //     of Ends each link type allows. A live link to a retired node is not a
 //     finding: only kinds matter.
-//   - The in-flight problems are those of model.ToBe and of model.WhatIf for
+//   - The in-flight problems are those of the to-be view and of the what-if
+//     view (model.ToBeFrom and model.WhatIfFrom over the as-is seed) of
 //     each draft, proposed or accepted change set, minus those as-is already
 //     has (same change set, op and error text), each distinct one once.
 //
@@ -270,16 +271,16 @@ func Run(in Input) Report {
 	c := checker{in: in}
 	c.log()
 	sets := c.fold()
-	asIs := c.model(sets)
+	asIs, whatIfs := c.model(sets)
 	c.links(asIs, sets)
 	c.unlinkedConstraints(asIs)
-	c.inFlightLinks(sets)
+	c.inFlightLinks(sets, whatIfs)
 	c.dependsOn(sets)
 	c.capabilityLoops(asIs)
 	c.evidenceActor(asIs, sets)
 	c.unclaimed(sets)
 	c.anchors(asIs)
-	c.textRefs(asIs, sets)
+	c.textRefs(asIs, sets, whatIfs)
 	for _, m := range in.Dispatch {
 		c.findings = append(c.findings, Finding{Severity: SeverityFail, Rule: RuleDispatch, Path: ".rhiza/dispatch.toml", Message: m})
 	}
@@ -362,8 +363,16 @@ type problemKey struct {
 
 func keyOf(p model.Problem) problemKey { return problemKey{p.ChangeSet, p.Op, p.Err.Error()} }
 
-func (c *checker) model(sets []changeset.ChangeSet) model.Model {
-	asIs, problems := model.AsIs(sets)
+// whatIfs are the what-if views of the draft, proposed and accepted change
+// sets, by change set ID, each built once from the as-is seed and shared by
+// the passes that read them.
+type whatIfs map[id.ID]model.Model
+
+// model reports the as-is and in-flight problems. It builds the as-is view
+// once, and from its seed the to-be view and each in-flight change set's
+// what-if view, which it returns for the later passes.
+func (c *checker) model(sets []changeset.ChangeSet) (model.Model, whatIfs) {
+	asIs, problems, seed := model.AsIsSeed(sets)
 	seen := map[problemKey]bool{}
 	for _, p := range problems {
 		seen[keyOf(p)] = true
@@ -375,13 +384,15 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 		c.add(f)
 	}
 
-	_, toBe := model.ToBe(sets)
+	_, toBe := model.ToBeFrom(seed, sets)
 	views := [][]model.Problem{toBe}
 	var inFlight []changeset.ChangeSet
+	wis := whatIfs{}
 	for _, s := range sets {
 		switch s.State {
 		case changeset.StateDraft, changeset.StateProposed, changeset.StateAccepted:
-			_, ps := model.WhatIf(sets, s.ID)
+			m, ps := model.WhatIfFrom(seed, sets, s.ID)
+			wis[s.ID] = m
 			views = append(views, ps)
 			inFlight = append(inFlight, s)
 		}
@@ -416,7 +427,7 @@ func (c *checker) model(sets []changeset.ChangeSet) model.Model {
 				strings.Join(ov.Aspects, ", "), ov.Target),
 			Next: fmt.Sprintf("rhiza slice --change %s --view what-if", ov.A)})
 	}
-	return asIs
+	return asIs, wis
 }
 
 // target names what problem p's op acts on: its target's ID, or the op's
@@ -444,8 +455,8 @@ func (c *checker) links(m model.Model, sets []changeset.ChangeSet) {
 // inFlightLinks warns on each live link, in the what-if of a draft,
 // proposed or accepted change set, that the set itself wrote and whose Ends
 // the endpoint table does not allow, each once. As-is links are the link
-// rule's.
-func (c *checker) inFlightLinks(sets []changeset.ChangeSet) {
+// rule's. The what-if views are model's.
+func (c *checker) inFlightLinks(sets []changeset.ChangeSet, wis whatIfs) {
 	seen := map[id.ID]bool{}
 	for _, s := range sets {
 		switch s.State {
@@ -453,8 +464,7 @@ func (c *checker) inFlightLinks(sets []changeset.ChangeSet) {
 		default:
 			continue
 		}
-		whatIf, _ := model.WhatIf(sets, s.ID)
-		for _, l := range badLinks(whatIf, sets) {
+		for _, l := range badLinks(wis[s.ID], sets) {
 			if l.Created != s.ID || seen[l.ID] {
 				continue
 			}

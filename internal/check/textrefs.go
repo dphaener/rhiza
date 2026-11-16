@@ -23,8 +23,8 @@ import (
 // scanned, so a value a later write superseded is never read, and a retired
 // node's fields, history like a superseded value, are not read. Verbatim
 // fields (an owner's words, a source) are not scanned, and any other @{...}
-// is literal text.
-func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
+// is literal text. The what-if views are model's.
+func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet, wis whatIfs) {
 	ops := map[id.ID]op.Op{}
 	for _, s := range sets {
 		for _, o := range s.Ops {
@@ -46,7 +46,7 @@ func (c *checker) textRefs(asIs model.Model, sets []changeset.ChangeSet) {
 		case s.State == changeset.StateLanded:
 			view = asIs
 		case s.State == changeset.StateDraft || s.State == changeset.StateProposed || s.State == changeset.StateAccepted:
-			view, _ = model.WhatIf(sets, s.ID)
+			view = wis[s.ID]
 		default:
 			continue
 		}
