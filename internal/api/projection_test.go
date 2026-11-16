@@ -86,6 +86,16 @@ func TestProjectionDryRunSeesPending(t *testing.T) {
 	if found == nil || found.State != changeset.StateDraft || len(found.Ops) != 1 {
 		t.Errorf("changeSets: pending change set = %+v, want a draft with one op", found)
 	}
+	infos := p.changeSetInfos(w.pending)
+	if i := slices.IndexFunc(infos, func(c index.ChangeSetInfo) bool { return c.ID == cs }); i < 0 ||
+		infos[i].State != changeset.StateDraft || infos[i].Intent != "Pending" || infos[i].Kind != changeset.KindIntention {
+		t.Errorf("changeSetInfos lacks the pending change set %s as a draft: %+v", cs, infos)
+	}
+	if got, want := len(infos), len(p.changeSetIDs(w.pending)); got != want ||
+		!slices.IsSortedFunc(infos, func(a, b index.ChangeSetInfo) int { return id.Compare(a.ID, b.ID) }) {
+		t.Errorf("changeSetInfos = %d rows (sorted: %v), want %d sorted", got,
+			slices.IsSortedFunc(infos, func(a, b index.ChangeSetInfo) int { return id.Compare(a.ID, b.ID) }), want)
+	}
 	if es := p.entries(w.pending, cs); len(es) != 2 {
 		t.Errorf("entries of the pending change set = %d, want 2", len(es))
 	}

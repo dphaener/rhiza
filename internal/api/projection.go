@@ -28,6 +28,10 @@ type projection interface {
 	// changeSets folds every change set: the stored folds, with those the
 	// pending entries touch folded again.
 	changeSets(pending []entry.Entry) []changeset.ChangeSet
+	// changeSetInfos is every change set's ID, state, kind and intent,
+	// sorted by ID: the stored rows, with those the pending entries touch
+	// folded again. It decodes no stored fold.
+	changeSetInfos(pending []entry.Entry) []index.ChangeSetInfo
 	// entries is change set cs's stored and pending entries, sorted by ID.
 	entries(pending []entry.Entry, cs id.ID) []entry.Entry
 	// problems is the problems the index stores (log, fold, as-is,
@@ -140,11 +144,12 @@ func (w *workspace) projectionFailure() error {
 // nothing and fails with err.
 type failedProjection struct{ err error }
 
-func (f failedProjection) changeSetIDs([]entry.Entry) []id.ID             { return nil }
-func (f failedProjection) changeSets([]entry.Entry) []changeset.ChangeSet { return nil }
-func (f failedProjection) entries([]entry.Entry, id.ID) []entry.Entry     { return nil }
-func (f failedProjection) problems() []index.Problem                      { return nil }
-func (f failedProjection) asIs() (gmodel.Model, []gmodel.Problem)         { return gmodel.Model{}, nil }
+func (f failedProjection) changeSetIDs([]entry.Entry) []id.ID                 { return nil }
+func (f failedProjection) changeSets([]entry.Entry) []changeset.ChangeSet     { return nil }
+func (f failedProjection) changeSetInfos([]entry.Entry) []index.ChangeSetInfo { return nil }
+func (f failedProjection) entries([]entry.Entry, id.ID) []entry.Entry         { return nil }
+func (f failedProjection) problems() []index.Problem                          { return nil }
+func (f failedProjection) asIs() (gmodel.Model, []gmodel.Problem)             { return gmodel.Model{}, nil }
 func (f failedProjection) model([]entry.Entry, id.ID) Model {
 	return &writeModel{ix: &writeIndex{err: f.err}}
 }

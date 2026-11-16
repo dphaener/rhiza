@@ -161,6 +161,29 @@ func (ix *writeIndex) changeSets(pending []entry.Entry) []changeset.ChangeSet {
 	return out
 }
 
+// changeSetInfos returns every change set's stored row, sorted by ID, with
+// the change sets pending entries touch folded again from their stored and
+// pending entries.
+func (ix *writeIndex) changeSetInfos(pending []entry.Entry) []index.ChangeSetInfo {
+	infos, err := ix.index().ChangeSets()
+	ix.fail(err)
+	if len(pending) == 0 {
+		return infos
+	}
+	touched := map[id.ID]bool{}
+	for _, e := range pending {
+		touched[e.ChangeSet] = true
+	}
+	out := slices.DeleteFunc(infos, func(c index.ChangeSetInfo) bool { return touched[c.ID] })
+	for cs := range touched {
+		c, _ := changeset.Fold(cs, ix.entries(pending, cs))
+		out = append(out, index.ChangeSetInfo{ID: cs, State: c.State, Kind: c.Open.Kind, Intent: c.Open.Intent,
+			OpenEntry: c.OpenEntry, SupersededBy: c.SupersededBy, TerminalEntry: c.TerminalEntry})
+	}
+	slices.SortFunc(out, func(a, b index.ChangeSetInfo) int { return id.Compare(a.ID, b.ID) })
+	return out
+}
+
 // model is the write view of change set current (zero for none), as
 // newModel builds it: the strict engine's, taken from the index. When
 // current is in flight it is the strict what-if of current (the stored

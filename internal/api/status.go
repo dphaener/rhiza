@@ -4,8 +4,9 @@ package api
 // change set, the change sets in flight by state and the installed guides,
 // with the commands that would help next. With --hook it is the
 // session-start hook's output: brief, silent outside a repository or on any
-// error, and always exit 0. Status reads the log and the guide folders
-// only; it never writes.
+// error, and always exit 0. Status reads the change sets (from the
+// projection when the call has an index, else the log) and the guide
+// folders only; it never writes.
 
 import (
 	"encoding/json"
@@ -18,6 +19,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -115,12 +117,23 @@ func status(ctx *Ctx) (StatusResponse, error) {
 	if err != nil {
 		return StatusResponse{}, err
 	}
+	w.readLog = ctx.readLog
+	// With an index, the change sets are the projection's stored rows, so
+	// the log is not read; without one they are folded from the log.
+	w.useProjection(ctx)
+	defer w.closeProjection()
 	cs, err := w.effectiveChangeSet(ctx)
+	if err == nil {
+		err = w.projectionFailure()
+	}
 	if err != nil {
 		return StatusResponse{}, err
 	}
 	resp := StatusResponse{Version: ctx.Version, Guide: []StatusGuide{}, Next: []string{}}
-	sets, _ := changeset.FoldLog(w.log())
+	sets, err := statusSets(w)
+	if err != nil {
+		return StatusResponse{}, err
+	}
 	for _, c := range sets {
 		switch c.State {
 		case changeset.StateDraft:
@@ -131,7 +144,7 @@ func status(ctx *Ctx) (StatusResponse, error) {
 			resp.Attention.Accepted++
 		}
 		if !cs.IsZero() && c.ID == cs {
-			resp.ChangeSet = &StatusChangeSet{ID: c.ID, Intent: c.Open.Intent, Kind: c.Open.Kind, State: c.State}
+			resp.ChangeSet = &StatusChangeSet{ID: c.ID, Intent: c.Intent, Kind: c.Kind, State: c.State}
 		}
 	}
 	if !cs.IsZero() && resp.ChangeSet == nil {
@@ -165,6 +178,22 @@ func status(ctx *Ctx) (StatusResponse, error) {
 		resp.Next = append(resp.Next, clearCurrentNext)
 	}
 	return resp, nil
+}
+
+// statusSets is every change set's ID, state, kind and intent: the
+// projection's stored rows when w has an index (no fold is decoded and the
+// log is not read), else folded from the log.
+func statusSets(w *workspace) ([]index.ChangeSetInfo, error) {
+	if p := w.projection(); p != nil {
+		infos := p.changeSetInfos(w.pending)
+		return infos, p.failure()
+	}
+	sets, _ := changeset.FoldLog(w.log())
+	infos := make([]index.ChangeSetInfo, 0, len(sets))
+	for _, c := range sets {
+		infos = append(infos, index.ChangeSetInfo{ID: c.ID, State: c.State, Kind: c.Open.Kind, Intent: c.Open.Intent})
+	}
+	return infos, nil
 }
 
 // MarshalJSON encodes a silent response as {} and any other as its fields.

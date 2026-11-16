@@ -3,6 +3,7 @@ package api
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -160,5 +161,66 @@ func TestTruncate(t *testing.T) {
 		if got := truncate(tc.in, tc.n); got != tc.want || len(got) > tc.n {
 			t.Errorf("truncate(%q, %d) = %q, want %q", tc.in, tc.n, got, tc.want)
 		}
+	}
+}
+
+// TestStatusIndexedReadsNoLog: with an index, status and its hook count
+// the change sets from the projection, reading the log zero times, and
+// give the counts and change set status gives over the log.
+func TestStatusIndexedReadsNoLog(t *testing.T) {
+	t.Parallel()
+	ctx, _, accepted := readLog(t)
+	newChange(t, ctx, `{"intent":"Later"}`)
+	if _, err := callOp(t, ctx, "change.use", `{"ref":"`+accepted.String()+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	statusOf(t, ctx, `{}`) // catch the index up with the log
+	reads := countingCtx(ctx)
+	for _, req := range []string{`{}`, `{"hook":true}`} {
+		indexed := statusOf(t, ctx, req)
+		if *reads != 0 {
+			t.Errorf("status %s over the index read the log %d times, want 0", req, *reads)
+		}
+		folded := *ctx
+		// The log side: no index on purpose, to compare against the indexed status.
+		folded.IndexPath = ""
+		logReads := countingCtx(&folded)
+		logged := statusOf(t, &folded, req)
+		if *logReads != 1 {
+			t.Errorf("status %s over the log read it %d times, want 1", req, *logReads)
+		}
+		if indexed.Attention != logged.Attention || !reflect.DeepEqual(indexed.ChangeSet, logged.ChangeSet) {
+			t.Errorf("status %s over the index = %+v %+v, over the log %+v %+v",
+				req, indexed.Attention, indexed.ChangeSet, logged.Attention, logged.ChangeSet)
+		}
+		if indexed.ChangeSet == nil || indexed.ChangeSet.ID != accepted || indexed.Attention.Draft != 1 || indexed.Attention.Accepted != 1 {
+			t.Errorf("status %s = %+v %+v, want the accepted set current, 1 draft and 1 accepted", req, indexed.Attention, indexed.ChangeSet)
+		}
+		if a, b := human(t, indexed), human(t, logged); a != b {
+			t.Errorf("status %s text over the index:\n%s\nover the log:\n%s", req, a, b)
+		}
+	}
+}
+
+// TestStatusHookBadIndexSilent: an index that cannot be opened makes the
+// hook silent with exit 0.
+func TestStatusHookBadIndexSilent(t *testing.T) {
+	t.Parallel()
+	ctx := readCtx(t)
+	newChange(t, ctx, `{"intent":"Here"}`)
+	// The index's folder is a regular file, so the index cannot be opened.
+	if err := os.WriteFile(ctx.IndexPath, []byte("not a folder"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ctx.IndexPath = filepath.Join(ctx.IndexPath, "index.db")
+	if _, err := callOp(t, ctx, "status", `{}`); err == nil {
+		t.Error("status over a broken index: no error")
+	}
+	r := statusOf(t, ctx, `{"hook":true}`)
+	if out := human(t, r); out != "" {
+		t.Errorf("hook over a broken index printed %q", out)
+	}
+	if r.ExitCode() != 0 {
+		t.Errorf("hook exit code %d", r.ExitCode())
 	}
 }
