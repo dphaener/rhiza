@@ -60,7 +60,7 @@ func backdateLog(t *testing.T, root string) {
 // sleep.
 func TestBackdateLogPassesRacyWindow(t *testing.T) {
 	root := t.TempDir()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}

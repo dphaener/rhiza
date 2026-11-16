@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GPVQ87N1A802TXGTTGNS3Q"
+  ],
+  "at": "2026-11-15T22:57:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case (TestParityIndexDependencyApplyOrder): draft cur depends on a later draft dep (larger ID); both set statement of a landed node from its create. Before: index applied dep before cur, statement \"cur\", Conflict false; strict applies cur first (smallest ID), statement \"dep\", Conflict true (dep's stale write). Index side changed. The harness found no index case beyond these nine (the table is empty; the property test passes at the default and at -rapid.checks=1000, dry-run pending draws included)."
+        },
+        "handle": "note-01m7gpvrt7kgct",
+        "id": "01M7GPVRT7KGCT6TBT2YPHBKHT",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPVRT7KGCT6TBT2WHN9H4G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPVRT7KGCT6TBT2WHN9H4G",
+        "id": "01M7GPVRVA4A8EPGND84RGP1EF",
+        "link": "01M7GPVRVA4A8EPGND82420PYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVRWFPH2AGDE7MP0G3G94",
+  "type": "ops",
+  "v": 1
+}

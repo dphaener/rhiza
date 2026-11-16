@@ -234,7 +234,7 @@ func TestSliceErrors(t *testing.T) {
 	_, err = callSlice(t, &c, `{"ref":"log"}`)
 	wantExit(t, err, 4)
 
-	out := testCtx(t.TempDir())
+	out := testCtx(t, t.TempDir())
 	_, err = callSlice(t, out, `{"ref":"log"}`)
 	wantExit(t, err, 4)
 	if AsError(err).Next != "rhiza init" {

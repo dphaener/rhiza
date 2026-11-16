@@ -237,7 +237,7 @@ func TestSessionInterview(t *testing.T) {
 	}
 	h := func(n string) string { return "answer-" + s.ID[:8] + "-" + n }
 	all := []string{h("1"), h("2"), h("3")}
-	logSize := func() int { return len(ctxWorkspace(t, testCtx(f.worktree)).log().Entries) }
+	logSize := func() int { return len(ctxWorkspace(t, testCtx(t, f.worktree)).log().Entries) }
 	before := logSize()
 
 	// A dry run lists everything and writes nothing.
@@ -267,7 +267,7 @@ func TestSessionInterview(t *testing.T) {
 
 	// The Decisions are in the session's change set in the worktree,
 	// written by the agent's actor for the launcher.
-	ww := ctxWorkspace(t, testCtx(f.worktree))
+	ww := ctxWorkspace(t, testCtx(t, f.worktree))
 	m := ww.model(cs)
 	for _, handle := range all {
 		n, err := m.Resolve(handle)

@@ -58,7 +58,7 @@ func TestGitCommonDirOnce(t *testing.T) {
 	for _, dir := range []string{f.root, wt} {
 		t.Run(filepath.Base(dir), func(t *testing.T) {
 			g := newCountingGit(f.gh.exec, dir)
-			ctx := testCtx(dir)
+			ctx := testCtx(t, dir)
 			ctx.Git = g.run
 			first, err := gitCommonDir(ctx)
 			if err != nil {
@@ -104,7 +104,7 @@ func TestOrphanLogSymlinkRoot(t *testing.T) {
 	if err := os.Symlink(f.root, link); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(link)
+	ctx := testCtx(t, link)
 	ctx.Git = newCountingGit(f.gh.exec, link).run
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -136,7 +136,7 @@ func TestShareCommonDir(t *testing.T) {
 	t.Parallel()
 	f := modelBranchFixture(t, true)
 	g := newCountingGit(f.gh.exec, f.root)
-	ctx := testCtx(f.root)
+	ctx := testCtx(t, f.root)
 	ctx.Git = g.run
 	tmp := t.TempDir()
 	shareCommonDir(ctx, f.root, tmp)

@@ -84,7 +84,7 @@ func openPRFixture(t *testing.T, review bool, ref ...string) (*Ctx, *openPRGH, s
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	exec := hermeticExec(t, tmp)
 	git := func(args ...string) string {
 		t.Helper()

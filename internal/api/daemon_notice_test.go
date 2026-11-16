@@ -93,7 +93,7 @@ func TestDaemonNotifyMachineHold(t *testing.T) {
 		{daemon.SkipMemoryLow, "available memory is low: the daemon holds new starts and resumes"},
 	} {
 		t.Run(tc.reason, func(t *testing.T) {
-			ctx := testCtx(t.TempDir())
+			ctx := testCtx(t, t.TempDir())
 			var rex bytes.Buffer
 			ctx.Rex = &rex
 			rs := run.NewStore(t.TempDir())

@@ -18,7 +18,7 @@ func TestWebRootRoadmapIsProjectScoped(t *testing.T) {
 	names := []string{"alpha", "beta"}
 	var home *Ctx
 	for _, name := range names {
-		c := testCtx(filepath.Join(root, name))
+		c := testCtx(t, filepath.Join(root, name))
 		pinFreeBytes(c)
 		if err := os.MkdirAll(c.Root, 0o755); err != nil {
 			t.Fatal(err)

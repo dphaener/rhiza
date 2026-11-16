@@ -174,6 +174,7 @@ func TestWritesThroughIndexMatchFold(t *testing.T) {
 	for seed := int64(1); seed <= seeds; seed++ {
 		ctx, landed, accepted := readLog(t)
 		folded := *ctx
+		// The fold side: no index on purpose, to compare against the indexed read.
 		folded.IndexPath = ""
 		rng := rand.New(rand.NewSource(seed))
 		g := &writeGen{t: t, rng: rng, dir: t.TempDir(),

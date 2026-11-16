@@ -1,0 +1,39 @@
+{
+  "actor": "01M7GNPTQT63SVZ4PGET25VTCQ",
+  "after": [
+    "01M7GPVCFYAS0PHGC39PXJGW80"
+  ],
+  "at": "2026-11-15T22:57:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Index case, the version rule (TestParityIndexDisjointHeads): two landed updates on one create writing different fields. Before: index Conflict true (two heads); strict Conflict false, Version the last applied. Index side changed: Version is the last op of the strict history not the current change set's, Conflict an unrepaired model.ErrConflict from another change set (Decision parity-version-rule). On this repo's own log this is the only user-visible change: node question-answer-op (01M686TPQBCC7169KT6WEPB85A) no longer reports Conflict in as-is and the 53 in-flight write views, nothing else differs."
+        },
+        "handle": "note-01m7gpve6s3vax",
+        "id": "01M7GPVE6S3VAXPCP457SA3DNQ",
+        "key": null,
+        "kind": "note",
+        "node": "01M7GPVE6S3VAXPCP454WEPJ2F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GPVE6S3VAXPCP454WEPJ2F",
+        "id": "01M7GPVE90Q6YE5XTSF3MH026C",
+        "link": "01M7GPVE90Q6YE5XTSF1636WXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GPVEAW97Z82JWN7RX4MYFH",
+  "type": "ops",
+  "v": 1
+}

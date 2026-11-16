@@ -19,7 +19,8 @@ import (
 
 // arbiterFixture is an autonomous run's step runner on a fresh change set
 // whose worktree is open, with a ctx that writes into that worktree (its
-// own ID seed, so its IDs never meet the launcher's).
+// own ID seed, so its IDs never meet the launcher's). The runner reads
+// through its index, as in production, with no debounce.
 func arbiterFixture(t *testing.T) (*sessionFixture, *stepRunner, *Ctx) {
 	t.Helper()
 	f := newSessionFixture(t, "arbiter-runs")
@@ -27,6 +28,10 @@ func arbiterFixture(t *testing.T) (*sessionFixture, *stepRunner, *Ctx) {
 	r := &stepRunner{
 		ctx: f.ctx, change: cs.String(), run: "01RUNARBITERAAAAAAAAAAAAAA", worktree: f.worktree,
 		mode: "manual", autonomous: true, sessions: session.NewStore(session.Dir(f.common)),
+		// The tests write through wctx, not the runner, so no wrote() lifts
+		// the debounce: catch the run's index up on every read, or a read
+		// within pollDebounce of a write misses it.
+		debounce: -1,
 	}
 	t0, err := resolveChangeWorktree(f.ctx, r.change, "")
 	if err != nil {
@@ -35,7 +40,7 @@ func arbiterFixture(t *testing.T) (*sessionFixture, *stepRunner, *Ctx) {
 	if _, err := t0.open(f.ctx); err != nil {
 		t.Fatal(err)
 	}
-	wctx := testCtx(f.worktree)
+	wctx := testCtx(t, f.worktree)
 	wctx.IDs = id.NewGenerator(wctx.Now, rand.New(rand.NewSource(77)))
 	return f, r, wctx
 }
@@ -433,7 +438,7 @@ func TestArbiterPaneClosesAfterVerdict(t *testing.T) {
 // `rhiza slice --json` prints for the change set.
 func briefStart(t *testing.T, f *sessionFixture, r *stepRunner, kind, question string) (session.Record, []byte) {
 	t.Helper()
-	sc := *testCtx(f.worktree)
+	sc := *testCtx(t, f.worktree)
 	sc.ChangeRef = r.change
 	sl, err := callOp(t, &sc, "slice", `{}`)
 	if err != nil {

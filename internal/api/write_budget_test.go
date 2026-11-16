@@ -35,7 +35,7 @@ func TestReadBudgetApply(t *testing.T) {
 		if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
 			return quiettest.Lap{}, err
 		}
-		ctx := testCtx(g.root)
+		ctx := testCtx(t, g.root)
 		ctx.IndexPath = g.indexPath
 		ctx.ChangeRef = g.summary.Draft.String()
 		seededIDs(ctx, int64(1000+i))

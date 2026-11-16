@@ -20,7 +20,7 @@ func TestRoadmapOverAPageIsReadWhole(t *testing.T) {
 	if _, err := gen.Write(root, gen.Options{Seed: 1, Nodes: 300, Links: 100, Landed: 2, InFlight: 156}); err != nil {
 		t.Fatal(err)
 	}
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	count := func(r RoadmapResponse) int {
 		c := 0

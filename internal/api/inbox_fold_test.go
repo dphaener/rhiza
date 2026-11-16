@@ -73,6 +73,7 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 	// answers as the index does.
 	byIndex, byLog := newInboxFold(f.ctx), func() *inboxFold {
 		c := *f.ctx
+		// No index on purpose: the log fallback answers as the index does.
 		c.IndexPath = ""
 		return newInboxFold(&c)
 	}()

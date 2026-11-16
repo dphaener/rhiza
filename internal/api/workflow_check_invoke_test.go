@@ -32,7 +32,7 @@ func TestWorkflowCheckUnresolvedInvoke(t *testing.T) {
 	setup := func(t *testing.T) (*Ctx, string, string) {
 		t.Helper()
 		root, home := t.TempDir(), t.TempDir()
-		ctx := testCtx(root)
+		ctx := testCtx(t, root)
 		ctx.Home = home
 		ctx.Getenv = func(k string) string {
 			if k == "HOME" {

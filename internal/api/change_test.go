@@ -100,7 +100,7 @@ func TestChangeOutsideRepo(t *testing.T) {
 		{"change.show", `{}`},
 		{"change.ls", `{}`},
 	} {
-		_, err := callOp(t, testCtx(t.TempDir()), c.op, c.req)
+		_, err := callOp(t, testCtx(t, t.TempDir()), c.op, c.req)
 		if ExitCode(err) != 4 || AsError(err).Next != "rhiza init" {
 			t.Errorf("%s outside a repo: %v (exit %d, next %q)", c.op, err, ExitCode(err), AsError(err).Next)
 		}

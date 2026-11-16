@@ -36,7 +36,7 @@ func TestCommandRerunsOnTransient(t *testing.T) {
 		{"no classifier not rerun", nil, []fakeProcess{fail("flaky\n")}, 1, 1, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := testCtx(t.TempDir())
+			ctx := testCtx(t, t.TempDir())
 			var stderr bytes.Buffer
 			ctx.Stderr = &stderr
 			ctx.Classify = tc.classify

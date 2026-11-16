@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"runtime"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -19,11 +21,30 @@ type webFake struct {
 
 func (f *webFake) Close() error { f.closed = true; return nil }
 
+// calledFrom says whether a function of this package named fn is on the
+// caller's stack.
+func calledFrom(fn string) bool {
+	pcs := make([]uintptr, 64)
+	frames := runtime.CallersFrames(pcs[:runtime.Callers(2, pcs)])
+	for {
+		f, more := frames.Next()
+		if strings.HasSuffix(f.Function, "/internal/api."+fn) {
+			return true
+		}
+		if !more {
+			return false
+		}
+	}
+}
+
 // The daemon's web listener follows rhiza.web.port poll by poll: default,
 // moved, off, back on, unchanged. A fake factory stands in for the socket.
-// Each read of the port setting takes its value from the test over a
-// channel, and the test checks the listeners only once the daemon waits for
-// its next tick, so every check sees exactly one finished poll.
+// Each settings snapshot the daemon takes (daemonConfOf) takes the host and
+// port from the test over a channel, and the test checks the listeners only
+// once the daemon waits for its next tick, so every check sees exactly one
+// finished poll. A poll's other settings reads (autonomyStage's, when it
+// plans requests) answer the values the last snapshot took, so they never
+// wait on the test.
 //
 // Serial: it swaps the package's daemonTicker and webFactory, which every daemon in the binary reads.
 func TestDaemonWebListenerFollowsPort(t *testing.T) {
@@ -39,18 +60,23 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 	ctx, common := daemonRepo(t)
 	ports := make(chan string)
 	hosts := make(chan string)
+	var lastHost, lastPort string // the last snapshot's; only the daemon's goroutine reads and writes them
 	ctx.Git = func(args ...string) (string, error) {
 		if len(args) == 3 && args[0] == "rev-parse" && args[2] == "--git-common-dir" {
 			return common + "\n", nil
 		}
 		if len(args) == 4 && args[0] == "config" && args[2] == "--get-regexp" {
 			// One settings read: the host, then the port, the disk guard off.
-			cfg := map[string]string{"rhiza.daemon.minFree": "0"}
-			if h := <-hosts; h != "" {
-				cfg[web.HostKey] = h
+			if calledFrom("daemonConfOf") {
+				lastHost = <-hosts
+				lastPort = <-ports
 			}
-			if p := <-ports; p != "" {
-				cfg[web.PortKey] = p
+			cfg := map[string]string{"rhiza.daemon.minFree": "0"}
+			if lastHost != "" {
+				cfg[web.HostKey] = lastHost
+			}
+			if lastPort != "" {
+				cfg[web.PortKey] = lastPort
 			}
 			out, err, _ := gitConfigFake(cfg, args)
 			return out, err

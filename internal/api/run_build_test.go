@@ -16,7 +16,7 @@ import (
 // counts as described.
 func TestBuildCheck(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}

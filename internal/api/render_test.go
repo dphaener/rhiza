@@ -112,7 +112,7 @@ func TestRenderWritesAndRemoves(t *testing.T) {
 
 func TestRenderErrors(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	_, err := callOp(t, ctx, "render", `{}`)
 	wantExit(t, err, 4)
 	wantNext(t, err, "rhiza init")

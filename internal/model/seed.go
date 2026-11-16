@@ -46,6 +46,44 @@ type Held struct {
 // AsIsState is AsIs, with the State a what-if goes on from.
 func AsIsState(sets []changeset.ChangeSet) (Model, []Problem, State) {
 	b := asIs(sets)
+	st := b.state()
+	m, ps := b.finish()
+	return m, ps, st
+}
+
+// AsIsSeed is AsIs, with the Seed WhatIfFrom takes: Known from every change
+// set's ID, the as-is nodes and links with the aspects of their History
+// entries and each node's placement, the problems without the
+// duplicate-handle ones, and the state without Aspects, which the nodes and
+// links hold. The seed shares nothing with the model, so a caller may build
+// as-is once and every what-if from it.
+func AsIsSeed(sets []changeset.ChangeSet) (Model, []Problem, Seed) {
+	b := asIs(sets)
+	st := b.state()
+	seed := Seed{Known: make([]id.ID, 0, len(sets)), Nodes: make([]SeedNode, 0, len(b.m.nodes)),
+		Links: make([]SeedLink, 0, len(b.m.links)), State: State{Seq: st.Seq, Held: st.Held}}
+	for _, s := range sets {
+		seed.Known = append(seed.Known, s.ID)
+	}
+	for k, r := range b.m.nodes {
+		seed.Nodes = append(seed.Nodes, SeedNode{Node: copyNode(r.v), Aspects: slices.Clone(r.aspects), Placed: st.Placed[k]})
+	}
+	for _, r := range b.m.links {
+		seed.Links = append(seed.Links, SeedLink{Link: copyLink(r.v), Aspects: slices.Clone(r.aspects)})
+	}
+	slices.SortFunc(seed.Nodes, func(a, b SeedNode) int { return id.Compare(a.Node.ID, b.Node.ID) })
+	slices.SortFunc(seed.Links, func(a, b SeedLink) int { return id.Compare(a.Link.ID, b.Link.ID) })
+	m, ps := b.finish()
+	for _, p := range ps {
+		if !IsDuplicateHandle(p.Err) {
+			seed.Problems = append(seed.Problems, p)
+		}
+	}
+	return m, ps, seed
+}
+
+// state returns what b knows beyond its model and problems.
+func (b *builder) state() State {
 	st := State{Seq: b.seq, Aspects: make(map[id.ID][][]string, len(b.m.nodes)+len(b.m.links)),
 		Placed: make(map[id.ID]Mark, len(b.placed))}
 	for k, r := range b.m.nodes {
@@ -72,8 +110,7 @@ func AsIsState(sets []changeset.ChangeSet) (Model, []Problem, State) {
 		}
 		return id.Compare(a.Op, b.Op)
 	})
-	m, ps := b.finish()
-	return m, ps, st
+	return st
 }
 
 // Seed is the as-is view as stored: the landed change sets already applied.
@@ -116,7 +153,8 @@ func WhatIfFrom(seed Seed, sets []changeset.ChangeSet, cs id.ID) (Model, []Probl
 	return whatIf(seed.builder(), sets, cs, false)
 }
 
-// builder returns a builder holding the seed.
+// builder returns a builder holding a copy of the seed: the views built
+// from one seed never change it.
 func (s Seed) builder() *builder {
 	b := newBuilder(s.Known)
 	b.seq = s.State.Seq
@@ -124,14 +162,14 @@ func (s Seed) builder() *builder {
 	b.m.links = make(map[id.ID]*record[Link], len(s.Links))
 	b.placed = make(map[id.ID]mark, len(s.Nodes))
 	for _, n := range s.Nodes {
-		b.m.nodes[n.Node.ID] = &record[Node]{v: n.Node, aspects: n.Aspects}
+		b.m.nodes[n.Node.ID] = &record[Node]{v: copyNode(n.Node), aspects: slices.Clone(n.Aspects)}
 		if op.HasParent(n.Node.Kind) {
 			b.addChild(n.Node.Parent, n.Node.ID)
 		}
 		b.placed[n.Node.ID] = mark{seq: n.Placed.Seq, ref: n.Placed.Ref}
 	}
 	for _, l := range s.Links {
-		b.m.links[l.Link.ID] = &record[Link]{v: l.Link, aspects: l.Aspects}
+		b.m.links[l.Link.ID] = &record[Link]{v: copyLink(l.Link), aspects: slices.Clone(l.Aspects)}
 	}
 	b.problems = slices.Clone(s.Problems)
 	type key struct{ cs, op id.ID }

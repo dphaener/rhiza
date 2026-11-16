@@ -55,6 +55,7 @@ func TestChangeShowIndexedMatchesFold(t *testing.T) {
 	t.Parallel()
 	ctx, sets := indexedLog(t)
 	folded := *ctx
+	// The fold side: no index on purpose, to compare against the indexed read.
 	folded.IndexPath = ""
 	want := map[id.ID]string{}
 	for _, cs := range sets {
@@ -104,6 +105,7 @@ func TestChangeShowIndexedErrors(t *testing.T) {
 	t.Parallel()
 	ctx, _ := indexedLog(t)
 	folded := *ctx
+	// The fold side: no index on purpose, to compare against the indexed read.
 	folded.IndexPath = ""
 	for _, req := range []string{`{"ref":"ZZZZZZZZ"}`, `{"ref":"abc"}`, `{"ref":"01M6NE0XK2H70R52C5JAPWK71M"}`} {
 		_, a := callOp(t, ctx, "change.show", req)
@@ -153,6 +155,7 @@ func TestChangeShowIndexedKeepsMovedUnderLater(t *testing.T) {
 	t.Parallel()
 	ctx, _, _ := readLog(t)
 	folded := *ctx
+	// The fold side: no index on purpose, to compare against the indexed read.
 	folded.IndexPath = ""
 	cs := newChange(t, ctx, `{"intent":"Edge"}`).ChangeSet
 	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"early"}`)
@@ -179,6 +182,7 @@ func TestChangeShowIndexedMatchesFoldGenerated(t *testing.T) {
 	for seed := int64(1); seed <= seeds; seed++ {
 		ctx, landed, accepted := readLog(t)
 		folded := *ctx
+		// The fold side: no index on purpose, to compare against the indexed read.
 		folded.IndexPath = ""
 		g := &writeGen{t: t, rng: rand.New(rand.NewSource(seed)), dir: t.TempDir(),
 			handles: []string{"store", "cache", "disk", "tape", "old", "under-old", "faster", "use-ssd", "ram", "ghost"},

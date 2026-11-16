@@ -22,7 +22,7 @@ func statusOf(t *testing.T, ctx *Ctx, req string) StatusResponse {
 
 func TestStatusOutsideRepo(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	if _, err := callOp(t, ctx, "status", `{}`); ExitCode(err) != 4 {
 		t.Errorf("status outside a repo: err %v, want not_found", err)
 	}
@@ -41,7 +41,7 @@ func TestStatusOutsideRepo(t *testing.T) {
 func TestStatusHookErrorSilent(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestStatusHookErrorSilent(t *testing.T) {
 func TestStatusHookCap(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.Home = t.TempDir()
 	ctx.Version = "v0.0.1"
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
@@ -105,7 +105,7 @@ func TestStatusHookCap(t *testing.T) {
 func TestStatusGuideFiles(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	ctx := testCtx(root)
+	ctx := testCtx(t, root)
 	ctx.Home = t.TempDir()
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)

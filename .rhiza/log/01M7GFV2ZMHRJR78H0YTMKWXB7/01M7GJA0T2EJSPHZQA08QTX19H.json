@@ -1,0 +1,54 @@
+{
+  "actor": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "after": [
+    "01M7GHWRSFV2D83AR83RW53G4F"
+  ],
+  "at": "2026-11-15T21:37:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestPropertyProjectionParity|TestParity)' passes with no entry of the known-cases table naming the interim model and no skipped draws, at -rapid.checks=1000 as well as the default; go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWrite|TestDaemonPicks|TestDaemonPlansProposals|TestDaemonCandidates|TestInbox)' and go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^(daemon-picks|daemon-plans-proposals)$' pass. Fix by building newModelSets from internal/model's AsIsSeed and WhatIfFrom as @{01M7GGERTNQMVS8C3Y5BVRJS1M} says, with newModelSets' callers building as-is once. Each case found on the interim side has its own TestParity<Case> test with the smallest log that shows it, and a note on this leaf (rhiza note add parity-interim-from-strict ...) naming the log shape, both results and which side changed; when the harness finds no interim case beyond the named one and the version rule, the note says so. Failure case: the regression test for the named case on the interim model (a node whose create no longer applies in the strict what-if) fails on the code before the fix (show it in the commit's Checks: block by running it at the parent commit). The bridge is model.AsIsSeed(sets) (Model, []Problem, Seed) in internal/model/seed.go, as @{01M7GHVXD5JEMBCN02TEQ6NJ4D} says: newModelSets' callers call it once and WhatIfFrom per change set, and internal/api assembles no Seed by hand. go test -trimpath -count=1 -p 2 ./internal/model passes with a new TestAsIsSeedWhatIfFrom which, on random logs (a landed base, in-flight change sets one depending on another, one whose ops no longer apply, a duplicate handle), checks that AsIsSeed's model and problems equal AsIs's and that WhatIfFrom over its Seed equals WhatIf over the whole log (model and problems) for every in-flight change set, all WhatIfFrom calls over one shared seed and compared only after every call has run, and the seed compared with a fresh AsIsSeed after them; if a view changes the shared seed, Seed.builder copies each node's and link's History, Fields and aspects. Touches internal/api/model.go, its tests, internal/api/daemon_fold.go, proposals.go and inbox.go only where newModelSets' callers must build as-is once, and internal/model/seed.go and its tests for AsIsSeed (and that copy) only. Must not change internal/api/write_indexed.go (@{01M7GGYX9DWE3H3TZ3G0TA4T8P} fixes it), internal/model or internal/index rules (the strict engine is the spec; AsIsSeed adds no rule and changes no existing function's result) or a --json shape. Writes no longer refusing a node whose two landed heads touch disjoint fields is the rule @{01M7GGERQMXHJ6YYC2D5HYX4ZZ} settles, not a case to raise; any other case that would change user-visible output on this repo's own log is raised as a question blocking this leaf instead.",
+          "statement": "Every case where the parity test finds the interim model (newModel and newModelSets in internal/api/model.go) disagreeing with the strict engine is fixed on the interim side, starting with the one write_indexed.go's model comment names (the interim model keeps a node whose create no longer applies, the strict what-if drops it) and the version and conflict rule of @{01M7GGERQMXHJ6YYC2D5HYX4ZZ}, and each case found on this side has a named regression test and a note on this leaf"
+        },
+        "handle": "parity-interim-from-strict",
+        "id": "01M7GGYX1AJ24Y40XJKB1PJ7S4",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7GGYX1AJ24Y40XJK9GRY8P8",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "fields": {
+          "reasoning": "The finding is right in the code: AsIsState (internal/model/seed.go:47) returns (Model, []Problem, State) and WhatIfFrom (seed.go:115) takes a Seed; the only Seed builder is index.loadSeed, which reads back rows that writeAsIsState (internal/index/whatif.go:38) split out of AsIsState's result. Rebuilding that in internal/api would be a fourth copy of seed rules, which parity-fix-derives-from-strict set out to avoid, and calling model.WhatIf per candidate would rebuild as-is once per candidate, which that Decision forbids for daemon_fold.go, proposals.go and inbox.go. The builder inside internal/model already holds everything a Seed needs (aspects per record, placed marks, problems and held conflicts), so a constructor there is a few lines next to AsIsState and keeps the seed rules in the one package that is the spec. The leaf's ban on changing internal/model was meant to protect the rules (the strict engine is the spec), not to forbid an additive constructor, so the ban is narrowed to rules. No test checks WhatIfFrom against WhatIf today, so the constructor gets its own equivalence test. Moving the index onto the same constructor is out of this change set's scope.",
+          "statement": "The bridge is a constructor in internal/model: model.AsIsSeed(sets []changeset.ChangeSet) (Model, []Problem, Seed) builds the as-is view once and returns it with the Seed WhatIfFrom takes (Known from every change set's ID, Nodes and Links with their History aspects and Placed, Problems without the duplicate-handle ones, State without Aspects), from the same builder AsIsState uses. newModelSets' callers call AsIsSeed once and WhatIfFrom per change set; internal/api assembles no Seed by hand. internal/model joins parity-interim-from-strict's touch list for this constructor only, a non-rule change: it adds no rule and changes no existing function's result. Its own test in internal/model checks, on random logs, that WhatIfFrom over AsIsSeed's Seed equals WhatIf over the whole log for every in-flight change set, and that AsIsSeed's model and problems equal AsIs's. Change set 01M7GFT8AD (check without the what-if rebuilds) plans the same model.AsIsSeed(sets) (Model, []Problem, Seed) in internal/model/seed.go (its model-seed-views leaf) and a copy in Seed.builder so views built from one seed never change it; parity-interim-from-strict uses that name and signature so the two share one constructor: whichever lands first adds it, and the other builds on it instead of adding a second.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "parity-seed-bridge-in-model",
+        "id": "01M7GHVXD5JEMBCN02TFSXTJZN",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7GHVXD5JEMBCN02TEQ6NJ4D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GGYX1AJ24Y40XJK9GRY8P8",
+        "id": "01M7GJA0QHVR9TRJ5W1A4NB81H",
+        "link": "01M7GJA0QHVR9TRJ5W170G9GG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GHVXD5JEMBCN02TEQ6NJ4D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GJA0T2EJSPHZQA08QTX19H",
+  "type": "ops",
+  "v": 1
+}

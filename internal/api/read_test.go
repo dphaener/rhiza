@@ -294,6 +294,7 @@ func TestReadOpenErrors(t *testing.T) {
 	}
 	t.Run("no index path", func(t *testing.T) {
 		c := *ctx
+		// No index on purpose: the what-if needs one and says so.
 		c.IndexPath = ""
 		_, err := openReader(&c, "show", "", defaultView)
 		wantExit(t, err, 1)
@@ -303,7 +304,7 @@ func TestReadOpenErrors(t *testing.T) {
 		t.Logf("empty IndexPath: %v", err)
 	})
 	t.Run("no repository", func(t *testing.T) {
-		c := testCtx(t.TempDir())
+		c := testCtx(t, t.TempDir())
 		c.IndexPath = filepath.Join(t.TempDir(), "x.db")
 		_, err := openReader(c, "show", "", defaultView)
 		wantExit(t, err, 4)

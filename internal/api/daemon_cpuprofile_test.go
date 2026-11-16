@@ -13,7 +13,7 @@ func TestDaemonCPUProfilePassedToDrivers(t *testing.T) {
 	t.Parallel()
 	run := func(prof string) Program {
 		t.Helper()
-		ctx := testCtx(t.TempDir())
+		ctx := testCtx(t, t.TempDir())
 		common := t.TempDir()
 		ctx.Git = func(args ...string) (string, error) { return common, nil }
 		ctx.Self = "rhiza"

@@ -3,6 +3,7 @@ package api
 import (
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -69,13 +71,14 @@ type Node struct {
 	Fields map[string]json.RawMessage
 	// Retired is true once a node.retire applies, landed or current.
 	Retired bool
-	// Version is the head over the landed ops and the dependencies' ops on
-	// the node: the op that no other of them names as base. It is zero for a
-	// node created only in the current change set, and the current change
-	// set never changes it.
+	// Version is the last operation in the node's strict history that is
+	// not the current change set's own: the one new writes name as base. It
+	// is zero for a node created only in the current change set, and the
+	// current change set never changes it.
 	Version id.ID
-	// Conflict is true when the node has more than one such head. Version
-	// is then the largest head ID.
+	// Conflict is true when the view holds an unrepaired conflict
+	// (model.ErrConflict) on the node from an operation not of the current
+	// change set: a stale write that overlaps one it did not see.
 	Conflict bool
 	// Pending lists the IDs of the current change set's ops on the node, in
 	// change set order; nil when it has none. A dependency's ops are never
@@ -98,7 +101,8 @@ type Link struct {
 	Pending  []id.ID
 }
 
-// model is the interim Model: two maps rebuilt from the whole log each time.
+// model is the interim Model: two maps taken from one of internal/model's
+// views of the whole log.
 type model struct {
 	nodes map[id.ID]*Node
 	links map[id.ID]*Link
@@ -107,22 +111,21 @@ type model struct {
 // newModel builds the interim Model from l and the current change set (zero
 // for none).
 //
-// As-is is the ops of every change set whose folded state is landed.
-// Proposed and accepted change sets are not in it. The write view adds the
-// change sets in changeset.Closure of the current one (its in-flight
-// dependencies, direct or not), then the current change set's ops in their
-// listed order. A terminal current change set adds neither (a landed one
-// is already in as-is). The dependencies apply after the landed ops, in
-// dependencyOrder, each one's ops in their listed order.
+// The nodes and links are internal/model's (the strict engine's): the
+// as-is view (model.AsIs, every landed change set) when there is no
+// current change set or it is not in flight, else the current change set's
+// what-if view (model.WhatIf: as-is, then the current change set and the
+// in-flight change sets it depends on, directly or through others, in
+// their apply order). An op the strict engine skips (a stale or unknown
+// base, a retired or missing target, parent or endpoint, a taken ID) is
+// left out, so a node whose create no longer applies is not in the view.
 //
-// Landed ops on one target apply along their base chain: the create (no
-// base) first, then each op after the op it names as base, siblings in op ID
-// order. With two landed heads both branches apply, the later op ID last, so
-// its fields win; Version is the largest head and Conflict is set. Ops whose
-// base is not a landed op on the same target apply last, in op ID order.
-// Version and Conflict count the dependencies' ops too: a node a dependency
-// created has that create as its version, and a dependency's op on a landed
-// node moves its version on.
+// Version and Conflict follow the strict rule: Version is the last op in
+// the target's strict history that is not the current change set's own,
+// and Conflict is set when the view holds an unrepaired model.ErrConflict
+// problem on the target from an op not of the current change set. Pending
+// lists the current change set's ops on each target the view holds,
+// whether the strict engine applied them or not.
 //
 // A ref is, in this order: the full canonical ID of a node; a unique prefix,
 // four characters or more, of the node IDs, matched as given (IDs are upper
@@ -137,65 +140,148 @@ func newModel(l store.Log, current id.ID) Model {
 
 // newModelSets is newModel over the log already folded: sets are
 // changeset.FoldLog's change sets, which it only reads. A caller that builds
-// several models of one log (the daemon's, one per candidate) folds it
-// once instead of once per model.
+// several models of one log (the daemon's, one per candidate) builds a
+// modelBase once instead, so as-is is built once.
 func newModelSets(sets []changeset.ChangeSet, current id.ID) Model {
-	m := &model{nodes: map[id.ID]*Node{}, links: map[id.ID]*Link{}}
-	var cur *changeset.ChangeSet
-	for i, cs := range sets {
-		if cs.ID == current && !current.IsZero() && cs.State != "" && !cs.State.Terminal() {
-			cur = &sets[i]
-		}
-	}
+	return newModelBase(sets).model(current)
+}
 
-	byTarget := map[id.ID][]op.Op{}
+// modelBase is the as-is view of one folded log, built once, that the
+// interim models of its change sets go on from (model.AsIsSeed, then
+// model.WhatIfFrom per change set).
+type modelBase struct {
+	sets     []changeset.ChangeSet
+	asIs     gmodel.Model
+	problems []gmodel.Problem
+	seed     gmodel.Seed
+	// target is each op's target, by op ID.
+	target map[id.ID]id.ID
+	// asIsModel is the interim as-is Model, built on first use. Nothing
+	// changes a model once built, so every as-is view shares it and every
+	// what-if starts from a copy of its maps.
+	asIsModel *model
+}
+
+// newModelBase builds the as-is view of sets, which it only reads.
+func newModelBase(sets []changeset.ChangeSet) *modelBase {
+	b := &modelBase{sets: sets, target: map[id.ID]id.ID{}}
+	b.asIs, b.problems, b.seed = gmodel.AsIsSeed(sets)
 	for _, cs := range sets {
-		if cs.State != changeset.StateLanded {
-			continue
-		}
 		for _, o := range cs.Ops {
-			byTarget[o.Target()] = append(byTarget[o.Target()], o)
+			b.target[o.ID] = o.Target()
 		}
 	}
-	for _, t := range slices.SortedFunc(maps.Keys(byTarget), id.Compare) {
-		for _, o := range chain(byTarget[t]) {
-			m.apply(o)
-		}
-	}
-	if cur != nil {
-		byID := map[id.ID]changeset.ChangeSet{}
-		for _, cs := range sets {
-			byID[cs.ID] = cs
-		}
-		for _, d := range dependencyOrder(sets, current) {
-			for _, o := range byID[d].Ops {
-				m.apply(o)
-				byTarget[o.Target()] = append(byTarget[o.Target()], o)
-			}
-		}
-	}
-	for t, ops := range byTarget {
-		version, conflict := head(ops)
-		if n := m.nodes[t]; n != nil {
-			n.Version, n.Conflict = version, conflict
-		}
-		if k := m.links[t]; k != nil {
-			k.Version, k.Conflict = version, conflict
-		}
-	}
+	return b
+}
 
-	if cur != nil {
-		for _, o := range cur.Ops {
-			m.apply(o)
-			if n := m.nodes[o.Target()]; n != nil {
-				n.Pending = append(n.Pending, o.ID)
+// model is newModelSets(b's sets, current).
+//
+// A what-if differs from as-is only on the targets of the ops it layers:
+// those of the current change set and of its in-flight dependencies. Its
+// other nodes and links, and their versions and conflicts, are as-is's,
+// so only those targets are taken from the what-if view.
+func (b *modelBase) model(current id.ID) Model {
+	var cur *changeset.ChangeSet
+	for i, cs := range b.sets {
+		if cs.ID == current && !current.IsZero() && inFlightState(cs.State) {
+			cur = &b.sets[i]
+		}
+	}
+	if b.asIsModel == nil {
+		b.asIsModel = &model{nodes: map[id.ID]*Node{}, links: map[id.ID]*Link{}}
+		v := strictVersions{conflict: b.conflicts(b.problems, id.ID{})}
+		for _, n := range b.asIs.Nodes() {
+			b.asIsModel.nodes[n.ID] = v.node(n)
+		}
+		for _, l := range b.asIs.Links() {
+			b.asIsModel.links[l.ID] = v.link(l)
+		}
+	}
+	if cur == nil {
+		return b.asIsModel
+	}
+	w, ps := gmodel.WhatIfFrom(b.seed, b.sets, current)
+	v := strictVersions{current: current, conflict: b.conflicts(ps, current)}
+	touched := map[id.ID]bool{}
+	byID := map[id.ID]*changeset.ChangeSet{}
+	for i := range b.sets {
+		byID[b.sets[i].ID] = &b.sets[i]
+	}
+	for _, d := range append(changeset.Closure(b.sets, current), current) {
+		if s := byID[d]; s != nil {
+			for _, o := range s.Ops {
+				touched[o.Target()] = true
 			}
-			if k := m.links[o.Target()]; k != nil {
-				k.Pending = append(k.Pending, o.ID)
-			}
+		}
+	}
+	m := &model{nodes: maps.Clone(b.asIsModel.nodes), links: maps.Clone(b.asIsModel.links)}
+	for t := range touched {
+		if n, ok := w.Node(t); ok {
+			m.nodes[t] = v.node(n)
+		}
+		if l, ok := w.Link(t); ok {
+			m.links[t] = v.link(l)
+		}
+	}
+	for _, o := range cur.Ops {
+		if n := m.nodes[o.Target()]; n != nil {
+			n.Pending = append(n.Pending, o.ID)
+		}
+		if k := m.links[o.Target()]; k != nil {
+			k.Pending = append(k.Pending, o.ID)
 		}
 	}
 	return m
+}
+
+// conflicts returns the targets ps holds an unrepaired model.ErrConflict
+// problem on from an op not of change set current (zero for none).
+func (b *modelBase) conflicts(ps []gmodel.Problem, current id.ID) map[id.ID]bool {
+	out := map[id.ID]bool{}
+	for _, p := range ps {
+		if !errors.Is(p.Err, gmodel.ErrConflict) || (!current.IsZero() && p.ChangeSet == current) {
+			continue
+		}
+		var stale *gmodel.StaleBaseError
+		if errors.As(p.Err, &stale) {
+			out[stale.Node] = true
+		} else if t, ok := b.target[p.Op]; ok {
+			out[t] = true
+		}
+	}
+	return out
+}
+
+// strictVersions turns the strict engine's nodes and links into the
+// interim model's, with Version and Conflict by the strict rule for the
+// view of change set current (zero for as-is).
+type strictVersions struct {
+	current  id.ID
+	conflict map[id.ID]bool
+}
+
+// version is the last op of h that is not the current change set's own.
+func (v strictVersions) version(h []gmodel.Ref) id.ID {
+	for i := len(h) - 1; i >= 0; i-- {
+		if v.current.IsZero() || h[i].ChangeSet != v.current {
+			return h[i].Op
+		}
+	}
+	return id.ID{}
+}
+
+func (v strictVersions) node(n gmodel.Node) *Node {
+	a := apiNode(n)
+	if a.Fields == nil {
+		a.Fields = map[string]json.RawMessage{}
+	}
+	a.Version, a.Conflict = v.version(n.History), v.conflict[n.ID]
+	return &a
+}
+
+func (v strictVersions) link(l gmodel.Link) *Link {
+	return &Link{ID: l.ID, Type: l.Type, From: l.From, To: l.To, Note: l.Note, Decision: l.Decision,
+		Retired: l.Retired, Version: v.version(l.History), Conflict: v.conflict[l.ID]}
 }
 
 // dependencyOrder returns changeset.Closure(sets, current) with every change
@@ -223,52 +309,6 @@ func dependencyOrder(sets []changeset.ChangeSet, current id.ID) []id.ID {
 	return out
 }
 
-// chain orders one target's landed ops for application: depth first along
-// base links from the ops with no landed base, siblings in op ID order.
-func chain(ops []op.Op) []op.Op {
-	ids := map[id.ID]bool{}
-	for _, o := range ops {
-		ids[o.ID] = true
-	}
-	next := map[id.ID][]op.Op{}
-	var roots, orphans []op.Op
-	for _, o := range ops {
-		switch {
-		case o.Base.IsZero():
-			roots = append(roots, o)
-		case ids[o.Base] && o.Base != o.ID:
-			next[o.Base] = append(next[o.Base], o)
-		default:
-			orphans = append(orphans, o)
-		}
-	}
-	byID := func(a, b op.Op) int { return id.Compare(a.ID, b.ID) }
-	var out []op.Op
-	seen := map[id.ID]bool{}
-	var walk func(level []op.Op)
-	walk = func(level []op.Op) {
-		slices.SortFunc(level, byID)
-		for _, o := range level {
-			if seen[o.ID] {
-				continue
-			}
-			seen[o.ID] = true
-			out = append(out, o)
-			walk(next[o.ID])
-		}
-	}
-	walk(roots)
-	slices.SortFunc(orphans, byID)
-	for _, o := range orphans {
-		if !seen[o.ID] {
-			seen[o.ID] = true
-			out = append(out, o)
-			walk(next[o.ID])
-		}
-	}
-	return out
-}
-
 // head returns the largest op ID that no other op names as base, and
 // whether there is more than one such op.
 func head(ops []op.Op) (id.ID, bool) {
@@ -288,53 +328,6 @@ func head(ops []op.Op) (id.ID, bool) {
 		return id.ID{}, false
 	}
 	return slices.MaxFunc(heads, id.Compare), len(heads) > 1
-}
-
-// apply applies o to the node or link it targets. Ops on a target with no
-// create are ignored.
-func (m *model) apply(o op.Op) {
-	switch o.Type {
-	case op.TypeNodeCreate:
-		n := m.nodes[o.Node]
-		if n == nil {
-			n = &Node{ID: o.Node}
-			m.nodes[o.Node] = n
-		}
-		n.Kind, n.Handle, n.Parent, n.Key = o.Kind, o.Handle, o.Parent, o.Key
-		n.Fields = maps.Clone(o.Fields)
-		if n.Fields == nil {
-			n.Fields = map[string]json.RawMessage{}
-		}
-	case op.TypeNodeUpdate:
-		if n := m.nodes[o.Node]; n != nil {
-			if o.Handle != "" {
-				n.Handle = o.Handle
-			}
-			maps.Copy(n.Fields, o.Set)
-			for _, k := range o.Unset {
-				delete(n.Fields, k)
-			}
-		}
-	case op.TypeNodeMove:
-		if n := m.nodes[o.Node]; n != nil {
-			n.Parent, n.Key = o.Parent, o.Key
-		}
-	case op.TypeNodeRetire:
-		if n := m.nodes[o.Node]; n != nil {
-			n.Retired = true
-		}
-	case op.TypeLinkCreate:
-		k := m.links[o.Link]
-		if k == nil {
-			k = &Link{ID: o.Link}
-			m.links[o.Link] = k
-		}
-		k.Type, k.From, k.To, k.Note, k.Decision = o.LinkType, o.From, o.To, o.Note, o.Decision
-	case op.TypeLinkRetire:
-		if k := m.links[o.Link]; k != nil {
-			k.Retired = true
-		}
-	}
 }
 
 // copyNode returns n with its map and slice copied, so callers cannot change

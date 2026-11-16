@@ -10,7 +10,7 @@ import (
 // first clause.
 func TestRoadmapChangeSetsCarryTheirDisplayTitle(t *testing.T) {
 	t.Parallel()
-	ctx := testCtx(t.TempDir())
+	ctx := testCtx(t, t.TempDir())
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
 	if _, err := callOp(t, ctx, "init", `{}`); err != nil {
 		t.Fatal(err)
