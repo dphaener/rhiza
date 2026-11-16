@@ -46,11 +46,11 @@ fold-ok
 
 # apply as a dry run, then for real. In a dry run too, api call and the
 # command give the same bytes.
-exec rhiza apply writes.json --dry-run --json
+rhiza apply writes.json --dry-run --json
 cp stdout apply-dry.json
-exec rhiza api call apply '{"file":"writes.json"}' --dry-run
+rhiza api call apply '{"file":"writes.json"}' --dry-run
 cmp stdout apply-dry.json
-exec rhiza apply writes.json --json
+rhiza apply writes.json --json
 stdout '"entry": "[0-9A-Z]{26}"'
 ! stdout '"dry_run"'
 fold-ok

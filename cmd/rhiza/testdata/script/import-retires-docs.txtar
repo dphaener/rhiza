@@ -15,7 +15,7 @@ exec git ls-files PLAN.md
 stdout '^PLAN.md$'
 
 rhiza change new 'Retire the plan'
-exec rhiza source add plan-md source.json --raw PLAN.md
+rhiza source add plan-md source.json --raw PLAN.md
 exec git rm -q PLAN.md
 ! exists PLAN.md
 exec git add .rhiza

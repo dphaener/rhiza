@@ -10,7 +10,7 @@ stdout 'rhiza add question <handle>'
 
 rhiza init
 rhiza change new 'Record the plan' --kind record
-exec rhiza source add plan-md source.json --raw PLAN.md
+rhiza source add plan-md source.json --raw PLAN.md
 rhiza change new 'Build the export' --source plan-md
 rhiza add question export-format --field 'statement=Which format do exports take?'
 rhiza change show
