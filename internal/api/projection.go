@@ -3,7 +3,7 @@ package api
 // This file holds the projection: the one interface the model is read
 // through when a call has an index (ctx.IndexPath set). It answers the
 // change sets with their states and folds, a change set's entries, the
-// stored problems and the model of a view (the current change set's while
+// stored problems, the stored as-is model and the model of a view (the current change set's while
 // it is in flight, else as-is), each with the dry run's pending entries
 // laid over it. Its one implementation is the index with the pending
 // entries overlaid (writeIndex, write_indexed.go). With ctx.IndexPath empty
@@ -14,6 +14,7 @@ import (
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
+	gmodel "github.com/dphaener/rhiza/internal/model"
 )
 
 // projection is the read side of the model over the index. Every read
@@ -32,6 +33,10 @@ type projection interface {
 	// problems is the problems the index stores (log, fold, as-is,
 	// to-be); pending entries are not folded into them.
 	problems() []index.Problem
+	// asIs is the as-is model and its problems, as model.AsIs computes
+	// them over every stored change set, assembled from the stored as-is
+	// rows; it takes no pending entries.
+	asIs() (gmodel.Model, []gmodel.Problem)
 	// model is the view of change set current (zero for as-is): its
 	// what-if while it is in flight, else as-is.
 	model(pending []entry.Entry, current id.ID) Model
@@ -139,6 +144,7 @@ func (f failedProjection) changeSetIDs([]entry.Entry) []id.ID             { retu
 func (f failedProjection) changeSets([]entry.Entry) []changeset.ChangeSet { return nil }
 func (f failedProjection) entries([]entry.Entry, id.ID) []entry.Entry     { return nil }
 func (f failedProjection) problems() []index.Problem                      { return nil }
+func (f failedProjection) asIs() (gmodel.Model, []gmodel.Problem)         { return gmodel.Model{}, nil }
 func (f failedProjection) model([]entry.Entry, id.ID) Model {
 	return &writeModel{ix: &writeIndex{err: f.err}}
 }

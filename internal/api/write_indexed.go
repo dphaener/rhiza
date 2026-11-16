@@ -77,6 +77,13 @@ func (ix *writeIndex) problems() []index.Problem {
 	return ps
 }
 
+// asIs returns the as-is model the index assembles from its stored rows.
+func (ix *writeIndex) asIs() (gmodel.Model, []gmodel.Problem) {
+	m, ps, err := ix.index().AsIs()
+	ix.fail(err)
+	return m, ps
+}
+
 func (ix *writeIndex) fail(err error) {
 	if err != nil && ix.err == nil {
 		ix.err = err
