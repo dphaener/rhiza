@@ -16,7 +16,8 @@ import (
 )
 
 // testCtx is a Ctx over root with a fixed clock, seeded IDs, a git config
-// whose user.email is test@example.com and, as in production, an index:
+// whose user.email is test@example.com, an Environ holding the process's
+// PATH (children are found on Environ's PATH alone) and, as in production, an index:
 // IndexPath is a fresh file under t's own t.TempDir(), so no two tests (or
 // two Ctxs of one test) share an index. A test that exercises the no-index
 // fallback on purpose clears IndexPath, with a comment saying so.
@@ -39,7 +40,19 @@ func testCtxNoIndex(root string) *Ctx {
 		Now:       clock,
 		IDs:       id.NewGenerator(clock, rand.New(rand.NewSource(3))),
 		GitConfig: gitConfig(map[string]string{"user.email": "test@example.com", "user.name": "Test User"}),
+		Environ:   []string{"PATH=" + os.Getenv("PATH")},
+		Getenv:    testCache,
 	}
+}
+
+// testCache is a test Ctx's getenv: the test binary's user cache folder
+// (XDG_CACHE_HOME, set once in TestMain) and nothing else, so an index or
+// run folder lands there, as it did when a nil getenv read the process's.
+func testCache(key string) string {
+	if key == "XDG_CACHE_HOME" {
+		return os.Getenv("XDG_CACHE_HOME")
+	}
+	return ""
 }
 
 // callOp decodes reqJSON for the named operation and runs it on ctx.
@@ -68,8 +81,6 @@ func human(t *testing.T, resp any) string {
 	return buf.String()
 }
 
-// Serial: it calls t.Chdir (RelativeRootIsMadeAbsolute), process-wide
-// state.
 func TestInit(t *testing.T) {
 	t.Run("Fresh", func(t *testing.T) {
 		root := t.TempDir()
@@ -118,14 +129,20 @@ func TestInit(t *testing.T) {
 	})
 
 	t.Run("RelativeRootIsMadeAbsolute", func(t *testing.T) {
-		root := t.TempDir()
-		t.Chdir(root)
-		resp, err := callOp(t, testCtx(t, "."), "init", `{}`)
+		// A relative root is made absolute against the Ctx's working
+		// directory, not the process's.
+		wd := t.TempDir()
+		if err := os.Mkdir(filepath.Join(wd, "proj"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		ctx := testCtx(t, "proj")
+		ctx.Wd = wd
+		resp, err := callOp(t, ctx, "init", `{}`)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got := resp.(InitResponse).Root; !filepath.IsAbs(got) {
-			t.Errorf("root = %q, want absolute", got)
+		if got, want := resp.(InitResponse).Root, filepath.Join(wd, "proj"); got != want {
+			t.Errorf("root = %q, want %q", got, want)
 		}
 	})
 

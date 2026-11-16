@@ -188,7 +188,7 @@ func runSkillCheck(ctx *Ctx, req any) (any, error) {
 	if ctx.DryRun {
 		return nil, Usagef("skill check has no dry run: it writes only to its own scratch repo")
 	}
-	tmp, err := os.MkdirTemp("", "rhiza-skill-check-*")
+	tmp, err := os.MkdirTemp(tempDir(ctx), "rhiza-skill-check-*")
 	if err != nil {
 		return nil, Errorf("scratch folder: %v", err)
 	}

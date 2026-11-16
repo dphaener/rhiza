@@ -75,7 +75,7 @@ func runAutonomy(ctx *Ctx, def *workflow.Definition) ([]run.StageAutonomy, error
 // name: its declaration when it makes one, else the rhiza.autonomy.<stage>
 // setting. A workflow that cannot be resolved declares nothing.
 func workflowStageMode(ctx *Ctx, name, stage string) (string, error) {
-	if _, def, _, err := resolveWorkflow(ctx.Root, name); err == nil {
+	if _, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, name, ctx.Getenv); err == nil {
 		if m, ok := def.Autonomy(stage); ok {
 			return m, nil
 		}
@@ -100,7 +100,7 @@ func stateStageMode(ctx *Ctx, st run.State, stage string) (string, error) {
 func acceptStageMode(ctx *Ctx) (string, error) {
 	if ref := strings.TrimSpace(ctxGetenv(ctx)(envRun)); ref != "" {
 		if common, err := gitCommonDir(ctx); err == nil {
-			if j, err := run.NewStore(run.Dir(common)).Read(ref); err == nil {
+			if j, err := runStore(ctx, common).Read(ref); err == nil {
 				return stateStageMode(ctx, j.State(), "accept")
 			}
 		}

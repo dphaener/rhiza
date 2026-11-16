@@ -124,7 +124,7 @@ func (r *stepRunner) catchUpModel(root string) (*runModel, error) {
 	if rm == nil {
 		path := r.ctx.IndexPath
 		if r.ctx.Root != root {
-			p, err := index.DefaultPath(root)
+			p, err := index.DefaultPath(root, r.ctx.Getenv)
 			if err != nil {
 				return nil, Errorf("%s", err.Error())
 			}

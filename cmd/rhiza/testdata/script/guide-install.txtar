@@ -5,7 +5,7 @@
 
 # A user install needs no repository and writes the twenty-three files.
 ! exists .rhiza
-exec rhiza guide install --agent claude
+rhiza guide install --agent claude
 cmpenv stdout first.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
 cmp $HOME/.claude/skills/rhiza/hooks/hooks.json hooks.json
@@ -46,7 +46,7 @@ exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
 stdout '\A---\nname: rhiza-build\ndescription: "Building a change set.s leaves: .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
 cp stdout build-body.txt
-exec rhiza guide build
+rhiza guide build
 cmp stdout build-body.txt
 grep 'rhiza guide builder' $HOME/.claude/skills/rhiza/skills/rhiza-build/SKILL.md
 
@@ -55,19 +55,19 @@ exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
 stdout '\A---\nname: rhiza-builder\ndescription: "The builder of a build run: .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-builder/SKILL.md
 cp stdout builder-body.txt
-exec rhiza guide builder
+rhiza guide builder
 cmp stdout builder-body.txt
 exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
 stdout '\A---\nname: rhiza-verifier\ndescription: "The verifier of a build run: .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-verifier/SKILL.md
 cp stdout verifier-body.txt
-exec rhiza guide verifier
+rhiza guide verifier
 cmp stdout verifier-body.txt
 exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
 stdout '\A---\nname: rhiza-build-retry\ndescription: "A builder.s later attempt: .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-build-retry/SKILL.md
 cp stdout retry-body.txt
-exec rhiza guide build-retry
+rhiza guide build-retry
 cmp stdout retry-body.txt
 
 # The review topic is installed as the rhiza-review skill the same way.
@@ -75,7 +75,7 @@ exec head -4 $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
 stdout '\A---\nname: rhiza-review\ndescription: "Reviewing a built change set: an index .*"\n---\n\z'
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
 cp stdout review-body.txt
-exec rhiza guide review
+rhiza guide review
 cmp stdout review-body.txt
 grep 'rhiza guide check-compliance' $HOME/.claude/skills/rhiza/skills/rhiza-review/SKILL.md
 
@@ -83,47 +83,47 @@ grep 'rhiza guide check-compliance' $HOME/.claude/skills/rhiza/skills/rhiza-revi
 # frontmatter and its topic's text.
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-compliance/SKILL.md
 cp stdout check-compliance-body.txt
-exec rhiza guide check-compliance
+rhiza guide check-compliance
 cmp stdout check-compliance-body.txt
 grep '^name: rhiza-check-compliance$' $HOME/.claude/skills/rhiza/skills/rhiza-check-compliance/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-model/SKILL.md
 cp stdout check-model-body.txt
-exec rhiza guide check-model
+rhiza guide check-model
 cmp stdout check-model-body.txt
 grep '^name: rhiza-check-model$' $HOME/.claude/skills/rhiza/skills/rhiza-check-model/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-qa/SKILL.md
 cp stdout check-qa-body.txt
-exec rhiza guide check-qa
+rhiza guide check-qa
 cmp stdout check-qa-body.txt
 grep '^name: rhiza-check-qa$' $HOME/.claude/skills/rhiza/skills/rhiza-check-qa/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-check-quality/SKILL.md
 cp stdout check-quality-body.txt
-exec rhiza guide check-quality
+rhiza guide check-quality
 cmp stdout check-quality-body.txt
 grep '^name: rhiza-check-quality$' $HOME/.claude/skills/rhiza/skills/rhiza-check-quality/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-ci-fix/SKILL.md
 cp stdout ci-fix-body.txt
-exec rhiza guide ci-fix
+rhiza guide ci-fix
 cmp stdout ci-fix-body.txt
 grep '^name: rhiza-ci-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-ci-fix/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-conflict-fix/SKILL.md
 cp stdout conflict-fix-body.txt
-exec rhiza guide conflict-fix
+rhiza guide conflict-fix
 cmp stdout conflict-fix-body.txt
 grep '^name: rhiza-conflict-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-conflict-fix/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-critic/SKILL.md
 cp stdout critic-body.txt
-exec rhiza guide critic
+rhiza guide critic
 cmp stdout critic-body.txt
 grep '^name: rhiza-critic$' $HOME/.claude/skills/rhiza/skills/rhiza-critic/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-fixer/SKILL.md
 cp stdout fixer-body.txt
-exec rhiza guide fixer
+rhiza guide fixer
 cmp stdout fixer-body.txt
 grep '^name: rhiza-fixer$' $HOME/.claude/skills/rhiza/skills/rhiza-fixer/SKILL.md
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/SKILL.md
 cp stdout gate-fix-body.txt
-exec rhiza guide gate-fix
+rhiza guide gate-fix
 cmp stdout gate-fix-body.txt
 grep '^name: rhiza-gate-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/SKILL.md
 
@@ -131,7 +131,7 @@ grep '^name: rhiza-gate-fix$' $HOME/.claude/skills/rhiza/skills/rhiza-gate-fix/S
 # rhiza guide plan's text.
 exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 cp stdout plan-body.txt
-exec rhiza guide plan
+rhiza guide plan
 cmp stdout plan-body.txt
 
 # A missing skill file makes the install out of date at the same version;
@@ -139,13 +139,13 @@ cmp stdout plan-body.txt
 rm $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 mkdir repo
 cd repo
-exec rhiza init
-exec rhiza status
+rhiza init
+rhiza status
 stdout '^- Guide \(user\): dev in .* \(out of date\)$'
 stdout '^next: rhiza guide install --agent claude$'
-exec rhiza guide install --agent claude
+rhiza guide install --agent claude
 cmpenv stdout $WORK/restored.txt
-exec rhiza status
+rhiza status
 stdout '^- Guide \(user\): dev in .* \(current\)$'
 ! stdout 'next: rhiza guide install'
 cd $WORK
@@ -153,25 +153,25 @@ exec sed 1,5d $HOME/.claude/skills/rhiza/skills/rhiza-plan/SKILL.md
 cmp stdout plan-body.txt
 
 # A second install writes nothing.
-exec rhiza guide install --agent claude
+rhiza guide install --agent claude
 cmpenv stdout again.txt
 
 # --json and api call print the same bytes.
-exec rhiza guide install --agent claude --json
+rhiza guide install --agent claude --json
 cp stdout install.json
-exec rhiza api call guide.install '{"agent":"claude"}'
+rhiza api call guide.install '{"agent":"claude"}'
 cmp stdout install.json
 stdout '"written": \[\]'
 
 # A plugin.json from another version is rewritten; the other files are not.
 exec sh -c 'sed "s/\"dev\"/\"v0.0.1\"/" $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json > p.tmp && mv p.tmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json'
 grep v0.0.1 $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json
-exec rhiza guide install --agent claude
+rhiza guide install --agent claude
 cmpenv stdout version.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
 
 # guide install writes no log entry: --dry-run is a usage error, exit 2.
-! exec rhiza guide install --agent claude --dry-run
+! rhiza guide install --agent claude --dry-run
 stderr 'does not take --dry-run'
 stderr '^next: rhiza guide install --agent claude$'
 exec sh -c 'rhiza guide install --agent claude --dry-run 2>/dev/null; echo exit $?'
@@ -180,7 +180,7 @@ stdout '^exit 2$'
 # --agent is required and takes only claude: exit 2.
 exec sh -c 'rhiza guide install 2>/dev/null; echo exit $?'
 stdout '^exit 2$'
-! exec rhiza guide install --agent agents-md
+! rhiza guide install --agent agents-md
 stderr '^rhiza: unknown agent "agents-md": want claude$'
 exec sh -c 'rhiza guide install --agent agents-md 2>/dev/null; echo exit $?'
 stdout '^exit 2$'
@@ -191,7 +191,7 @@ rm $HOME/.claude/skills/rhiza
 mkdir $HOME/.claude/skills/rhiza
 cp mine.md $HOME/.claude/skills/rhiza/SKILL.md
 cp extra.txt $HOME/.claude/skills/rhiza/extra.txt
-! exec rhiza guide install --agent claude
+! rhiza guide install --agent claude
 stderr 'exists and was not written by rhiza guide install$'
 stderr '^next: rhiza guide install --agent claude --force$'
 exec sh -c 'rhiza guide install --agent claude 2>/dev/null; echo exit $?'
@@ -207,14 +207,14 @@ stdout '^exit 3$'
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json foreign-plugin.json
 
 # --force writes the twenty-three files and keeps the others.
-exec rhiza guide install --agent claude --force
+rhiza guide install --agent claude --force
 cmpenv stdout first.txt
 cmp $HOME/.claude/skills/rhiza/.claude-plugin/plugin.json plugin.json
 cmp $HOME/.claude/skills/rhiza/extra.txt extra.txt
 grep '^# Rhiza$' $HOME/.claude/skills/rhiza/SKILL.md
 
 # --project outside a repository is not_found, exit 4.
-! exec rhiza guide install --agent claude --project
+! rhiza guide install --agent claude --project
 stderr '^rhiza: no Rhiza repository in '
 stderr '^next: rhiza init$'
 exec sh -c 'rhiza guide install --agent claude --project 2>/dev/null; echo exit $?'
@@ -224,8 +224,8 @@ stdout '^exit 4$'
 # --project inside a repository writes .claude/skills/rhiza there.
 mkdir proj
 cd proj
-exec rhiza init
-exec rhiza guide install --agent claude --project
+rhiza init
+rhiza guide install --agent claude --project
 stdout '^Installed the Rhiza guide in .*/proj/\.claude/skills/rhiza \(26 written, 0 unchanged\)\.$'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 cmp .claude/skills/rhiza/hooks/hooks.json $WORK/hooks.json
@@ -242,13 +242,13 @@ fold-ok
 # With no plugin.json, files holding this rhiza's own bytes are a racing
 # install's partial write, not foreign: the install writes plugin.json back.
 exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json'
-exec rhiza guide install --agent claude --project
+rhiza guide install --agent claude --project
 stdout '\(1 written, 25 unchanged\)'
 cmp .claude/skills/rhiza/.claude-plugin/plugin.json $WORK/plugin.json
 
 # A project conflict's next keeps --project.
 exec sh -c 'rm .claude/skills/rhiza/.claude-plugin/plugin.json && echo mine > .claude/skills/rhiza/SKILL.md'
-! exec rhiza guide install --agent claude --project
+! rhiza guide install --agent claude --project
 stderr '^next: rhiza guide install --agent claude --force --project$'
 
 -- first.txt --

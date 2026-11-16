@@ -343,7 +343,7 @@ func typePointer(ctx *Ctx, st *session.Store, sid, line string, timeout time.Dur
 	if ctx.Exec == nil {
 		return 0, Errorf("cannot send a message: this caller runs no programs")
 	}
-	clock := runClock
+	clock := clockOf(ctx)
 	w := run.BeginWait(clock)
 	last, told := "", ""
 	for {

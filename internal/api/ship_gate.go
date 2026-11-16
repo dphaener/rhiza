@@ -15,12 +15,12 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/envexec"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -203,10 +203,9 @@ func shipLocalGate(ctx *Ctx, t *shipTarget) (ShipGateResponse, error) {
 	}
 	c, cancel := context.WithTimeout(context.Background(), shipGateTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(c, "sh", "-c", gate)
-	cmd.Dir = t.dir()
 	base, _ := gitAt(ctx, t.dir(), "merge-base", "HEAD", "origin/"+shipMain)
-	cmd.Env = append(os.Environ(), "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base))
+	cmd := envexec.Command(c, childEnv(ctx, "RHIZA_GATE_HEAD="+head, "RHIZA_GATE_BASE="+strings.TrimSpace(base)), ctx.Wd, "sh", "-c", gate)
+	cmd.Dir = t.dir()
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	cmd.WaitDelay = time.Second
@@ -268,7 +267,7 @@ func shipWriteGateLog(ctx *Ctx, t *shipTarget, out []byte) string {
 		return ""
 	}
 	if id := strings.TrimSpace(ctxGetenv(ctx)(envRun)); id != "" {
-		if j, err := run.NewStore(run.Dir(t.common)).Read(id); err == nil {
+		if j, err := runStore(ctx, t.common).Read(id); err == nil {
 			id = j.ID
 		}
 		if strings.ContainsAny(id, `/\`) || strings.HasPrefix(id, ".") {

@@ -3,18 +3,18 @@
 mkdir origin
 cd origin
 exec git init -q
-exec rhiza init
+rhiza init
 exists .rhiza/log/.gitkeep
-exec rhiza render
+rhiza render
 exec git add -A
 exec git commit -qm init
-exec rhiza check
+rhiza check
 stdout '^ok$'
 
 cd $WORK
 exec git clone -q origin clone
 cd clone
 exists .rhiza/log/.gitkeep
-exec rhiza check
+rhiza check
 stdout '^ok$'
 ! stdout fail

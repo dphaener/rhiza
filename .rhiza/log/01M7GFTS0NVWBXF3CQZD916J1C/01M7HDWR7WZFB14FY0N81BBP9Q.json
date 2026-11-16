@@ -1,0 +1,40 @@
+{
+  "actor": "01M7HDRRW1EPR4GB1FKW3PPMNV",
+  "after": [
+    "01M7H2CFBV1X46VXRDN7ZX8J7H"
+  ],
+  "at": "2026-11-16T05:39:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at 81a527fed, run under a capped systemd scope with RHIZA_/SHIP_/REX_ unset. Re-ran the Checks block: go test -p 2 -trimpath -count=1 ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|TUI|RunWorkingDir)' exit 0 (TestRunWorkingDir, TestCtxFromEnv, TestNewCtxHome, TestTUIAppHeaders, TestTUISettingsScopes pass); -run 'TestScripts/tui-' exit 0 (all 7 tui- scripts pass); go vet ./cmd/rhiza exit 0; -skip 'TestScripts|Budget' exit 0; rhiza ship generate and rhiza render exit 0 with a clean tree. TestRunWorkingDir chdirs outside any root, runs init/status/show against a scratch repo through run()'s wd, checks errors land in the given stderr buffer, and checks a missing wd exits 1 with 'working directory'. Diff read: no os.Getwd, os.Args[0], os.Chdir or os.Executable left on run()'s path (only in main() and selfPath, which main calls); ctx.Stderr, Terminal and Rex use run()'s stderr; the TUI apps keep their folder in an atomic pointer and pass the switcher a Chdir that moves it; openModal takes exe and cwd. Env handling, flags and output are unchanged. The only os.Stderr left is startProgram's terminal handover, which the statement does not cover. A built binary run from a deleted cwd exits 1 with 'working directory: unknown'."
+        },
+        "handle": "cli-no-process-globals-verified",
+        "id": "01M7HDWR50BDXQR8S75X1ZVXEG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HDWR50BDXQR8S75T1ZJCNJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HDWR50BDXQR8S75T1ZJCNJ",
+        "id": "01M7HDWR6DPYXPSMR5CKBQQXYA",
+        "link": "01M7HDWR6DPYXPSMR5CHDC28AJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HDWR7WZFB14FY0N81BBP9Q",
+  "type": "ops",
+  "v": 1
+}

@@ -87,7 +87,7 @@ func prePushCheckHead(ctx *Ctx, dir string) (string, error) {
 
 // prePushCheckAt runs the check on head, the commit of dir's checkout.
 func prePushCheckAt(ctx *Ctx, dir, head string) error {
-	tmp, err := os.MkdirTemp("", "rhiza-prepush-*")
+	tmp, err := os.MkdirTemp(tempDir(ctx), "rhiza-prepush-*")
 	if err != nil {
 		return Errorf("pre-push check: %v", err)
 	}
@@ -143,17 +143,17 @@ func journalPrePush(ctx *Ctx, dir, head string, checkErr error) {
 	if err != nil {
 		return
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	id := strings.TrimSpace(ctxGetenv(ctx)(envRun))
 	if id == "" {
 		js, err := rs.List()
 		if err != nil {
 			return
 		}
-		abs, _ := filepath.Abs(dir)
+		abs, _ := ctx.abs(dir)
 		for _, j := range js {
 			st := j.State()
-			if w, _ := filepath.Abs(st.Worktree); !st.Ended && st.Worktree != "" && w == abs {
+			if w, _ := ctx.abs(st.Worktree); !st.Ended && st.Worktree != "" && w == abs {
 				id, e.Step = j.ID, st.Current
 			}
 		}
@@ -238,19 +238,19 @@ func prePushRhizaCheck(ctx *Ctx, tmp string) (CheckResponse, []string, error) {
 // build's check --json there.
 func prePushHeadCheck(ctx *Ctx, tmp, cmd string) (CheckResponse, []string, error) {
 	var rep CheckResponse
-	bdir, err := os.MkdirTemp("", "rhiza-prepush-bin-*")
+	bdir, err := os.MkdirTemp(tempDir(ctx), "rhiza-prepush-bin-*")
 	if err != nil {
 		return rep, nil, Errorf("pre-push check: %v", err)
 	}
 	defer os.RemoveAll(bdir)
 	bin := filepath.Join(bdir, "rhiza")
-	env := append(os.Environ(), envShipRhiza+"="+bin)
+	env := childEnv(ctx, envShipRhiza+"="+bin)
 	if out, err := ctx.Exec("sh", []string{"-c", cmd}, tmp, env); err != nil {
 		return rep, prePushTail([]string{fmt.Sprintf("rhiza check: could not build rhiza from the head with %s (%s): %v", envShipBuild, cmd, err)}, out), nil
 	}
 	// Without SHIP_HEAD_RHIZA (headChildEnv): the head's check checks
 	// itself, never execs the run's head build.
-	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, headChildEnv())
+	out, err := ctx.Exec(bin, []string{"check", "--json", "--skip-reference", "--branch-newer-format"}, tmp, headChildEnv(ctx))
 	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
 		if err == nil {
 			err = jerr

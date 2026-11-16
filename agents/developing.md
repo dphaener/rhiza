@@ -18,7 +18,9 @@ Scenarios live in `cmd/rhiza/testdata/script/*.txtar`.
   TOML) must use relative paths.
 - Fake binaries (rex, claude) are archive files such as `-- bin/rex --`
   starting `#!/bin/sh`, then `chmod 755` and `env PATH=$WORK/bin:$PATH`.
-  The in-process `rhiza` stays callable from them.
+  A bare `rhiza` line runs in-process; an `exec rhiza` line, or a fake
+  binary that calls rhiza, starts a process, allowed only for a script on
+  `processScripts` in `cmd/rhiza/main_test.go` with its reason.
 - When a script sets `REX_BLOCK`, the fake rex must answer `rex events`
   (exit 0, no output).
 - An agent step polls every 10s by default: set `interval = "50ms"` on the

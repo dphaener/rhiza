@@ -38,5 +38,5 @@ func removeWorktreeIndex(ctx *Ctx, path string) {
 	if ctx.DryRun || path == "" {
 		return
 	}
-	_ = index.Remove(path)
+	_ = index.Remove(path, ctx.Getenv)
 }

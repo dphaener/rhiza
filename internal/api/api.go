@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -111,6 +112,14 @@ type Ctx struct {
 	// that needs it finds nothing there, and session.run captures no
 	// answers when Home is empty too.
 	Getenv func(key string) string
+	// Environ is the caller's environment as a list in os.Environ() form;
+	// the CLI derives Getenv from it. Every child an operation starts gets
+	// it (childEnv), with the operation's own additions appended, so a
+	// caller running in-process for another environment (a test script)
+	// hands its children that environment, not the process's. Nil, for a
+	// programmatic caller that gives none, is no environment: never the
+	// process's.
+	Environ []string
 	// IndexPath is the index database file for Root, given by the caller,
 	// since nothing here reads the environment or the user cache dir (the
 	// CLI uses index.DefaultPath). Empty is an error from any read.
@@ -134,7 +143,14 @@ type Ctx struct {
 	DryRun bool
 	// Now is the clock.
 	Now func() time.Time
-	// Sleep waits for d; nil is runClock's Sleep (time.Sleep unless
+	// Clock is the clock a run's waits go by (run.start and run.resume
+	// polls, the spawn poll, session waits, the default Sleep and ship
+	// deploy), chosen when the Ctx is made: the CLI gives
+	// run.ClockFromEnv(Getenv), so RHIZA_TEST_CLOCK_SCALE in the caller's
+	// environment, not the process's, puts it on the scaled clock. Nil is
+	// RealClock. A test that sets the package's runClock overrides it.
+	Clock run.Clock
+	// Sleep waits for d; nil is Clock's Sleep (time.Sleep unless
 	// RHIZA_TEST_CLOCK_SCALE puts it on the scaled clock). Tests inject it
 	// so retries with backoff do not wait.
 	Sleep func(d time.Duration)
@@ -177,7 +193,8 @@ type Ctx struct {
 	// the program's trimmed standard error. Nil means no programs can be
 	// run: the operations that need one, such as session.start, fail.
 	Exec func(name string, args []string, dir string, env []string) ([]byte, error)
-	// LookPath finds a program on the caller's PATH, as exec.LookPath does.
+	// LookPath finds a program as exec.LookPath does, but on the PATH of
+	// Environ against Wd (envexec.LookPath), never the process's.
 	// Nil means every program is missing: daemon.install finds no systemd.
 	LookPath func(file string) (string, error)
 	// Self is the absolute path of the running rhiza, for commands that

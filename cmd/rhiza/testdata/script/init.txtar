@@ -21,38 +21,38 @@ cmp .rhiza/.gitignore $WORK/want.gitignore
 fold-ok
 
 # A second init is a conflict: exit 3, with a next command.
-! exec rhiza init
+! rhiza init
 stderr '^rhiza: a Rhiza repository already exists in '
 stderr '^next: rhiza change ls$'
 ! stdout .
-! exec rhiza init --json
+! rhiza init --json
 stdout '"code": "conflict"'
 ! stderr .
 
 # So is init in a folder below a repository: the root is found upwards.
 mkdir sub
 cd sub
-! exec rhiza init --json
+! rhiza init --json
 stdout '"code": "conflict"'
 ! exists .rhiza
 
 # init writes no log entry, so --dry-run is a usage error and does nothing.
 mkdir $WORK/fresh
 cd $WORK/fresh
-! exec rhiza init --dry-run --json
+! rhiza init --dry-run --json
 stdout '"code": "usage"'
 ! exists .rhiza
 
 # An unknown --agent is a usage error naming the registered adapters, and
 # creates nothing.
-! exec rhiza init --agent nope
+! rhiza init --agent nope
 stderr '^rhiza: --agent "nope" is not a registered agent adapter: want one of claude-code$'
 stderr '^next: rhiza init --agent <agent>$'
 ! exists .rhiza
 
 # --json gives the repo ID, the absolute root and the agent, here outside
 # a git repository: no setting is written.
-exec rhiza init --json --agent claude-code
+rhiza init --json --agent claude-code
 stdout '"repo": "[0-9A-Z]{26}"'
 stdout '"root": "/.*fresh"'
 stdout '"agent": "claude-code"'
@@ -62,14 +62,14 @@ fold-ok
 # Outside a git repository the text says how to set the agent later.
 mkdir $WORK/nogit
 cd $WORK/nogit
-exec rhiza init
+rhiza init
 stdout '^Agent: claude-code, not written: this is not a git repository\. Once it is one, run rhiza daemon set rhiza.project.agent claude-code\.$'
 
 # Inside one, --agent is written and --json says so.
 mkdir $WORK/flag
 cd $WORK/flag
 exec git init -q
-exec rhiza init --json --agent claude-code
+rhiza init --json --agent claude-code
 stdout '"agent": "claude-code"'
 stdout '"saved": true'
 exec git config --get rhiza.project.agent

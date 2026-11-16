@@ -1,0 +1,15 @@
+{
+  "actor": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "after": [],
+  "at": "2026-11-16T10:22:12Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ed692370 for session ed692370-a29a-47dc-aaaa-01a1e3e0e5ba",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7HY1WS14BCDTCTE6ZZE3FZS",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HY1WS14BCDTCTE73M2Y3GK",
+  "type": "open",
+  "v": 1
+}

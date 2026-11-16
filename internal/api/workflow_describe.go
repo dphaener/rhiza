@@ -150,7 +150,7 @@ func stepView(s workflow.Step) WorkflowStepView {
 }
 
 // lowerLayers lists the layers of a bare name below the one that won.
-func lowerLayers(root, name, winner string) []WorkflowLayer {
+func lowerLayers(root, name, winner string, getenv func(string) string) []WorkflowLayer {
 	out := []WorkflowLayer{}
 	passed := false
 	check := func(layer, p string) {
@@ -165,7 +165,7 @@ func lowerLayers(root, name, winner string) []WorkflowLayer {
 			out = append(out, WorkflowLayer{Layer: layer, Path: p})
 		}
 	}
-	if d := personalWorkflowsDir(); d != "" {
+	if d := personalWorkflowsDir(getenv); d != "" {
 		check(layerPersonal, filepath.Join(d, name+".toml"))
 	}
 	check(layerRepo, filepath.Join(root, filepath.FromSlash(workflowsDir), name+".toml"))
@@ -181,7 +181,7 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 	if ref == "" {
 		ref = defaultWorkflow
 	}
-	path, def, _, err := resolveWorkflow(ctx.Root, ref)
+	path, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, ref, ctx.Getenv)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func runWorkflowDescribe(ctx *Ctx, req any) (any, error) {
 		out.Layer = layerPersonal
 	}
 	if out.Layer != "file" {
-		out.Shadows = lowerLayers(ctx.Root, ref, path)
+		out.Shadows = lowerLayers(ctx.Root, ref, path, ctx.Getenv)
 	}
 	for _, n := range def.Order {
 		out.Steps = append(out.Steps, stepView(def.Steps[n]))

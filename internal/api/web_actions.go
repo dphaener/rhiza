@@ -7,7 +7,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/web"
 )
 
@@ -134,7 +133,7 @@ func gateUnanswered(ctx *Ctx, ref string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	j, err := readRun(run.NewStore(run.Dir(common)), ref)
+	j, err := readRun(runStore(ctx, common), ref)
 	if err != nil {
 		return nil, err
 	}

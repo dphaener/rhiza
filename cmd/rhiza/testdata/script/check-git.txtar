@@ -6,23 +6,23 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add decision c1 --field statement=x --record
-exec rhiza render
+rhiza init
+rhiza add decision c1 --field statement=x --record
+rhiza render
 exec git add -A
 exec git commit -qm one
 
 # Entries added on a branch are fine, committed or not.
 exec git checkout -q -b feature
-exec rhiza add decision c2 --record
-exec rhiza render
-exec rhiza check
+rhiza add decision c2 --record
+rhiza render
+rhiza check
 stdout '^ok$'
 stdout '^base: [0-9a-f]{40} \(merge-base of HEAD and main\)$'
 ! stdout 'append-only'
 exec git add -A
 exec git commit -qm two
-exec rhiza check --json
+rhiza check --json
 stdout '"base": "[0-9a-f]{40}"'
 stdout '"merge_base_of": "main"'
 stdout '"findings": \[\]'
@@ -33,7 +33,7 @@ stdout '"ok": true'
 # Entries are written read-only: a hand edit makes the file writable first.
 chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-! exec rhiza check
+! rhiza check
 stdout '^failed$'
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified since the base; entries may only be added$'
 stdout '^  next: git checkout [0-9a-f]{40} -- \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
@@ -43,65 +43,65 @@ stdout '^exit 1$'
 # first and the render amended into the same commit.
 exec git add -A
 exec git commit -qm edit
-exec rhiza render
+rhiza render
 exec git add -A
 exec git commit -q --amend --no-edit
-! exec rhiza check
+! rhiza check
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified'
 
 # Against the commit that made the edit, nothing has changed since.
-exec rhiza check --base HEAD
+rhiza check --base HEAD
 stdout '^ok$'
 stdout '^base: HEAD$'
 # Against the one before, the edit shows, with --base in its next.
-! exec rhiza check --base HEAD~1
+! rhiza check --base HEAD~1
 stdout '^base: HEAD~1$'
 stdout '^  next: git checkout HEAD~1 -- \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
 
 # An unknown base is a usage error, exit 2.
-! exec rhiza check --base nope
+! rhiza check --base nope
 stderr '^rhiza: unknown base "nope": not a commit in this git repository$'
 exec sh -c 'rhiza check --base nope 2>/dev/null; echo exit $?'
 stdout '^exit 2$'
-! exec rhiza check --base nope --json
+! rhiza check --base nope --json
 stdout '"code": "usage"'
 
 # Restored, it passes again. The restore is committed first: render refuses
 # an entry that differs from HEAD.
 exec git checkout main -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 exec git commit -qm restore
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 
 # A deleted entry fails.
 rm .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-! exec rhiza check
+! rhiza check
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B deleted since the base; entries may only be added$'
 exec git checkout main -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 
 # Two branches each add entries (one with another seed, so their IDs
 # differ); their merge, rendered, is ok.
 exec git checkout -q -f main
 exec git checkout -q -b a
-exec rhiza add decision ca --record
+rhiza add decision ca --record
 exec git add .rhiza/log
 exec git commit -qm a
 exec git checkout -q main
 exec git checkout -q -b b
 env RHIZA_TEST_SEED=7
-exec rhiza add decision cb --record
+rhiza add decision cb --record
 env RHIZA_TEST_SEED=1
 exec git add .rhiza/log
 exec git commit -qm b
 exec git checkout -q a
 exec git merge -q --no-edit b
-exec rhiza render
+rhiza render
 stdout 'wrote \.rhiza/rendered/decision/cb\.md'
-exec rhiza check
+rhiza check
 stdout '^ok$'
 stdout '^base: [0-9a-f]{40} \(merge-base of HEAD and main\)$'
 fold-ok
@@ -110,9 +110,9 @@ fold-ok
 mkdir $WORK/fresh
 cd $WORK/fresh
 exec git init -q
-exec rhiza init
-exec rhiza render
-exec rhiza check
+rhiza init
+rhiza render
+rhiza check
 stdout '^ok$'
 stdout '^append-only: skipped \(no base: none of origin/HEAD, origin/main, main resolves\)$'
 stdout '^warn append-only: append-only check skipped: no base: none of origin/HEAD, origin/main, main resolves$'
@@ -123,17 +123,17 @@ mkdir $WORK/top/sub
 cd $WORK/top
 exec git init -q
 cd sub
-exec rhiza init
-exec rhiza add decision c1 --field statement=x --record
-exec rhiza render
+rhiza init
+rhiza add decision c1 --field statement=x --record
+rhiza render
 exec git add -A
 exec git commit -qm one
-exec rhiza check
+rhiza check
 stdout '^ok$'
 # Entries are written read-only: a hand edit makes the file writable first.
 chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-! exec rhiza check --base HEAD
+! rhiza check --base HEAD
 stdout '^fail append-only \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified'
 stdout '^  next: git checkout HEAD -- \.rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B\.json$'
 

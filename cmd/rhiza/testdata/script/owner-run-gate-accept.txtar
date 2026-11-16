@@ -10,20 +10,20 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 
 # --- accept auto, clean review: both accepted under rule autonomy.
-exec rhiza change new 'Plan A' --kind record --title 'Plan A' --json
-exec rhiza add intent want-a
+rhiza change new 'Plan A' --kind record --title 'Plan A' --json
+rhiza add intent want-a
 exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runa'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runa) rhiza run findings $WORK/clean.json'
-exec rhiza land
+rhiza land
 exec sh -c 'rhiza change new "Serve A one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a1'
 exec sh -c 'rhiza link $(cat $WORK/a1) serves want-a'
 exec sh -c 'rhiza change new "Serve A two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/a2'
@@ -47,13 +47,13 @@ stdout '^2$'
 
 # --- accept owner: the same gate leaves both proposed.
 exec git config rhiza.autonomy.accept owner
-exec rhiza change new 'Plan B' --kind record --title 'Plan B' --json
-exec rhiza add intent want-b
+rhiza change new 'Plan B' --kind record --title 'Plan B' --json
+rhiza add intent want-b
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runb'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run findings $WORK/clean.json'
-exec rhiza land
+rhiza land
 exec sh -c 'rhiza change new "Serve B one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/b1'
 exec sh -c 'rhiza link $(cat $WORK/b1) serves want-b'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runb) rhiza run gate --json; echo exit=$?'
@@ -66,17 +66,17 @@ stdout '^0$'
 exec git config --unset rhiza.autonomy.accept
 
 # --- accept auto, but a confirmed finding with no question left: proposed.
-exec rhiza change new 'Plan C' --kind record --title 'Plan C' --json
-exec rhiza add intent want-c
-exec rhiza add decision dec-c --field 'statement=Use C'
+rhiza change new 'Plan C' --kind record --title 'Plan C' --json
+rhiza add intent want-c
+rhiza add decision dec-c --field 'statement=Use C'
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/before'
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/runc'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run findings $WORK/findings.json'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run verdict $WORK/verdict.json'
-exec rhiza land
+rhiza land
 exec sh -c 'rhiza change new "Serve C one" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/c1'
 exec sh -c 'rhiza link $(cat $WORK/c1) serves want-c'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runc) rhiza run gate --json; echo exit=$?'

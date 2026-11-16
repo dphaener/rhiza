@@ -50,8 +50,7 @@ func TestTUIAppHeaders(t *testing.T) {
 	for _, p := range places {
 		for _, app := range apps {
 			t.Run(p.name+"/"+app, func(t *testing.T) {
-				t.Chdir(filepath.Join(root, p.dir))
-				s, err := appSwitcher(app, newTUIModels(globals{}, getenv))
+				s, err := appSwitcher(app, newTUIModels(globals{wd: filepath.Join(root, p.dir)}, getenv))
 				if err != nil {
 					t.Fatalf("open: %v", err)
 				}
@@ -93,8 +92,7 @@ func TestTUISettingsScopes(t *testing.T) {
 			t.Fatalf("git init: %v\n%s", err, out)
 		}
 	}
-	t.Chdir(filepath.Join(root, "beta"))
-	apps := newTUIModels(globals{}, func(string) string { return "" })
+	apps := newTUIModels(globals{wd: filepath.Join(root, "beta"), environ: os.Environ()}, func(string) string { return "" })
 
 	// Ship defaults to auto: toggle it to owner in beta.
 	am := apps.autonomy()

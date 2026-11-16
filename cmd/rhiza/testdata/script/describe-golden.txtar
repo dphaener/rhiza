@@ -8,7 +8,7 @@
 # or by hand: go build -o $TMPDIR/rhiza-x ./cmd/rhiza &&
 # $TMPDIR/rhiza-x describe --json, pasted below the golden's header.
 
-exec rhiza describe --json
+rhiza describe --json
 cmp stdout describe.golden.json
 ! stderr .
 

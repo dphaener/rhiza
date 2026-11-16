@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"slices"
 	"strconv"
 	"strings"
@@ -17,6 +18,18 @@ type globals struct {
 	// over the environment even when empty.
 	change, actor, forRef       string
 	changeSet, actorSet, forSet bool
+	// wd, self, stderr and environ are not flags: run() sets them from
+	// its parameters. wd is the working directory commands resolve the
+	// repo from, self the absolute path of this rhiza binary (empty when
+	// unknown), stderr where questions and Rex status reports go, and
+	// environ the environment, in os.Environ() form, that commands read
+	// and every child they start gets.
+	wd, self string
+	stderr   io.Writer
+	environ  []string
+	// own is what run()'s caller passed for api.Ctx.Adopt and Reap; zero
+	// (both nil) for an in-process call.
+	own ownChildren
 }
 
 // parseGlobals takes the global flags out of args, wherever they are, and

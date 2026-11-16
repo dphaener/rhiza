@@ -682,12 +682,12 @@ func (r *stepRunner) commitOnHead(paths []string, msg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tmp, err := os.MkdirTemp("", "rhiza-index-")
+	tmp, err := os.MkdirTemp(tempDir(r.ctx), "rhiza-index-")
 	if err != nil {
 		return "", fmt.Errorf("temporary index: %v", err)
 	}
 	defer os.RemoveAll(tmp)
-	env := append(os.Environ(), "GIT_INDEX_FILE="+filepath.Join(tmp, "index"))
+	env := childEnv(r.ctx, "GIT_INDEX_FILE="+filepath.Join(tmp, "index"))
 	git := func(args ...string) (string, error) {
 		out, err := r.ctx.Exec("git", append([]string{"-C", r.worktree}, args...), r.worktree, env)
 		return strings.TrimSpace(string(out)), err

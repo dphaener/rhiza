@@ -86,7 +86,8 @@ func runShipDeploy(ctx *Ctx, _ any) (any, error) {
 	resp := ShipDeployResponse{URL: url, Timeout: timeout.String()}
 	// The deadline goes by the clock the loop sleeps on, so a scaled
 	// clock keeps the poll count of RealClock.
-	w := run.BeginWait(runClock)
+	clock := clockOf(ctx)
+	w := run.BeginWait(clock)
 	for {
 		resp.Polls++
 		resp.Last = deployProbe(url)
@@ -100,7 +101,7 @@ func runShipDeploy(ctx *Ctx, _ any) (any, error) {
 		if w.Elapsed()+interval >= timeout {
 			return resp, nil
 		}
-		runClock.Sleep(interval)
+		clock.Sleep(interval)
 	}
 }
 

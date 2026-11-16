@@ -3,7 +3,7 @@
 # a folder of its own, since a repository's folders all act on it.
 
 # Outside a repository ci install is not_found, exit 4.
-! exec rhiza ci install
+! rhiza ci install
 stderr '^rhiza: no Rhiza repository in '
 stderr '^next: rhiza init$'
 exec sh -c 'rhiza ci install 2>/dev/null; echo exit $?'
@@ -14,18 +14,18 @@ stdout '^exit 4$'
 # the workflow installs @latest.
 mkdir fresh
 cd fresh
-exec rhiza init
-exec rhiza ci install
+rhiza init
+rhiza ci install
 cmp stdout $WORK/first.txt
 cmp .github/workflows/rhiza.yml $WORK/rhiza.yml
 cmp .gitattributes $WORK/fresh.gitattributes
 
 # A second install writes nothing.
-exec rhiza ci install
+rhiza ci install
 cmp stdout $WORK/again.txt
 
 # ci install writes no log entry: --dry-run is a usage error, exit 2.
-! exec rhiza ci install --dry-run
+! rhiza ci install --dry-run
 stderr 'does not take --dry-run'
 stderr '^next: rhiza ci install$'
 exec sh -c 'rhiza ci install --dry-run 2>/dev/null; echo exit $?'
@@ -34,7 +34,7 @@ stdout '^exit 2$'
 # A different workflow is a conflict, exit 3, and neither file is written.
 cp $WORK/other.yml .github/workflows/rhiza.yml
 cp $WORK/kept.gitattributes .gitattributes
-! exec rhiza ci install
+! rhiza ci install
 stderr '^rhiza: \.github/workflows/rhiza\.yml exists and differs from the template$'
 stderr '^next: rhiza ci install --force$'
 exec sh -c 'rhiza ci install 2>/dev/null; echo exit $?'
@@ -43,15 +43,15 @@ cmp .github/workflows/rhiza.yml $WORK/other.yml
 cmp .gitattributes $WORK/kept.gitattributes
 
 # --force overwrites it; the other .gitattributes lines are kept.
-exec rhiza ci install --force
+rhiza ci install --force
 cmp stdout $WORK/first.txt
 cmp .github/workflows/rhiza.yml $WORK/rhiza.yml
 cmp .gitattributes $WORK/kept-merged.gitattributes
 
 # --json and api call print the same bytes.
-exec rhiza ci install --json
+rhiza ci install --json
 cp stdout $WORK/install.json
-exec rhiza api call ci.install
+rhiza api call ci.install
 cmp stdout $WORK/install.json
 cmp stdout $WORK/again.json
 fold-ok
@@ -59,17 +59,17 @@ fold-ok
 # A .gitattributes without a final newline gets one before the line.
 mkdir $WORK/nonl
 cd $WORK/nonl
-exec rhiza init
+rhiza init
 exec sh -c 'printf "*.go diff=golang" > .gitattributes'
-exec rhiza ci install
+rhiza ci install
 cmp .gitattributes $WORK/kept-merged.gitattributes
 
 # A .gitattributes that already has the line is unchanged.
 mkdir $WORK/has
 cd $WORK/has
-exec rhiza init
+rhiza init
 cp $WORK/kept-merged.gitattributes .gitattributes
-exec rhiza ci install
+rhiza ci install
 cmp stdout $WORK/attrs-unchanged.txt
 cmp .gitattributes $WORK/kept-merged.gitattributes
 

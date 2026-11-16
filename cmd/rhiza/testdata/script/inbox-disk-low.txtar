@@ -5,19 +5,19 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza inbox
+rhiza inbox
 stdout '^Nothing waits on you$'
 
 mkdir .git/rhiza
 cp ../low.json .git/rhiza/daemon.state.json
-exec rhiza inbox --json
+rhiza inbox --json
 stdout -count=1 '"kind": "disk-low"'
 stdout '1.0 GiB free, under the minimum of 10.0 GiB'
-exec rhiza inbox
+rhiza inbox
 stdout -count=1 '^[0-9a-f]+ disk-low$'
 stdout '1.0 GiB free, under the minimum of 10.0 GiB'
 exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
@@ -25,7 +25,7 @@ exec sh -c 'rhiza inbox | head -1 | cut -d" " -f1 > ../id'
 stderr 'no tab to open'
 
 cp ../ok.json .git/rhiza/daemon.state.json
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'disk-low'
 stdout '"items": \[\]'
 

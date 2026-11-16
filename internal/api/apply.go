@@ -135,7 +135,11 @@ func readApplyFile(ctx *Ctx, file string) ([]byte, error) {
 		}
 		return data, nil
 	}
-	data, err := os.ReadFile(file)
+	path, err := ctx.abs(file)
+	if err != nil {
+		return nil, Usagef("apply: cannot read %s: %v", file, err)
+	}
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, Usagef("apply: cannot read %s: %v", file, errors.Unwrap(err))
 	}

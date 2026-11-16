@@ -65,7 +65,7 @@ func runRunTail(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	var j run.Journal
 	if ref := strings.TrimSpace(r.Run); ref != "" {
 		if j, err = readRun(rs, ref); err != nil {

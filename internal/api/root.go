@@ -59,7 +59,7 @@ func runRootInit(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("no directory to make a root")
 	}
 	if ctx.DryRun {
-		abs, err := filepath.Abs(dir)
+		abs, err := ctx.abs(dir)
 		if err != nil {
 			return nil, err
 		}

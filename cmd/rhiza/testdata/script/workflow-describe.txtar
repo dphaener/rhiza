@@ -5,11 +5,11 @@ env XDG_CONFIG_HOME=$WORK/xdg
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 fold-ok
 
 # a built-in
-exec rhiza workflow describe build
+rhiza workflow describe build
 stdout '^build \(builtin\) builtin:build$'
 stdout '^start '
 stdout 'on\.pass ->'
@@ -19,16 +19,16 @@ stdout '^  role verifier risky_paths \[\*_test\.go, \*\*/\*_test\.go, \*\*/testd
 ! stdout '^autonomy '
 
 # the same bytes as the api
-exec rhiza workflow describe build --json
+rhiza workflow describe build --json
 cp stdout build.json
-exec rhiza api call workflow.describe '{"workflow":"build"}'
+rhiza api call workflow.describe '{"workflow":"build"}'
 cmp stdout build.json
 stdout '"path": "builtin:build"'
 
 # a repo override that shadows the built-in
 mkdir .rhiza/workflows
 cp $WORK/w.toml .rhiza/workflows/build.toml
-exec rhiza workflow describe build
+rhiza workflow describe build
 stdout '^build \(repo\) .*/repo/.rhiza/workflows/build.toml$'
 stdout '^  shadows builtin builtin:build$'
 stdout '^start only$'
@@ -36,12 +36,12 @@ stdout '^only command$'
 
 # the layer and shadows follow the resolved name, not the file's name =
 cp $WORK/named.toml .rhiza/workflows/mine.toml
-exec rhiza workflow describe mine
+rhiza workflow describe mine
 stdout '^custom \(repo\) .*/repo/.rhiza/workflows/mine.toml$'
 ! stdout 'shadows'
 mkdir $WORK/xdg/rhiza/workflows
 cp $WORK/named.toml $WORK/xdg/rhiza/workflows/mine.toml
-exec rhiza workflow describe mine
+rhiza workflow describe mine
 stdout '^custom \(personal\) .*/xdg/rhiza/workflows/mine.toml$'
 stdout '^  shadows repo .*/repo/.rhiza/workflows/mine.toml$'
 rm $WORK/xdg/rhiza/workflows/mine.toml
@@ -49,59 +49,59 @@ rm .rhiza/workflows/mine.toml
 
 # a file that includes another workflow
 cp $WORK/inc.toml inc.toml
-exec rhiza workflow describe inc.toml
+rhiza workflow describe inc.toml
 stdout '^inc \(file\) '
 stdout '^includes build$'
 stdout '^build/only command$'
-exec rhiza workflow describe inc.toml --json
+rhiza workflow describe inc.toml --json
 cp stdout inc.json
-exec rhiza api call workflow.describe '{"workflow":"inc.toml"}'
+rhiza api call workflow.describe '{"workflow":"inc.toml"}'
 cmp stdout inc.json
 
 # a workflow's declared autonomy, by stage in order
 cp $WORK/aut.toml aut.toml
-exec rhiza workflow describe aut.toml
+rhiza workflow describe aut.toml
 stdout '^autonomy ship auto$'
 stdout '^autonomy signoff owner$'
 ! stdout '^autonomy (plan|accept) '
-exec rhiza workflow describe aut.toml --json
+rhiza workflow describe aut.toml --json
 stdout '"mode": "owner",\n\s*"stage": "signoff"'
-exec rhiza workflow describe build --json
+rhiza workflow describe build --json
 stdout '"autonomy": \[\]'
 
 # a workflow's cleanup steps, in order
 cp $WORK/clean.toml clean.toml
-exec rhiza workflow describe clean.toml
+rhiza workflow describe clean.toml
 stdout '^cleanup drop-db: dropdb x$'
 stdout '^cleanup cleanup-2: rm -rf tmp$'
-exec rhiza workflow describe clean.toml --json
+rhiza workflow describe clean.toml --json
 stdout '"name": "drop-db"'
-exec rhiza workflow describe build --json
+rhiza workflow describe build --json
 stdout '"cleanup": \[\]'
 
 # a workflow's own [env], in name order, {run_tmp} as written
 cp $WORK/env.toml env.toml
-exec rhiza workflow describe env.toml
+rhiza workflow describe env.toml
 stdout '^env A_DIR=\{run_tmp\}/a$'
 stdout '^env B_CMD=go build -o "\$A_DIR" \./x$'
-exec rhiza workflow describe env.toml --json
+rhiza workflow describe env.toml --json
 stdout '"name": "A_DIR",\n\s*"value": "\{run_tmp\}/a"'
-exec rhiza workflow describe build --json
+rhiza workflow describe build --json
 stdout '"env": \[\]'
 
 # a verifier's tiering fields
 cp $WORK/tier.toml tier.toml
-exec rhiza workflow describe tier.toml
+rhiza workflow describe tier.toml
 stdout '^  role verifier low_risk_models \[sonnet\]$'
 stdout '^  role verifier risky_paths \[\*\*/testdata/\*\*, \.github/\*\*\]$'
 ! stdout 'role builder low_risk'
-exec rhiza workflow describe tier.toml --json
+rhiza workflow describe tier.toml --json
 stdout '"low_risk_models": \[\s*"sonnet"\s*\]'
 stdout '"risky_paths": \['
 stdout '"low_risk_models": \[\]'
 
 # nothing was written: no runs, and the model still folds
-exec rhiza run ls
+rhiza run ls
 ! stdout 'inc|build'
 fold-ok
 

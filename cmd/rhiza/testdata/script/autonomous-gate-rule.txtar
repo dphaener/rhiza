@@ -11,49 +11,49 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Gate rule' --title 'Gate rule' --json
+rhiza change new 'Gate rule' --title 'Gate rule' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 
 # A plain run and an autonomous run, both stopped at the wait.
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
-exec rhiza change new 'Autonomous gate' --title 'Autonomous gate' --json
-exec rhiza run start --foreground --workflow hold --autonomous --no-wait
+rhiza change new 'Autonomous gate' --title 'Autonomous gate' --json
+rhiza run start --foreground --workflow hold --autonomous --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
-exec rhiza run status --json
+rhiza run status --json
 stdout '"autonomous": true'
-exec rhiza propose
+rhiza propose
 
 # No RHIZA_RUN: usage, nothing written.
-! exec rhiza accept --rule autonomous --json
+! rhiza accept --rule autonomous --json
 stdout '"code": "usage"'
 stdout '"message": "cannot accept under rule autonomous: it is only for a move made inside a run started with rhiza run start --autonomous, and RHIZA_RUN is not set"'
 stdout '"next": "rhiza describe accept"'
 exec sh -c 'rhiza accept --rule autonomous 2>/dev/null; echo exit=$?'
 stdout '^exit=2$'
-! exec rhiza reject --rule autonomous --json
+! rhiza reject --rule autonomous --json
 stdout '"code": "usage"'
 stdout '"next": "rhiza describe reject"'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "proposed"'
 
 # RHIZA_RUN naming no run, and a run that is not autonomous: usage, nothing written.
 env RHIZA_RUN=01NOSUCHRUN
-! exec rhiza accept --rule autonomous --json
+! rhiza accept --rule autonomous --json
 stdout '"code": "usage"'
 stdout 'names no run'
 env RHIZA_RUN=01M5PWGJC82P7YGZTWYFFZ0VJG
-! exec rhiza accept --rule autonomous --json
+! rhiza accept --rule autonomous --json
 stdout '"code": "usage"'
 stdout 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is not autonomous'
 exec sh -c 'rhiza accept --rule autonomous 2>/dev/null; echo exit=$?'
 stdout '^exit=2$'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "proposed"'
 ! grep '"type":"accepted"' $WORK/repo/.git/rhiza/runs/01M5PWGJC82P7YGZTWYFFZ0VJG.jsonl
 
@@ -62,7 +62,7 @@ exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | grep -v 01M5PWGJC82P7YGZTWYFF
 exec sh -c 'RHIZA_RUN=$(cat $WORK/autorun) rhiza accept --rule autonomous --json'
 stdout '"rule": "autonomous"'
 stdout '"reason": "autonomous run 01[0-9A-Z]{24}"'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "accepted"'
 stdout '"rule": "autonomous"'
 stdout '"reason": "autonomous run 01[0-9A-Z]{24}"'
@@ -76,17 +76,17 @@ stdout '^[1-9]$'
 exec sh -c 'echo > $WORK/go'
 exec sh -c 'rhiza run resume --foreground $(cat $WORK/autorun)'
 stdout 'succeeded$'
-exec rhiza change new 'Later' --json
-exec rhiza propose
+rhiza change new 'Later' --json
+rhiza propose
 exec sh -c 'RHIZA_RUN=$(cat $WORK/autorun) rhiza accept --rule autonomous --json; echo exit=$?'
 stdout '"code": "usage"'
 stdout 'is finished: it succeeded'
 stdout '^exit=2$'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "proposed"'
 
 # Other rules are unchanged.
-exec rhiza accept --rule owner --reason ok --json
+rhiza accept --rule owner --reason ok --json
 stdout '"rule": "owner"'
 stdout '"reason": "ok"'
 

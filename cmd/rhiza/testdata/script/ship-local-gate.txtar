@@ -5,28 +5,28 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.ship.localGate = "" \(default, project\)'
-exec rhiza daemon settings --json
+rhiza daemon settings --json
 stdout '"key": "rhiza.ship.localGate"'
 stdout '"source": "default"'
 
 # No gate set: skipped.
-exec rhiza ship gate
+rhiza ship gate
 stdout 'no gate is set'
 
-exec rhiza daemon set rhiza.ship.localGate 'make check'
-exec rhiza daemon settings
+rhiza daemon set rhiza.ship.localGate 'make check'
+rhiza daemon settings
 stdout 'rhiza.ship.localGate = make check \(git config, project\)'
-exec rhiza daemon settings --json
+rhiza daemon settings --json
 stdout '"value": "make check"'
 stdout '"source": "git config"'
 exec git config --get rhiza.ship.localGate
 stdout '^make check$'
 
-! exec rhiza daemon set rhiza.ship.localGate ''
+! rhiza daemon set rhiza.ship.localGate ''
 stderr 'must not be empty'
 
 fold-ok

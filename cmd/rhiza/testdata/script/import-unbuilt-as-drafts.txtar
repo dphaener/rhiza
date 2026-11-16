@@ -2,24 +2,24 @@
 # and one open question ends with one draft change set naming the Source and
 # one open question, and accepts nothing.
 
-exec rhiza guide import
+rhiza guide import
 stdout 'rhiza change new "<intent>" --source <source>'
 stdout 'Leave it in .draft.'
 stdout 'accepting it is the'
 stdout 'rhiza add question <handle>'
 
-exec rhiza init
-exec rhiza change new 'Record the plan' --kind record
-exec rhiza source add plan-md source.json --raw PLAN.md
-exec rhiza change new 'Build the export' --source plan-md
-exec rhiza add question export-format --field 'statement=Which format do exports take?'
-exec rhiza change show
+rhiza init
+rhiza change new 'Record the plan' --kind record
+rhiza source add plan-md source.json --raw PLAN.md
+rhiza change new 'Build the export' --source plan-md
+rhiza add question export-format --field 'statement=Which format do exports take?'
+rhiza change show
 stdout 'Sources: 01'
-exec rhiza change ls
+rhiza change ls
 stdout 'Build the export'
 stdout 'draft'
 ! stdout 'accepted'
-exec rhiza show export-format --json
+rhiza show export-format --json
 stdout 'Which format'
 fold-ok
 

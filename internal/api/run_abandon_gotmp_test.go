@@ -18,6 +18,7 @@ func TestAbandonRemovesRunGoTmp(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	f := newSessionFixture(t, "gotmp")
 	rs := run.NewStore(run.Dir(f.common))
+	rs.Getenv = f.ctx.Getenv
 	if err := rs.Create("run-1", run.Entry{Type: run.TypeStarted, At: time.Now()}); err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +26,7 @@ func TestAbandonRemovesRunGoTmp(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(tmp, "go-build123"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	other := run.TmpDir("run-2")
+	other := run.TmpDir("run-2", f.ctx.Getenv)
 	if err := os.MkdirAll(other, 0o755); err != nil {
 		t.Fatal(err)
 	}

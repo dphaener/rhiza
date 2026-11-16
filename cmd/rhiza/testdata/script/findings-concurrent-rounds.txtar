@@ -9,15 +9,15 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Concurrent rounds' --title 'Concurrent rounds'
-exec rhiza add capability cap-a --field 'statement=Does A'
-exec rhiza add capability cap-b --field 'statement=Does B'
+rhiza change new 'Concurrent rounds' --title 'Concurrent rounds'
+rhiza add capability cap-a --field 'statement=Does A'
+rhiza add capability cap-b --field 'statement=Does B'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'
 
 # Four plain findings calls at once, each logging its exit and its round.
@@ -34,7 +34,7 @@ exec sh -c 'grep -c "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).j
 stdout '^4$'
 exec sh -c 'grep "\"type\":\"findings\"" .git/rhiza/runs/$(cat $WORK/runid).jsonl | grep -o "\"id\":\"f[0-9]*\"" | tr "\n" " "'
 stdout '^"id":"f1" "id":"f2" "id":"f1" "id":"f2" "id":"f1" "id":"f2" "id":"f1" "id":"f2" $'
-exec rhiza run status
+rhiza run status
 stdout '^- Round 1: 2 findings, 0 confirmed$'
 stdout '^- Round 2: 2 findings, 0 confirmed$'
 stdout '^- Round 3: 2 findings, 0 confirmed$'

@@ -82,7 +82,7 @@ func runRunRecommend(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	j, err := readRun(rs, rec.Run)
 	if err != nil {
 		return nil, err

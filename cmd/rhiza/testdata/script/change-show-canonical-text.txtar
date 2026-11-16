@@ -5,30 +5,30 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza add capability other --field statement=Other --record
-exec rhiza change new Canon
-exec rhiza add capability mine --field 'statement=Sees @other with <branch>, a & b, x > y'
-exec rhiza render
-exec rhiza check
-exec rhiza change show
+rhiza add capability other --field statement=Other --record
+rhiza change new Canon
+rhiza add capability mine --field 'statement=Sees @other with <branch>, a & b, x > y'
+rhiza render
+rhiza check
+rhiza change show
 stdout '<branch>, a & b, x > y'
 ! stdout 'u003c'
-exec rhiza change show --json
+rhiza change show --json
 stdout '<branch>, a & b, x > y'
 ! stdout 'u003c'
-exec rhiza change diff
+rhiza change diff
 stdout '<branch>, a & b, x > y'
-exec rhiza show mine --json
+rhiza show mine --json
 stdout '<branch>, a & b, x > y'
 ! stdout 'u003c'
 
 exec sh -c 'rhiza change show --json | grep -m1 "\"id\"" | cut -d\" -f4 > cs.txt'
-exec rhiza propose
-exec rhiza accept
-exec rhiza land
+rhiza propose
+rhiza accept
+rhiza land
 exec sh -c 'rhiza change show $(cat cs.txt)'
 stdout '<branch>, a & b, x > y'

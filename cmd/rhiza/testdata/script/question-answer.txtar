@@ -7,85 +7,85 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza add capability store --record
-exec rhiza add capability cache --record
-exec rhiza add capability queue --record
-exec rhiza change new Accepted
-exec rhiza set store --field statement=Kept
-exec rhiza set cache --field statement=Cached
-exec rhiza set queue --field statement=Queued
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza add question store-q --field statement=Which-store --record
-exec rhiza link store-q blocks store --record
-exec rhiza add question cache-q --field statement=Which-cache --record
-exec rhiza link cache-q blocks cache --record
-exec rhiza add question queue-q --field statement=Which-queue --record
-exec rhiza link queue-q blocks queue --record
+rhiza add capability store --record
+rhiza add capability cache --record
+rhiza add capability queue --record
+rhiza change new Accepted
+rhiza set store --field statement=Kept
+rhiza set cache --field statement=Cached
+rhiza set queue --field statement=Queued
+rhiza propose
+rhiza accept --reason ok
+rhiza add question store-q --field statement=Which-store --record
+rhiza link store-q blocks store --record
+rhiza add question cache-q --field statement=Which-cache --record
+rhiza link cache-q blocks cache --record
+rhiza add question queue-q --field statement=Which-queue --record
+rhiza link queue-q blocks queue --record
 
-exec rhiza ready --json
+rhiza ready --json
 stdout 'store-q'
 
 # A dry run writes nothing.
-exec rhiza question answer store-q 'use sqlite' --dry-run --json
+rhiza question answer store-q 'use sqlite' --dry-run --json
 stdout '"dry_run": true'
-exec rhiza ready --json
+rhiza ready --json
 stdout 'store-q'
 
 # An unknown question is a usage error.
-! exec rhiza question answer nope 'whatever' --json
+! rhiza question answer nope 'whatever' --json
 stdout '"code": "usage"'
-! exec rhiza question answer store-q '   ' --json
+! rhiza question answer store-q '   ' --json
 
-exec rhiza question answer store-q 'use sqlite' --json
-exec rhiza question answer cache-q 'use redis' --json
-exec rhiza show answer-store-q --json
+rhiza question answer store-q 'use sqlite' --json
+rhiza question answer cache-q 'use redis' --json
+rhiza show answer-store-q --json
 stdout 'use sqlite'
-exec rhiza show answer-cache-q --json
+rhiza show answer-cache-q --json
 stdout 'use redis'
-exec rhiza ready --json
+rhiza ready --json
 ! stdout 'store-q'
 ! stdout 'cache-q'
 stdout 'queue-q'
 
 # --change answers into Accepted while another change set is current.
-exec rhiza change new Other
-exec rhiza question answer queue-q 'use nats' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
-exec rhiza show answer-queue-q --view what-if:01M5PWGT68X5XKB54XFQMHKA0A --json
+rhiza change new Other
+rhiza question answer queue-q 'use nats' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+rhiza show answer-queue-q --view what-if:01M5PWGT68X5XKB54XFQMHKA0A --json
 stdout 'use nats'
-exec rhiza change show --json
+rhiza change show --json
 ! stdout 'answer-queue-q'
-exec rhiza change show --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+rhiza change show --change 01M5PWGT68X5XKB54XFQMHKA0A --json
 stdout 'answer-queue-q'
-exec rhiza ready --json
+rhiza ready --json
 ! stdout 'queue-q'
 
 # A question already answered is refused, and nothing is written.
-! exec rhiza question answer store-q 'again' --json
+! rhiza question answer store-q 'again' --json
 stdout '"code": "usage"'
-! exec rhiza show answer-store-q-2 --json
+! rhiza show answer-store-q-2 --json
 
 # A question that blocks only a node the change set does not touch is
 # refused, and nothing is written.
-exec rhiza add capability apart --record
-exec rhiza add question apart-q --field statement=Which-apart --record
-exec rhiza link apart-q blocks apart --record
-! exec rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+rhiza add capability apart --record
+rhiza add question apart-q --field statement=Which-apart --record
+rhiza link apart-q blocks apart --record
+! rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
 stdout '"code": "usage"'
-! exec rhiza show answer-apart-q --json
+! rhiza show answer-apart-q --json
 
 # A second open question that blocks only another change set's node is
 # refused too: Other touches apart, Accepted does not.
-exec rhiza set apart --field statement=Apart
-exec rhiza change show --json
+rhiza set apart --field statement=Apart
+rhiza change show --json
 stdout '"statement": "Apart"'
-! exec rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
+! rhiza question answer apart-q 'nope' --change 01M5PWGT68X5XKB54XFQMHKA0A --json
 stdout '"code": "usage"'
-! exec rhiza show answer-apart-q --json
-! exec rhiza show answer-apart-q --view what-if:01M5PWGT68X5XKB54XFQMHKA0A --json
+! rhiza show answer-apart-q --json
+! rhiza show answer-apart-q --view what-if:01M5PWGT68X5XKB54XFQMHKA0A --json
 
 fold-ok

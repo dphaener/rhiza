@@ -10,13 +10,12 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"os"
-	"os/exec"
 	"reflect"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/envexec"
 )
 
 func init() {
@@ -102,8 +101,8 @@ func recordLive(ctx *Ctx, agent string, windows []adapter.LiveWindow) int {
 func runUserStatusLine(ctx *Ctx, command string, payload []byte) string {
 	c, cancel := context.WithTimeout(context.Background(), userStatusLineTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(c, "sh", "-c", command)
-	cmd.Env = os.Environ()
+	cmd := envexec.Command(c, childEnv(ctx), ctx.Wd, "sh", "-c", command)
+	cmd.Dir = ctx.Wd
 	cmd.Stdin = bytes.NewReader(payload)
 	var out bytes.Buffer
 	cmd.Stdout = &out

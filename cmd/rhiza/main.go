@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/api"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
@@ -94,9 +95,23 @@ func usage() string {
 	return b.String()
 }
 
-// run is the testable entry point: it returns the exit code.
-func run(args []string, stdin io.Reader, stdout, stderr io.Writer, getenv func(string) string) int {
+// run is the testable entry point: it returns the exit code. wd is the
+// working directory the command runs in, self the absolute path of this
+// rhiza binary (empty when unknown) and environ the environment in
+// os.Environ() form: what the command reads (its getenv is derived from
+// it) and what every child it starts gets. run reads none of them from the
+// process. own is required, so every caller chooses: a real rhiza process
+// (main) passes processChildren, which lets the daemon adopt and reap that
+// process's children; an in-process call passes the zero ownChildren{},
+// and its Ctx's Adopt and Reap stay nil.
+func run(args []string, wd, self string, stdin io.Reader, stdout, stderr io.Writer, environ []string, own ownChildren) int {
+	if environ == nil {
+		// Never nil: a child's nil Env would inherit the process's.
+		environ = []string{}
+	}
+	getenv := userdir.Getenv(environ)
 	g, rest, err := parseGlobals(args)
+	g.wd, g.self, g.stderr, g.environ, g.own = wd, self, stderr, environ, own
 	if err != nil {
 		return writeError(stdout, stderr, err, g.json)
 	}
@@ -228,9 +243,25 @@ func describeOp() api.Operation {
 
 func main() {
 	os.Exit(profiled(os.Getenv("RHIZA_CPUPROFILE"), func() int {
-		return run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getenv)
+		// An unknown working directory is left empty: a command that needs
+		// it fails with a "working directory" error.
+		wd, _ := os.Getwd()
+		return run(os.Args[1:], wd, selfPath(), os.Stdin, os.Stdout, os.Stderr, os.Environ(), processChildren)
 	}))
 }
+
+// ownChildren are api.Ctx.Adopt and Reap: acts on every child of the
+// running process, so only a real rhiza process, which owns all of its
+// children, passes them to run(). In a process that runs rhiza in-process
+// beside other work (a test binary), they would adopt and wait on children
+// that are not rhiza's.
+type ownChildren struct {
+	adopt, reap func(common string)
+}
+
+// processChildren is what main() passes: the running rhiza adopts and reaps
+// its own children.
+var processChildren = ownChildren{adopt: adoptChildren, reap: reapDrivers}
 
 // profiled runs f, writing a CPU profile to path when path is set. It is
 // a hidden diagnostic: RHIZA_CPUPROFILE=<file> rhiza <cmd>, then

@@ -27,9 +27,9 @@ const scheduleCommandStep = "command"
 // scheduleWorkflow is the schedule's workflow: the one it names, resolved as
 // run start resolves a name, or its command wrapped as an implicit one-step
 // workflow with a single command step.
-func scheduleWorkflow(root string, sc dispatch.Schedule) (string, *workflow.Definition, []byte, error) {
+func scheduleWorkflow(root string, sc dispatch.Schedule, getenv func(string) string) (string, *workflow.Definition, []byte, error) {
 	if sc.Workflow != "" {
-		return resolveWorkflow(root, sc.Workflow)
+		return resolveWorkflow(root, root, sc.Workflow, getenv)
 	}
 	var buf bytes.Buffer
 	doc := map[string]any{"step": map[string]any{scheduleCommandStep: map[string]any{"kind": workflow.KindCommand, "run": sc.Command}}}
@@ -71,7 +71,7 @@ func runScheduledStart(ctx *Ctx, r RunStartRequest) (any, error) {
 	if !found {
 		return nil, Usagef("no schedule %q in %s", name, dispatch.File).WithNext(runStartNext)
 	}
-	path, def, data, err := scheduleWorkflow(ctx.Root, sc)
+	path, def, data, err := scheduleWorkflow(ctx.Root, sc, ctx.Getenv)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func runScheduledStart(ctx *Ctx, r RunStartRequest) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	rid, err := newRunID(ctx, rs)
 	if err != nil {
 		return nil, err

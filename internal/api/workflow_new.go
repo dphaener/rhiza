@@ -160,7 +160,7 @@ func runWorkflowNew(ctx *Ctx, req any) (any, error) {
 	} else {
 		var data []byte
 		if isWorkflowPath(from) {
-			p, err := workflowFile(ctx.Root, from)
+			p, err := workflowFile(ctx.Root, ctx.Wd, from)
 			if err != nil {
 				return nil, err
 			}
@@ -169,7 +169,7 @@ func runWorkflowNew(ctx *Ctx, req any) (any, error) {
 			}
 			from = p
 		} else {
-			p, d, ok, err := lookupWorkflow(ctx.Root, from)
+			p, d, ok, err := lookupWorkflow(ctx.Root, from, ctx.Getenv)
 			if err != nil {
 				return nil, Usagef("workflow %q: %v", from, err).WithNext(next)
 			}
@@ -185,7 +185,7 @@ func runWorkflowNew(ctx *Ctx, req any) (any, error) {
 	if _, err := os.Lstat(path); err == nil {
 		return nil, Conflictf("%s already exists; it is left as it is", path).WithNext("rhiza workflow describe " + name)
 	}
-	if _, problems := workflow.Validate(name, src, workflowResolver(ctx.Root)); len(problems) > 0 {
+	if _, problems := workflow.Validate(name, src, workflowResolver(ctx.Root, ctx.Getenv)); len(problems) > 0 {
 		var b strings.Builder
 		for _, p := range problems {
 			if p.Step != "" {

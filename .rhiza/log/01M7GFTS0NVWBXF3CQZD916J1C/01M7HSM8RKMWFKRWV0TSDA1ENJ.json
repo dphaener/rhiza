@@ -1,0 +1,30 @@
+{
+  "actor": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "after": [
+    "01M7HSGJDAYPCFWNCTGNSEE3JB"
+  ],
+  "at": "2026-11-16T09:04:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "524bf720-e097-40a1-9121-01a1e2d6798e",
+          "statement": "Question in-process-daemon-reaps-script-children: an in-process `rhiza daemon --once` line runs ctx.Adopt and ctx.Reap against the test binary's pid. adoptList takes every child of the process, including other scripts' exec children, and reapList Wait4s them, so a parallel script's exec fails with 'waitid: no child processes'. This made TestScripts/^[a-d] flaky (daemon-continue-slot:31, daemon-resume-landed-plan:37). Should run() leave Adopt and Reap nil unless main() passes them (only the real process adopts and reaps), with the daemon scripts then converted in-process? Or should every script that runs the daemon loop stay on processScripts with exec rhiza?"
+        },
+        "handle": "question-524bf720-1",
+        "id": "01M7HSM8R5VWH76XGXF8X3TN9V",
+        "key": null,
+        "kind": "question",
+        "node": "01M7HSM8R5VWH76XGXF593HN37",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HSM8RKMWFKRWV0TSDA1ENJ",
+  "type": "ops",
+  "v": 1
+}

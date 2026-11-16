@@ -1,0 +1,21 @@
+# scripts-in-process-r-verified-2e88f62f5
+
+evidence · `01M7HX61PFW4YX9NNDZ5CM7WW8` · actor [claude-code-6be3ea12](../actor/claude-code-6be3ea12.md)
+
+## result
+
+PASS
+
+## statement
+
+Verified scripts-in-process-r at 2e88f62f5 in a detached checkout, RHIZA_/SHIP_/REX_ unset, stand-in rex, gh and claude (exit 97, logging) first on PATH, every go test capped (MemoryMax=6G, TasksMax=300, -p 2). go test -trimpath -count=1 -timeout 230s ./cmd/rhiza -run 'TestScripts/^r': ok 56.4s, no stand-in hit. go test -run 'TestProcessScripts|TestInProcess': ok. go vet ./cmd/rhiza: exit 0. gofmt -l cmd/rhiza: empty. Count of cmd/rhiza/testdata/script/*.txtar: 398. git diff --word-diff=porcelain d099fe1ae^..2e88f62f5 over the txtar files: only '-exec' removals (323 in r files). The leaf's two commits (d099fe1ae, 2e88f62f5) touch only r txtar files (23 + 2), cmd/rhiza/main_test.go and actor records. No r entry on processScripts keeps notConverted (92 r entries, each with a stated cause). Failure case: with 'render' removed from the list, TestScripts/^render$ fails with 'script render started rhiza as a process but is not on processScripts...'. Reasons checked against behaviour: a scratch-only probe in rhizaProcess (logged script, argv, parent and grandparent; removed after) over the ^r run showed exactly the 92 listed r scripts start rhiza processes and no unlisted r script does. For all 92, each claimed 'starts rhiza through sh -c' matches a /usr/bin/sh -c (or setup.sh) parent and none unclaimed; each 'a workflow step runs rhiza' matches a 'sh -c exec 2>&1' step parent and none unclaimed; each fake bin/ rex and bin/ claude claim matches a rex/claude parent (or a reparented session run from a backgrounding fake rex) and none unclaimed; each 'rhiza with &' matches an exec rhiza ... & line and none unclaimed. By hand: run-log, run-tail, run-start-queue, run-continue-queue run 'exec rhiza daemon ... --once' and the probe shows their 'run start/resume --foreground' children reparented (detached ctx.Self); run-ship-infra-wait and run-ship-landed-infra-wait have a bin/rhiza wrapper that execs the real rhiza from the workflow's ship check step; run-ship-land-conflict's bin/headrhiza (SHIP_HEAD_RHIZA) execs rhiza; run-status-messages feeds stdin to session hook; run-autonomous, run-ship-needs-leaves, run-status-tokens show rex as the parent of their tab's rhiza. No reason rests on PATH, relative-path or adopt/reap behaviour. rex-install and run-worktree-carries-accept are off the list and pass in-process. rhiza render with this commit's build: exit 0 (writes only actor records from outside this leaf). No TODO/FIXME added.
+
+## Links
+
+### Out
+
+- verifies [scripts-in-process-r](../capability/rhiza/integrity/self-check/scripts-in-process-r.md)
+
+## History
+
+- `01M7GFTS0NVWBXF3CQZD916J1C` cmd/rhiza's testscripts run rhiza in-process: run() takes its working directory and its own path as parameters instead of os.Getwd and os.Args, and only scripts whose fake bin/ commands call rhiza back get a real binary on PATH, so a script line no longer costs a process start; AGENTS.md says exactly which lines run in-process. Evidence: testscript.RunMain re-executes the test binary for each of about 5,330 rhiza lines in 398 scripts; a cold make test spends 397 of its 967 CPU-s in the kernel.

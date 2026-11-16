@@ -523,6 +523,8 @@ func TestSessionRun(t *testing.T) {
 	t.Parallel()
 	f, s, fs := runFixture(t, `{"permission_mode":"manual","run":"run-1"}`)
 	f.ctx.RexSession, f.ctx.RexBlock = "session:s1", "block:b1"
+	// No environment: the session's transcript is not looked for.
+	f.ctx.Getenv = nil
 	fs.events = statusEvent("block:other", "error", "", "not this tab") + "\n" +
 		"not json\n" +
 		statusEvent("block:b1", "working", "", "Running tests") + "\n"
@@ -1106,6 +1108,7 @@ func TestSessionRunWorkflowEnv(t *testing.T) {
 		t.Fatal(err)
 	}
 	rs := run.NewStore(run.Dir(f.common))
+	rs.Getenv = f.ctx.Getenv
 	now := time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)
 	if err := run.Start(rs, "R1", run.Started{Workflow: "wf", Definition: src, Change: s.Change, Worktree: f.worktree}, now, def); err != nil {
 		t.Fatal(err)

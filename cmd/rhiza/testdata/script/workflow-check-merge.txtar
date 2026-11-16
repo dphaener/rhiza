@@ -6,25 +6,25 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 mkdir .rhiza/workflows
 cp $WORK/merge.toml .rhiza/workflows/merge.toml
 
-exec rhiza workflow check merge
+rhiza workflow check merge
 stdout '^workflow merge is valid'
 stdout '^  warning: step merge merges with no gate step before it: the run can reach it along build -> push -> merge; route every path to it through a gate step$'
-exec rhiza workflow check merge --json
+rhiza workflow check merge --json
 stdout '"valid": true'
 stdout '"step merge merges with no gate step before it: the run can reach it along build -> push -> merge; route every path to it through a gate step"'
 
 # every path through the gate: no warning
 exec sed -i 's/^on.fail = "push"$/on.fail = "failed"/' .rhiza/workflows/merge.toml
-exec rhiza workflow check merge
+rhiza workflow check merge
 stdout '^workflow merge is valid'
 ! stdout 'no gate step'
 
 # ship-change merges only after its gate
-exec rhiza workflow check ship-change
+rhiza workflow check ship-change
 ! stdout 'no gate step'
 
 -- merge.toml --

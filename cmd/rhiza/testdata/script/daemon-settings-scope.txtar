@@ -11,61 +11,61 @@ exec sh -c 'printf "[projects.a]\npath = \"a\"\n[projects.b]\npath = \"b\"\n" > 
 mkdir a b
 cd a
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 cd $WORK/b
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
 # A machine key goes to rhiza.toml, a project key to the project's git config.
 cd $WORK/a
-exec rhiza daemon set rhiza.daemon.maxRuns 3
-exec rhiza daemon set rhiza.autonomy.ship owner
+rhiza daemon set rhiza.daemon.maxRuns 3
+rhiza daemon set rhiza.autonomy.ship owner
 exec grep 'rhiza.daemon.maxRuns' $WORK/rhiza.toml
 exec git config --get rhiza.autonomy.ship
 stdout '^owner$'
 ! exec git config --get rhiza.daemon.maxRuns
-exec rhiza daemon settings
+rhiza daemon settings
 stdout 'rhiza.daemon.maxRuns = 3 \(rhiza.toml, machine\)'
 stdout 'rhiza.autonomy.ship = owner \(git config, project\)'
 ! stdout 'trimGoCache'
-exec rhiza daemon settings --json
+rhiza daemon settings --json
 stdout '"scope": "machine"'
 stdout '"scope": "project"'
 stdout '"source": "rhiza.toml"'
 
 # The other project does not see a's project key.
-exec rhiza daemon settings --project b
+rhiza daemon settings --project b
 stdout 'rhiza.autonomy.ship = auto \(default, project\)'
 stdout 'rhiza.daemon.maxRuns = 3 \(rhiza.toml, machine\)'
 
 # At the root a project key needs --project.
 cd $WORK
-! exec rhiza daemon set rhiza.autonomy.ship owner
+! rhiza daemon set rhiza.autonomy.ship owner
 stderr '--project'
-exec rhiza daemon set --project b rhiza.autonomy.ship owner
+rhiza daemon set --project b rhiza.autonomy.ship owner
 exec git -C b config --get rhiza.autonomy.ship
 stdout '^owner$'
-exec rhiza daemon set rhiza.daemon.maxRuns 2
+rhiza daemon set rhiza.daemon.maxRuns 2
 
 # Each project's event command runs only for its own moves.
 env OUT=$WORK/out
 exec git -C a config rhiza.eventCommand $WORK/hook-a.sh
 exec git -C b config rhiza.eventCommand $WORK/hook-b.sh
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 cd $WORK/a
-exec rhiza change new A --title A
-exec rhiza propose
-exec rhiza accept
+rhiza change new A --title A
+rhiza propose
+rhiza accept
 cd $WORK/b
-exec rhiza change new B --title B
-exec rhiza propose
-exec rhiza accept
+rhiza change new B --title B
+rhiza propose
+rhiza accept
 cd $WORK
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec grep -c ':A$' out-a
 stdout '^2$'
 ! exec grep ':B$' out-a

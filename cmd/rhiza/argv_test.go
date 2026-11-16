@@ -129,7 +129,7 @@ func TestParseGlobals(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := globals{json: true, dryRun: true, record: true, help: true, change: "C1", actor: "A", forRef: "F", changeSet: true, actorSet: true, forSet: true}
-	if g != want {
+	if !reflect.DeepEqual(g, want) {
 		t.Errorf("globals = %+v, want %+v", g, want)
 	}
 	if !slices.Equal(rest, []string{"change", "new", "x", "--", "--json"}) {
@@ -153,7 +153,7 @@ func TestMatchCommand(t *testing.T) {
 func TestCtxFromEnv(t *testing.T) {
 	// newCtx finds the repo from the working directory; outside a temp dir it
 	// would find this repo's own .rhiza and offset the test clock and IDs.
-	t.Chdir(t.TempDir())
+	wd := t.TempDir()
 	env := map[string]string{
 		"RHIZA_CHANGE":    "envchange",
 		"RHIZA_ACTOR":     "envactor",
@@ -161,7 +161,7 @@ func TestCtxFromEnv(t *testing.T) {
 		"RHIZA_TEST_SEED": "7",
 	}
 	getenv := func(k string) string { return env[k] }
-	ctx, err := newCtx(globals{change: "flagchange", changeSet: true, dryRun: true}, nil, getenv)
+	ctx, err := newCtx(globals{change: "flagchange", changeSet: true, dryRun: true, wd: wd}, nil, getenv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,13 +172,13 @@ func TestCtxFromEnv(t *testing.T) {
 		t.Errorf("now = %s", got)
 	}
 	a, _ := ctx.IDs.New()
-	ctx2, _ := newCtx(globals{}, nil, getenv)
+	ctx2, _ := newCtx(globals{wd: wd}, nil, getenv)
 	b, _ := ctx2.IDs.New()
 	if a != b {
 		t.Errorf("seeded IDs differ: %s %s", a, b)
 	}
 	env["RHIZA_TEST_NOW"] = "yesterday"
-	if _, err := newCtx(globals{}, nil, getenv); api.ExitCode(err) != 2 {
+	if _, err := newCtx(globals{wd: wd}, nil, getenv); api.ExitCode(err) != 2 {
 		t.Errorf("bad RHIZA_TEST_NOW: err = %v", err)
 	}
 }
@@ -212,12 +212,11 @@ func TestFindRoot(t *testing.T) {
 // files, so successive runs make different IDs, and the same log the same.
 func TestCtxTestIDsFollowTheLog(t *testing.T) {
 	dir := t.TempDir()
-	t.Chdir(dir)
 	env := map[string]string{"RHIZA_TEST_NOW": "2026-10-24T12:00:00Z", "RHIZA_TEST_SEED": "1"}
 	getenv := func(k string) string { return env[k] }
 	first := func() (id.ID, string) {
 		t.Helper()
-		ctx, err := newCtx(globals{}, nil, getenv)
+		ctx, err := newCtx(globals{wd: dir}, nil, getenv)
 		if err != nil {
 			t.Fatal(err)
 		}

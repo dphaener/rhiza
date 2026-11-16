@@ -1,0 +1,15 @@
+{
+  "actor": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "after": [],
+  "at": "2026-11-16T10:27:45Z",
+  "body": {
+    "intent": "Record agent actor claude-code-95cbb20d for session 95cbb20d-d1c9-4820-9ec0-01a1e3e5f82f",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7HYC1DWRNVRVBS3ZBG3NN9B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HYC1DWRNVRVBS3ZD0WF22M",
+  "type": "open",
+  "v": 1
+}

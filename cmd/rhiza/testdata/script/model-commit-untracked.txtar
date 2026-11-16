@@ -8,8 +8,8 @@ exec git init -q --bare origin.git
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 exec git remote add origin $WORK/origin.git
@@ -18,14 +18,14 @@ exec git fetch -q origin
 
 # Three change sets (and the actor's own log folder) with untracked open entries; a live run's worktree holds
 # a copy of the third.
-exec rhiza change new 'first orphan' --json
-exec rhiza change new 'second orphan' --json
-exec rhiza change new 'held by a run' --json
+rhiza change new 'first orphan' --json
+rhiza change new 'second orphan' --json
+rhiza change new 'held by a run' --json
 exec sh -c 'ls .rhiza/log | tail -1 > ../held.txt'
 exec git worktree add -q ../wt
 exec sh -c 'mkdir -p ../wt/.rhiza/log/$(cat ../held.txt) && cp .rhiza/log/$(cat ../held.txt)/* ../wt/.rhiza/log/$(cat ../held.txt)/'
 
-exec rhiza model commit-untracked
+rhiza model commit-untracked
 stdout 'committed 1 entries on a model branch'
 exec sh -c 'git ls-remote --heads $WORK/origin.git "refs/heads/model/*" | wc -l > ../n.txt'
 grep '^3$' ../n.txt
@@ -39,7 +39,7 @@ exec sh -c 'git ls-remote --heads $WORK/origin.git "refs/heads/model/*" | cut -f
 ! exec sh -c 'grep -f ../held8.txt ../branches.txt'
 
 # Only the held entry is left, so a second run is quiet.
-exec rhiza model commit-untracked
+rhiza model commit-untracked
 stdout 'no untracked log entries to commit'
 -- bin/gh --
 #!/bin/sh

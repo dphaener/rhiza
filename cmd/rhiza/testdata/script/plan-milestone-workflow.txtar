@@ -9,25 +9,25 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec git config rhiza.autonomy.plan auto
 
 # workflow ls lists the built-in.
-exec rhiza workflow ls
+rhiza workflow ls
 stdout 'plan-milestone.*builtin:plan-milestone'
 
 # The built-in journals as builtin:plan-milestone and declares owner.
-exec rhiza run start --foreground --workflow plan --new 'Ship v3' --milestone --permission-mode manual --dry-run --json
+rhiza run start --foreground --workflow plan --new 'Ship v3' --milestone --permission-mode manual --dry-run --json
 stdout '"workflow": "plan-milestone"'
 stdout '"source": "workflow"'
 ! stdout '"autonomous": true'
 
 # With auto the daemon starts the milestone request's run without
 # --autonomous, on plan-milestone; an intention request gets it.
-exec rhiza request 'Ship v3' --kind milestone
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza request 'Ship v3' --kind milestone
+rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout '^Started the plan run of request '
 exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Ship v3 .* --milestone" $WORK/detach.log'
 ! grep 'autonomous' $WORK/detach.log
@@ -41,14 +41,14 @@ mkdir root2/repo2
 exec sh -c 'printf "[projects.repo2]\npath = \"repo2\"\n" > root2/rhiza.toml'
 cd root2/repo2
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec git config rhiza.autonomy.plan owner
 mkdir .rhiza/workflows
 cp $WORK/own.toml .rhiza/workflows/plan-milestone.toml
-exec rhiza request 'Ship v4' --kind milestone
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza request 'Ship v4' --kind milestone
+rhiza daemon --permission-mode manual --max-runs 1 --once
 exec sh -c 'grep -c "run start --foreground --workflow plan-milestone --pick default --new Ship v4 .* --autonomous" $WORK/detach2.log'
 
 -- own.toml --

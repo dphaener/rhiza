@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,14 +19,16 @@ import (
 	"github.com/dphaener/rhiza/internal/tui/launcher"
 	"github.com/dphaener/rhiza/internal/tui/modalopen"
 	"github.com/dphaener/rhiza/internal/tui/modalshell"
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 const tuiOpenUsage = "rhiza tui open <app> [--session <id>] [--block <id>]"
 
 // tuiOpen opens the named app's modal. The session and block default to
 // REX_SESSION and REX_BLOCK; the modal opens over the block's window and
-// starts in this process's directory.
-func tuiOpen(name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
+// starts in the working directory run() was given, running the rhiza binary
+// it was given.
+func tuiOpen(g globals, name string, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	session, block := getenv("REX_SESSION"), getenv("REX_BLOCK")
 	for i := 0; i < len(args); i++ {
 		if i+1 >= len(args) || (args[i] != "--session" && args[i] != "--block") {
@@ -52,19 +55,18 @@ func tuiOpen(name string, args []string, stdout, stderr io.Writer, getenv func(s
 	if session == "" {
 		return writeError(stdout, stderr, api.Usagef("tui open: no Rex session: pass --session or run it in Rex"), false)
 	}
-	if err := openModal(app, session, block, getenv); err != nil {
+	if err := openModal(app, session, block, g.self, g.wd, getenv); err != nil {
 		return writeError(stdout, stderr, fmt.Errorf("tui open %s: %w", name, err), false)
 	}
 	return 0
 }
 
-func openModal(app launcher.App, session, block string, getenv func(string) string) error {
-	exe, err := os.Executable()
-	if err != nil {
-		return err
+// openModal opens app's modal, running exe in cwd.
+func openModal(app launcher.App, session, block, exe, cwd string, getenv func(string) string) error {
+	if exe == "" {
+		return errors.New("cannot find the rhiza binary")
 	}
-	cwd, _ := os.Getwd()
-	sf, err := os.CreateTemp("", "rhiza-modal-*.size")
+	sf, err := os.CreateTemp(userdir.Temp(getenv), "rhiza-modal-*.size")
 	if err != nil {
 		return err
 	}

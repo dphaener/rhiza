@@ -6,56 +6,56 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 mkdir .rhiza/workflows
 cp $WORK/docs.toml .rhiza/workflows/docs.toml
 exec git add -A
 exec git commit -qm init
 
-exec rhiza change new 'Docs pass' --json
+rhiza change new 'Docs pass' --json
 ! stdout '"workflow"'
 exec sh -c 'rhiza change show --json | sed -n "s/^  \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
 
-! exec rhiza change workflow nonesuch
+! rhiza change workflow nonesuch
 ! stdout .
 stderr 'no such workflow'
-! exec rhiza change workflow
+! rhiza change workflow
 stderr 'name a workflow'
-! exec rhiza change workflow docs --clear
+! rhiza change workflow docs --clear
 stderr 'not both'
-exec rhiza change show --json
+rhiza change show --json
 ! stdout '"workflow"'
 
-exec rhiza change workflow docs --dry-run
+rhiza change workflow docs --dry-run
 stdout 'Would pin'
-exec rhiza change show --json
+rhiza change show --json
 ! stdout '"workflow"'
 
-exec rhiza change workflow docs --json
+rhiza change workflow docs --json
 stdout '"workflow": "docs"'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"workflow": "docs"'
 exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs)'
 stdout '^- Workflow: docs$'
 fold-ok
 
-exec rhiza change workflow --clear --json
+rhiza change workflow --clear --json
 stdout '"previous": "docs"'
 ! stdout '"workflow": "docs",'
-exec rhiza change show --json
+rhiza change show --json
 ! stdout '"workflow"'
 exec sh -c 'rhiza run start --dry-run $(cat $WORK/cs) --permission-mode manual'
 ! stdout '^- Workflow: docs$'
 stdout '^- Workflow: ship-change$'
 fold-ok
 
-exec rhiza change workflow docs
+rhiza change workflow docs
 stdout 'Pinned change set'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"workflow": "docs"'
-exec rhiza propose
-exec rhiza accept
-exec rhiza land
+rhiza propose
+rhiza accept
+rhiza land
 ! exec sh -c 'rhiza change workflow --clear --change $(cat $WORK/cs)'
 stderr 'landed'
 fold-ok

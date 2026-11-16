@@ -12,8 +12,8 @@ mkdir repo
 cd repo
 exec git init -q
 exec git remote add origin $WORK/origin.git
-exec rhiza init
-exec rhiza change new 'Ship it' --title 'Ship it'
+rhiza init
+rhiza change new 'Ship it' --title 'Ship it'
 exec git add -A
 exec git commit -qm 'Start'
 exec git push -q -u origin main
@@ -34,7 +34,7 @@ exec git add -A
 exec git commit -qm 'Merge one'
 exec git push -q origin main
 exec sh -c 'printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
-! exec rhiza ship check --main --settled
+! rhiza ship check --main --settled
 stdout 'stop: merge commit [0-9a-f]{7}: .*no dispatchable workflow was found'
 ! exec grep '^workflow run' $WORK/gh.log
 
@@ -44,7 +44,7 @@ exec git add -A
 exec git commit -qm 'Merge two'
 exec git push -q origin main
 exec sh -c 'printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
-! exec rhiza ship check --main --settled
+! rhiza ship check --main --settled
 stdout 'stop: merge commit [0-9a-f]{7}: workflow ci.yml lacks the sha input'
 ! exec grep '^workflow run' $WORK/gh.log
 
@@ -54,7 +54,7 @@ exec git add -A
 exec git commit -qm 'Merge three'
 exec git push -q origin main
 exec sh -c 'git rev-parse main > $WORK/m3.sha; printf "{\"pr\":7,\"url\":\"u\",\"branch\":\"cs/ship-it\",\"head\":\"%s\",\"merge_commit\":\"%s\"}\n" "$(git rev-parse cs/ship-it)" "$(git rev-parse main)" > .git/rhiza/ship/01M5PWGEF85Y185JZ2ZGCNH40N.json'
-! exec rhiza ship check --main --settled
+! rhiza ship check --main --settled
 stdout 'stop: merge commit [0-9a-f]{7}: workflow ci.yml lacks a run-name referencing inputs.sha'
 ! exec grep '^workflow run' $WORK/gh.log
 
@@ -65,12 +65,12 @@ exec git add -A
 exec git commit -qm 'Fix the workflow'
 exec git push -q origin main
 exec sh -c 'printf "[{\"databaseId\":5,\"name\":\"CI\",\"displayTitle\":\"CI %s\",\"status\":\"in_progress\",\"conclusion\":\"\"}]\n" "$(cat $WORK/m3.sha)" > $WORK/runs.json'
-! exec rhiza ship check --main --settled
+! rhiza ship check --main --settled
 stdout 'not settled'
 exec sh -c 'grep -c "^workflow run ci.yml --ref main -f sha=$(cat $WORK/m3.sha)$" $WORK/gh.log'
 stdout '^1$'
 exec sh -c 'printf "[{\"databaseId\":5,\"name\":\"CI\",\"displayTitle\":\"CI %s\",\"status\":\"completed\",\"conclusion\":\"success\"}]\n" "$(cat $WORK/m3.sha)" > $WORK/runs.json'
-exec rhiza ship check --main --settled
+rhiza ship check --main --settled
 stdout 'main at [0-9a-f]{7}: 1 check passed'
 exec sh -c 'grep -c "^workflow run" $WORK/gh.log'
 stdout '^1$'

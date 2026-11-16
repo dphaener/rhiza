@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"slices"
 
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -96,7 +95,7 @@ func runRunLs(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	runs, err := rs.List()
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)

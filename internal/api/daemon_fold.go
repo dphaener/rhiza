@@ -101,7 +101,7 @@ func daemonPickOf(ctx *Ctx, fold *daemonFolded, sig string, compute func() []str
 // workflowFilesStamp fingerprints the files a pick reads besides the log:
 // the repo's dispatch rules and workflows and the personal workflows, by
 // name, size and modification time.
-func workflowFilesStamp(root string) string {
+func workflowFilesStamp(root string, getenv func(string) string) string {
 	var b strings.Builder
 	stat := func(p string) {
 		if fi, err := os.Stat(p); err == nil {
@@ -109,7 +109,7 @@ func workflowFilesStamp(root string) string {
 		}
 	}
 	stat(filepath.Join(root, filepath.FromSlash(dispatch.File)))
-	for _, dir := range []string{filepath.Join(root, filepath.FromSlash(workflowsDir)), personalWorkflowsDir()} {
+	for _, dir := range []string{filepath.Join(root, filepath.FromSlash(workflowsDir)), personalWorkflowsDir(getenv)} {
 		if dir == "" {
 			continue
 		}
@@ -239,7 +239,7 @@ func daemonDerive(ctx *Ctx, res planResult, list []changeset.ChangeSet, view fun
 	}
 	sched.Conducts = func(cs id.ID) bool {
 		c, ok := f.sets[cs]
-		return ok && changeConducts(ctx.Root, c.Open)
+		return ok && changeConducts(ctx.Root, c.Open, ctx.Getenv)
 	}
 	f.cands, f.planSkips = daemonCandidates(res, func(cs id.ID) bool {
 		c, ok := f.sets[cs]

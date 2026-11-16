@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/dphaener/rhiza/internal/userdir"
 )
 
 // metaRoot is the meta key holding the resolved path of the worktree the
@@ -14,14 +16,14 @@ import (
 // a sweep learns the worktree is gone.
 const metaRoot = "root"
 
-// recordRoot stores the resolved path of root in the index at dbPath.
+// recordRoot stores the resolved path of root, which must be absolute, in
+// the index at dbPath.
 // Errors are skipped: the record only serves the orphan sweep.
 func recordRoot(x *Index, root string) {
-	abs, err := filepath.Abs(root)
-	if err != nil {
+	if !filepath.IsAbs(root) {
 		return
 	}
-	resolved, err := filepath.EvalSymlinks(abs)
+	resolved, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		return
 	}
@@ -74,9 +76,10 @@ func PruneOrphans(dir string) Pruned {
 	return p
 }
 
-// IndexDir is the folder holding every worktree's index database.
-func IndexDir() (string, error) {
-	cache, err := os.UserCacheDir()
+// IndexDir is the folder holding every worktree's index database, under
+// the user cache dir placed over getenv as for DefaultPath.
+func IndexDir(getenv func(string) string) (string, error) {
+	cache, err := userdir.Cache(getenv)
 	if err != nil {
 		return "", err
 	}

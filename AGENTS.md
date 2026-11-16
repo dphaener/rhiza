@@ -131,6 +131,10 @@ on it. After landing a change set, run `rhiza render` and commit
 - Scenarios are testscript files in `cmd/rhiza/testdata/script/*.txtar`.
   They run in-process via `testscript.Main` in `cmd/rhiza/main_test.go`,
   never against the `rhiza` on `$PATH`.
+- A bare `rhiza` line runs in-process; an `exec rhiza` line starts a
+  process. A script may start one (`exec rhiza`, `&`, a fake `bin/` command
+  that calls rhiza) only when it is on `processScripts` in
+  `cmd/rhiza/main_test.go`, with its reason.
 - Git inside scripts is hermetic: the `Setup` in `cmd/rhiza/main_test.go`
   gives each script its own `HOME` and global git config.
 - No test touches the network, Rex, agents or `gh`.

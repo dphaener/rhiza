@@ -196,7 +196,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 	env, unset := launchEnv(rec)
 	if rec.Run != "" && !ctx.DryRun {
 		if common, err := gitCommonDir(ctx); err == nil {
-			rs := run.NewStore(run.Dir(common))
+			rs := runStore(ctx, common)
 			if j, err := rs.Read(rec.Run); err == nil {
 				if def, err := j.State().ParseDefinition(); err == nil && len(def.Env) > 0 {
 					tmp := rs.TmpDir(rec.Run)
@@ -256,7 +256,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 		// The same session goes on once the limit resets: its context and
 		// the work it committed stay.
-		runClock.Sleep(wait)
+		clockOf(ctx).Sleep(wait)
 		if _, err := readTranscript(ctx, a, rec.ID); err == nil {
 			launch.Resume, launch.Prompt = true, resumePrompt
 		} else {
@@ -441,7 +441,7 @@ func recordTokenUse(ctx *Ctx, st *session.Store, rec session.Record) string {
 	}
 	ru := runTokenUse(tokens)
 	e := run.Entry{Type: run.TypeTokens, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Tokens: &ru}
-	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+	if err := runStore(ctx, common).Append(rec.Run, e); err != nil {
 		return warn(fmt.Sprintf("journal session %s's token use in run %s: %v", rec.ID, rec.Run, err))
 	}
 	return ""
@@ -465,7 +465,7 @@ func recordFreshSession(ctx *Ctx, st *session.Store, rec session.Record, detail 
 		return warn(AsError(err).Message)
 	}
 	e := run.Entry{Type: run.TypeFreshSession, At: now, Step: rec.Step, Session: rec.ID, Detail: detail}
-	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+	if err := runStore(ctx, common).Append(rec.Run, e); err != nil {
 		return warn(fmt.Sprintf("journal session %s's fresh session in run %s: %v", rec.ID, rec.Run, err))
 	}
 	return ""
@@ -955,7 +955,7 @@ func journalHookMessage(ctx *Ctx, a adapter.Adapter, rec session.Record, event s
 		Type: run.TypeMessage, At: ctx.Now(), Step: rec.Step, Session: rec.ID, Actor: rec.Actor,
 		To: m.To, Text: m.Text, Summary: m.Summary, Structured: m.Structured,
 	}
-	if err := run.NewStore(run.Dir(common)).Append(rec.Run, e); err != nil {
+	if err := runStore(ctx, common).Append(rec.Run, e); err != nil {
 		return false, fmt.Errorf("journal the message session %s sent in run %s: %v", rec.ID, rec.Run, err)
 	}
 	return true, nil

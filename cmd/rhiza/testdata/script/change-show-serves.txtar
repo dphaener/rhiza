@@ -6,11 +6,11 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add intent goal --record
+rhiza init
+rhiza add intent goal --record
 
-exec rhiza change new 'Build a thing'
-exec rhiza change show --json
+rhiza change new 'Build a thing'
+rhiza change show --json
 stdout '"kind": "intention"'
 stdout '"serves": \[\]'
 

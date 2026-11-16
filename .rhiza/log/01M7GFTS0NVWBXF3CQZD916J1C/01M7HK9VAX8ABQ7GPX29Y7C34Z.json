@@ -1,0 +1,40 @@
+{
+  "actor": "01M7HK683ZTECNTQGWG6P5VZM7",
+  "after": [
+    "01M7HJNTQ9XBR8MMF0V784ZN0A"
+  ],
+  "at": "2026-11-16T07:14:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at e2c6bd895, capped (systemd-run MemoryMax=6G TasksMax=300, -p 2, RHIZA/SHIP/REX env unset). go test -trimpath -count=1 ./cmd/rhiza -run 'TestScripts/^[a-d]': ok (21.1s). TestProcessScripts|TestInProcessCommand|TestScriptEnv: ok. grep for [a-d] notConverted entries in cmd/rhiza/main_test.go: 0. txtar count: 398. git diff --word-diff=porcelain HEAD^ HEAD on testdata/script: only 707 '-exec' removals. Only files changed outside .rhiza/: main_test.go and [a-d] txtar files. Failure case: carve.txtar (off the list) with its first rhiza line made exec rhiza, TestScripts/^carve$ fails with 'script carve started rhiza as a process but is not on processScripts ...' (probe reverted). Per-script audit of all 96 [a-d] scripts: every off-list script has zero exec rhiza lines; every kept script matches its reason: 47 with fake bin/ rex/claude/gh/systemctl/loginctl and PATH=$WORK/bin (confirmed in ctx.go: execIn/startProgramIn use exec.Command(name), which resolves via the test binary's own PATH, not cmd.Env), 15 with exec sh -c 'rhiza ...' lines (spot-checked check-move, check-git, change-set-ref), apply/apply-concurrent (internal/api/apply.go os.ReadFile(file) resolves relative to the process cwd), describe (stdin feed), custom-workflows-doc (quickstart-doc). The fake-bin PATH reason goes beyond the leaf's enumerated list but is a real need, and the gap is filed as draft change set 01M7HK31WRYQ54W29MJCHKGGXK."
+        },
+        "handle": "scripts-in-process-a-d-verified",
+        "id": "01M7HK9V85P5QESDTJ5HQQQK1T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HK9V85P5QESDTJ5FA5PMRK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HK9V85P5QESDTJ5FA5PMRK",
+        "id": "01M7HK9V9H5WMMAG7DYQMQ7GTT",
+        "link": "01M7HK9V9H5WMMAG7DYMHMZJA3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HK9VAX8ABQ7GPX29Y7C34Z",
+  "type": "ops",
+  "v": 1
+}

@@ -88,7 +88,7 @@ func runSessionDone(ctx *Ctx, req any) (any, error) {
 		if cerr != nil {
 			return nil, cerr
 		}
-		if j, err := run.NewStore(run.Dir(common)).Read(rec.Run); err == nil {
+		if j, err := runStore(ctx, common).Read(rec.Run); err == nil {
 			if st := j.State(); !st.Ended && st.Current == rec.Step {
 				if msg := reviewRoundMissing(st); msg != "" {
 					return nil, Conflictf("session %s cannot say done: %s", rec.ID, msg).WithNext("rhiza run findings")
@@ -164,7 +164,7 @@ func verifierRecordMissing(ctx *Ctx, st *session.Store, rec session.Record) stri
 	if err != nil {
 		return ""
 	}
-	j, err := run.NewStore(run.Dir(common)).Read(rec.Run)
+	j, err := runStore(ctx, common).Read(rec.Run)
 	if err != nil {
 		return ""
 	}

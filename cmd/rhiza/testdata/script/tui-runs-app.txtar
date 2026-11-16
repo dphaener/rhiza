@@ -6,19 +6,19 @@ env REX_SERVER=
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza run ls --json
+rhiza run ls --json
 cp stdout ../want-empty.json
-exec rhiza tui app runs --once
+rhiza tui app runs --once
 cmp stdout ../want-empty.json
 
 mkdir .git/rhiza/runs
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
-exec rhiza run ls --json
+rhiza run ls --json
 stdout '"id": "FAILED00001"'
 cp stdout ../want-run.json
-exec rhiza tui app runs --once
+rhiza tui app runs --once
 cmp stdout ../want-run.json

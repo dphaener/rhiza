@@ -1,0 +1,21 @@
+# scripts-in-process-docs-verified
+
+evidence · `01M7HY8QGN0X5HWZTQ3VMRW7F7` · actor [claude-code-ed692370](../actor/claude-code-ed692370.md)
+
+## result
+
+PASS
+
+## statement
+
+Verified at 68bb06621 in a detached worktree, each go test capped (systemd-run MemoryMax=6G TasksMax=300, -p 2, RHIZA/SHIP/REX vars unset). go test -trimpath -count=1 ./cmd/rhiza -run '^Test(AgentDocsConsistent|DevelopingDocLessons|ClaudeMD|ProcessScripts|ProcessListConverted)$': exit 0 (AgentDocsConsistent, DevelopingDocLessons, ProcessScripts, ProcessListConverted pass). No test is named exactly TestClaudeMD; -run '^TestClaudeMD' matches TestClaudeMDScopedTests, TestClaudeMDImportsAgentsMD and TestClaudeMDCommandsNameMakeUpdate, all pass, and they cover CLAUDE.md importing AGENTS.md and its sections. Failure case: TestProcessListConverted's fixture asserts unconverted() returns [left-behind]; with the real entry workflow-stage-autonomy set to notConverted in the scratch checkout (reverted) it fails naming the script: 'processScripts: workflow-stage-autonomy keeps the reason "not converted yet"'. go test ./cmd/rhiza -skip TestScripts: ok 28.3s. TestScripts ranges one at a time, all exit 0: ^[a-d] 21.1s, ^[e-q] 29.8s, ^r 60.3s, ^[s-w] 23.6s (together they cover every script initial; no hang, no TasksMax hit). Not re-timed for the record. Diff: AGENTS.md's new Tests bullet and agents/developing.md say a bare rhiza line runs in-process and exec rhiza (or a fake bin/ command calling rhiza) starts a process, allowed only for a script on processScripts in cmd/rhiza/main_test.go with its reason, matching the enforcement TestProcessScripts shows. The bullet above ('They run in-process via testscript.Main ... never against the rhiza on $PATH') still holds in substance; the code calls testscript.RunMain/Run, a naming looseness that predates this leaf. The Checks: block records before (merge-base ce69fddc6) and after timings and rhiza process counts per range (total 149.5s/8578 procs to 134.6s/5872 procs) and names CI's shard timings as the cold make-test figure. Changed files: cmd/rhiza/main_test.go and script_inprocess_test.go, AGENTS.md, agents/developing.md, plus the builder's actor record, its log entries and rendered index/actor page. No stubs or TODOs.
+
+## Links
+
+### Out
+
+- verifies [scripts-in-process-docs](../capability/rhiza/integrity/self-check/scripts-in-process-docs.md)
+
+## History
+
+- `01M7GFTS0NVWBXF3CQZD916J1C` cmd/rhiza's testscripts run rhiza in-process: run() takes its working directory and its own path as parameters instead of os.Getwd and os.Args, and only scripts whose fake bin/ commands call rhiza back get a real binary on PATH, so a script line no longer costs a process start; AGENTS.md says exactly which lines run in-process. Evidence: testscript.RunMain re-executes the test binary for each of about 5,330 rhiza lines in 398 scripts; a cold make test spends 397 of its 967 CPU-s in the kernel.

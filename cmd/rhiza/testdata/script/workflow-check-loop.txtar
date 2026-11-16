@@ -6,31 +6,31 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 mkdir .rhiza/workflows
 cp $WORK/loop.toml .rhiza/workflows/loop.toml
 
-exec rhiza workflow check loop
+rhiza workflow check loop
 stdout '^workflow loop is valid'
 stdout '^  warning: step test: on.fail = "build" loops back through agent step build uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.fail = "handback:build"$'
-exec rhiza workflow check loop --json
+rhiza workflow check loop --json
 stdout '"valid": true'
 stdout '"step test: on.fail = \\"build\\" loops back through agent step build uncapped: handback_cap does not count it and no handback.md reaches the agent; use on.fail = \\"handback:build\\""'
 
 # handback:build is counted by handback_cap: no warning
 exec sed -i 's/^on.fail = "build"$/on.fail = "handback:build"/' .rhiza/workflows/loop.toml
-exec rhiza workflow check loop
+rhiza workflow check loop
 stdout '^workflow loop is valid'
 ! stdout 'loops back'
 
 # ship-change has no plain red loop
-exec rhiza workflow check ship-change
+rhiza workflow check ship-change
 ! stdout 'loops back'
 
 # nor does a skeleton from workflow new
-exec rhiza workflow new skel
+rhiza workflow new skel
 grep '^on.fail = "handback:build"$' .rhiza/workflows/skel.toml
-exec rhiza workflow check skel
+rhiza workflow check skel
 stdout '^workflow skel is valid'
 ! stdout 'loops back'
 

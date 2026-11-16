@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
 
+	"github.com/dphaener/rhiza/internal/envexec"
 	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -225,7 +225,8 @@ func runProjectClone(ctx *Ctx, root string, r ProjectAddRequest) (any, error) {
 	if ctx.DryRun {
 		return ProjectAddResponse{Name: name, Path: name}, nil
 	}
-	cmd := exec.Command("git", "clone", "--quiet", "--", r.Path, dest)
+	cmd := envexec.Command(nil, childEnv(ctx), ctx.Wd, "git", "clone", "--quiet", "--", r.Path, dest)
+	cmd.Dir = ctx.Wd
 	if out, err := cmd.CombinedOutput(); err != nil {
 		os.RemoveAll(dest)
 		return nil, Usagef("cannot clone %s: %s", r.Path, strings.TrimSpace(string(out))).

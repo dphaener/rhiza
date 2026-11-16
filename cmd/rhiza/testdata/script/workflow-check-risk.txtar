@@ -5,24 +5,24 @@ env XDG_CONFIG_HOME=$WORK/xdg
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 fold-ok
 
 # no bypass mode: no exposure warning (plan's own red loops warn apart)
-exec rhiza workflow check plan
+rhiza workflow check plan
 stdout '^workflow plan is valid'
 ! stdout 'bypassed permissions'
 
 exec git config rhiza.autonomy.plan auto
 exec git config rhiza.daemon.permissionMode bypassPermissions
-exec rhiza workflow check plan
+rhiza workflow check plan
 stdout '^workflow plan is valid'
 stdout '^  warning: workflow plan runs from a queued request with bypassed permissions in interview.*outside text reaches agents with no permission checks$'
-exec rhiza workflow check plan --json
+rhiza workflow check plan --json
 stdout '"valid": true'
 stdout '"warnings": \['
 stdout 'outside text reaches agents with no permission checks'
 
 # a workflow no request reaches is not flagged
-exec rhiza workflow check build
+rhiza workflow check build
 ! stdout 'warning'

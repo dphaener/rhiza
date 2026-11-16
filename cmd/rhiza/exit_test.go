@@ -35,11 +35,11 @@ var exitOp = api.Operation{
 }
 
 func TestCallExiter(t *testing.T) {
-	t.Chdir(t.TempDir())
+	wd := t.TempDir()
 	getenv := func(string) string { return "" }
 	for _, code := range []int{0, 1} {
 		var out [3]string
-		for i, g := range []globals{{}, {json: true}, {}} {
+		for i, g := range []globals{{wd: wd}, {json: true, wd: wd}, {wd: wd}} {
 			req := any(exitRequest{Code: code})
 			if i == 2 {
 				// The api call path: a decoded JSON request, JSON output.
@@ -77,9 +77,8 @@ func TestCallExiter(t *testing.T) {
 
 // TestCallExitNoExiter checks a response without ExitCode still exits 0.
 func TestCallExitNoExiter(t *testing.T) {
-	t.Chdir(t.TempDir())
 	var stdout, stderr bytes.Buffer
-	if got := call(globals{json: true}, testOp, testRequest{}, strings.NewReader(""), &stdout, &stderr, func(string) string { return "" }); got != 0 {
+	if got := call(globals{json: true, wd: t.TempDir()}, testOp, testRequest{}, strings.NewReader(""), &stdout, &stderr, func(string) string { return "" }); got != 0 {
 		t.Errorf("exit %d, want 0", got)
 	}
 }

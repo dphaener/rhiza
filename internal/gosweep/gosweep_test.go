@@ -76,10 +76,10 @@ func TestCacheOffTouchesNoEntry(t *testing.T) {
 	now := time.Now()
 	cache, tmp := setup(t, now)
 	t.Setenv("GOCACHE", "off")
-	if d := CacheDir(); d != "" {
+	if d := CacheDirFrom(os.Getenv); d != "" {
 		t.Fatalf("CacheDir = %q with GOCACHE=off", d)
 	}
-	got := SweepDirs(CacheDir(), tmp, now)
+	got := SweepDirs(CacheDirFrom(os.Getenv), tmp, now)
 	if got.CacheEntries != 0 || got.TempFolders != 1 {
 		t.Fatalf("freed %+v", got)
 	}
@@ -90,13 +90,13 @@ func TestCacheOffTouchesNoEntry(t *testing.T) {
 
 func TestCacheDirDefaults(t *testing.T) {
 	t.Setenv("GOCACHE", "/x/y")
-	if CacheDir() != "/x/y" {
+	if CacheDirFrom(os.Getenv) != "/x/y" {
 		t.Error("GOCACHE not honoured")
 	}
 	t.Setenv("GOCACHE", "")
 	t.Setenv("XDG_CACHE_HOME", "/c")
 	t.Setenv("HOME", "/h")
-	if d := CacheDir(); d != "/c/go-build" && d != "/h/Library/Caches/go-build" {
+	if d := CacheDirFrom(os.Getenv); d != "/c/go-build" && d != "/h/Library/Caches/go-build" {
 		t.Errorf("CacheDir = %q", d)
 	}
 }

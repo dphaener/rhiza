@@ -8,7 +8,7 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
@@ -19,14 +19,14 @@ fold-ok
 mkdir .git/rhiza/runs
 exec sh ../mkruns.sh
 
-exec rhiza inbox
+rhiza inbox
 stdout 'failed run F-ACCEPTED, change set '
 stdout 'gave-up run G-ACCEPTED, change set '
 stdout 'failed run F-UNKNOWN, change set CSUNKNOWN'
 stdout 'question run Q-LANDED, change set '
 stdout 'signoff run S-LANDED, change set '
 ! stdout 'F-LANDED|G-LANDED|F-WITHDRAWN|G-WITHDRAWN|F-REJECTED|G-REJECTED|F-SUPERSEDED|G-SUPERSEDED'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"run": "F-ACCEPTED"'
 stdout '"run": "G-ACCEPTED"'
 stdout '"run": "F-UNKNOWN"'

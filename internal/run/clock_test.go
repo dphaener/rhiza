@@ -69,27 +69,40 @@ func TestScaledClockConcurrent(t *testing.T) {
 	}
 }
 
+// scaleEnv is a getenv over the variables in vars.
+func scaleEnv(vars map[string]string) func(string) string {
+	return func(k string) string { return vars[k] }
+}
+
 func TestScaledClockFromEnv(t *testing.T) {
 	for _, v := range []string{"", "0", "-5", "1.5", "abc"} {
-		t.Setenv(ClockScaleEnv, v)
-		if got, ok := ClockFromEnv().(RealClock); !ok {
+		if got, ok := ClockFromEnv(scaleEnv(map[string]string{ClockScaleEnv: v})).(RealClock); !ok {
 			t.Errorf("%s=%q gives %T, want RealClock", ClockScaleEnv, v, got)
 		}
 	}
-	t.Setenv(ClockScaleEnv, "1000")
-	c, ok := ClockFromEnv().(*ScaledClock)
-	if !ok || c.scale != 1000 {
-		t.Errorf("%s=1000 gives %#v, want a ScaledClock of scale 1000", ClockScaleEnv, ClockFromEnv())
+	got := ClockFromEnv(scaleEnv(map[string]string{ClockScaleEnv: "1000"}))
+	if c, ok := got.(*ScaledClock); !ok || c.scale != 1000 {
+		t.Errorf("%s=1000 gives %#v, want a ScaledClock of scale 1000", ClockScaleEnv, got)
 	}
 }
 
-func TestScaledClockUnsetIsReal(t *testing.T) {
-	t.Setenv(ClockScaleEnv, "")
+// ClockFromEnv reads only the environment it is given: the process's
+// RHIZA_TEST_CLOCK_SCALE does not reach it.
+//
+// Serial: it calls t.Setenv (RHIZA_TEST_CLOCK_SCALE), process-wide state.
+func TestScaledClockFromEnvIgnoresProcess(t *testing.T) {
+	t.Setenv(ClockScaleEnv, "1000")
+	if _, ok := ClockFromEnv(scaleEnv(nil)).(RealClock); !ok {
+		t.Errorf("unset in getenv, 1000 in the process: %T, want RealClock", ClockFromEnv(scaleEnv(nil)))
+	}
+	if _, ok := ClockFromEnv(nil).(RealClock); !ok {
+		t.Errorf("nil getenv gives %T, want RealClock", ClockFromEnv(nil))
+	}
 	if err := os.Unsetenv(ClockScaleEnv); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := ClockFromEnv().(RealClock); !ok {
-		t.Errorf("unset %s gives %T, want RealClock", ClockScaleEnv, ClockFromEnv())
+	if _, ok := ClockFromEnv(scaleEnv(map[string]string{ClockScaleEnv: "7"})).(*ScaledClock); !ok {
+		t.Error("7 in getenv, unset in the process: want a ScaledClock")
 	}
 }
 

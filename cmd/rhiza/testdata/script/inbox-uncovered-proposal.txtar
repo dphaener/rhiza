@@ -8,7 +8,7 @@ mkdir ids
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 mkdir .git/rhiza/runs
@@ -18,7 +18,7 @@ exec $WORK/mkcs.sh other
 exec $WORK/mkcs.sh broken
 
 exec git config rhiza.autonomy.accept auto
-exec rhiza inbox --json
+rhiza inbox --json
 stdout 'waiting for acceptance: no plan run covers it'
 stdout '"kind": "accept"'
 stdout 'rhiza accept --rule owner --change '

@@ -4,18 +4,18 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Abandon a dirty run' --title 'Abandon dirty' --json
+rhiza change new 'Abandon a dirty run' --title 'Abandon dirty' --json
 mkdir .rhiza/workflows
 cp ../hold.toml .rhiza/workflows/hold.toml
 
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
 exec sh -c 'echo wip > ../repo.abandon-dirty/scratch.txt'
 
-exec rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout 'remove-worktree kept: the worktree is dirty'
 stdout 'delete-branch kept'
 exists ../repo.abandon-dirty/scratch.txt

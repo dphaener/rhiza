@@ -10,7 +10,7 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 env REX_BLOCK=block:b0
@@ -21,17 +21,17 @@ cp ../signoff.jsonl .git/rhiza/runs/SIGNOFFRUN01.jsonl
 cp ../failed.jsonl .git/rhiza/runs/FAILEDRUN001.jsonl
 exec sh -c 'sed "s/HOST/$(hostname)/" ../gaveup.jsonl > .git/rhiza/runs/GAVEUPRUN001.jsonl'
 
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 stderr -count=4 'state=blocked'
 
 # Nothing new: nothing sent.
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 ! stderr 'state=blocked'
 
 # The sign-off is approved and a new failed run turns up: one notice.
 exec sh -c 'echo "{\"type\":\"signoff\",\"at\":\"2026-01-02T00:00:01Z\",\"step\":\"signoff\",\"visit\":1,\"rule\":\"owner\",\"outcome\":\"approved\"}" >> .git/rhiza/runs/SIGNOFFRUN01.jsonl'
 cp ../failed2.jsonl .git/rhiza/runs/FAILEDRUN002.jsonl
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 stderr -count=1 'state=blocked'
 -- question.jsonl --
 {"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change-classic","definition":"","change":"CSQUESTION"}}

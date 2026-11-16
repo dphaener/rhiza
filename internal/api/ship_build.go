@@ -180,7 +180,7 @@ func shipActorFlags(ctx *Ctx) []string {
 // environment without SHIP_HEAD_RHIZA (headChildEnv), so it does the work
 // in-process and never execs a head build itself.
 func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
-	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, headChildEnv())
+	out, err := ctx.Exec(bin, append(args, shipActorFlags(ctx)...), ctx.Root, headChildEnv(ctx))
 	if err != nil {
 		e := Errorf("ship: %s with the PR head's build: %s", args[0], headFailure(out, err))
 		e.Conflict = headConflict(out)
@@ -189,14 +189,14 @@ func shipRunHead(ctx *Ctx, bin string, args ...string) ([]byte, error) {
 	return out, nil
 }
 
-// headChildEnv is the environment a head build runs with: this process's,
-// less SHIP_HEAD_RHIZA. It is the recursion guard of runViaHead: a head
+// headChildEnv is the environment a head build runs with: the caller's
+// (childEnv), less SHIP_HEAD_RHIZA. It is the recursion guard of runViaHead: a head
 // that is not the running binary as a file (a wrapper script that execs
 // another rhiza) would otherwise see SHIP_HEAD_RHIZA, not be itself, and
 // exec the head again without end.
-func headChildEnv() []string {
+func headChildEnv(ctx *Ctx) []string {
 	env := []string{}
-	for _, kv := range os.Environ() {
+	for _, kv := range childEnv(ctx) {
 		if k, _, _ := strings.Cut(kv, "="); k != envShipRhiza {
 			env = append(env, kv)
 		}
@@ -399,7 +399,7 @@ func checkViaHead(ctx *Ctx, r CheckRequest) (CheckResponse, bool, error) {
 	if r.BranchNewerFormat {
 		args = append(args, "--branch-newer-format")
 	}
-	out, err := ctx.Exec(bin, args, ctx.Root, headChildEnv())
+	out, err := ctx.Exec(bin, args, ctx.Root, headChildEnv(ctx))
 	if jerr := json.Unmarshal(bytes.TrimSpace(out), &rep); jerr != nil || rep.Findings == nil && !rep.OK {
 		if err == nil {
 			err = jerr

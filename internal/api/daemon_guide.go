@@ -282,7 +282,7 @@ func guideRequestSkipOf(ctx *Ctx, q daemon.Request) (daemon.Skip, bool) {
 // guideHeldWorkflow is the skip detail for the workflow name when it names
 // a skill the held guide lacks, and true.
 func guideHeldWorkflow(ctx *Ctx, name string) ([]string, bool) {
-	_, def, _, err := resolveWorkflow(ctx.Root, name)
+	_, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, name, ctx.Getenv)
 	if err != nil {
 		return nil, false
 	}

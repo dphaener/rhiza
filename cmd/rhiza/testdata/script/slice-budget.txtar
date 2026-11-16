@@ -8,28 +8,28 @@
 # Uncut, log's slice is 292 tokens of markdown and 840 of JSON. At 250
 # (markdown) and 700 (JSON) some sections are brief and the rest counts.
 
-exec rhiza init
-exec rhiza apply model.json --record
+rhiza init
+rhiza apply model.json --record
 
-exec rhiza slice log --budget 250
+rhiza slice log --budget 250
 cmp stdout cut.md
-exec rhiza slice log --budget 250
+rhiza slice log --budget 250
 cmp stdout cut.md
-exec rhiza slice log --budget 700 --json
+rhiza slice log --budget 700 --json
 cmp stdout cut.json
-exec rhiza slice log --budget 700 --json
+rhiza slice log --budget 700 --json
 cmp stdout cut.json
 
 # Everything that can be cut is a count, and it is still over: exit 0.
-exec rhiza slice log --budget 20
+rhiza slice log --budget 20
 cmp stdout over.md
 stdout '^Still over budget by [0-9]+ tokens\.$'
-exec rhiza slice log --budget 20
+rhiza slice log --budget 20
 cmp stdout over.md
-exec rhiza slice log --budget 20 --json
+rhiza slice log --budget 20 --json
 cmp stdout over.json
 stdout '"over_budget": true'
-exec rhiza slice log --budget 20 --json
+rhiza slice log --budget 20 --json
 cmp stdout over.json
 
 -- model.json --

@@ -14,7 +14,7 @@ import (
 func TestRemoveRunScratchTakesOnlyTheEndedRunsSessions(t *testing.T) {
 	t.Parallel()
 	home := t.TempDir()
-	ctx := &Ctx{Home: home}
+	ctx := &Ctx{Home: home, Getenv: os.Getenv}
 	st := session.NewStore(filepath.Join(t.TempDir(), "sessions"))
 	scratch := map[string]string{}
 	for id, rn := range map[string]string{"s-ended": "run-a", "s-live": "run-b", "s-none": ""} {
@@ -44,7 +44,7 @@ func TestRemoveWorktreeIndexKeepsOtherIndexes(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(home, "cache"))
-	ctx := &Ctx{Home: home}
+	ctx := &Ctx{Home: home, Getenv: os.Getenv}
 	base := t.TempDir()
 	dbs := map[string]string{}
 	for _, n := range []string{"gone", "live"} {
@@ -52,7 +52,7 @@ func TestRemoveWorktreeIndexKeepsOtherIndexes(t *testing.T) {
 		if err := os.Mkdir(d, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		p, err := index.DefaultPath(d)
+		p, err := index.DefaultPath(d, os.Getenv)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -94,7 +94,7 @@ func TestRemoveCheckoutRemovesItsIndex(t *testing.T) {
 	}
 	gitIn(repo, "init", "-q")
 	gitIn(repo, "-c", "user.name=T", "-c", "user.email=t@t.invalid", "commit", "-q", "--allow-empty", "-m", "init")
-	r := &stepRunner{ctx: &Ctx{Home: home, Exec: func(name string, args []string, dir string, env []string) ([]byte, error) {
+	r := &stepRunner{ctx: &Ctx{Home: home, Getenv: os.Getenv, Exec: func(name string, args []string, dir string, env []string) ([]byte, error) {
 		cmd := exec.Command(name, args...)
 		cmd.Dir = dir
 		return cmd.Output()
@@ -105,7 +105,7 @@ func TestRemoveCheckoutRemovesItsIndex(t *testing.T) {
 	}
 	dbs := map[string]string{}
 	for n, d := range map[string]string{"checkout": dir, "worktree": repo} {
-		p, err := index.DefaultPath(d)
+		p, err := index.DefaultPath(d, os.Getenv)
 		if err != nil {
 			t.Fatal(err)
 		}

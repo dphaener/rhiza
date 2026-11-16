@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/entry"
-	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -35,7 +34,7 @@ func liveRunMirror(ctx *Ctx) func(entry.Entry) error {
 		if !ok {
 			return nil
 		}
-		j, ok, err := run.NewStore(run.Dir(common)).LiveOf(e.ChangeSet.String(), "")
+		j, ok, err := runStore(ctx, common).LiveOf(e.ChangeSet.String(), "")
 		if err != nil || !ok {
 			return nil
 		}
@@ -140,12 +139,13 @@ func (r *stepRunner) mirroredPaths() ([]string, error) {
 
 // gitDirsOf finds the checkout's top folder and the git common dir above
 // dir: a .git folder is the common dir itself, a .git file of a linked
-// worktree names <common>/worktrees/<name>.
+// worktree names <common>/worktrees/<name>. A relative dir is not found:
+// it is never read against the process's working directory.
 func gitDirsOf(dir string) (top, common string, ok bool) {
-	d, err := filepath.Abs(dir)
-	if err != nil {
+	if !filepath.IsAbs(dir) {
 		return "", "", false
 	}
+	d := filepath.Clean(dir)
 	for {
 		g := filepath.Join(d, ".git")
 		if fi, err := os.Lstat(g); err == nil {

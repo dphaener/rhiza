@@ -9,40 +9,40 @@ env PATH=$WORK/bin:$PATH
 env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 env REX_SESSION=
 rm $WORK/rhiza.toml
-exec rhiza root init $WORK
+rhiza root init $WORK
 mkdir alpha folder
 cd alpha
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
-exec rhiza change new Built --title Built
-exec rhiza add capability built-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
 cd $WORK/folder
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
-exec rhiza change new Other --title Other
-exec rhiza add capability other-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Other --title Other
+rhiza add capability other-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Register both: alpha under its folder, folder under --name other.
 cd $WORK
-exec rhiza project add alpha
-exec rhiza project add folder --name other
+rhiza project add alpha
+rhiza project add folder --name other
 stdout '^Registered project other at folder\.$'
 
 # Both missing: each created once, under the registered name.
 cd $WORK
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new rhiza-alpha " $WORK/rex.log'
 stdout '^1$'
 exec sh -c 'grep -c "^rex session new rhiza-other " $WORK/rex.log'
@@ -57,7 +57,7 @@ stdout '^1$'
 # Present: none created.
 cp $WORK/present.json $WORK/sessions.json
 rm $WORK/rex.log $WORK/detach.log
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
 stdout '^0$'
 # run open in the renamed project, for a live run that recorded a tab but no
@@ -67,7 +67,7 @@ cp $WORK/run.jsonl $WORK/folder/.git/rhiza/runs/ROPEN.jsonl
 run-lock $WORK/folder/.git/rhiza/runs ROPEN
 rm $WORK/rex.log
 cd $WORK/folder
-exec rhiza run open --run ROPEN
+rhiza run open --run ROPEN
 stdout '^Focused block:b9, the tab of run ROPEN$'
 grep '^rex block inspect -s rhiza-other --json block:b9$' $WORK/rex.log
 grep '^rex focus -s rhiza-other block:b9$' $WORK/rex.log

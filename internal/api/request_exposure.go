@@ -81,7 +81,7 @@ func requestExposedWorkflows(ctx *Ctx, settings []Setting) []ExposedWorkflow {
 	}
 	var out []ExposedWorkflow
 	for _, p := range picks {
-		_, def, _, err := resolveWorkflow(ctx.Root, p.name)
+		_, def, _, err := resolveWorkflow(ctx.Root, ctx.Wd, p.name, ctx.Getenv)
 		if err != nil {
 			continue
 		}

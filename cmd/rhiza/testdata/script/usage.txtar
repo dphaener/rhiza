@@ -1,5 +1,5 @@
 # rhiza with no arguments prints usage on stdout and succeeds.
-exec rhiza
+rhiza
 stdout 'Usage:'
 stdout 'version'
 ! stderr .

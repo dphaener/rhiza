@@ -7,35 +7,35 @@ env RHIZA_TEST_FREE_BYTES=1099511627776
 mkdir repo
 cd repo
 exec git init -q -b main
-exec rhiza init
-exec rhiza render
+rhiza init
+rhiza render
 exec git add -A
 exec git commit -qm init
 
-exec rhiza health
+rhiza health
 stdout '^ok   ci       stable'
-exec rhiza health --json
+rhiza health --json
 stdout '"part": "ci",\n\s*"state": "ok",\n\s*"summary": "stable"'
 
 cp ../ci-stability.json .git/rhiza/ci-stability.json
-exec rhiza health
+rhiza health
 stdout '^warn ci       unstable: TestPond flaked 2 times on 2 heads.*; no local gate is set'
 stdout 'flaky TestPond: 2 flakes'
 stdout 'next: rhiza daemon set rhiza.ship.localGate <command>'
-exec rhiza health --json
+rhiza health --json
 stdout '"part": "ci",\n\s*"state": "warn"'
 stdout 'flaky TestPond: 2 flakes'
 
 cp ../ci-infra.json .git/rhiza/ci-stability.json
-exec rhiza health
+rhiza health
 stdout '^ok   ci       stable'
 stdout 'infra scripts \(4/4\) / UNKNOWN STEP: 1 failure in the last [0-9]+ runs; infra failures do not make CI unstable'
-exec rhiza health --json
+rhiza health --json
 stdout 'infra scripts \(4/4\) / UNKNOWN STEP: 1 failure'
 
 cp ../ci-stability.json .git/rhiza/ci-stability.json
 exec git config rhiza.ship.localGate 'make check'
-exec rhiza health
+rhiza health
 stdout '^warn ci       unstable: TestPond flaked'
 ! stdout 'no local gate'
 

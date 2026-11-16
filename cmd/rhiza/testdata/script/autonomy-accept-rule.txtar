@@ -5,16 +5,16 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Autonomy rule' --title 'Autonomy rule' --json
+rhiza change new 'Autonomy rule' --title 'Autonomy rule' --json
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec sh -c 'ls .git/rhiza/runs 2>/dev/null | sed "s/\.jsonl$//" > $WORK/before; true'
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" | grep -v -x -f $WORK/before > $WORK/run'
-exec rhiza propose
+rhiza propose
 
 # accept owner: refused as usage, nothing written.
 exec git config rhiza.autonomy.accept owner
@@ -22,7 +22,7 @@ exec sh -c 'RHIZA_RUN=$(cat $WORK/run) rhiza accept --rule autonomy --json; echo
 stdout '"code": "usage"'
 stdout 'rhiza.autonomy.accept is owner'
 stdout '^exit=2$'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "proposed"'
 
 # rule autonomous outside an autonomous run: refused as before.
@@ -34,7 +34,7 @@ stdout '^exit=2$'
 exec git config rhiza.autonomy.accept auto
 exec sh -c 'RHIZA_RUN=$(cat $WORK/run) rhiza accept --rule autonomy --json'
 stdout '"rule": "autonomy"'
-exec rhiza change show --json
+rhiza change show --json
 stdout '"state": "accepted"'
 stdout '"rule": "autonomy"'
 

@@ -8,7 +8,7 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec sh ../mkchanges.sh
@@ -16,7 +16,7 @@ fold-ok
 mkdir .git/rhiza/runs
 exec sh ../mkruns.sh
 
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout '"run": "R-LAND"'
 ! stdout '"run": "M-LAND"'
 ! stdout '"run": "I-LAND"'
@@ -29,7 +29,7 @@ stdout '"kind": "skipped"'
 stdout '"next": "rhiza run abandon N-LAND"'
 exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
 stdout '^3$'
-exec rhiza inbox
+rhiza inbox
 ! stdout 'R-LAND'
 stdout 'skipped run N-LAND'
 stdout 'next: rhiza run abandon N-LAND'

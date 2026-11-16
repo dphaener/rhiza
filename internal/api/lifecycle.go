@@ -320,7 +320,7 @@ func checkAutonomousRule(ctx *Ctx, verb, rule string) (autonomousGate, error) {
 	if err != nil {
 		return autonomousGate{}, err
 	}
-	rs := run.NewStore(run.Dir(common))
+	rs := runStore(ctx, common)
 	j, err := rs.Read(ref)
 	var nf *run.NotFoundError
 	var amb *run.AmbiguousError

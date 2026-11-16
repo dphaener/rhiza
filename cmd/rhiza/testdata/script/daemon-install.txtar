@@ -10,13 +10,13 @@ env HOME=$WORK/home
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 env HOSTPATH=$PATH
 env PATH=$RHIZA_TEST_BIN
-! exec rhiza daemon install
+! rhiza daemon install
 stderr 'needs systemd: systemctl is not on PATH'
 ! exists $WORK/home/.config
-! exec rhiza daemon uninstall
+! rhiza daemon uninstall
 stderr 'needs systemd: systemctl is not on PATH'
 env PATH=$HOSTPATH
 
@@ -28,7 +28,7 @@ env PATH=$WORK/bin:$PATH
 env 'TMPDIR=$WORK/tmp dir'
 mkdir sub
 cd sub
-exec rhiza daemon install
+rhiza daemon install
 stdout 'rhiza-root.service'
 cd ..
 grep '^ExecStart=.* daemon --autonomous$' $WORK/home/.config/systemd/user/rhiza-root.service
@@ -44,7 +44,7 @@ grep '^Environment="PATH=.*bin' $WORK/home/.config/systemd/user/rhiza-root.servi
 # A second install writes nothing and does not reload.
 cp $WORK/home/.config/systemd/user/rhiza-root.service $WORK/unit.copy
 rm $WORK/calls.log
-exec rhiza daemon install
+rhiza daemon install
 stdout 'nothing changed'
 cmp $WORK/home/.config/systemd/user/rhiza-root.service $WORK/unit.copy
 ! grep 'daemon-reload' $WORK/calls.log
@@ -52,7 +52,7 @@ cmp $WORK/home/.config/systemd/user/rhiza-root.service $WORK/unit.copy
 # A changed PATH rewrites the unit and reloads systemd.
 rm $WORK/calls.log
 env PATH=$WORK/bin:$WORK/extra:$PATH
-exec rhiza daemon install
+rhiza daemon install
 stdout 'Installed'
 grep 'extra' $WORK/home/.config/systemd/user/rhiza-root.service
 grep 'daemon-reload' $WORK/calls.log
@@ -60,23 +60,23 @@ grep 'daemon-reload' $WORK/calls.log
 # start and stop act on that unit from the root itself, not a git checkout.
 rm $WORK/calls.log
 cd $WORK
-exec rhiza daemon start
-exec rhiza daemon stop
+rhiza daemon start
+rhiza daemon stop
 cmp $WORK/calls.log $WORK/want-startstop.log
 cd repo
 
 # Uninstall disables, removes the unit and reloads.
 rm $WORK/calls.log
-exec rhiza daemon uninstall
+rhiza daemon uninstall
 ! exists $WORK/home/.config/systemd/user/rhiza-root.service
 cmp $WORK/calls.log $WORK/want-uninstall.log
 
 # A unit the owner wrote is never touched.
 mkdir $WORK/home/.config/systemd/user
 cp $WORK/theirs.service $WORK/home/.config/systemd/user/rhiza-root.service
-! exec rhiza daemon install
+! rhiza daemon install
 stderr 'not written by rhiza daemon install'
-! exec rhiza daemon uninstall
+! rhiza daemon uninstall
 grep '^theirs$' $WORK/home/.config/systemd/user/rhiza-root.service
 
 -- bin/systemctl --

@@ -3,10 +3,12 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -157,5 +159,77 @@ func TestReapAdopt(t *testing.T) {
 	ee, ok := err.(*exec.ExitError)
 	if !ok || ee.ExitCode() != 4 {
 		t.Errorf("later child Wait = %v, want exit status 4", err)
+	}
+}
+
+// TestInProcessDaemonLeavesSiblings: a daemon tick run in-process, as a
+// script's bare rhiza line runs it, neither adopts nor reaps a child of the
+// process it runs in that is not its own: a sibling the test started and
+// waits on stays off the driver list and the test's Wait gets its exit
+// status. Passed processChildren, as main() passes it, the same tick adopts
+// the sibling, so the test bites.
+func TestInProcessDaemonLeavesSiblings(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		own   ownChildren
+		adopt bool
+	}{
+		{"in-process", ownChildren{}, false},
+		{"process", processChildren, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// The daemon runs on a Rhiza root: dir is its project repo.
+			home, root := t.TempDir(), t.TempDir()
+			dir := filepath.Join(root, "repo")
+			toml := "[projects.repo]\npath = \"repo\"\n\n[daemon]\n\"rhiza.daemon.failureClassifier\" = \"\"\n"
+			if err := os.WriteFile(filepath.Join(root, "rhiza.toml"), []byte(toml), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			gitconfig := "[user]\n\tname = t\n\temail = t@example.com\n"
+			if err := os.WriteFile(filepath.Join(home, ".gitconfig"), []byte(gitconfig), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			env := []string{"HOME=" + home, "XDG_CACHE_HOME=" + filepath.Join(home, ".cache"), "GIT_CONFIG_NOSYSTEM=1", "PATH=" + os.Getenv("PATH"),
+				"RHIZA_TEST_NOW=2026-10-24T12:00:00Z", "RHIZA_TEST_SEED=1", "RHIZA_TEST_FREE_BYTES=1099511627776"}
+			if out, err := exec.Command("git", "init", "-q", dir).CombinedOutput(); err != nil {
+				t.Fatalf("git init: %v\n%s", err, out)
+			}
+			rhiza := func(args ...string) {
+				t.Helper()
+				var stdout, stderr strings.Builder
+				if code := run(args, dir, "", strings.NewReader(""), &stdout, &stderr, env, tc.own); code != 0 {
+					t.Fatalf("rhiza %s: exit %d\n%s%s", strings.Join(args, " "), code, stdout.String(), stderr.String())
+				}
+			}
+			rhiza("init")
+
+			// The sibling runs until the test closes its standard input.
+			sibling := exec.Command("sh", "-c", "cat >/dev/null; exit 3")
+			in, err := sibling.StdinPipe()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := sibling.Start(); err != nil {
+				t.Fatal(err)
+			}
+			pid := sibling.Process.Pid
+
+			rhiza("daemon", "--permission-mode", "manual", "--once")
+
+			list := filepath.Join(dir, ".git", "rhiza", "drivers")
+			adopted := false
+			for _, e := range readDrivers(list) {
+				adopted = adopted || e.Pid == pid
+			}
+			if adopted != tc.adopt {
+				t.Errorf("sibling %d on the driver list: %v, want %v: %v", pid, adopted, tc.adopt, readDrivers(list))
+			}
+			in.Close()
+			err = sibling.Wait()
+			var ee *exec.ExitError
+			if !errors.As(err, &ee) || ee.ExitCode() != 3 {
+				t.Errorf("sibling Wait: %v, want exit status 3", err)
+			}
+		})
 	}
 }

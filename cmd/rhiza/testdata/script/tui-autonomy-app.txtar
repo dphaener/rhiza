@@ -7,20 +7,20 @@ env REX_SERVER=
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza daemon settings --json
+rhiza daemon settings --json
 cp stdout ../want-default.json
-exec rhiza tui app autonomy --once
+rhiza tui app autonomy --once
 cmp stdout ../want-default.json
 stdout '"key": "rhiza.autonomy.plan"'
 
-exec rhiza daemon set rhiza.daemon.maxRuns 3
-exec rhiza daemon settings --json
+rhiza daemon set rhiza.daemon.maxRuns 3
+rhiza daemon settings --json
 cp stdout ../want-set.json
-exec rhiza tui app autonomy --once
+rhiza tui app autonomy --once
 cmp stdout ../want-set.json
 stdout '"source": "rhiza.toml"'
 

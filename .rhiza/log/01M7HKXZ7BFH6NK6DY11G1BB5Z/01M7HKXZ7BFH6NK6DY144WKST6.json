@@ -1,0 +1,15 @@
+{
+  "actor": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "after": [],
+  "at": "2026-11-16T07:25:18Z",
+  "body": {
+    "intent": "Record agent actor claude-code-b77d1440 for session b77d1440-c4bd-40ed-ba44-01a1e33eefee",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7HKXZ7BFH6NK6DY11G1BB5Z",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7HKXZ7BFH6NK6DY144WKST6",
+  "type": "open",
+  "v": 1
+}

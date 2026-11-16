@@ -13,20 +13,20 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add actor builder --record
-exec rhiza add actor verifier --record
+rhiza init
+rhiza add actor builder --record
+rhiza add actor verifier --record
 exec git add -A
 exec git commit -qm init
 exec sh -c 'rhiza change new "Build check" --title "Build check" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cs'
 grep '^[0-9A-Z]{26}$' $WORK/cs
-exec rhiza add capability alpha --field 'statement=Does alpha'
-exec rhiza add capability beta --field 'statement=Does beta'
+rhiza add capability alpha --field 'statement=Does alpha'
+rhiza add capability beta --field 'statement=Does beta'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec git add -A
 exec git commit -qm leaves
-exec rhiza run start --foreground --workflow hold --no-wait
+rhiza run start --foreground --workflow hold --no-wait
 stdout '^Run (01[0-9A-Z]{24}) stopped$'
 stdout '^- Worktree: .*/repo\.build-check$'
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/runid'

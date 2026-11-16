@@ -5,22 +5,22 @@
 mkdir other
 cd other
 exec git init -q
-exec rhiza init
-! exec rhiza request 'Dark mode'
+rhiza init
+! rhiza request 'Dark mode'
 stderr 'not a project registered'
 stderr '^next: rhiza project add '
-! exec rhiza run start --workflow plan
+! rhiza run start --workflow plan
 stderr '^next: rhiza project add '
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 
 # In a repo under no root.
 cd $NOROOT
 exec git init -q
-exec rhiza init
-! exec rhiza request 'Dark mode'
+rhiza init
+! rhiza request 'Dark mode'
 stderr '^next: rhiza root init$'
-! exec rhiza run start --workflow plan
+! rhiza run start --workflow plan
 stderr '^next: rhiza root init$'
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check

@@ -23,7 +23,7 @@ func healthSchedules(ctx *Ctx, daemonRunning bool) (HealthPart, bool) {
 	}
 	var runs []run.Journal
 	if common, err := gitCommonDir(ctx); err == nil {
-		runs, _ = run.NewStore(run.Dir(common)).List()
+		runs, _ = runStore(ctx, common).List()
 	}
 	host, _ := os.Hostname()
 	now := ctx.Now()

@@ -8,13 +8,13 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza inbox
+rhiza inbox
 stdout '^Nothing waits on you$'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"items": \[\]'
 
 mkdir .git/rhiza/runs
@@ -25,7 +25,7 @@ cp ../done.jsonl .git/rhiza/runs/DONERUN00001.jsonl
 exec sh -c 'sed "s/HOST/$(hostname)/" ../gaveup.jsonl > .git/rhiza/runs/GAVEUPRUN001.jsonl'
 
 # The first four, in order of when they began to wait.
-exec rhiza inbox
+rhiza inbox
 stdout 'question run QUESTIONRUN, change set CSQUESTION, step build'
 stdout 'tab: leaf one'
 stdout 'question: Which store\?'
@@ -36,7 +36,7 @@ stdout 'gave-up run GAVEUPRUN001, change set CSGAVEUP, step build'
 ! stdout 'DONERUN00001'
 exec sh -c 'rhiza inbox | grep -E "^[0-9a-f]+ " | sed -E "s/^[0-9a-f]+ ([a-z-]+) .*/\1/" | tr "\n" " "'
 stdout '^question signoff failed gave-up $'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"kind": "question"'
 stdout '"question": "Which store\?"'
 stdout '"tab": "leaf one"'
@@ -48,29 +48,29 @@ stdout '^"kind":"question".*"kind":"signoff".*"kind":"failed".*"kind":"gave-up"'
 # Clear each: answer, approve, abandon, and a new run on the failed change set.
 exec sh -c 'echo "{\"type\":\"unblocked\",\"at\":\"2026-01-02T00:00:00Z\",\"step\":\"build\",\"session\":\"S1\"}" >> .git/rhiza/runs/QUESTIONRUN.jsonl'
 exec sh -c 'echo "{\"type\":\"signoff\",\"at\":\"2026-01-02T00:00:01Z\",\"step\":\"signoff\",\"visit\":1,\"rule\":\"owner\",\"outcome\":\"approved\"}" >> .git/rhiza/runs/SIGNOFFRUN01.jsonl'
-exec rhiza run abandon GAVEUPRUN001
+rhiza run abandon GAVEUPRUN001
 exec sh -c 'cat ../newrun.jsonl > .git/rhiza/runs/NEWRUN000001.jsonl'
-exec rhiza inbox
+rhiza inbox
 stdout '^Nothing waits on you$'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"items": \[\]'
 # Two proposed change sets setting one field of a node overlap: the inbox
 # lists the overlap with no run, naming both change sets and the target, and
 # inbox open on it exits 2.
-exec rhiza add capability thing --field 'statement=Does the thing' --record
-exec rhiza render
-exec rhiza change new 'First edit' --json
-exec rhiza set thing --field statement=A
-exec rhiza propose
-exec rhiza change new 'Second edit' --json
-exec rhiza set thing --field statement=B
-exec rhiza propose
-exec rhiza inbox
+rhiza add capability thing --field 'statement=Does the thing' --record
+rhiza render
+rhiza change new 'First edit' --json
+rhiza set thing --field statement=A
+rhiza propose
+rhiza change new 'Second edit' --json
+rhiza set thing --field statement=B
+rhiza propose
+rhiza inbox
 stdout -count=1 '^[0-9a-f]{7} overlap change sets [0-9A-Z]{26} and [0-9A-Z]{26}$'
 stdout -count=1 '^  target: thing$'
 stdout '^  both write field:statement$'
 stdout -count=1 '^  next: rhiza slice --change [0-9A-Z]{26} --view what-if$'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout '"kind": "overlap"'
 stdout '"target": "thing"'
 stdout '"other": "[0-9A-Z]{26}"'

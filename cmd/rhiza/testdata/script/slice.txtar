@@ -7,24 +7,24 @@
 # answered one (left out), a related one, verified evidence, an anchor, a
 # child with failing evidence and neighbours both ways.
 
-exec rhiza init
-exec rhiza apply model.json --record
+rhiza init
+rhiza apply model.json --record
 
-exec rhiza slice log
+rhiza slice log
 cmp stdout log.md
 ! stderr .
-exec rhiza slice log
+rhiza slice log
 cmp stdout log.md
 
-exec rhiza slice log --json
+rhiza slice log --json
 cmp stdout log.json
-exec rhiza slice log --json
+rhiza slice log --json
 cmp stdout log.json
-exec rhiza api call slice '{"ref":"log"}'
+rhiza api call slice '{"ref":"log"}'
 cmp stdout log.json
 
 # The root: plain-json applies directly here, with no from.
-exec rhiza slice store
+rhiza slice store
 cmp stdout store.md
 
 # The index lives under the script's own HOME, so scripts share nothing.

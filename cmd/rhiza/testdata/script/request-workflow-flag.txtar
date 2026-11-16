@@ -4,26 +4,26 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/bugfix.toml
 exec git add -A
 exec git commit -qm init
 
-! exec rhiza request 'Login fails' --kind bug --workflow nonesuch
+! rhiza request 'Login fails' --kind bug --workflow nonesuch
 ! stdout .
 stderr 'no such workflow'
-exec rhiza request ls
+rhiza request ls
 stdout '^No plan requests$'
 
-exec rhiza request 'Login fails' --kind bug --workflow bugfix
-exec rhiza request ls --json
+rhiza request 'Login fails' --kind bug --workflow bugfix
+rhiza request ls --json
 stdout '"workflow": "bugfix"'
-exec rhiza request ls
+rhiza request ls
 stdout 'Login fails \[workflow bugfix\]'
 
-exec rhiza request 'Plain' 
-exec rhiza request ls --json
+rhiza request 'Plain' 
+rhiza request ls --json
 stdout -count=1 '"workflow"'
 -- plan.toml --
 name = "bugfix"

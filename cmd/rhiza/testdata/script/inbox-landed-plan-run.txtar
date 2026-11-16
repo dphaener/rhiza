@@ -7,7 +7,7 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 exec sh ../mkchanges.sh
@@ -15,7 +15,7 @@ fold-ok
 mkdir .git/rhiza/runs
 exec sh ../mkruns.sh
 
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout '"run": "R-PLAN"'
 stdout '"run": "G-PLAN"'
 stdout '"kind": "gave-up"'
@@ -28,7 +28,7 @@ stdout '"next": "rhiza run abandon N-PLAN"'
 stdout '"next": "rhiza run abandon W-PLAN"'
 exec sh -c 'rhiza inbox --json | grep -c "\"kind\""'
 stdout '^4$'
-exec rhiza inbox
+rhiza inbox
 ! stdout 'R-PLAN'
 stdout 'skipped run N-PLAN'
 -- mkchanges.sh --
