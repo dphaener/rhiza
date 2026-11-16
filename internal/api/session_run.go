@@ -256,7 +256,7 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 		// The same session goes on once the limit resets: its context and
 		// the work it committed stay.
-		runClock.Sleep(wait)
+		clockOf(ctx).Sleep(wait)
 		if _, err := readTranscript(ctx, a, rec.ID); err == nil {
 			launch.Resume, launch.Prompt = true, resumePrompt
 		} else {

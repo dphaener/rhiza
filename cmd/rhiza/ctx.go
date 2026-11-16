@@ -20,6 +20,7 @@ import (
 	"github.com/dphaener/rhiza/internal/api"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/index"
+	runclock "github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -30,7 +31,8 @@ import (
 // under the user cache dir that getenv places, when a root was found;
 // otherwise, or when the cache dir is unknown, it is empty and reads fail.
 // Every child the Ctx starts gets g.environ, the environment run() was
-// given, with its own additions. RHIZA_TEST_NOW
+// given, with its own additions. Its run clock is the one
+// RHIZA_TEST_CLOCK_SCALE chooses in getenv's environment. RHIZA_TEST_NOW
 // (RFC 3339) and RHIZA_TEST_SEED fix the clock and ID seed for tests.
 // RHIZA_ROOT, when set, is the root instead of the one found from the
 // working directory: it must hold .rhiza, else the call fails rather than
@@ -68,6 +70,7 @@ func newCtx(g globals, stdin io.Reader, getenv func(string) string) (*api.Ctx, e
 		Record:    g.record,
 		DryRun:    g.dryRun,
 		Now:       time.Now,
+		Clock:     runclock.ClockFromEnv(getenv),
 		IDs:       id.Default(),
 		GitConfig: func(key string) (string, error) { return gitConfig(wd, key, g.environ) },
 		Version:   versionString(),

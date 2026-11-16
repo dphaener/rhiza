@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -141,7 +142,14 @@ type Ctx struct {
 	DryRun bool
 	// Now is the clock.
 	Now func() time.Time
-	// Sleep waits for d; nil is runClock's Sleep (time.Sleep unless
+	// Clock is the clock a run's waits go by (run.start and run.resume
+	// polls, the spawn poll, session waits, the default Sleep and ship
+	// deploy), chosen when the Ctx is made: the CLI gives
+	// run.ClockFromEnv(Getenv), so RHIZA_TEST_CLOCK_SCALE in the caller's
+	// environment, not the process's, puts it on the scaled clock. Nil is
+	// RealClock. A test that sets the package's runClock overrides it.
+	Clock run.Clock
+	// Sleep waits for d; nil is Clock's Sleep (time.Sleep unless
 	// RHIZA_TEST_CLOCK_SCALE puts it on the scaled clock). Tests inject it
 	// so retries with backoff do not wait.
 	Sleep func(d time.Duration)

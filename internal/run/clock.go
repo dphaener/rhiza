@@ -1,7 +1,6 @@
 package run
 
 import (
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -22,11 +21,15 @@ const ScaledSleepFloor = 50 * time.Millisecond
 // has passed since the wait began.
 const TimeoutRealFloor = 3 * time.Second
 
-// ClockFromEnv returns the clock ClockScaleEnv chooses: a ScaledClock when
-// it holds a positive integer, RealClock when it is unset, empty or
-// anything else.
-func ClockFromEnv() Clock {
-	return clockForScale(os.Getenv(ClockScaleEnv))
+// ClockFromEnv returns the clock ClockScaleEnv chooses in the environment
+// getenv reads: a ScaledClock when it holds a positive integer, RealClock
+// when it is unset, empty or anything else. A nil getenv is an empty
+// environment.
+func ClockFromEnv(getenv func(string) string) Clock {
+	if getenv == nil {
+		return RealClock{}
+	}
+	return clockForScale(getenv(ClockScaleEnv))
 }
 
 func clockForScale(v string) Clock {

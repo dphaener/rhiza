@@ -93,23 +93,31 @@ const (
 	runBlocked = "blocked"
 )
 
-// runClock is the clock a run's waits go by: run.start and run.resume
+// runClock, when set, overrides every Ctx's clock: tests set it to drive a
+// session's status between polls. It is nil otherwise.
+var runClock run.Clock
+
+// clockOf is the clock a run's waits go by: run.start and run.resume
 // polls, the spawn poll, session waits, the default ctx.Sleep and ship
-// deploy. It is RealClock unless RHIZA_TEST_CLOCK_SCALE chooses
-// internal/run's scaled clock; tests replace it to drive a session's
-// status between polls.
-var runClock = defaultRunClock()
+// deploy. It is runClock when a test set it, else ctx.Clock, else
+// RealClock.
+func clockOf(ctx *Ctx) run.Clock {
+	if runClock != nil {
+		return runClock
+	}
+	if ctx != nil && ctx.Clock != nil {
+		return ctx.Clock
+	}
+	return run.RealClock{}
+}
 
-// defaultRunClock is the clock run.ClockScaleEnv chooses.
-func defaultRunClock() run.Clock { return run.ClockFromEnv() }
-
-// ctxSleep is how ctx sleeps: ctx.Sleep, or runClock's Sleep when it is
+// ctxSleep is how ctx sleeps: ctx.Sleep, or its clock's Sleep when it is
 // nil (time.Sleep on RealClock).
 func ctxSleep(ctx *Ctx) func(time.Duration) {
 	if ctx.Sleep != nil {
 		return ctx.Sleep
 	}
-	return runClock.Sleep
+	return clockOf(ctx).Sleep
 }
 
 // workflowsDir is where named workflows live, under the project root.
@@ -1924,7 +1932,7 @@ func runEngineRetry(ctx *Ctx, rs *run.Store, common, rid, change, worktree, mode
 			ctx: ctx, change: change, run: rid, worktree: worktree, main: filepath.Dir(common), mode: mode, agent: agent,
 			autonomous: autonomous, sessions: sessions,
 		},
-		Clock:  runClock,
+		Clock:  clockOf(ctx),
 		Now:    ctx.Now,
 		NoWait: noWait,
 	}
@@ -3864,7 +3872,7 @@ func abandonedCleanup(ctx *Ctx, rs *run.Store, common string, j run.Journal, ses
 	e := &run.Engine{
 		Store:  rs,
 		Runner: &stepRunner{ctx: ctx, change: st.Change, run: j.ID, worktree: wt, main: main, sessions: sessions},
-		Clock:  runClock,
+		Clock:  clockOf(ctx),
 		Now:    ctx.Now,
 	}
 	if ctx.Stderr != nil {
