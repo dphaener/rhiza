@@ -294,14 +294,17 @@ func TestReadOpenErrors(t *testing.T) {
 	}
 	t.Run("no index path", func(t *testing.T) {
 		c := *ctx
-		// No index on purpose: the what-if needs one and says so.
+		// No index path on purpose: the reader builds a throwaway index,
+		// removed when it closes.
 		c.IndexPath = ""
-		_, err := openReader(&c, "show", "", defaultView)
-		wantExit(t, err, 1)
-		if err.Error() != "no index path" {
-			t.Errorf("err = %v", err)
+		tmp := t.TempDir()
+		withTempDir(&c, tmp)
+		r, err := openReader(&c, "show", "", defaultView)
+		if err != nil {
+			t.Fatalf("openReader with no index path: %v", err)
 		}
-		t.Logf("empty IndexPath: %v", err)
+		r.Close()
+		emptyDir(t, tmp)
 	})
 	t.Run("no repository", func(t *testing.T) {
 		c := testCtx(t, t.TempDir())

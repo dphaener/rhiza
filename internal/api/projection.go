@@ -1,13 +1,14 @@
 package api
 
 // This file holds the projection: the one interface the model is read
-// through when a call has an index (ctx.IndexPath set). It answers the
+// through. It answers the
 // change sets with their states and folds, a change set's entries, the
 // stored problems, the stored as-is model and the model of a view (the current change set's while
 // it is in flight, else as-is), each with the dry run's pending entries
 // laid over it. Its one implementation is the index with the pending
-// entries overlaid (writeIndex, write_indexed.go). With ctx.IndexPath empty
-// there is no projection and each read keeps its log path.
+// entries overlaid (writeIndex, write_indexed.go): the index at
+// ctx.IndexPath, or a throwaway one for the call when that path is empty or
+// its index cannot be opened (openWriteIndex).
 
 import (
 	"github.com/dphaener/rhiza/internal/changeset"
@@ -106,14 +107,10 @@ func openProjection(ctx *Ctx, memo bool) (projection, error) {
 	return ix, nil
 }
 
-// useProjection gives w a projection over ctx's index, opened when a read
-// first asks for it; with ctx.IndexPath empty it gives none. The caller
+// useProjection gives w a projection over ctx's index (a throwaway one
+// when ctx has none), opened when a read first asks for it. The caller
 // closes it with closeProjection.
 func (w *workspace) useProjection(ctx *Ctx) {
-	if ctx.IndexPath == "" {
-		w.proj = nil
-		return
-	}
 	w.proj = &projectionSlot{open: func() (projection, error) { return openProjection(ctx, false) }}
 }
 

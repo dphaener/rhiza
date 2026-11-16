@@ -144,6 +144,9 @@ func parseViewWith(resolve func(string) (id.ID, error), opName, s string) (view,
 // Errors: an unknown ref not_found with next "rhiza ls", an ambiguous one
 // usage.
 type reader struct {
+	// ix is the projection's index x is, closed (and a throwaway one
+	// removed) by Close.
+	ix   *writeIndex
 	x    *index.Index
 	view view
 	// ov is the what-if overlay on the as-is rows, nil for a stored view.
@@ -156,8 +159,8 @@ type reader struct {
 // openReader opens a reader for operation opName in the view named by s,
 // or by rule (defaultView, or the operation's own) when s is empty. A
 // what-if of a change set not in the log is not_found, of one not in
-// flight a conflict, both with next "rhiza change ls". An empty
-// ctx.IndexPath is an error.
+// flight a conflict, both with next "rhiza change ls". The index is the
+// projection's (openWriteIndex): a throwaway one when ctx has none.
 func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -172,26 +175,22 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 	var err error
 	// The index answers a what-if ref without reading the log; it is opened
 	// once, and only when the view needs it or the read goes on.
+	var ix *writeIndex
 	var x *index.Index
 	open := func() (*index.Index, error) {
 		if x != nil {
 			return x, nil
 		}
-		if ctx.IndexPath == "" {
-			return nil, Errorf("no index path")
-		}
-		xi, err := index.Open(ctx.Root, ctx.IndexPath)
+		xi, err := openWriteIndex(ctx)
 		if err != nil {
-			return nil, Errorf("%s", err.Error())
+			return nil, err
 		}
-		x = xi
+		ix, x = xi, xi.x
 		return x, nil
 	}
 	closeX := func() {
-		if x != nil {
-			x.Close()
-			x = nil
-		}
+		ix.close()
+		ix, x = nil, nil
 	}
 	resolve := w.resolveChangeSet
 	if len(w.pending) == 0 && ctx.IndexPath != "" {
@@ -234,7 +233,7 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 	if err != nil {
 		return nil, err
 	}
-	r := &reader{x: x, view: v}
+	r := &reader{ix: ix, x: x, view: v}
 	if v.whatIf.IsZero() {
 		return r, nil
 	}
@@ -243,7 +242,7 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 		err = whatIfViewError(v.whatIf, ps)
 	}
 	if err != nil {
-		x.Close()
+		closeX()
 		return nil, AsError(err)
 	}
 	r.ov = ov
@@ -333,9 +332,10 @@ func whatIfViewError(cs id.ID, ps []gmodel.Problem) error {
 	return nil
 }
 
-// Close closes the index.
+// Close closes the index and removes a throwaway one.
 func (r *reader) Close() error {
-	return r.x.Close()
+	r.ix.close()
+	return nil
 }
 
 // View is the resolved view's name, such as "to-be" or "what-if:<ID>".

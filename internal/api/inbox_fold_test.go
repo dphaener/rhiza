@@ -70,11 +70,11 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 		t.Errorf("got kinds %v, want one overlap and the failed runs", kinds)
 	}
 
-	// Without an index the fold reads the log once for every lookup, and
-	// answers as the index does.
+	// Without an index path the fold reads a throwaway index, never the
+	// log, and answers as the index does.
 	byIndex, byLog := newInboxFold(f.ctx), func() *inboxFold {
 		c := *f.ctx
-		// No index on purpose: the log fallback answers as the index does.
+		// No index path on purpose: the throwaway index answers as the index does.
 		c.IndexPath = ""
 		return newInboxFold(&c)
 	}()
@@ -101,8 +101,8 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 	if !reflect.DeepEqual(oi, ol) || len(oi) != 1 {
 		t.Errorf("overlaps: index %+v, log %+v", oi, ol)
 	}
-	if f.logReads != 1 {
-		t.Errorf("the log fold read the log %d times, want 1", f.logReads)
+	if f.logReads != 0 {
+		t.Errorf("the fold over a throwaway index read the log %d times, want 0", f.logReads)
 	}
 }
 
@@ -200,9 +200,9 @@ func TestInboxIndexedReadsNoLog(t *testing.T) {
 	if f.logReads != 0 {
 		t.Errorf("inbox with an index read the log %d times, want 0", f.logReads)
 	}
-	// The log side: no index on purpose, to compare against the indexed
-	// inbox. The inbox op itself needs an index (its reader), so its
-	// overlaps, titles and gate questions are read over the log directly.
+	// The other side: no index path on purpose, to compare a throwaway
+	// index against the indexed inbox; its overlaps, titles and gate
+	// questions are read through the fold directly.
 	folded := *f.ctx
 	folded.IndexPath = ""
 	byLog := newInboxFold(&folded)
@@ -212,8 +212,8 @@ func TestInboxIndexedReadsNoLog(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if f.logReads != 1 {
-		t.Errorf("the log fold read the log %d times, want 1", f.logReads)
+	if f.logReads != 0 {
+		t.Errorf("the fold over a throwaway index read the log %d times, want 0", f.logReads)
 	}
 	var oi []InboxItem
 	for _, it := range resp.Items {

@@ -135,7 +135,7 @@ func (r *stepRunner) catchUpModel(root string) (*runModel, error) {
 			return nil, Errorf("%s", err.Error())
 		}
 		rm = &runModel{root: root, x: x, vals: map[string]kept{}, sigs: map[id.ID]string{}}
-		rm.ix = &writeIndex{ctx: r.ctx, x: x, models: map[id.ID]Model{}, relevant: map[id.ID][]id.ID{}}
+		rm.ix = &writeIndex{ctx: r.ctx, x: x, path: path, models: map[id.ID]Model{}, relevant: map[id.ID][]id.ID{}}
 		r.rm = rm
 	} else if r.refreshDue(rm) {
 		if err := rm.x.Refresh(); err != nil {

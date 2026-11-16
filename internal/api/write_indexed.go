@@ -12,6 +12,9 @@ import (
 	"cmp"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -28,8 +31,14 @@ import (
 // stale; the next read opens it again, which catches it up with the entry
 // written.
 type writeIndex struct {
-	ctx   *Ctx
-	x     *index.Index
+	ctx *Ctx
+	x   *index.Index
+	// path is the index file x was opened from: ctx.IndexPath, or the
+	// throwaway index in tmp.
+	path string
+	// tmp is the temporary folder of a throwaway index, removed by close;
+	// empty when the index is ctx.IndexPath's.
+	tmp   string
 	stale bool
 	err   error
 	// models, when set (a driver's reads, see run_model_cache.go), keeps
@@ -40,21 +49,47 @@ type writeIndex struct {
 	relevant map[id.ID][]id.ID
 }
 
-// openWriteIndex opens the index of ctx's repository for a write.
+// openWriteIndex opens the index of ctx's repository for a write. When
+// ctx.IndexPath is empty, or the index there cannot be opened or created,
+// it builds a throwaway index in a temporary folder for this call (as
+// commitOnHead's temporary git index), removed when the index closes.
 func openWriteIndex(ctx *Ctx) (*writeIndex, error) {
 	if ctx.openedProjection != nil {
 		ctx.openedProjection()
 	}
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
-	if err != nil {
-		return nil, Errorf("%s", err.Error())
+	why := "no index path"
+	if ctx.IndexPath != "" {
+		x, err := index.Open(ctx.Root, ctx.IndexPath)
+		if err == nil {
+			return &writeIndex{ctx: ctx, x: x, path: ctx.IndexPath}, nil
+		}
+		why = fmt.Sprintf("index %s: %v", ctx.IndexPath, err)
 	}
-	return &writeIndex{ctx: ctx, x: x}, nil
+	dir := tempDir(ctx)
+	tmp, err := os.MkdirTemp(dir, "rhiza-projection-")
+	if err != nil {
+		return nil, Errorf("%s; throwaway index in %s: %v", why, dir, err)
+	}
+	path := filepath.Join(tmp, "index.db")
+	x, err := index.Open(ctx.Root, path)
+	if err != nil {
+		os.RemoveAll(tmp)
+		return nil, Errorf("%s; throwaway index in %s: %v", why, dir, err)
+	}
+	return &writeIndex{ctx: ctx, x: x, path: path, tmp: tmp}, nil
 }
 
+// close releases the index and removes a throwaway index's folder.
 func (ix *writeIndex) close() {
-	if ix != nil && ix.x != nil {
+	if ix == nil {
+		return
+	}
+	if ix.x != nil {
 		ix.x.Close()
+	}
+	if ix.tmp != "" {
+		os.RemoveAll(ix.tmp)
+		ix.tmp = ""
 	}
 }
 
@@ -98,7 +133,7 @@ func (ix *writeIndex) store() *index.Index { return ix.index() }
 func (ix *writeIndex) index() *index.Index {
 	if ix.stale {
 		ix.x.Close()
-		x, err := index.Open(ix.ctx.Root, ix.ctx.IndexPath)
+		x, err := index.Open(ix.ctx.Root, ix.path)
 		if err != nil {
 			ix.fail(err)
 			return ix.x

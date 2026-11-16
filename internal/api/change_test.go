@@ -768,7 +768,7 @@ func TestChangeWorkflow(t *testing.T) {
 }
 
 // TestChangeLsIndexedReadsNoLog: with an index, change ls reads the log
-// zero times and lists the change sets and problems it lists over the log,
+// zero times and lists the change sets and problems it lists over a throwaway index,
 // a damaged entry's problem included; a change set whose files vanished
 // after the index saw them (a rebase) is not listed.
 func TestChangeLsIndexedReadsNoLog(t *testing.T) {
@@ -798,12 +798,12 @@ func TestChangeLsIndexedReadsNoLog(t *testing.T) {
 			t.Errorf("%s: change ls over the index read the log %d times, want 0", step, *reads)
 		}
 		folded := *ctx
-		// The log side: no index on purpose, to compare against the indexed list.
+		// No index path on purpose: the call builds a throwaway index.
 		folded.IndexPath = ""
 		logReads := countingCtx(&folded)
 		logged := ls(&folded)
-		if *logReads != 1 {
-			t.Errorf("%s: change ls over the log read it %d times, want 1", step, *logReads)
+		if *logReads != 0 {
+			t.Errorf("%s: change ls over a throwaway index read the log %d times, want 0", step, *logReads)
 		}
 		if !slices.EqualFunc(indexed.ChangeSets, logged.ChangeSets, func(a, b ChangeSetSummary) bool { return a == b }) ||
 			!slices.Equal(indexed.Problems, logged.Problems) {
