@@ -6,9 +6,9 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add decision c1 --field statement=x --record
-exec rhiza render
+rhiza init
+rhiza add decision c1 --field statement=x --record
+rhiza render
 exec git add -A
 # No rhiza command runs while the folder is .genesis.
 exec git mv .rhiza .genesis
@@ -18,36 +18,36 @@ exec git commit -qm one
 exec git checkout -q -b feature
 exec git mv .genesis .rhiza
 exec git commit -qm move
-exec rhiza check --json
+rhiza check --json
 stdout '"base": "[0-9a-f]{40}"'
 stdout '"ok": true'
 ! stdout '"rule": "append-only"'
-exec rhiza check
+rhiza check
 stdout '^ok$'
 
 # An edited entry still fails, naming it as modified.
 # Entries are written read-only: a hand edit makes the file writable first.
 chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 cp $WORK/c1-edited.json .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-! exec rhiza check
+! rhiza check
 stdout '^failed$'
 stdout '^fail append-only .*: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B modified since the base, where it was \.genesis/log/[^;]*; entries may only be added$'
-! exec rhiza check --json
+! rhiza check --json
 stdout '"rule": "append-only"'
 stdout '"ok": false'
 
 # Restored, it passes again.
 exec git checkout -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-exec rhiza check
+rhiza check
 stdout '^ok$'
 
 # A deleted entry fails, naming it as deleted.
 rm .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-! exec rhiza check
+! rhiza check
 stdout '^failed$'
 stdout '^fail append-only .*: log entry 01M5PWGEF85Y185JZ2ZQ6RRE3B deleted since the base; entries may only be added$'
 exec git checkout -- .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
-exec rhiza check
+rhiza check
 stdout '^ok$'
 
 # The same bytes under another path in .rhiza/log: the log rule may flag
@@ -56,7 +56,7 @@ mkdir .rhiza/log/01M5PWGEF85Y185JZ2ZZZZZZZZ
 exec git mv .rhiza/log/01M5PWGEF85Y185JZ2ZNP53DGX/01M5PWGEF85Y185JZ2ZQ6RRE3B.json .rhiza/log/01M5PWGEF85Y185JZ2ZZZZZZZZ/01M5PWGEF85Y185JZ2ZQ6RRE3B.json
 exec sh -c 'rhiza check >/dev/null; echo exit $?'
 stdout '^exit 1$'
-! exec rhiza check --json
+! rhiza check --json
 ! stdout '"rule": "append-only"'
 
 -- c1-edited.json --

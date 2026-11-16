@@ -3,9 +3,9 @@
 # checked commit by commit, not pruned by history simplification.
 
 exec git init -q
-exec rhiza init
-exec rhiza add capability thing --field 'statement=Does the thing' --record --json
-exec rhiza render
+rhiza init
+rhiza add capability thing --field 'statement=Does the thing' --record --json
+rhiza render
 exec sh -c 'echo package base > base.go'
 exec git add -A
 exec git commit -qm 'before the cutoff, untrailered'
@@ -25,7 +25,7 @@ exec git add z.go
 exec git commit -qm 'add z.go'
 exec git merge -q --no-ff -m 'merge side' side
 
-exec rhiza check --json
+rhiza check --json
 stdout '"ok": true'
 stdout -count=3 '"rule": "unclaimed"'
 stdout 'add y\.go'

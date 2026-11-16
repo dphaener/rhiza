@@ -6,10 +6,10 @@
 # or Leaf: alone, does not. It only warns: check exits 0.
 
 exec git init -q
-exec rhiza init
-exec rhiza add capability thing --field 'statement=Does the thing' --record --json
+rhiza init
+rhiza add capability thing --field 'statement=Does the thing' --record --json
 stdout '"change_set": "01M5PWGEF85Y185JZ2ZNP53DGX"'
-exec rhiza render
+rhiza render
 exec sh -c 'echo package base > base.go'
 exec git add -A
 exec git commit -qm 'before the cutoff, untrailered'
@@ -56,7 +56,7 @@ exec git add i.go
 exec git commit -qF $WORK/msg-para.txt
 exec git merge -q --no-ff -m 'merge side' side
 
-exec rhiza check --json
+rhiza check --json
 stdout '"ok": true'
 stdout -count=4 '"rule": "unclaimed"'
 stdout -count=4 '"severity": "warn"'
@@ -67,7 +67,7 @@ stdout 'actor only'
 ! stdout 'before the cutoff'
 ! stdout 'squash'
 
-exec rhiza check
+rhiza check
 stdout -count=4 '(?m)^warn unclaimed: '
 
 -- note.md --

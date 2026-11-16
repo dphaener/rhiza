@@ -1,34 +1,34 @@
 # apply works on a change set whose fold only warns of concurrent entries,
 # as check does, but still refuses on any other fold problem.
 
-exec rhiza init
-exec rhiza change new Shape
-exec rhiza add capability a
-exec rhiza set a --field acceptance=1
+rhiza init
+rhiza change new Shape
+rhiza add capability a
+rhiza set a --field acceptance=1
 mv .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json $WORK/hold.json
 env RHIZA_TEST_SEED=2
-exec rhiza set a --field acceptance=2
+rhiza set a --field acceptance=2
 env RHIZA_TEST_SEED=1
 mv $WORK/hold.json .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^warn fold .*concurrent entries'
 ! stdout '^fail'
 
 exec rhiza apply --dry-run writes.json
 exec rhiza apply writes.json
 stdout '^Wrote entry '
-exec rhiza change show
+rhiza change show
 stdout 'node.create'
 stdout 'b'
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 stdout '^warn fold .*concurrent entries'
 ! stdout '^fail'
 
 # Any other fold problem still fails the apply and writes nothing.
-exec rhiza change new Other
+rhiza change new Other
 cp $WORK/bad-entry.json .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE/01M5PWGQ00000000000000000A.json
 exec sh -c 'ls .rhiza/log/01M5PWGP98GD3JXPKEPHTS0TQE | wc -l'
 stdout '^2$'

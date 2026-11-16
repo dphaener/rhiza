@@ -1,39 +1,39 @@
 # rhiza check fails when a generated reference file is missing or differs
 # from what rhiza docs writes, naming it, and passes after rhiza docs. Only
 # a docs/reference holding a file rhiza docs wrote is checked.
-exec rhiza init
-exec rhiza render
-exec rhiza check
+rhiza init
+rhiza render
+rhiza check
 
 # A project's own docs/reference is not Rhiza's: check leaves it alone and
 # rhiza docs will not write into it.
 exec sh -c 'mkdir -p docs/reference && echo own > docs/reference/architecture.md'
-exec rhiza check
-! exec rhiza docs
+rhiza check
+! rhiza docs
 stderr 'holds no file rhiza docs wrote'
 ! exists docs/reference/cli.md
 rm docs/reference/architecture.md
 
-exec rhiza docs
-exec rhiza check
+rhiza docs
+rhiza check
 
 # Editing a generated file makes check fail naming that file alone.
 exec sh -c 'echo stray >> docs/reference/config.md'
-! exec rhiza check
+! rhiza check
 stdout 'docs/reference/config.md'
 ! stdout 'docs/reference/cli.md'
 stdout 'differs from what rhiza docs writes'
 stdout 'next: rhiza docs'
-exec rhiza docs
-exec rhiza check
+rhiza docs
+rhiza check
 
 # A deleted generated file is missing.
 rm docs/reference/cli.md
-! exec rhiza check
+! rhiza check
 stdout 'docs/reference/cli.md: missing'
-exec rhiza docs
-exec rhiza check
+rhiza docs
+rhiza check
 
 # Other files in the folder are the author's own.
 exec sh -c 'echo notes > docs/reference/notes.md'
-exec rhiza check
+rhiza check

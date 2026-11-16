@@ -1,0 +1,15 @@
+{
+  "actor": "01M7HJS8CD6MGQ90HTEWZGP6Z9",
+  "after": [],
+  "at": "2026-11-16T07:10:36Z",
+  "body": {
+    "intent": "In-process run() resolves programs on the script's PATH and relative file arguments against its working directory: cmd/rhiza/ctx.go's exec.Command(name)/exec.LookPath use the test binary's PATH (an in-process script with a fake bin/ rex reached the host's Rex and opened real sessions), and rhiza apply <file> reads relative to the process cwd, so 47 a-d scripts with fake bin/ commands and apply/apply-concurrent keep exec rhiza",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7HK31WRYQ54W29MJCHKGGXK",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HK31WRYQ54W29MJFHTYG2N",
+  "type": "open",
+  "v": 1
+}

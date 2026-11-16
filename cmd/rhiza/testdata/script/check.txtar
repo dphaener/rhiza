@@ -6,47 +6,47 @@
 # A fresh repository, rendered, is ok.
 mkdir fresh
 cd fresh
-exec rhiza init
-! exec rhiza check
+rhiza init
+! rhiza check
 stdout '^failed$'
 stdout '^fail render \.rhiza/rendered: the rendered folder is missing$'
 stdout '^  next: rhiza render$'
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 cmp stdout $WORK/ok.txt
 
 # A stale render fails with the command that fixes it.
 cp $WORK/stale.md .rhiza/rendered/index.md
-! exec rhiza check
+! rhiza check
 stdout '^failed$'
 stdout '^fail render \.rhiza/rendered/index\.md: differs from what render writes$'
 stdout '^  next: rhiza render$'
 exec sh -c 'rhiza check >/dev/null; echo exit $?'
 stdout '^exit 1$'
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 
 # --json and api call print the same bytes, and both exit 1 on a failure.
 cp $WORK/stale.md .rhiza/rendered/index.md
-! exec rhiza check --json
+! rhiza check --json
 cp stdout check.json
 stdout '"ok": false'
 stdout '"rule": "render"'
 stdout '"next": "rhiza render"'
 ! stdout '"change_set"'
-! exec rhiza api call check
+! rhiza api call check
 cmp stdout check.json
 exec sh -c 'rhiza check --json >/dev/null; echo exit $?; rhiza api call check >/dev/null; echo exit $?'
 stdout -count=2 '^exit 1$'
-exec rhiza render
-exec rhiza check --json
+rhiza render
+rhiza check --json
 cmp stdout $WORK/ok.json
-exec rhiza api call check '{}'
+rhiza api call check '{}'
 cmp stdout $WORK/ok.json
 
 # Check writes nothing: --dry-run is a usage error.
-! exec rhiza check --dry-run
+! rhiza check --dry-run
 stderr 'does not take --dry-run'
 stderr '^next: rhiza check$'
 exec sh -c 'rhiza check --dry-run 2>/dev/null; echo exit $?'
@@ -58,21 +58,21 @@ fold-ok
 cd $WORK
 mkdir badlink
 cd badlink
-exec rhiza init
-exec rhiza add intent fast --record
-exec rhiza add capability store --record
-exec rhiza link store serves fast --record
+rhiza init
+rhiza add intent fast --record
+rhiza add capability store --record
+rhiza link store serves fast --record
 exec sh -c 'for f in $(grep -l "\"serves\"" .rhiza/log/*/*.json); do sed "s/\"serves\"/\"verifies\"/" $f > $f.new && mv $f.new $f; done'
 # The index trusts the log to be append-only, so a forged entry needs it dropped.
 [darwin] rm $HOME/Library/Caches/rhiza/index
 [linux] rm $HOME/.cache/rhiza/index
-exec rhiza render
+rhiza render
 fold-ok
-! exec rhiza check
+! rhiza check
 stdout '^fail link change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from capability to intent$'
-exec rhiza unlink store verifies fast --record
-exec rhiza render
-exec rhiza check
+rhiza unlink store verifies fast --record
+rhiza render
+rhiza check
 stdout '^ok$'
 
 # A corrupt entry file fails the log rule.
@@ -80,7 +80,7 @@ exists .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
 # Entries are written read-only: a hand edit makes the file writable first.
 chmod 0644 .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
 cp $WORK/corrupt.json .rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP.json
-! exec rhiza check
+! rhiza check
 stdout '^fail log \.rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTPAGP\.json: '
 
 # A bad link only in a draft, proposed or accepted change set warns, rule
@@ -89,20 +89,20 @@ stdout '^fail log \.rhiza/log/01M5PWGEF85Y185JZ2ZB9QSVK7/01M5PWGEF85Y185JZ2ZEVTP
 cd $WORK
 mkdir inflightlink
 cd inflightlink
-exec rhiza init
-exec rhiza change new Shape
-exec rhiza add intent fast
-exec rhiza add capability store
-exec rhiza link store serves fast
+rhiza init
+rhiza change new Shape
+rhiza add intent fast
+rhiza add capability store
+rhiza link store serves fast
 exec sh -c 'for f in $(grep -l "\"serves\"" .rhiza/log/*/*.json); do from=$(sed -n "s/.*\"from\": \"\([0-9A-Z]*\)\".*/\1/p" $f); to=$(sed -n "s/.*\"to\": \"\([0-9A-Z]*\)\".*/\1/p" $f); sed -e "s/\"serves\"/\"verifies\"/" -e "s/\"from\": \"$from\"/\"from\": \"$to\"/" -e "s/\"to\": \"$to\"/\"to\": \"$from\"/" $f > $f.new && mv $f.new $f; done'
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 stdout '^warn in-flight change set [0-9A-Z]{26}, op [0-9A-Z]{26}, link [0-9A-Z]{26}: link type "verifies" does not go from intent to capability$'
 ! stdout '^fail'
-exec rhiza withdraw
-exec rhiza render
-exec rhiza check
+rhiza withdraw
+rhiza render
+rhiza check
 ! stdout 'in-flight'
 
 # A landed conflict fails the model rule. Two record change sets set the
@@ -111,18 +111,18 @@ exec rhiza check
 cd $WORK
 mkdir conflict
 cd conflict
-exec rhiza init
-exec rhiza add capability store --record
-exec rhiza set store --field statement=A --record
+rhiza init
+rhiza add capability store --record
+rhiza set store --field statement=A --record
 stdout '^Recorded and landed change set 01M5PWGMARA1WR6BD0MGG098MY '
 mv .rhiza/log/01M5PWGMARA1WR6BD0MGG098MY $WORK/hold
 env RHIZA_TEST_SEED=2
-exec rhiza set store --field statement=B --record
+rhiza set store --field statement=B --record
 env RHIZA_TEST_SEED=1
 mv $WORK/hold .rhiza/log/01M5PWGMARA1WR6BD0MGG098MY
 fold-ok
-exec rhiza render
-! exec rhiza check
+rhiza render
+! rhiza check
 stdout '^fail model change set [0-9A-Z]{26}, op [0-9A-Z]{26}: model: conflict: .* is stale: .* wrote field:statement$'
 stdout '^  next: rhiza change new "Resolve the conflict on 01M5PWGEF85Y185JZ2ZMTJ11QP"$'
 
@@ -131,18 +131,18 @@ stdout '^  next: rhiza change new "Resolve the conflict on 01M5PWGEF85Y185JZ2ZMT
 cd $WORK
 mkdir concurrent
 cd concurrent
-exec rhiza init
-exec rhiza change new Shape
-exec rhiza add capability a
-exec rhiza set a --field acceptance=1
+rhiza init
+rhiza change new Shape
+rhiza add capability a
+rhiza set a --field acceptance=1
 stdout '^Wrote entry 01M5PWGKBGYFZMTH8Y8AF1G8GN to change set 01M5PWGEF85Y185JZ2ZGCNH40N\.$'
 mv .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json $WORK/hold.json
 env RHIZA_TEST_SEED=2
-exec rhiza set a --field acceptance=2
+rhiza set a --field acceptance=2
 env RHIZA_TEST_SEED=1
 mv $WORK/hold.json .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN.json
-exec rhiza render
-exec rhiza check
+rhiza render
+rhiza check
 stdout '^ok$'
 stdout '^warn fold \.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1G8GN\.json: changeset: concurrent entries: ops [0-9A-Z]{26} and ops 01M5PWGKBGYFZMTH8Y8AF1G8GN both write op [0-9A-Z]{26}$'
 ! stdout '^fail'
@@ -151,10 +151,10 @@ stdout '^warn fold \.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N/01M5PWGKBGYFZMTH8Y8AF1
 cd $WORK
 mkdir empty
 cd empty
-! exec rhiza check
+! rhiza check
 stderr '^rhiza: no Rhiza repository in '
 stderr '^next: rhiza init$'
-! exec rhiza check --json
+! rhiza check --json
 stdout '"code": "not_found"'
 exec sh -c 'rhiza check 2>/dev/null; echo exit $?'
 stdout '^exit 4$'

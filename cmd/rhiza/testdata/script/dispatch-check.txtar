@@ -6,52 +6,52 @@ env XDG_CONFIG_HOME=$WORK/xdg
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 fold-ok
-exec rhiza render
+rhiza render
 
 # no dispatch file
-exec rhiza check
+rhiza check
 
 # a rule naming a repo workflow
 mkdir .rhiza/workflows
 cp $WORK/mine.toml .rhiza/workflows/bugfix.toml
 cp $WORK/dispatch-repo.toml .rhiza/dispatch.toml
-exec rhiza check
+rhiza check
 
 # a rule naming a built-in workflow
 cp $WORK/dispatch-builtin.toml .rhiza/dispatch.toml
-exec rhiza check
+rhiza check
 
 # a rule naming a missing workflow
 cp $WORK/dispatch-missing.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: request.bug names workflow "nothing-here"'
 
 # a workflow only the personal layer has does not count
 mkdir $WORK/xdg/rhiza/workflows
 cp $WORK/mine.toml $WORK/xdg/rhiza/workflows/personal-only.toml
 cp $WORK/dispatch-personal.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: ready.feature names workflow "personal-only"'
 
 # a milestone key under [ready]
 cp $WORK/dispatch-ready-milestone.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: \[ready\] unknown key "milestone"'
 
 # an unknown table
 cp $WORK/dispatch-table.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: .*unknown table \[reqest\]'
 
 # [request] and [[schedules]] together
 cp $WORK/dispatch-schedules.toml .rhiza/dispatch.toml
-exec rhiza check
+rhiza check
 
 # a bad schedule names the schedule and key
 cp $WORK/dispatch-schedule-bad.toml .rhiza/dispatch.toml
-! exec rhiza check
+! rhiza check
 stdout 'dispatch.toml: .*schedule "intake": every'
 
 -- mine.toml --
