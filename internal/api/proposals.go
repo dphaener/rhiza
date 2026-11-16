@@ -74,8 +74,9 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 // leaves that no run covers (uncoveredProposals), whatever
 // rhiza.autonomy.accept says: nothing is going to accept it. Only the
 // proposed change sets are folded when the fold has an index; a leaf is then
-// read from the change set's own ops. A change set that already has an
-// accept item in items (a gate left it for the owner) is not listed again.
+// read from the change set's view over the index's stored as-is rows. A
+// change set that already has an accept item in items (a gate left it for
+// the owner) is not listed again.
 func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxFold) []InboxItem {
 	if fold.load() != nil {
 		return nil
@@ -91,16 +92,25 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 		if !ok {
 			continue
 		}
-		var m Model
-		if fold.list == nil {
-			m = newModelSets([]changeset.ChangeSet{c}, cs)
+		var leaves []ChangeLeaf
+		if fold.x != nil {
+			// The proposal's view over the index's stored as-is rows, so a
+			// leaf under a landed parent counts.
+			m, err := newIndexModel(fold.x, cs, st)
+			if err != nil {
+				continue
+			}
+			leaves = changeLeavesIn(m, c.Ops, m.rank)
+			if m.err != nil {
+				continue
+			}
 		} else {
 			if base == nil {
 				base = newModelBase(fold.list)
 			}
-			m = base.model(cs)
+			leaves = changeLeaves(base.model(cs), c.Ops)
 		}
-		if len(changeLeaves(m, c.Ops)) > 0 {
+		if len(leaves) > 0 {
 			proposed = append(proposed, cs.String())
 		}
 	}

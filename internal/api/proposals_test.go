@@ -138,3 +138,42 @@ func (f *daemonFoldFix) fold(t *testing.T) *daemonFolded {
 	}
 	return fold
 }
+
+// TestInboxUncoveredProposalsUnderLandedParent: a proposed change set whose
+// leaf sits under a landed parent gets its accept item, with an index as
+// from the fold of the log.
+func TestInboxUncoveredProposalsUnderLandedParent(t *testing.T) {
+	t.Parallel()
+	ctx := readCtx(t)
+	newChange(t, ctx, `{"intent":"Base"}`)
+	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"cap-p"}`)
+	move(t, ctx, "propose", `{}`)
+	move(t, ctx, "accept", `{"reason":"ok"}`)
+	move(t, ctx, "land", `{}`)
+	var want []string
+	for _, h := range []string{"a", "b"} {
+		cs := newChange(t, ctx, `{"intent":"Leaf `+h+`"}`).ChangeSet
+		req := `{"kind":"capability","handle":"` + h + `","parent":"cap-p"}`
+		if h == "b" {
+			req = `{"kind":"capability","handle":"b"}`
+		}
+		mustWrite(t, ctx, "add", req)
+		move(t, ctx, "propose", `{}`)
+		want = append(want, cs.String())
+	}
+	slices.Sort(want)
+	folded := *ctx
+	// The fold side: no index on purpose, to compare against the indexed read.
+	folded.IndexPath = ""
+	for _, c := range []*Ctx{&folded, ctx} {
+		fold := newInboxFold(c)
+		var got []string
+		for _, it := range inboxUncoveredProposals(nil, nil, fold) {
+			got = append(got, it.Change)
+		}
+		fold.close()
+		if !slices.Equal(got, want) {
+			t.Errorf("index %q: accept items for %v, want %v", c.IndexPath, got, want)
+		}
+	}
+}
