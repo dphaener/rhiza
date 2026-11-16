@@ -7764,6 +7764,7 @@
 - [claude-code-6339fce5](actor/claude-code-6339fce5.md)
 - [claude-code-633ce851](actor/claude-code-633ce851.md)
 - [claude-code-635746ba](actor/claude-code-635746ba.md)
+- [claude-code-636d9a15](actor/claude-code-636d9a15.md)
 - [claude-code-63734d1c](actor/claude-code-63734d1c.md)
 - [claude-code-63750355](actor/claude-code-63750355.md)
 - [claude-code-637fc130](actor/claude-code-637fc130.md)
