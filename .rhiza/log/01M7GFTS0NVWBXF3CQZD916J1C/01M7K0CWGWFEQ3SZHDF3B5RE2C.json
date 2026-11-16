@@ -1,0 +1,86 @@
+{
+  "actor": "01M7K05FY9SJ2RRS6D40KH4S2H",
+  "after": [
+    "01M7HZJ7WQAN25EP4GT1NQSF4P"
+  ],
+  "at": "2026-11-16T20:22:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: scratch builds of HEAD 189c5029e and merge-base ce69fddc6 outside PATH; repo with a planted ./git, env -i, scratch HOME, PATH='.:/usr/bin:/bin' and ':/usr/bin:/bin': rhiza init, change new and status never ran the planted git on either build (HEAD now refuses via exec.ErrDot like the merge-base); PATH='/usr/bin:/bin' writes git config. go test envexec/userdir/run/index pass; scripts usage-live-record, project-add-url/path, project-ls-rm, root-init pass."
+        },
+        "handle": "cli-child-env-qa-2",
+        "id": "01M7K0CW42MEHF027C2BE8TNSF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K0CW42MEHF027C28F7MSXG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K0CW42MEHF027C28F7MSXG",
+        "id": "01M7K0CW6DZ0QQ5VKHN34V8F08",
+        "link": "01M7K0CW6DZ0QQ5VKHN2PN8W6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQDRC85SWH2704XH2WC9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: go test ./cmd/rhiza -skip TestScripts (TestNoProcessGlobals with userdir/envexec and MkdirTemp fixtures, required ownChildren) passes; no production api.Ctx or run store relies on a nil getenv (all run stores that call TmpDir come from runStore(ctx))."
+        },
+        "handle": "cli-no-process-globals-qa-2",
+        "id": "01M7K0CW889P4YXWR0R4RJET9Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K0CW889P4YXWR0R2J5JJSE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K0CW889P4YXWR0R2J5JJSE",
+        "id": "01M7K0CWB0A5EAQ35Q2B43N9RT",
+        "link": "01M7K0CWB0A5EAQ35Q2AZNSYT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: session-journal, printout-counts-used-tokens, printout-gap-names-reason, run-autonomous pass in under 1 s each; TestScripts/^r passes in 63 s under TasksMax=300 with no runaway."
+        },
+        "handle": "scripts-in-process-harness-qa-2",
+        "id": "01M7K0CWDB3CEW2JZ4J0ZE2CQV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K0CWDB3CEW2JZ4HXCVQ6P8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K0CWDB3CEW2JZ4HXCVQ6P8",
+        "id": "01M7K0CWF37V8XEWSD6KCN68MW",
+        "link": "01M7K0CWF37V8XEWSD6KCJ2XHP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7K0CWGWFEQ3SZHDF3B5RE2C",
+  "type": "ops",
+  "v": 1
+}

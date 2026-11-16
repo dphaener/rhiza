@@ -1,0 +1,40 @@
+{
+  "actor": "01M7HQ4P72SNKHQ8ZFG0T2F2MN",
+  "after": [
+    "01M7HQ29X0WS6GBS8XH9NEFPJF"
+  ],
+  "at": "2026-11-16T08:29:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified cli-child-env at fix commit 7d0913867 in a detached scratch worktree, RHIZA_/SHIP_/REX_ unset, every go test under a capped systemd scope with -p 2. Every Checks: line exits 0 as written: go test ./cmd/rhiza -skip TestScripts; go test ./internal/api ./internal/envexec; TestScripts/^(rex-install|run-status-tokens|run-ship-needs-leaves|run-log|run-tail)$; TestScripts/(ship-|session-hook|usage-live); go vet ./cmd/rhiza ./internal/api ./internal/envexec; rhiza ship generate (built from the commit: make docs, 0 changed); rhiza render. Acceptance: ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|ShellWithStdin|ChildEnv)' PASS (TestChildEnv, TestChildEnvPath/absolute and /relative); ./internal/api -run '^Test(ShipGate|ShipPrePush|ShipGenerate|DaemonHook|UsageLive|ChildEnv)' PASS (TestChildEnv, TestChildEnvPath); ./internal/index ./internal/run ./internal/gosweep PASS. TestChildEnvPath puts a fake git first on run()'s given PATH (absolute and relative entry) while the process's PATH lacks it, and the fake runs. Failure case: a program only on the process's PATH is ErrNotFound through LookPath, Exec, Start and Detach; the api test gets ErrNotFound for a hook whose Ctx PATH has no sh. Mutation check: making envexec.Command use exec.LookPath fails all of those assertions (reverted). TestNoProcessGlobals/fixtures PASS: it flags exec.LookPath, and exec.Command/CommandContext with a bare, relative or variable name under an aliased import, but not an absolute literal. The allowlist is main, selfPath (main-only), internal/daemon/reexec.go and envexec.Command, each with a reason that holds. A grep of the non-test code finds no exec.Command/LookPath on run()'s path left outside envexec, apart from selfPath. Not-found errors are still *exec.Error wrapping ErrNotFound, so output, flags and exit codes are unchanged. Note, outside this leaf's acceptance (env/PATH, not Dir): shellWithStdin now runs in wd, but runUserStatusLine (internal/api/usage_live.go:104) and runProjectClone's git clone (internal/api/project.go:228) still set no cmd.Dir, so they run in the process's working directory. The CLI is unaffected because its working directory is wd; an in-process caller with another wd would run them elsewhere."
+        },
+        "handle": "cli-child-env-fix-verified",
+        "id": "01M7HQJYYECKTJBE6DFX09FQYZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HQJYYECKTJBE6DFW440SQM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HQJYYECKTJBE6DFW440SQM",
+        "id": "01M7HQJZ01GNQQ3AZH8J77EBF8",
+        "link": "01M7HQJZ01GNQQ3AZH8EDRN23R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQDRC85SWH2704XH2WC9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HQJZ2G8Q5F209RWEZDXDE8",
+  "type": "ops",
+  "v": 1
+}

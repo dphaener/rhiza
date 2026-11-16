@@ -1,0 +1,109 @@
+{
+  "actor": "01M7HZB97PXCD1QQYZ1278Q7YV",
+  "after": [
+    "01M7HY8QKG15X085ZN9E3XDWBT"
+  ],
+  "at": "2026-11-16T10:48:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built ./cmd/rhiza at HEAD and at the merge-base to scratch paths, ran init, change new, apply (relative file from repo/sub/deeper, ./missing.json, ../deeper/w.json --dry-run), source add with relative file and --raw (and missing ones), slice, check, render in scratch repos under a scratch HOME with RHIZA_TEST_NOW/SEED: output and exit codes identical to the base build. daemon --once (via sh -c 'sleep 1 & exec rhiza daemon --once') dropped a stale drivers entry and adopted its sleep child exactly as the base build did."
+        },
+        "handle": "cli-no-process-globals-qa-1",
+        "id": "01M7HZJ7GJ2RTSSGJBS622RAFZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HZJ7GJ2RTSSGJBS3N7FNN9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HZJ7GJ2RTSSGJBS3N7FNN9",
+        "id": "01M7HZJ7J2EYX4Q56M2FEJ0N1D",
+        "link": "01M7HZJ7J2EYX4Q56M2DXCSK6H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA: with a fake git first on an absolute PATH and a marker variable, check / ship check / run ls ran the same git calls with the marker visible, same as the base build. With PATH='.:/usr/bin' or ':/usr/bin' and a git file in the working directory, the new build runs that planted git (12 calls) while the base build refused it (Go ErrDot): recorded as a finding."
+        },
+        "handle": "cli-child-env-qa-1",
+        "id": "01M7HZJ7KM58BKED99E4T501EV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HZJ7KM58BKED99E1H5JPY8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HZJ7KM58BKED99E1H5JPY8",
+        "id": "01M7HZJ7N2T6JD8DGE3KZ3QZMY",
+        "link": "01M7HZJ7N2T6JD8DGE3J8T1KKH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQDRC85SWH2704XH2WC9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: a wait step (timeout 2s, interval 1s) under run start --foreground with RHIZA_TEST_CLOCK_SCALE=1000, empty and abc: 40, 3 and 3 checks in about 2.05 s each, identical to the base build."
+        },
+        "handle": "run-clock-from-ctx-qa-1",
+        "id": "01M7HZJ7PH5SA3V5S33V997PH0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HZJ7PH5SA3V5S33QT4STDZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HZJ7PH5SA3V5S33QT4STDZ",
+        "id": "01M7HZJ7R3KJ3YJG3HNRXVWJNM",
+        "link": "01M7HZJ7R3KJ3YJG3HNQQ8QB5G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQHE7WQMF5VZJDWBVTGM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: in a scratch worktree, scratch txtars: bare rhiza lines (apply and source add with relative files from a subdir, ! rhiza nosuch, env RHIZA_ACTOR= and env GIT_CONFIG_GLOBAL= lines) passed; exec rhiza off the list and a fake bin/ command calling rhiza both failed in about 0.02 s with exit 2 and the processScripts message. The leaves' named unit tests in cmd/rhiza, internal/envexec, internal/userdir and internal/run pass."
+        },
+        "handle": "scripts-in-process-harness-qa-1",
+        "id": "01M7HZJ7SJVKJ75MV3FNEHMD4J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HZJ7SJVKJ75MV3FJS9SW2Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HZJ7SJVKJ75MV3FJS9SW2Z",
+        "id": "01M7HZJ7V1KZ24F016JF23D2G0",
+        "link": "01M7HZJ7V1KZ24F016JE4K55YK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H1G7F352JVZ96KFBEDA1TF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HZJ7WQAN25EP4GT1NQSF4P",
+  "type": "ops",
+  "v": 1
+}

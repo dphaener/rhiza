@@ -1,0 +1,29 @@
+{
+  "actor": "01M7HRNPZMETXXE59Q4FSMBCKP",
+  "after": [
+    "01M7HRJBPPSVV1C0YE9MPZRPGR"
+  ],
+  "at": "2026-11-16T09:02:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "An in-process rhiza daemon line (rhiza daemon --once) runs ctx.Adopt and ctx.Reap with the test binary's pid: adoptList lists every child of that process, other scripts' exec children too, and reapList Wait4s them, so a parallel script's exec fails with 'waitid: no child processes' (seen twice in TestScripts/^[a-d]: daemon-continue-slot:31, daemon-resume-landed-plan:37). Three a-d scripts already run the daemon loop in-process (daemon-event-hook, daemon-load-settings, daemon-notify-disk-low; workflow-plan-autonomy in s-w too). Should run() leave Adopt and Reap nil for an in-process call (a change to run()/ctx.go), or should those scripts go back on processScripts with exec rhiza? This retry kept the 18 other daemon scripts on the list for this reason instead of converting them."
+        },
+        "handle": "in-process-daemon-reaps-script-children",
+        "id": "01M7HSGGPARVH6P184DMKDAZ0Q",
+        "key": null,
+        "kind": "question",
+        "node": "01M7HSGGPARVH6P184DM02E54N",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HSGGQHVTJGZMXA9E9963TQ",
+  "type": "ops",
+  "v": 1
+}

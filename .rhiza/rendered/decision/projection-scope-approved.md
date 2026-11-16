@@ -35,8 +35,18 @@ Milestone 39 holds four change sets, in this order: a parity harness with intern
 - decided-by [render-from-projection](../capability/rhiza/views/fast-reads/render-from-projection.md)
 - decided-by [change-reads-from-projection](../capability/rhiza/views/fast-reads/change-reads-from-projection.md)
 - decided-by [daemon-fold-from-projection](../capability/rhiza/views/fast-reads/daemon-fold-from-projection.md)
+- decided-by [cli-no-process-globals](../capability/rhiza/integrity/self-check/cli-no-process-globals.md)
+- decided-by [cli-child-env](../capability/rhiza/integrity/self-check/cli-child-env.md)
+- decided-by [run-clock-from-ctx](../capability/rhiza/integrity/self-check/run-clock-from-ctx.md)
+- decided-by [run-concurrent-guard](../capability/rhiza/integrity/self-check/run-concurrent-guard.md)
 - decided-by [workspace-log-once](../capability/rhiza/views/fast-reads/workspace-log-once.md)
 - decided-by [slice-and-show-from-projection](../capability/rhiza/views/fast-reads/slice-and-show-from-projection.md)
+- decided-by [scripts-in-process-harness](../capability/rhiza/integrity/self-check/scripts-in-process-harness.md)
+- decided-by [scripts-in-process-a-d](../capability/rhiza/integrity/self-check/scripts-in-process-a-d.md)
+- decided-by [scripts-in-process-e-q](../capability/rhiza/integrity/self-check/scripts-in-process-e-q.md)
+- decided-by [scripts-in-process-r](../capability/rhiza/integrity/self-check/scripts-in-process-r.md)
+- decided-by [scripts-in-process-s-w](../capability/rhiza/integrity/self-check/scripts-in-process-s-w.md)
+- decided-by [scripts-in-process-docs](../capability/rhiza/integrity/self-check/scripts-in-process-docs.md)
 
 ## History
 

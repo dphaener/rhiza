@@ -1,0 +1,40 @@
+{
+  "actor": "01M7HSY2F3VQG0FHSNQVTNFNB9",
+  "after": [
+    "01M7HSNB2HVXW87W415J57EAWD"
+  ],
+  "at": "2026-11-16T09:12:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-verified cli-no-process-globals at fix 90b43b9be (Decision in-process-run-no-adopt-reap) in a detached worktree, every go test capped (MemoryMax=6G, TasksMax=300, -p 2, RHIZA/SHIP/REX vars unset). Checks: TestInProcessDaemonLeavesSiblings exit 0 (in-process subtest: sibling child not on the driver list and its Wait gets exit 3; process subtest with processChildren: sibling adopted). Old wiring (ctx.go Adopt/Reap set back to adoptChildren/reapDrivers, scratch only, reverted) exit 1: in-process sibling on the driver list, so the test bites. -skip TestScripts exit 0 (27s); TestScripts/^(daemon-event-hook|daemon-load-settings|daemon-notify-disk-low|daemon-continue-slot|daemon-resume-landed-plan)$ exit 0; ship generate and render exit 0 with a scratch build (only drift is other sessions' actors from the shared root). Acceptance: -run '^Test(NewCtx|CtxFromEnv|TUI|RunWorkingDir)' exit 0, TestScripts/tui- exit 0, go vet ./cmd/rhiza clean, gofmt clean. Diff: only main() and main_test.go rhizaProcess pass processChildren; every other run() caller (testscript rhiza command main_test.go:515, ctx_test, process_globals_test, docs_examples_test) passes none; tui.go's newCtx copies g so own carries; internal/api checks Adopt/Reap for nil at daemon.go:171, 498 and daemon_projects.go:224, the only uses. No output, flag or exit-code change. Variadic own: sound for today's callers, but it hides two mistakes: more than one value is accepted with the last silently winning, and a future real-process entry point that forgets it compiles and silently stops reaping drivers (zombies) with no test to catch it; a required parameter would make each caller choose."
+        },
+        "handle": "cli-no-process-globals-adopt-reap-verified",
+        "id": "01M7HT29A7XHZ6GMKDN1P8FFKS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HT29A7XHZ6GMKDN12ZR8ST",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HT29A7XHZ6GMKDN12ZR8ST",
+        "id": "01M7HT29BN50BZC7H948EEJFK7",
+        "link": "01M7HT29BN50BZC7H946HYHTXJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GG0GD7S0MZQ888A108TB0C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HT29D77G3X74NYDHCQTCMJ",
+  "type": "ops",
+  "v": 1
+}

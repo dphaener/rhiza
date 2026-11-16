@@ -1,0 +1,27 @@
+{
+  "actor": "01M7HRNPZMETXXE59Q4FSMBCKP",
+  "after": [
+    "01M7HSGGQHVTJGZMXA9E9963TQ"
+  ],
+  "at": "2026-11-16T09:02:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7HSGGPARVH6P184DM02E54N",
+        "id": "01M7HSGJC63WT4Z1QBJD2TYC3P",
+        "link": "01M7HSGJC5AT2C98N7V76CN02W",
+        "note": "found while converting the a-d daemon scripts; makes the a-d shard flaky",
+        "op": "link.create",
+        "to": "01M7H1G7G4P94B0SPFT0DGHPYE",
+        "type": "relates-to"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HSGJDAYPCFWNCTGNSEE3JB",
+  "type": "ops",
+  "v": 1
+}

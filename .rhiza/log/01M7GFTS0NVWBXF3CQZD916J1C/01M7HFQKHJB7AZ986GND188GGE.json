@@ -1,0 +1,40 @@
+{
+  "actor": "01M7HFBMZ5H2ZZMPEJCWXMS2AD",
+  "after": [
+    "01M7HDWR7WZFB14FY0N81BBP9Q"
+  ],
+  "at": "2026-11-16T06:11:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 02752b3f1, capped and with RHIZA_/SHIP_/REX_ unset, every Checks: command exits 0: go test ./cmd/rhiza -run '^Test(NewCtx|CtxFromEnv|ShellWithStdin|ChildEnv|RunWorkingDir|ParseGlobals)' (TestChildEnv PASS), go test ./internal/api -run '^Test(ShipGate|ShipPrePush|ShipGenerate|DaemonHook|UsageLive|ChildEnv)', go test ./internal/index ./internal/run ./internal/gosweep ./internal/userdir, TestScripts/(ship-|session-hook|usage-live) (35s), internal/api -skip Budget, cmd/rhiza -skip 'TestScripts|Budget', TestScripts/(workflow-|run-start|tui-|daemon-detach), go vet on all six packages, and rhiza ship generate plus rhiza render in a detached worktree, which left it clean. No fork runaway. TestChildEnv t.Setenvs the process HOME, XDG_CACHE_HOME, GIT_CONFIG_GLOBAL and a process-only marker, then calls run() with other values. It shows git reads the given GIT_CONFIG_GLOBAL, the index .db lands under the given XDG_CACHE_HOME/rhiza/index and run-tmp under the given XDG_CACHE_HOME/rhiza/run-tmp, nothing goes under the process cache, a workflow step sees the given marker, and the process-only variable stays unset (the failure case). internal/api/child_env_test.go shows a hook child and the gate and head envs see a Ctx Environ marker the process lacks. Diff read: gitIn, gitConfig, execIn, shellWithStdin, startProgram/programEnv, detach (and its RHIZA_TEST_DETACH_LOG read), tui colorprofile.Detect, and api's ship_build headChildEnv, usage_live, daemon_hook, ship_prepush, ship_generate, ship_gate, run_leaves commitOnHead and project clone all take env from the Ctx (childEnv). index.DefaultPath, Remove and IndexDir, run.TmpDir and Store.Getenv (runStore), personalWorkflowsDir and gosweep.CacheDirFrom place dirs through the new internal/userdir over getenv. Grep finds no os.Getenv/LookupEnv/Environ/UserCacheDir/UserHomeDir/TempDir and no exec without Env left on run()'s path in these packages. The only exceptions are main()'s own os.Environ/RHIZA_CPUPROFILE, nil-fallbacks for programmatic callers, run/clock.go's scale env (left to the dependent leaf run-clock-from-ctx) and daemon reexec. Bare run.NewStore sites only List. No txtar changes, so output, flags and exit codes are unchanged."
+        },
+        "handle": "cli-child-env-verified",
+        "id": "01M7HFQKF0Z30EGNSYCZJ4EXJS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7HFQKF0Z30EGNSYCZBDHJSH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7HFQKF0Z30EGNSYCZBDHJSH",
+        "id": "01M7HFQKG7N4XZZHG7JW1PMVC1",
+        "link": "01M7HFQKG7N4XZZHG7JVZGW3N4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H0YQDRC85SWH2704XH2WC9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTS0NVWBXF3CQZD916J1C",
+  "for": "01M7HDD1GBZA4HG0FDEMDRHCP9",
+  "id": "01M7HFQKHJB7AZ986GND188GGE",
+  "type": "ops",
+  "v": 1
+}
