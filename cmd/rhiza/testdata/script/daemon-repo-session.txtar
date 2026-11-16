@@ -10,18 +10,18 @@ env REX_SESSION=
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
-exec rhiza change new Built --title Built
-exec rhiza add capability built-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Missing: created once, and the started run's tab carries -s rhiza-repo.
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new rhiza-repo " $WORK/rex.log'
 stdout '^1$'
 exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo RHIZA_RUN_LOG=[0-9A-Z]{26}\.start-1\.log rhiza run start " $WORK/detach.log'
@@ -32,7 +32,7 @@ stdout '^0$'
 # Present: none created, tabs still open in it.
 cp $WORK/present.json $WORK/sessions.json
 rm $WORK/rex.log $WORK/detach.log
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -c "^rex session new" $WORK/rex.log || true'
 stdout '^0$'
 exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
@@ -43,7 +43,7 @@ stdout '^0$'
 # Another REX_SESSION does not move the tabs.
 rm $WORK/rex.log $WORK/detach.log
 env REX_SESSION=session:other
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 exec sh -c 'grep -Ec "^REX_SESSION=rhiza-repo (RHIZA_RUN_LOG=[^ ]* )?rhiza " $WORK/detach.log'
 ! stdout '^0$'
 exec sh -c 'grep -c "session:other" $WORK/detach.log || true'

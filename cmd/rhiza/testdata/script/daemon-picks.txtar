@@ -11,96 +11,96 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
-exec rhiza add intent m --field milestone=1 --record
-exec rhiza add intent plain --record
+rhiza add intent m --field milestone=1 --record
+rhiza add intent plain --record
 exec git add -A
 exec git commit -qm init
 
 # Built: a milestone change set with a leaf.
-exec rhiza change new Built --title Built
-exec rhiza add capability built-leaf
-exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Leafless: serves the milestone, creates no capability.
-exec rhiza change new Leafless --title Leafless
-exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Leafless --title Leafless
+rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Backlog: has a leaf, serves no milestone.
-exec rhiza change new Backlog --title Backlog
-exec rhiza add capability backlog-leaf
-exec rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves plain
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Backlog --title Backlog
+rhiza add capability backlog-leaf
+rhiza link 01M5PWH01R1B9MDYF6J8XB3MQG serves plain
+rhiza propose
+rhiza accept --reason ok
 
 # Classic: serves the milestone with no leaves, pinned to ship-change-classic.
-exec rhiza change new Classic --title Classic --workflow ship-change-classic --json
+rhiza change new Classic --title Classic --workflow ship-change-classic --json
 stdout '"change_set": "01M5PWH4Y0SRA04X93K2T73TD9"'
-exec rhiza link 01M5PWH4Y0SRA04X93K2T73TD9 serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza link 01M5PWH4Y0SRA04X93K2T73TD9 serves m
+rhiza propose
+rhiza accept --reason ok
 
-! exec rhiza daemon --permission-mode manual --once --max-runs=-1
+! rhiza daemon --permission-mode manual --once --max-runs=-1
 
 # No permission mode: ship-change's agent steps would have none, so the
 # daemon refuses before it opens any tab. A mode that bypasses the agent's
 # permission checks is refused the same way.
-! exec rhiza daemon --once
+! rhiza daemon --once
 stderr 'no permission mode: give --permission-mode'
-! exec rhiza daemon --once --permission-mode bypassPermissions
+! rhiza daemon --once --permission-mode bypassPermissions
 stderr 'bypasses the agent''s permission checks'
 ! exists $WORK/detach.log
 
 # Disk guard: under 10 GiB free the daemon starts nothing and status says
 # why; --min-free 0 turns the guard off; at 20 GiB the runs start.
 env RHIZA_TEST_FREE_BYTES=1073741824
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 ! stdout 'Started'
 ! exists $WORK/detach.log
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"reason": "disk-low"'
 stdout '1.0 GiB free, under the minimum of 10.0 GiB'
-exec rhiza daemon status
+rhiza daemon status
 stdout 'Built: disk space is low \(1.0 GiB free'
-exec rhiza inbox --json
+rhiza inbox --json
 stdout -count=1 '"kind": "disk-low"'
 env RHIZA_TEST_FREE_BYTES=21474836480
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 stdout -count=2 '^Started a run of '
 stdout '^Started a run of 01M5PWGQ8GB4618G4RH2TV0ZAH'
 stdout '^Started a run of 01M5PWGW4RMJ580CPWEPP3158J'
 ! stdout '01M5PWH4Y0SRA04X93K2T73TD9'
 ! stdout '01M5PWH01R1B9MDYF6J8XB3MQG'
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Skipped: 01M5PWH4Y0SRA04X93K2T73TD9 Classic: has no leaves$'
-exec rhiza inbox --json
+rhiza inbox --json
 ! stdout 'disk-low'
 exec rm $WORK/detach.log
 env RHIZA_TEST_FREE_BYTES=1073741824
-exec rhiza daemon --permission-mode manual --once --min-free 0
+rhiza daemon --permission-mode manual --once --min-free 0
 stdout -count=2 '^Started a run of '
-! exec rhiza daemon --permission-mode manual --once --min-free lots
+! rhiza daemon --permission-mode manual --once --min-free lots
 stderr '--min-free'
 exec rm $WORK/detach.log
 env RHIZA_TEST_FREE_BYTES=1099511627776
 
 # The mode reaches each started run's command.
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 stdout -count=2 '^Started a run of '
 exec sh -c 'grep -c "^REX_SESSION=.* rhiza run start --foreground [0-9A-Z]* --permission-mode manual$" $WORK/detach.log'
 stdout '^2$'
-exec rhiza daemon --permission-mode manual --once --json
+rhiza daemon --permission-mode manual --once --json
 stdout '"started": \['
 
 # --autonomous reaches the started run's command, and only then.
 exec sh -c 'grep -c -- "--autonomous" $WORK/detach.log || true'
 stdout '^0$'
-exec rhiza daemon --permission-mode manual --once --autonomous
+rhiza daemon --permission-mode manual --once --autonomous
 exec sh -c 'grep "^REX_SESSION=.* rhiza run start --foreground [0-9A-Z]* --permission-mode manual --autonomous$" $WORK/detach.log | wc -l'
 stdout '^ *2$'
 
@@ -111,33 +111,33 @@ cd $WORK
 mkdir order
 cd order
 exec git init -q
-exec rhiza init
+rhiza init
 cd $WORK
-exec rhiza project rm repo
-exec rhiza project add order
+rhiza project rm repo
+rhiza project add order
 cd order
-exec rhiza add intent ten --field milestone=10 --record
-exec rhiza add intent nine --field milestone=9 --record
+rhiza add intent ten --field milestone=10 --record
+rhiza add intent nine --field milestone=9 --record
 exec git add -A
 exec git commit -qm init
 
-exec rhiza change new Ten --title Ten
-exec rhiza add capability ten-leaf
-exec rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves ten
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Ten --title Ten
+rhiza add capability ten-leaf
+rhiza link 01M5PWGQ8GB4618G4RH2TV0ZAH serves ten
+rhiza propose
+rhiza accept --reason ok
 
-exec rhiza change new Nine --title Nine
-exec rhiza add capability nine-leaf
-exec rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves nine
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Nine --title Nine
+rhiza add capability nine-leaf
+rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves nine
+rhiza propose
+rhiza accept --reason ok
 
-exec rhiza roadmap --json
+rhiza roadmap --json
 stdout '(?s)"handle": "nine".*"handle": "ten"'
 
 exec rm $WORK/detach.log
-exec rhiza daemon --permission-mode manual --once --max-runs 1
+rhiza daemon --permission-mode manual --once --max-runs 1
 stdout -count=1 '^Started a run of 01M5PWGW4RMJ580CPWEPP3158J'
 exec sh -c 'grep -c "run start" $WORK/detach.log'
 stdout '^1$'

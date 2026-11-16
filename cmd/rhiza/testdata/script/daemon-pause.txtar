@@ -8,33 +8,33 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
 
-exec rhiza change new Built --title Built
-exec rhiza add capability built-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Paused: nothing starts, status says so and skips the candidate as paused.
-exec rhiza daemon set rhiza.daemon.paused true
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon set rhiza.daemon.paused true
+rhiza daemon --permission-mode manual --once
 ! stdout 'Started'
 ! exists $WORK/detach.log
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Paused: yes$'
 stdout 'Built: paused'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"reason": "paused"'
 
 # Unpaused: the next poll starts the run.
-exec rhiza daemon set rhiza.daemon.paused false
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon set rhiza.daemon.paused false
+rhiza daemon --permission-mode manual --once
 stdout -count=1 '^Started a run of '
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Paused: no$'
 
 -- bin/rex --

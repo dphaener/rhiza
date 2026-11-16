@@ -9,31 +9,31 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
-exec rhiza change new Orphan --title Orphan
-exec rhiza add capability orphan-leaf
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Orphan --title Orphan
+rhiza add capability orphan-leaf
+rhiza propose
+rhiza accept --reason ok
 
-exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
 stdout '^Started a run of '
 
 # backlog = "skip" turns it off.
 rm $WORK/detach.log
 exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
-exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
 ! stdout '^Started a run of '
-exec rhiza daemon status
+rhiza daemon status
 stdout 'Orphan: serves no milestone'
 
 # An unknown value skips it too, with the value in the detail.
 exec sh -c 'printf "[schedule]\nbacklog = \"sometimes\"\n" > .rhiza/policy.toml'
-exec rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
+rhiza daemon --permission-mode manual --once --max-runs=1 --autonomous
 ! stdout '^Started a run of '
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout 'sometimes'
 -- bin/rex --
 #!/bin/sh

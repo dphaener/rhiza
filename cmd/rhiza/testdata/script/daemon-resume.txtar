@@ -13,21 +13,21 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
 
 # One is accepted, Landed has landed, Draft is a draft.
-exec rhiza change new One --title One
-exec rhiza add intent one-thing
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza change new Landed --title Landed
-exec rhiza add intent landed-thing
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza land
-exec rhiza change new Draft --title Draft
+rhiza change new One --title One
+rhiza add intent one-thing
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Landed --title Landed
+rhiza add intent landed-thing
+rhiza propose
+rhiza accept --reason ok
+rhiza land
+rhiza change new Draft --title Draft
 
 mkdir .git/rhiza/runs
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGEF85Y185JZ2ZGCNH40N\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/INTERRUPTED1.jsonl'
@@ -36,7 +36,7 @@ exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:0
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWGT68X5XKB54XFQMHKA0A\"}}" "{\"type\":\"process\",\"at\":\"2026-01-01T00:00:01Z\",\"process\":{\"host\":\"$(hostname)\",\"pid\":999999}}" > .git/rhiza/runs/DRAFT000001.jsonl'
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2026-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"CHANGETWO\"}}" "{\"type\":\"finished\",\"at\":\"2026-01-01T00:00:02Z\",\"end\":\"failed\",\"detail\":\"boom\"}" > .git/rhiza/runs/FAILED00001.jsonl'
 
-exec rhiza daemon --permission-mode manual --once
+rhiza daemon --permission-mode manual --once
 stdout '^Resumed run INTERRUPTED1$'
 exec sh -c 'grep -c "^REX_SESSION=.* rhiza run resume --foreground INTERRUPTED1$" $WORK/detach.log'
 stdout '^1$'
@@ -53,7 +53,7 @@ stdout '^1$'
 # The landed ones wait in the inbox, autonomous or not, naming the state
 # and the abandon command; abandoning one clears it. The draft one is not
 # listed: a manual resume continues it.
-exec rhiza inbox
+rhiza inbox
 stdout 'skipped run LANDED00001, change set 01M5PWGNA0MVZ1H5AXG5VQ0BY9'
 stdout 'interrupted, and not resumed: its change set is landed'
 stdout 'next: rhiza run abandon LANDED00001'
@@ -61,13 +61,13 @@ stdout 'skipped run LANDEDAUTO1'
 stdout 'next: rhiza run abandon LANDEDAUTO1'
 ! stdout 'DRAFT000001'
 ! stdout 'skipped run INTERRUPTED1'
-exec rhiza run abandon LANDED00001
-exec rhiza inbox
+rhiza run abandon LANDED00001
+rhiza inbox
 ! stdout 'LANDED00001'
 stdout 'LANDEDAUTO1'
 
 # Interrupted again (its process is still dead): left alone.
-exec rhiza daemon --permission-mode manual --once --json
+rhiza daemon --permission-mode manual --once --json
 stdout '"resumed": \[\]'
 exec sh -c 'grep -c "run resume" $WORK/detach.log'
 stdout '^1$'

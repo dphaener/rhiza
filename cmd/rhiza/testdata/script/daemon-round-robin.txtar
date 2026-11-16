@@ -13,40 +13,40 @@ exec sh -c 'printf "[projects.repo]\npath = \"repo\"\n[projects.second]\npath = 
 mkdir repo second
 cd repo
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
-exec rhiza change new One --title One
-exec rhiza add capability one-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza change new Two --title Two
-exec rhiza add capability two-leaf
-exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new One --title One
+rhiza add capability one-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Two --title Two
+rhiza add capability two-leaf
+rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+rhiza propose
+rhiza accept --reason ok
 cd $WORK/second
 exec git init -q
-exec rhiza init
-exec rhiza add intent m --field milestone=1 --record
+rhiza init
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
-exec rhiza change new Three --title Three
-exec rhiza add capability three-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza change new Four --title Four
-exec rhiza add capability four-leaf
-exec rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Three --title Three
+rhiza add capability three-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Four --title Four
+rhiza add capability four-leaf
+rhiza link 01M5PWGS702G3VYA781BNZ0K7Q serves m
+rhiza propose
+rhiza accept --reason ok
 
 # One slot on the machine: one run starts, in the first project.
 cd $WORK
-exec rhiza daemon --permission-mode manual --max-runs 1 --once
+rhiza daemon --permission-mode manual --max-runs 1 --once
 stdout -count=1 '^Started a run of '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=rhiza-repo '
@@ -55,7 +55,7 @@ rm $WORK/detach.log
 
 # Three slots: the turns alternate, two in the first project, one in the
 # second; not three, or four, in one.
-exec rhiza daemon --permission-mode manual --max-runs 3 --once
+rhiza daemon --permission-mode manual --max-runs 3 --once
 stdout -count=3 '^Started a run of '
 exec cat $WORK/detach.log
 stdout -count=2 '^REX_SESSION=rhiza-repo '
@@ -64,9 +64,9 @@ rm $WORK/detach.log
 
 # The first project capped at one run: its other slot goes to the second.
 cd $WORK/repo
-exec rhiza daemon set rhiza.project.maxRuns 1
+rhiza daemon set rhiza.project.maxRuns 1
 cd $WORK
-exec rhiza daemon --permission-mode manual --max-runs 3 --once
+rhiza daemon --permission-mode manual --max-runs 3 --once
 stdout -count=3 '^Started a run of '
 exec cat $WORK/detach.log
 stdout -count=1 '^REX_SESSION=rhiza-repo '

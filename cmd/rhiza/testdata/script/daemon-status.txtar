@@ -10,58 +10,58 @@ env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
-exec rhiza add intent m --field milestone=1 --record
+rhiza add intent m --field milestone=1 --record
 exec git add -A
 exec git commit -qm init
 
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Daemon not running$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"running": false'
 
-exec rhiza change new Built --title Built
-exec rhiza add capability built-leaf
-exec rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
 
 # Three more accepted change sets the daemon will not start: one serving no
 # milestone, one with no leaves (pinned to ship-change-classic, which builds
 # only planned leaves; the conductor default would plan it) and one
 # depending on an unlanded change set.
-exec rhiza change new Orphan --title Orphan
-exec rhiza add capability orphan-leaf
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza change new Leafless --title Leafless --workflow ship-change-classic
-exec rhiza link 01M5PWGX40FB1RBRN9YHMNJW07 serves m
-exec rhiza propose
-exec rhiza accept --reason ok
-exec rhiza change new Waiting --title Waiting
-exec rhiza link 01M5PWH110D047SG185GTXKBCB serves m
-exec rhiza link 01M5PWH110D047SG185GTXKBCB depends-on 01M5PWGS702G3VYA781BNZ0K7Q
-exec rhiza add capability waiting-leaf
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Orphan --title Orphan
+rhiza add capability orphan-leaf
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Leafless --title Leafless --workflow ship-change-classic
+rhiza link 01M5PWGX40FB1RBRN9YHMNJW07 serves m
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Waiting --title Waiting
+rhiza link 01M5PWH110D047SG185GTXKBCB serves m
+rhiza link 01M5PWH110D047SG185GTXKBCB depends-on 01M5PWGS702G3VYA781BNZ0K7Q
+rhiza add capability waiting-leaf
+rhiza propose
+rhiza accept --reason ok
 
 
 # Shipped: ready, with a leaf, and its latest run is a succeeded ship-change
 # run (a fixture journal) that ended after the accept.
-exec rhiza change new Shipped --title Shipped
-exec rhiza link 01M5PWH6WG057XVB12H62KNP5F serves m
-exec rhiza add capability shipped-leaf
-exec rhiza propose
-exec rhiza accept --reason ok
+rhiza change new Shipped --title Shipped
+rhiza link 01M5PWH6WG057XVB12H62KNP5F serves m
+rhiza add capability shipped-leaf
+rhiza propose
+rhiza accept --reason ok
 mkdir .git/rhiza/runs
 exec sh -c 'printf "%s\n%s\n" "{\"type\":\"started\",\"at\":\"2099-01-01T00:00:00Z\",\"started\":{\"workflow\":\"ship-change\",\"definition\":\"\",\"change\":\"01M5PWH6WG057XVB12H62KNP5F\"}}" "{\"type\":\"finished\",\"at\":\"2099-01-01T00:00:02Z\",\"end\":\"succeeded\"}" > .git/rhiza/runs/SHIPPED0001.jsonl'
 
-exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
 stdout '^Started a run of '
 
 # The daemon is gone, so it is not running, but its state says what it did.
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Daemon not running$'
 stdout '^Version: .+$'
 stdout '^Max runs: 3$'
@@ -73,7 +73,7 @@ stdout '^Skipped: 01M5PWGS702G3VYA781BNZ0K7Q Orphan: serves no milestone$'
 stdout '^Skipped: 01M5PWGX40FB1RBRN9YHMNJW07 Leafless: has no leaves$'
 stdout '^Skipped: 01M5PWH110D047SG185GTXKBCB Waiting: not ready \(.*\)$'
 stdout '^Skipped: 01M5PWH6WG057XVB12H62KNP5F Shipped: its latest run shipped it$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"running": false'
 stdout '"max_runs": 3'
 stdout '"live": [0-9]+'
@@ -82,48 +82,48 @@ stdout '"max": 3'
 stdout '"web": "http://127.0.0.1:7787"'
 stdout '"autonomous": true'
 stdout '"last_started": \{'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"reason": "not-ready"'
 stdout '"reason": "shipped"'
 stdout '"title": "Waiting"'
 stdout '"detail": \[\n *"depends on'
 
 # The web UI follows rhiza.web.host: its address reads in the URL.
-exec rhiza daemon set rhiza.web.host 0.0.0.0
-exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
-exec rhiza daemon status
+rhiza daemon set rhiza.web.host 0.0.0.0
+rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+rhiza daemon status
 stdout '^Web UI: http://0.0.0.0:7787$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"web": "http://0.0.0.0:7787"'
-exec rhiza daemon set rhiza.web.host ::1
-exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
-exec rhiza daemon status
+rhiza daemon set rhiza.web.host ::1
+rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+rhiza daemon status
 stdout '^Web UI: http://\[::1\]:7787$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"web": "http://\[::1\]:7787"'
-exec rhiza daemon set rhiza.web.host 127.0.0.1
+rhiza daemon set rhiza.web.host 127.0.0.1
 
 # The web UI follows rhiza.web.port: off after it is set to off and polled.
-exec rhiza daemon set rhiza.web.port off
-exec rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
-exec rhiza daemon status
+rhiza daemon set rhiza.web.port off
+rhiza daemon --permission-mode manual --once --max-runs=3 --autonomous
+rhiza daemon status
 stdout '^Web UI: off$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"web": "off"'
 
 # A start whose run never journaled is reported, with when it is retried.
 exec sh -c 'sed "s/}\$/,\"unjournaled\":[{\"change\":\"CSX\",\"at\":\"2026-01-01T00:00:00Z\"}]}/" .git/rhiza/daemon.state.json > s.tmp && mv s.tmp .git/rhiza/daemon.state.json'
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Not journaled: the run of CSX started at 2026-01-01T00:00:00Z wrote no journal; retried at 2026-01-01T00:15:00Z, or sooner when a run of it journals$'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"change": "CSX"'
 
 # A lock file naming a dead process holds nothing.
 exec sh -c 'rm .git/rhiza/daemon.state.json; printf "{\"host\":\"h\",\"pid\":999999,\"started\":\"2026-01-01T00:00:00Z\"}\n" > .git/rhiza/daemon.lock'
-exec rhiza daemon status
+rhiza daemon status
 stdout '^Daemon not running$'
 ! stdout 'Last started'
-exec rhiza daemon status --json
+rhiza daemon status --json
 stdout '"running": false'
 -- bin/rex --
 #!/bin/sh
