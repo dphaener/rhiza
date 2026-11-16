@@ -1,0 +1,109 @@
+{
+  "actor": "01M7GW2BCJ9YJG0E29DN45HAFG",
+  "after": [
+    "01M7GVFMB1ZQKK67NRY2VK56WA"
+  ],
+  "at": "2026-11-16T00:33:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: go test ./internal/api -run '^(TestPropertyProjectionParity|TestParity)' -v passed: 100 draws, 52 with two landed heads, 75 with a rebuild, 35 with pending entries; TestParityReportNamesNode passed."
+        },
+        "handle": "projection-parity-property-qa-2",
+        "id": "01M7GWB88RW2QZBEY1K4NHTS89",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GWB88RW2QZBEY1K357V60E",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GWB88RW2QZBEY1K357V60E",
+        "id": "01M7GWB89WAQ8HMRVZ8JRSAYH0",
+        "link": "01M7GWB89WAQ8HMRVZ8F64N3PN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD16Z7ENTKT3FH883EFJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 with a scratch build (go build -o scratch/rhiza-qa ./cmd/rhiza) in a scratch repo with two landed heads on x (same field) and y (disjoint fields), 5 proposals (leaves under landed par, under landed z, at a root, set-only): inbox --json lists the 4 leaf-bearing proposals, set-only none, identical to a 556194e52 build; health, roadmap, ready, slice, change show/diff, overlaps match base; on this repo's own log ready/roadmap/inbox --json are byte-identical to base; scripts daemon-picks, daemon-plans-proposals, inbox-uncovered-proposal, health pass."
+        },
+        "handle": "parity-interim-from-strict-qa-2",
+        "id": "01M7GWB8AZ3SKWRQPTNPPPSEBA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GWB8AZ3SKWRQPTNKMSVNSH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GWB8AZ3SKWRQPTNKMSVNSH",
+        "id": "01M7GWB8C1DYPN5K15S6S333J2",
+        "link": "01M7GWB8C1DYPN5K15S67E9ZRZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX1AJ24Y40XJK9GRY8P8",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 with a scratch build: on x (two landed heads writing statement) set, mv and retire refuse with 'has conflicting changes', dry run and real; on y (heads on disjoint fields) set, mv, retire dry runs and real set/mv succeed with base the last landed op; a dry run after pending writes keeps the landed base and merges the pending fields; --rebase without every pending field refuses cleanly; add under y then set dry-run works. Script set passes."
+        },
+        "handle": "parity-write-index-from-strict-qa-2",
+        "id": "01M7GWB8D63CN3YP52H9ZF52ZC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GWB8D63CN3YP52H8R7ECKB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GWB8D63CN3YP52H8R7ECKB",
+        "id": "01M7GWB8EDBSRGKCWF5F1YE6M3",
+        "link": "01M7GWB8EDBSRGKCWF5B67GW2K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGYX9DWE3H3TZ3G0TA4T8P",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: go test ./internal/api -run '^(TestPropertyProjectionParity|TestParity|TestInboxUncoveredProposalsUnderLandedParent)' passed on the per-test index; the fix commit's TestInboxUncoveredProposalsUnderLandedParent compares fold and index reads and passes."
+        },
+        "handle": "api-tests-on-index-qa-2",
+        "id": "01M7GWB8FRTEBK9P9DCB2THRTF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7GWB8FRTEBK9P9DCAGBMP98",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7GWB8FRTEBK9P9DCAGBMP98",
+        "id": "01M7GWB8H17C2S54VKR106G4M6",
+        "link": "01M7GWB8H17C2S54VKR0EKVHF9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFXD744PD29P5BQAMF1287",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFV2ZMHRJR78H0YTMKWXB7",
+  "for": "01M7GJ6TAK1AT9Y2CG3G2Q0AYV",
+  "id": "01M7GWB8JV9Q0HHDH7XH5T4XMY",
+  "type": "ops",
+  "v": 1
+}
