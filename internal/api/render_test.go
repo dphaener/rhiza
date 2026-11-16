@@ -163,3 +163,48 @@ func TestRenderIndexedMatchesLog(t *testing.T) {
 		t.Errorf("render over the log after the indexed one = %+v, want every file unchanged", r)
 	}
 }
+
+// An entry file edited in place after the index read it is not re-read by
+// catch-up, so the index still holds its old bytes. Render over the index
+// must notice and write what the log fold renders, not the stale index.
+func TestRenderIndexedAfterInPlaceEdit(t *testing.T) {
+	t.Parallel()
+	ctx, _, _ := readLog(t)
+	renderOK(t, ctx)
+	if got := readRendered(t, ctx, "capability/store.md"); !strings.Contains(got, "Keep things") {
+		t.Fatalf("store page lacks its statement:\n%s", got)
+	}
+
+	var edited string
+	err := filepath.WalkDir(filepath.Join(ctx.Root, ".rhiza", "log"), func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		b, err := os.ReadFile(p)
+		if err != nil || !strings.Contains(string(b), "statement=Keep things") && !strings.Contains(string(b), `"Keep things"`) {
+			return err
+		}
+		if err := os.Chmod(p, 0o644); err != nil {
+			return err
+		}
+		edited = p
+		return os.WriteFile(p, []byte(strings.Replace(string(b), "Keep things", "Keep other things", 1)), 0o644)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if edited == "" {
+		t.Fatal("no entry holds the store's statement")
+	}
+
+	indexed := renderOK(t, ctx)
+	if got := readRendered(t, ctx, "capability/store.md"); !strings.Contains(got, "Keep other things") {
+		t.Errorf("indexed render after the edit = %+v, store page:\n%s", indexed, got)
+	}
+	folded := *ctx
+	// The log side: no index on purpose, to compare against the indexed render.
+	folded.IndexPath = ""
+	if r := renderOK(t, &folded); len(r.Written) != 0 || len(r.Removed) != 0 {
+		t.Errorf("render over the log after the indexed one = %+v, want every file unchanged", r)
+	}
+}
