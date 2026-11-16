@@ -7,8 +7,11 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"runtime"
 	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
@@ -94,15 +97,49 @@ func ListLog(fsys fs.FS) Listing {
 // that cannot be read, does not decode, or whose id or change_set differs
 // from its path (ErrMismatch) becomes a Problem, and every good entry is
 // kept. Entries and Problems are sorted as in Log and never nil.
+//
+// Files are decoded on up to decodeWorkers goroutines, never more than
+// GOMAXPROCS; the result is the same as decoding them one by one.
 func ReadEntries(fsys fs.FS, paths []string) Log {
+	return readEntries(fsys, paths, decodeWorkers(len(paths)))
+}
+
+// maxDecodeWorkers is the most goroutines ReadEntries decodes on: the VM
+// the check-time target is set on has four cores.
+const maxDecodeWorkers = 4
+
+// decodeWorkers is how many goroutines decode n entry files: at most
+// maxDecodeWorkers and GOMAXPROCS, at most one per file, at least one.
+func decodeWorkers(n int) int {
+	return max(1, min(maxDecodeWorkers, runtime.GOMAXPROCS(0), n))
+}
+
+// readEntries is ReadEntries on the given number of workers. Each path's
+// result lands in its own slot, and the slots are gathered in path order
+// before sorting, so the Log does not depend on workers.
+func readEntries(fsys fs.FS, paths []string, workers int) Log {
+	entries := make([]entry.Entry, len(paths))
+	errs := make([]error, len(paths))
+	var next atomic.Int64
+	run := func() {
+		for k := int(next.Add(1)) - 1; k < len(paths); k = int(next.Add(1)) - 1 {
+			entries[k], errs[k] = readEntry(fsys, paths[k])
+		}
+	}
+	var wg sync.WaitGroup
+	for range workers - 1 {
+		wg.Go(run)
+	}
+	run()
+	wg.Wait()
+
 	log := Log{Entries: []entry.Entry{}, Problems: []Problem{}}
-	for _, p := range paths {
-		e, err := readEntry(fsys, p)
-		if err != nil {
-			log.Problems = append(log.Problems, Problem{Path: p, Err: err})
+	for k, p := range paths {
+		if errs[k] != nil {
+			log.Problems = append(log.Problems, Problem{Path: p, Err: errs[k]})
 			continue
 		}
-		log.Entries = append(log.Entries, e)
+		log.Entries = append(log.Entries, entries[k])
 	}
 	slices.SortFunc(log.Entries, func(a, b entry.Entry) int {
 		return cmp.Or(id.Compare(a.ChangeSet, b.ChangeSet), id.Compare(a.ID, b.ID))

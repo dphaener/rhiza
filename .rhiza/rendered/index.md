@@ -5922,6 +5922,7 @@
 - [claude-code-1791d9bb](actor/claude-code-1791d9bb.md)
 - [claude-code-179aea80](actor/claude-code-179aea80.md)
 - [claude-code-17b3dfd5](actor/claude-code-17b3dfd5.md)
+- [claude-code-17ba0098](actor/claude-code-17ba0098.md)
 - [claude-code-17baaad2](actor/claude-code-17baaad2.md)
 - [claude-code-17d33a29](actor/claude-code-17d33a29.md)
 - [claude-code-17e5e990](actor/claude-code-17e5e990.md)

@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"slices"
 	"strconv"
 	"testing"
@@ -499,5 +500,106 @@ func TestReadLogIsListLogThenReadEntries(t *testing.T) {
 	if len(got.Entries) != 3 || len(l.Problems) != 4 || len(r.Problems) != 2 {
 		t.Errorf("entries %d, layout problems %d, read problems %d; want 3, 4, 2",
 			len(got.Entries), len(l.Problems), len(r.Problems))
+	}
+}
+
+// failOpen is an fs.FS whose Open fails for one path with a non-ErrNotExist
+// error, so a test can cover a file that exists but cannot be read.
+type failOpen struct {
+	fs.FS
+	path string
+}
+
+var errUnreadable = errors.New("unreadable")
+
+func (f failOpen) Open(name string) (fs.File, error) {
+	if name == f.path {
+		return nil, &fs.PathError{Op: "open", Path: name, Err: errUnreadable}
+	}
+	return f.FS.Open(name)
+}
+
+// parallelLog is a log of a few hundred entries over several change sets,
+// with an unreadable file, an entry that does not decode and an entry whose
+// ID does not match its path, and its paths in listing order.
+func parallelLog(t *testing.T) (fs.FS, []string) {
+	t.Helper()
+	g := testGen()
+	newID := func() id.ID {
+		i, err := g.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return i
+	}
+	m := fstest.MapFS{}
+	var css []id.ID
+	for range 7 {
+		css = append(css, newID())
+	}
+	for k := range 300 {
+		e := testEntry(t)
+		e.ID = newID()
+		e.ChangeSet = css[k%len(css)]
+		m[entryPath(e)] = file(mustEncode(t, e))
+	}
+	cs := css[0].String()
+	unreadable := path.Join(LogDir, cs, newID().String()+".json")
+	m[unreadable] = file([]byte("{}\n"))
+	m[path.Join(LogDir, cs, newID().String()+".json")] = file([]byte("{"))
+	other := testEntry(t)
+	other.ChangeSet = css[1]
+	m[path.Join(LogDir, css[1].String(), newID().String()+".json")] = file(mustEncode(t, other))
+	fsys := failOpen{FS: m, path: unreadable}
+	return fsys, ListLog(fsys).Paths
+}
+
+func TestReadEntriesParallelSame(t *testing.T) {
+	fsys, paths := parallelLog(t)
+	serial := readEntries(fsys, paths, 1)
+	if len(serial.Entries) != 300 || len(serial.Problems) != 3 {
+		t.Fatalf("serial: %d entries, %d problems; want 300, 3", len(serial.Entries), len(serial.Problems))
+	}
+	for _, want := range []error{errUnreadable, entry.ErrInvalid, ErrMismatch} {
+		if !slices.ContainsFunc(serial.Problems, func(p Problem) bool { return errors.Is(p.Err, want) }) {
+			t.Errorf("serial problems %v: none matches %v", serial.Problems, want)
+		}
+	}
+	for _, workers := range []int{2, maxDecodeWorkers, len(paths)} {
+		if got := readEntries(fsys, paths, workers); !reflect.DeepEqual(got, serial) {
+			t.Errorf("%d workers: Log differs from the serial decode", workers)
+		}
+	}
+	// Reversed input: the result still does not depend on path order.
+	rev := slices.Clone(paths)
+	slices.Reverse(rev)
+	if got := ReadEntries(fsys, rev); !reflect.DeepEqual(got, serial) {
+		t.Error("ReadEntries over reversed paths differs from the serial decode")
+	}
+}
+
+func TestReadEntriesOneProc(t *testing.T) {
+	old := runtime.GOMAXPROCS(1)
+	t.Cleanup(func() { runtime.GOMAXPROCS(old) })
+	if n := decodeWorkers(300); n != 1 {
+		t.Fatalf("decodeWorkers(300) with GOMAXPROCS=1 = %d, want 1", n)
+	}
+	fsys, paths := parallelLog(t)
+	if got, want := ReadEntries(fsys, paths), readEntries(fsys, paths, 1); !reflect.DeepEqual(got, want) {
+		t.Error("ReadEntries with GOMAXPROCS=1 differs from the serial decode")
+	}
+}
+
+func TestDecodeWorkers(t *testing.T) {
+	procs := runtime.GOMAXPROCS(0)
+	for _, tt := range []struct{ n, want int }{
+		{0, 1},
+		{1, 1},
+		{2, min(2, procs)},
+		{300, min(maxDecodeWorkers, procs)},
+	} {
+		if got := decodeWorkers(tt.n); got != tt.want {
+			t.Errorf("decodeWorkers(%d) = %d, want %d (GOMAXPROCS %d)", tt.n, got, tt.want, procs)
+		}
 	}
 }
