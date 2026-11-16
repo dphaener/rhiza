@@ -5,22 +5,22 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Autonomy source' --title 'Autonomy source' --json
+rhiza change new 'Autonomy source' --title 'Autonomy source' --json
 mkdir .rhiza/workflows
 cp $WORK/declares.toml .rhiza/workflows/declares.toml
 exec git config rhiza.autonomy.accept owner
 
-exec rhiza run start --foreground --workflow declares --permission-mode manual
+rhiza run start --foreground --workflow declares --permission-mode manual
 stdout '^- Autonomy plan: auto from workflow declares$'
 stdout '^- Autonomy accept: owner from rhiza.autonomy.accept$'
 stdout '^- Autonomy ship: auto from rhiza.autonomy.ship$'
-exec rhiza run status
+rhiza run status
 stdout '^- Autonomy plan: auto from workflow declares$'
 stdout '^- Autonomy accept: owner from rhiza.autonomy.accept$'
-exec rhiza run status --json
+rhiza run status --json
 stdout '"source": "workflow",\s+"stage": "plan",\s+"workflow": "declares"'
 stdout '"mode": "owner",\s+"source": "setting",\s+"stage": "accept"'
 exec sh -c 'cat .git/rhiza/runs/*.jsonl'

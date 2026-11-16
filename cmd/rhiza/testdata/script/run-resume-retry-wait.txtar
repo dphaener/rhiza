@@ -10,36 +10,36 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Retry at the wait' --title 'Retry wait' --json
+rhiza change new 'Retry at the wait' --title 'Retry wait' --json
 mkdir .rhiza/workflows
 cp ../pending.toml .rhiza/workflows/pending.toml
 cp ../plain.toml .rhiza/workflows/plain.toml
 
-! exec rhiza run start --foreground --workflow pending
+! rhiza run start --foreground --workflow pending
 stdout '^- ci \(visit 1\): pass, then green'
 stdout '^- green \(visit 1\): fail, then end'
 
 # The CI the retry waits for is pending again: the retry reopens at ci.
 exec rm $WORK/polled
-exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
+rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry --dry-run
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG would be retried at step ci$'
 exec sh -c 'echo > $WORK/green'
-exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
+rhiza run resume --foreground 01M5PWGJC82P7YGZTWYFFZ0VJG --retry
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
-exec rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
 stdout '^- ci \(visit 2, retried\): pass, then green'
 stdout '^- green \(visit 2\): pass, then end'
 stdout 'retried at ci, after: step "green" ended with outcome "fail"$'
 
 # A failed step with no wait before it is retried at itself.
-! exec rhiza run start --foreground --workflow plain
-exec rhiza run status
+! rhiza run start --foreground --workflow plain
+rhiza run status
 stdout '^- solo \(visit 1\): fail, then end'
 exec sh -c 'echo > $WORK/solo'
-exec rhiza run resume --foreground 01M5PWGJC82P7YGZTWYJ3Y88Z9 --retry --dry-run
+rhiza run resume --foreground 01M5PWGJC82P7YGZTWYJ3Y88Z9 --retry --dry-run
 stdout 'would be retried at step solo$'
 
 fold-ok

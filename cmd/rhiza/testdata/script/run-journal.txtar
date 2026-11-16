@@ -6,16 +6,16 @@
 mkdir repo
 cd repo
 exec git init -q
-exec rhiza init
+rhiza init
 exec git add -A
 exec git commit -qm init
-exec rhiza change new 'Journal a run' --title 'Run journal' --json
+rhiza change new 'Journal a run' --title 'Run journal' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
 mkdir .rhiza/workflows
 cp ../three.toml .rhiza/workflows/three.toml
 exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/before-content; find .rhiza/log -type f | sort > $WORK/before-list'
 
-exec rhiza run start --foreground --workflow three
+rhiza run start --foreground --workflow three
 stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG succeeded$'
 
 # Every step has an entered and an ended line; the run has a finished line.
@@ -36,7 +36,7 @@ cmp $WORK/before-content $WORK/after-content
 # ...nor in the run's worktree, which holds only the copy of the change
 # set's log that opening a worktree makes: the same files, the same bytes.
 exec diff -r .rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N ../repo.run-journal/.rhiza/log/01M5PWGEF85Y185JZ2ZGCNH40N
-exec rhiza run status --json
+rhiza run status --json
 stdout '"state": "succeeded"'
 fold-ok
 
