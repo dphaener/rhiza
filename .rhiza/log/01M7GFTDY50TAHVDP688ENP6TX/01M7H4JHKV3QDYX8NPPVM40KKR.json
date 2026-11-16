@@ -1,0 +1,40 @@
+{
+  "actor": "01M7H4GD0N64XF0MNQCTQA3RFW",
+  "after": [
+    "01M7H43S4AMZMJ177583B8KH2T"
+  ],
+  "at": "2026-11-16T02:56:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit ca9251a3f. Re-ran its Checks: go test -trimpath -count=1 -p 2 ./internal/index -run '^(TestAsIs|TestPropertyIncremental)' exit 0 (TestAsIsProperty: 1055 steps, 53 logs with two landed heads, 46 with a duplicate handle, 82 with a rebuild; TestAsIsEmpty, TestAsIsClosed, TestPropertyIncremental pass); go test ... ./internal/api -run TestPropertyProjectionParity exit 0; go vet ./internal/index exit 0; rhiza ship generate exit 0 (0 files); rhiza render exit 0. Diff read: asis.go's (*Index).AsIs loads the stored as-is rows via loadSeed (nodes with fields/history/aspects, links, as-is problems from the problems table) and finishes them with model.ToBeFrom(seed, nil); it decodes no log entry and runs no fold. The property test draws logs with indextest (plus an injected landed duplicate handle), catches up step by step and compares model nodes, links, tree and as-is problems with model.AsIs over changeset.FoldLog after every step, failing a vacuous run. Empty log gives empty model, nil problems, no error; closed index errors. Only internal/index/asis.go, asis_test.go and .rhiza files changed: no stored row, schema or internal/model rule touched; no TODOs."
+        },
+        "handle": "index-as-is-model-verified",
+        "id": "01M7H4JHHKM56EA7M8EH7FFZY0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H4JHHKM56EA7M8EE4ZZX3S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H4JHHKM56EA7M8EE4ZZX3S",
+        "id": "01M7H4JHJREX6RBMMV3YWRZKZ2",
+        "link": "01M7H4JHJREX6RBMMV3VQ65G8S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101ZYJWDMD0XH748H3H6C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H4JHKV3QDYX8NPPVM40KKR",
+  "type": "ops",
+  "v": 1
+}

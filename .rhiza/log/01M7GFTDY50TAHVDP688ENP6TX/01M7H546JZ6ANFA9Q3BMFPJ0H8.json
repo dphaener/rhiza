@@ -1,0 +1,40 @@
+{
+  "actor": "01M7H516FZNKA2SHD4DS7S5T7N",
+  "after": [
+    "01M7H4JHKV3QDYX8NPPVM40KKR"
+  ],
+  "at": "2026-11-16T03:06:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified da24c315c under the capped scope: go test -trimpath -count=1 -p 2 ./internal/api -run Render passed (TestRenderIndexedMatchesLog renders over the index with an Evidence node's creator and a retired link endpoint, then over the log, every file unchanged); TestPropertyProjectionParity passed; go test ./cmd/rhiza -run TestScripts/render passed render, render-generate and render-refuses-damaged-log; make self-check in a detached checkout of the commit exit 0 with git status --short .rhiza/rendered empty; the parent commit's build rendered that checkout with 0 written (byte-identical). Diff: render.go calls damagedLog unchanged before renderInput, renderInput keeps the empty-IndexPath FoldLog branch, projection gains asIs; internal/api/model.go untouched; no TODOs or stubs."
+        },
+        "handle": "render-from-projection-verified",
+        "id": "01M7H546GR91YW6B41EK9QHQZ6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H546GR91YW6B41EK6Q06R0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H546GR91YW6B41EK6Q06R0",
+        "id": "01M7H546HS4K5GSW979DG96GEX",
+        "link": "01M7H546HS4K5GSW979AC1NKMD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY4Z3CRG97YV48H46RQN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H546JZ6ANFA9Q3BMFPJ0H8",
+  "type": "ops",
+  "v": 1
+}

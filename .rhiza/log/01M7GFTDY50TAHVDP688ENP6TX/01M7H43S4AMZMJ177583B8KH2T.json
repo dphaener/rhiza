@@ -1,0 +1,40 @@
+{
+  "actor": "01M7H411FWK5HN7NS6SKA0GJKD",
+  "after": [
+    "01M7H3D0ZKWWN562Q6FAXJYDC8"
+  ],
+  "at": "2026-11-16T02:48:51Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1232c1a00 re-ran under the capped scope: go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWorkspaceLog|TestChange|TestWrite)' exit 0; -run TestPropertyProjectionParity and -run '^(TestDefaultView|TestWorkspaceLog|TestPropertyProjectionParity)' exit 0 (TestWorkspaceLogReadsDiskOnce, DryRunChains, WriteDropsRead, DamagedEntry, DefaultViewSeesPending, DefaultViewFoldsNothing PASS). Diff: workspace.go keeps the first diskLog read in w.disk, clones Entries/Problems per call and lays pending on the copy; writeEntry drops w.disk before st.Write on a real write, so dry runs chain and real writes are seen. The four new tests cover each acceptance point (one disk read over model/changeSets/entriesOfSet, dry-run chaining with one read and no files written, write then read gives 2 reads and the new entry, damaged entry same problems twice and as a fresh read). The read_test.go change (w.disk = nil in TestDefaultViewSeesPending) only resets the kept read before the test's disk-read counter: the dry write already read the disk, so without it the counter is 0 though the reader still goes through the log; its behavioural assertions (the rule sees the pending change set in draft) are unchanged, so it follows the test's own setup and hides no op output change. No other code path writes entries to the workspace's log root (model_branch writes a temp worktree, session writes the session store). Code changes are workspace.go and its tests plus that one test line; no TODOs. Full internal/api not rerun per brief."
+        },
+        "handle": "workspace-log-once-verified",
+        "id": "01M7H43S1V9SNKCGNMCJXVBNMJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H43S1V9SNKCGNMCG37KTVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H43S1V9SNKCGNMCG37KTVK",
+        "id": "01M7H43S31AFPSPKPPK0GQQHKD",
+        "link": "01M7H43S31AFPSPKPPJWPHBKPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7H101RT64ATZVGM94276F58",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H43S4AMZMJ177583B8KH2T",
+  "type": "ops",
+  "v": 1
+}

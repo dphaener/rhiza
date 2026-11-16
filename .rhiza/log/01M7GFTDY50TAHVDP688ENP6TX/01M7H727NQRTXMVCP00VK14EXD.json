@@ -1,0 +1,40 @@
+{
+  "actor": "01M7H6W0A7JGPRM04ER6BB95P5",
+  "after": [
+    "01M7H6FDDXD3NWEY6NH3NNC4D1"
+  ],
+  "at": "2026-11-16T03:40:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 1b563a4a9. Re-ran every Checks: command under the capped scope, all exit 0: go test -trimpath -count=1 -p 2 ./internal/api -run 'ChangeLs' (ok); -run 'TestPropertyProjectionParity|TestChange' (ok, parity green); ./cmd/rhiza -run 'TestScripts/change' with RHIZA_/SHIP_/REX_ unset (11 change*.txtar, ok); go vet ./internal/api; gofmt -l internal/api (empty); go build; rhiza ship generate; rhiza render (no new tracked changes). Diff: only internal/api/change.go (runChangeLs over w.projection(): stored folds plus storedLogFoldProblems, log then fold, same format strings as logProblems/foldProblems; FoldLog path kept when IndexPath is empty) and change_test.go (TestChangeLsIndexedReadsNoLog: zero log reads over the index, same sets/problems/text as over the log with a damaged entry, vanished folder drops the change set). change show and change_indexed.go untouched; no TODOs. Byte comparison against a scratch build of the parent 1b563a4a9^: change ls and change ls --json in /home/rhiza/code/rhiza identical (6863 lines). In a scratch repo with a junk.json log problem and an out-of-order open entry (fold problem), text and --json were identical to the parent's, order and wording included; after rm -rf of a change set folder, the warm index listed the remaining sets with no stale one, identical to the parent. Note: rewriting an already-indexed entry file in place showed its old problem until the index was rebuilt. That is the index's documented rule (index.go:15, an entry file never changes) and not part of this leaf. Warm change ls 0.42 s."
+        },
+        "handle": "change-reads-from-projection-verified",
+        "id": "01M7H727J26S4D6R4PTKBZ9Z9A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H727J26S4D6R4PTH581NVG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H727J26S4D6R4PTH581NVG",
+        "id": "01M7H727KWAZPYBFFKHJPXKASP",
+        "link": "01M7H727KWAZPYBFFKHH10XBFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY75HKKZF3E9JKJBT985",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H727NQRTXMVCP00VK14EXD",
+  "type": "ops",
+  "v": 1
+}

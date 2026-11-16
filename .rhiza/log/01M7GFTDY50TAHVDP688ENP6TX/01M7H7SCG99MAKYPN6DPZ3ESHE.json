@@ -1,0 +1,40 @@
+{
+  "actor": "01M7H7M94EA1C1F704GQX9QC72",
+  "after": [
+    "01M7H727NQRTXMVCP00VK14EXD"
+  ],
+  "at": "2026-11-16T03:53:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit d802ae4a6 (only internal/api/daemon_fold.go and its test changed outside .rhiza/). Re-ran under the capped scope: go test -trimpath -count=1 -p 2 ./internal/api -run 'Daemon|TestPropertyProjectionParity' ok; -run 'Daemon' ok (TestDaemonFoldIndexedMatchesLog, TestDaemonIdlePollSkipsFold, TestDaemonPollCacheInvalidates PASS); go test -trimpath -count=1 -p 2 ./cmd/rhiza -run TestScripts/daemon ok (34 daemon*.txtar, RHIZA_/SHIP_/REX_ unset); go vet ./internal/api exit 0; rhiza check exit 0 (only pre-existing unclaimed warnings). Diff: with ctx.IndexPath set daemonFold takes change sets from p.changeSets(ws.pending) and models from p.model; with it empty it still calls changeset.FoldLog(ws.log()) once and newModelBase(list).model (newModelBase kept). The derivation is moved unchanged into daemonDerive; schedule, journal and --json types untouched. Cache tests: daemonFoldCache.folds increments exactly on a cache miss in daemonFoldOf, so idle polls asserting unchanged folds plus zero log reads and zero planRead still prove reuse, and each invalidation (log entry, accept, setting via pickFolds before the pick, run start, ref move, resume) asserts a new fold; no coverage lost and the zero-log-read assertion is added. A projection failure is returned after the derive and before caching, the same path as a planRead/workspace error today: daemonPoll1 returns the error, notify/demand/health degrade as on any fold error, nothing is cached so the next poll retries. TestDaemonFoldIndexedMatchesLog covers proposed with/without leaves, an accepted one and two in-flight change sets setting done-0 (overlap), zero log reads, candidates/proposed/planSkips/overlaps/moves/states equal to daemonDerive over FoldLog, and the vanished propose entry case (stamp change, rebuild) still matching and dropping it from proposed."
+        },
+        "handle": "daemon-fold-from-projection-verified",
+        "id": "01M7H7SCD6MTTGHZVZY1BXRD3B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7H7SCD6MTTGHZVZXYK9AQZZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7H7SCD6MTTGHZVZXYK9AQZZ",
+        "id": "01M7H7SCEFQWNRGWN09RNCJNHM",
+        "link": "01M7H7SCEFQWNRGWN09PXP536C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFYY98FH6TH6DY2EZTKFPR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTDY50TAHVDP688ENP6TX",
+  "for": "01M7H2M87Y75E21ZA7GQ2K882Z",
+  "id": "01M7H7SCG99MAKYPN6DPZ3ESHE",
+  "type": "ops",
+  "v": 1
+}
