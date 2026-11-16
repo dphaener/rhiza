@@ -117,7 +117,7 @@ func status(ctx *Ctx) (StatusResponse, error) {
 	if err != nil {
 		return StatusResponse{}, err
 	}
-	w.readLog = ctx.readLog
+	w.logRead = ctx.logRead
 	// With an index, the change sets are the projection's stored rows, so
 	// the log is not read; without one they are folded from the log.
 	w.useProjection(ctx)

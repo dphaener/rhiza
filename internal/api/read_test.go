@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -15,7 +14,6 @@ import (
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
-	"github.com/dphaener/rhiza/internal/store"
 )
 
 // readCtx is initCtx with an index path in a temp folder.
@@ -492,10 +490,7 @@ func TestReadHelpers(t *testing.T) {
 // countingCtx counts the log folds a read through ctx costs.
 func countingCtx(ctx *Ctx) *int {
 	n := new(int)
-	ctx.readLog = func() store.Log {
-		*n++
-		return store.ReadLog(os.DirFS(filepath.Join(ctx.Root, store.Dir)))
-	}
+	ctx.logRead = func() { *n++ }
 	return n
 }
 
@@ -516,7 +511,6 @@ func TestDefaultViewFoldsNothing(t *testing.T) {
 	for _, c := range cases {
 		for _, byRef := range []bool{false, true} {
 			rc := *ctx
-			rc.readLog = ctx.readLog
 			if byRef {
 				rc.ChangeRef = c.cs.String()
 			} else {
@@ -570,7 +564,7 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	folds := countingCtx(ctx)
 	w := ctxWorkspace(t, ctx)
 	w.dryRun = true
-	w.readLog = ctx.readLog
+	w.logRead = ctx.logRead
 	pend, _, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Pending"}, id.ID{}, id.ID{})
 	if err != nil {
 		t.Fatal(err)

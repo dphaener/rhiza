@@ -39,7 +39,7 @@ func projectCtx(ctx *Ctx, dir string) *Ctx {
 	c.Root, c.Wd, c.IndexPath = dir, dir, rootIndexPath(ctx, dir)
 	c.ChangeSet, c.Actor, c.For = id.ID{}, id.ID{}, id.ID{}
 	c.ChangeRef, c.ActorRef, c.ForRef = "", "", ""
-	c.daemonFold, c.readLog, c.builtModel, c.repoSession = nil, nil, nil, false
+	c.daemonFold, c.logRead, c.builtModel, c.repoSession = nil, nil, nil, false
 	c.RexBlock = ""
 	c.ProjectName = ""
 	boundGit(&c, dir)

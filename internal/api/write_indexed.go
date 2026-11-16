@@ -223,14 +223,16 @@ func (ix *writeIndex) changeSetInfos(pending []entry.Entry) []index.ChangeSetInf
 	return out
 }
 
-// model is the write view of change set current (zero for none), as
-// newModel builds it: the strict engine's, taken from the index. When
-// current is in flight it is the strict what-if of current (the stored
-// as-is rows, then current and its in-flight dependencies in their apply
-// order, an op the strict engine skips left out), with current folded from
-// its stored entries and the dry run's pending ones; else it is as-is.
-// Version and Conflict follow the strict rule from the view's histories
-// and problems, as newModel's do.
+// model is the write view of change set current (zero for none): the
+// strict engine's, taken from the index. When current is in flight it is
+// the strict what-if of current (the stored as-is rows, then current and
+// its in-flight dependencies in their apply order, an op the strict engine
+// skips left out), with current folded from its stored entries and the dry
+// run's pending ones; else it is as-is.
+// Version is the last op in the target's strict history that is not
+// current's own, Conflict is set when the view holds an unrepaired
+// model.ErrConflict problem on the target from an op not of current, and
+// Pending lists current's ops on each target the view holds.
 func (ix *writeIndex) model(pending []entry.Entry, current id.ID) Model {
 	if ix.models != nil && len(pending) == 0 {
 		if m, ok := ix.models[current]; ok {
@@ -286,9 +288,9 @@ func (ix *writeIndex) buildModel(pending []entry.Entry, current id.ID) Model {
 }
 
 // conflicts returns the targets ps holds an unrepaired model.ErrConflict
-// problem on from an op not of change set current (zero for none), as
-// modelBase.conflicts does. A stored conflict that is not a stale base
-// names only its op, whose target is read from its change set.
+// problem on from an op not of change set current (zero for none). A
+// stored conflict that is not a stale base names only its op, whose target
+// is read from its change set.
 func (ix *writeIndex) conflicts(ps []gmodel.Problem, current id.ID) map[id.ID]bool {
 	out := map[id.ID]bool{}
 	var rest []gmodel.Problem

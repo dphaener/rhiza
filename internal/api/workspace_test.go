@@ -432,7 +432,7 @@ func resolveRefs(w *workspace, actorRef, forRef string, git func(string) (string
 
 // logOnceWorkspace opens a workspace over ctx's root with no index path (a
 // throwaway index) whose disk reads of the log are counted through
-// Ctx.readLog.
+// Ctx.logRead.
 func logOnceWorkspace(t *testing.T, ctx *Ctx, dryRun bool) (*workspace, *int) {
 	t.Helper()
 	ctx.IndexPath = ""

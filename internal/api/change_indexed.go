@@ -21,10 +21,8 @@ import (
 
 // indexModel is a change set's view as the index gives it: for a change
 // set in flight, the write path's view (writeIndex.model: the as-is rows
-// with its in-flight dependencies' ops and its own applied as the interim
-// model applies them, so a node whose create no longer applies strictly is
-// kept, as the fold keeps it), the as-is rows for any other. It
-// answers what the interim Model answers about the same change set. An
+// with its in-flight dependencies' ops and its own applied as the strict
+// engine applies them), the as-is rows for any other. An
 // index error stops the answers (nothing found) and is kept in err.
 type indexModel struct {
 	x   *index.Index

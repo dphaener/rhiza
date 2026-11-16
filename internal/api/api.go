@@ -31,7 +31,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Operation is one named call. Request and Response are struct types; Run
@@ -163,9 +162,9 @@ type Ctx struct {
 	Verdict func(output string) FailureVerdict
 	// IDs makes new IDs.
 	IDs *id.Generator
-	// readLog, when set, replaces the store's log read; tests count folds
-	// with it.
-	readLog func() store.Log
+	// logRead, when set, is told each disk read of the log; it cannot
+	// change what is read. Tests count the log reads of a call with it.
+	logRead func()
 	// builtModel, when set, is told each change set whose model an index
 	// read builds (memo misses only); tests count folds per change set
 	// with it.

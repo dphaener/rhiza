@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -82,7 +84,52 @@ func (b *logBuilder) model(current id.ID) Model {
 	if len(problems) > 0 {
 		b.t.Fatalf("fold problems: %v", problems)
 	}
-	return newModel(store.Log{Entries: b.entries}, current)
+	return projectionModel(b.t, b.entries, current)
+}
+
+// projectionModel writes entries to the log of a new repository and
+// returns the write view of current (zero for none) of its projection.
+func projectionModel(t *testing.T, entries []entry.Entry, current id.ID) Model {
+	t.Helper()
+	p := logProjection(t, entries)
+	m := p.model(nil, current)
+	if err := p.failure(); err != nil {
+		t.Fatal(err)
+	}
+	return m
+}
+
+// logProjection writes entries to the log of a new repository and opens
+// its projection, closed when t ends.
+func logProjection(t *testing.T, entries []entry.Entry) projection {
+	t.Helper()
+	root := t.TempDir()
+	for _, e := range entries {
+		// An entry that does not encode is written as it is: a damaged log.
+		data, err := entry.Encode(e)
+		if err != nil {
+			data, err = json.Marshal(e)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		dir := filepath.Join(root, store.Dir, store.LogDir, e.ChangeSet.String())
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, e.ID.String()+".json"), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(root, store.Dir, store.LogDir), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	p, err := openProjection(&Ctx{Root: root, IndexPath: filepath.Join(root, "index.db")}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(p.close)
+	return p
 }
 
 func (b *logBuilder) create(kind op.Kind, handle string, fields map[string]json.RawMessage) op.Op {
@@ -153,9 +200,9 @@ func TestModel(t *testing.T) {
 		u := b.update(c.Node, c.ID, statement("new"))
 		cs := b.draft(u)
 
-		n, ok := b.model(cs).Node(c.Node)
-		if !ok {
-			t.Fatal("node missing")
+		n, err := b.model(cs).Resolve(c.Node.String())
+		if err != nil {
+			t.Fatal(err)
 		}
 		if n.Version != c.ID || string(n.Fields["statement"]) != `"new"` || !slices.Equal(n.Pending, []id.ID{u.ID}) {
 			t.Errorf("node %+v", n)
@@ -383,7 +430,7 @@ func TestModel(t *testing.T) {
 		bad.ID, bad.Body = b.id(), json.RawMessage(`{"nope":1}`)
 		entries := append(slices.Clone(b.entries), bad)
 
-		m := newModel(store.Log{Entries: entries}, id.ID{})
+		m := projectionModel(t, entries, id.ID{})
 		if _, err := m.Resolve("fine"); err != nil {
 			t.Error(err)
 		}

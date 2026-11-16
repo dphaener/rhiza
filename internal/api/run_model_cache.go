@@ -85,7 +85,7 @@ func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) 
 	if err != nil {
 		return nil, err
 	}
-	w.readLog = r.ctx.readLog
+	w.logRead = r.ctx.logRead
 	r.modelMu.Lock()
 	defer r.modelMu.Unlock()
 	rm, err := r.catchUpModel(root)

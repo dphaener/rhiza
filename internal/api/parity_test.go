@@ -23,32 +23,30 @@ import (
 	"pgregory.net/rapid"
 )
 
-// This file is the projection parity harness: on drawn logs, the interim
-// model (newModel), the projection (projection.go) and a fresh
-// strict fold (changeset.FoldLog, then internal/model's AsIs, or WhatIf for
-// an in-flight change set) must give the same write views. The strict
-// engine is the spec.
+// This file is the projection parity harness: on drawn logs, the
+// projection (projection.go) and a fresh strict fold (changeset.FoldLog,
+// then internal/model's AsIs, or WhatIf for an in-flight change set) must
+// give the same write views. The strict engine is the spec.
 //
 // A view is the as-is view (no current change set) or the write view of one
 // change set of the log. A terminal change set's write view is as-is with no
-// current change set, as newModel documents, so "the current change set"
+// current change set, as writeIndex.model documents, so "the current change set"
 // below is the view's change set only while it is in flight.
 //
 // Version and Conflict follow the strict rule (Decision
 // parity-version-rule): Version is the last operation in the target's
 // strict history that is not the current change set's own, and Conflict is
 // true when the view holds an unrepaired model.ErrConflict problem on the
-// target from an operation not of the current change set. Pending has no
-// strict counterpart: it is compared between the interim model and the
-// index's write model only.
+// target from an operation not of the current change set. Pending lists
+// the current change set's ops on each target the view holds, in change
+// set order, whether the strict engine applied them or not.
 
-// side names one of the three models compared.
+// side names one of the two models compared.
 type side string
 
 const (
-	sideInterim side = "interim"
-	sideIndex   side = "index"
-	sideStrict  side = "strict"
+	sideIndex  side = "index"
+	sideStrict side = "strict"
 )
 
 // parityView is one side's answer for one view: every node and link it
@@ -212,7 +210,7 @@ func fieldValue(fs map[string]json.RawMessage, name string) rawText {
 	return rawText(bytes.TrimSpace(v))
 }
 
-// parityLog is one log as the three sides read it: the entries on disk
+// parityLog is one log as the two sides read it: the entries on disk
 // plus a dry run's pending ones, folded.
 type parityLog struct {
 	entries []entry.Entry
@@ -276,22 +274,9 @@ func (p parityLog) String() string {
 	return b.String()
 }
 
-// interimView is newModel's write view of cs.
-func interimView(p parityLog, cs id.ID) parityView {
-	m := newModelSets(p.sets, cs).(*model)
-	v := parityView{nodes: map[id.ID]Node{}, links: map[id.ID]Link{}}
-	for k, n := range m.nodes {
-		v.nodes[k] = copyNode(n)
-	}
-	for k, l := range m.links {
-		v.links[k] = copyLink(l)
-	}
-	return v
-}
-
 // indexView is the projection's view of cs, every node and link the drawn
 // logs can hold queried by ID.
-func indexView(t *rapid.T, p projection, pending []entry.Entry, cs id.ID) parityView {
+func indexView(t fataler, p projection, pending []entry.Entry, cs id.ID) parityView {
 	m := p.model(pending, cs).(*writeModel)
 	if err := p.failure(); err != nil {
 		t.Fatalf("index model of %s: %v", viewName(cs), err)
@@ -316,6 +301,11 @@ func indexView(t *rapid.T, p projection, pending []entry.Entry, cs id.ID) parity
 		}
 	}
 	return v
+}
+
+// fataler is what indexView needs of a *testing.T or a *rapid.T.
+type fataler interface {
+	Fatalf(format string, args ...any)
 }
 
 // strictView is the strict engine's view of cs by the rule at the top of
@@ -359,6 +349,21 @@ func strictView(p parityLog, cs id.ID) (parityView, gmodel.Model, []gmodel.Probl
 		v.links[l.ID] = Link{ID: l.ID, Type: l.Type, From: l.From, To: l.To, Note: l.Note, Decision: l.Decision,
 			Retired: l.Retired, Version: version(l.History), Conflict: conflict[l.ID]}
 	}
+	for _, s := range p.sets {
+		if cur.IsZero() || s.ID != cur {
+			continue
+		}
+		for _, o := range s.Ops {
+			if n, ok := v.nodes[o.Target()]; ok {
+				n.Pending = append(n.Pending, o.ID)
+				v.nodes[o.Target()] = n
+			}
+			if l, ok := v.links[o.Target()]; ok {
+				l.Pending = append(l.Pending, o.ID)
+				v.links[o.Target()] = l
+			}
+		}
+	}
 	return v, m, ps
 }
 
@@ -377,10 +382,9 @@ func newViewFacts(p parityLog, cs id.ID, m gmodel.Model, ps []gmodel.Problem) *v
 }
 
 // knownCase is a disagreement the harness has found and tolerates until
-// the leaf that fixes it empties this table. The interim model takes its
-// views from the strict engine (parity-interim-from-strict) and so does
-// the index's write model (parity-write-index-from-strict), so the table
-// is empty: any disagreement fails. Name names the log shape that gives
+// the leaf that fixes it empties this table. The index's write model takes
+// its views from the strict engine (parity-write-index-from-strict), so
+// the table is empty: any disagreement fails. Name names the log shape that gives
 // it; match recognises a disagreement of that shape.
 type knownCase struct {
 	name  string
@@ -423,14 +427,26 @@ func twoLandedHeads(sets []changeset.ChangeSet) bool {
 		}
 	}
 	for _, ops := range byTarget {
-		if _, two := head(ops); two {
+		named := map[id.ID]bool{}
+		for _, o := range ops {
+			if o.Base != o.ID {
+				named[o.Base] = true
+			}
+		}
+		heads := 0
+		for _, o := range ops {
+			if !named[o.ID] {
+				heads++
+			}
+		}
+		if heads > 1 {
 			return true
 		}
 	}
 	return false
 }
 
-// checkParity compares the three sides on every view of p: as-is and each
+// checkParity compares the two sides on every view of p: as-is and each
 // change set's write view, and, when p has pending entries, only the write
 // view of their change set.
 func checkParity(t *rapid.T, ix projection, p parityLog, c *parityCounts) {
@@ -447,12 +463,8 @@ func checkParity(t *rapid.T, ix projection, p parityLog, c *parityCounts) {
 		name := viewName(cs)
 		strict, sm, ps := strictView(p, cs)
 		facts := newViewFacts(p, cs, sm, ps)
-		interim := interimView(p, cs)
 		indexed := indexView(t, ix, p.pending, cs)
-		ds := compareViews(name, sideInterim, interim, sideStrict, strict, false)
-		ds = append(ds, compareViews(name, sideIndex, indexed, sideStrict, strict, false)...)
-		ds = append(ds, onlyPending(compareViews(name, sideInterim, interim, sideIndex, indexed, true))...)
-		for _, d := range ds {
+		for _, d := range compareViews(name, sideIndex, indexed, sideStrict, strict, true) {
 			if k := known(facts, d); k != "" {
 				c.known[k]++
 				continue
@@ -465,16 +477,9 @@ func checkParity(t *rapid.T, ix projection, p parityLog, c *parityCounts) {
 	}
 }
 
-// onlyPending keeps the pending disagreements: the rest of the interim
-// model against the index's is already compared through the strict side.
-func onlyPending(ds []disagreement) []disagreement {
-	return slices.DeleteFunc(ds, func(d disagreement) bool { return d.Field != "pending" })
-}
-
 // TestPropertyProjectionParity: on drawn logs, caught up step by step
 // (rebuilds included), and with dry-run pending entries laid over at the
-// end, the interim model, the index's write model and the strict engine
-// give the same as-is view and the same write view of every change set,
+// end, the index's write model and the strict engine give the same as-is view and the same write view of every change set,
 // but for the known cases.
 func TestPropertyProjectionParity(t *testing.T) {
 	c := &parityCounts{known: map[string]int{}}
@@ -565,21 +570,20 @@ func TestParityReportNamesNode(t *testing.T) {
 		}
 	}
 	cs := indextest.ChangeSet(1)
-	ds := compareViews(viewName(cs), sideInterim, mk(`"old"`), sideStrict, mk(`"new"`), true)
+	ds := compareViews(viewName(cs), sideIndex, mk(`"old"`), sideStrict, mk(`"new"`), true)
 	if len(ds) != 1 {
 		t.Fatalf("disagreements = %v, want one", ds)
 	}
 	got := ds[0].String()
 	for _, want := range []string{"write view of " + cs.String(), "node " + n.String(), "fields.statement",
-		`interim "old"`, `strict "new"`} {
+		`index "old"`, `strict "new"`} {
 		if !strings.Contains(got, want) {
 			t.Errorf("report %q lacks %q", got, want)
 		}
 	}
 }
 
-// parityOf is the parity log of b's entries, for a test that compares the
-// interim model with the strict engine without an index.
+// parityOf is the parity log of b's entries, folded without an index.
 func parityOf(t *testing.T, b *logBuilder) parityLog {
 	t.Helper()
 	sets, problems := changeset.FoldLog(store.Log{Entries: b.entries})
@@ -595,21 +599,10 @@ func parityOf(t *testing.T, b *logBuilder) parityLog {
 	return p
 }
 
-// interimAgrees fails t on any disagreement between the interim model and
-// the strict engine on the write view of cs, Pending aside.
-func interimAgrees(t *testing.T, p parityLog, cs id.ID) {
-	t.Helper()
-	strict, _, _ := strictView(p, cs)
-	for _, d := range compareViews(viewName(cs), sideInterim, interimView(p, cs), sideStrict, strict, false) {
-		t.Errorf("%s\nlog:\n%s", d, p)
-	}
-}
-
 // TestParityCreateNoLongerApplies: a draft creates a node under a landed
 // parent that a later landed change set retires. The strict what-if skips
 // the create (model.ErrRetired), so the draft's write view has no such
-// node; the interim model kept it until it took its view from the strict
-// engine.
+// node, and neither has the projection's.
 func TestParityCreateNoLongerApplies(t *testing.T) {
 	b := newLogBuilder(t)
 	parent := b.create(op.KindCapability, "parent", nil)
@@ -622,14 +615,13 @@ func TestParityCreateNoLongerApplies(t *testing.T) {
 	if n, ok := b.model(draft).Node(child.Node); ok {
 		t.Errorf("write view of the draft holds node %s (%s), whose create no longer applies", n.ID, n.Handle)
 	}
-	interimAgrees(t, parityOf(t, b), draft)
+	indexAgrees(t, b, draft)
 }
 
 // TestParityDisjointHeads: two landed updates of one node, both on its
 // create, write different fields. The strict engine merges them with no
-// conflict and takes the last one applied as the version; the interim
-// model's head rule set Conflict on the two heads (Decision
-// parity-version-rule).
+// conflict and takes the last one applied as the version (Decision
+// parity-version-rule), and so does the projection.
 func TestParityDisjointHeads(t *testing.T) {
 	b := newLogBuilder(t)
 	c := b.create(op.KindCapability, "fork", statement("a"))
@@ -639,9 +631,9 @@ func TestParityDisjointHeads(t *testing.T) {
 	u2 := b.update(c.Node, c.ID, map[string]json.RawMessage{"acceptance": json.RawMessage(`"x"`)})
 	b.landed(u2)
 
-	n, ok := b.model(id.ID{}).Node(c.Node)
-	if !ok {
-		t.Fatalf("as-is lacks node %s", c.Node)
+	n, err := b.model(id.ID{}).Resolve(c.Node.String())
+	if err != nil {
+		t.Fatalf("as-is lacks node %s: %v", c.Node, err)
 	}
 	if n.Conflict || n.Version != u2.ID {
 		t.Errorf("conflict %v version %s, want false %s", n.Conflict, n.Version, u2.ID)
@@ -649,5 +641,5 @@ func TestParityDisjointHeads(t *testing.T) {
 	if string(n.Fields["statement"]) != `"b"` || string(n.Fields["acceptance"]) != `"x"` {
 		t.Errorf("fields %v, want both updates' fields", n.Fields)
 	}
-	interimAgrees(t, parityOf(t, b), id.ID{})
+	indexAgrees(t, b, id.ID{})
 }

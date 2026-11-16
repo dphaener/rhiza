@@ -12,6 +12,7 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/store"
 )
@@ -146,12 +147,7 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 	}
 	f.events = filepath.Join(t.TempDir(), "events")
 	f.cmd = `printf '%s\n' "$RHIZA_EVENT" >> ` + f.events
-	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	st := w.st
-	ctx.readLog = func() store.Log { f.logReads++; return st.ReadLog() }
+	ctx.logRead = func() { f.logReads++ }
 	return f
 }
 
@@ -417,14 +413,24 @@ func TestDaemonFoldIndexedMatchesLog(t *testing.T) {
 		if indexed == nil {
 			t.Fatalf("%s: no cached fold", step)
 		}
-		// The log side: the change sets folded from the log and the models
-		// built over them, as the fold without an index does.
+		// The log side: the change sets folded from the log, and the models
+		// of a fresh projection built from it in a throwaway index.
 		ws, err := openCtxWorkspace(f.ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 		list, _ := changeset.FoldLog(ws.log())
-		logged := daemonDerive(f.ctx, indexed.res, list, newModelBase(list).model)
+		fresh := *f.ctx
+		fresh.IndexPath = ""
+		fp, err := openProjection(&fresh, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		logged := daemonDerive(f.ctx, indexed.res, list, func(cs id.ID) Model { return fp.model(nil, cs) })
+		if err := fp.failure(); err != nil {
+			t.Fatalf("%s: fresh projection: %v", step, err)
+		}
+		fp.close()
 		if f.logReads == 0 {
 			t.Errorf("%s: the fold over the log did not read it", step)
 		}

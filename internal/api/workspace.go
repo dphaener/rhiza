@@ -95,9 +95,8 @@ type workspace struct {
 	ids     *id.Generator
 	dryRun  bool
 	pending []entry.Entry
-	// readLog reads the log from disk; nil means st.ReadLog. A test sets it
-	// through Ctx to count the folds a read costs.
-	readLog func() store.Log
+	// logRead, when set, is told each disk read of the log (Ctx.logRead).
+	logRead func()
 	// disk is the log's disk read, kept from the first log call until a
 	// write to disk drops it; nil before that call.
 	disk *store.Log
@@ -131,10 +130,10 @@ func openWorkspace(root string, now func() time.Time, ids *id.Generator, dryRun 
 	return &workspace{root: root, st: st, now: now, ids: ids, dryRun: dryRun}, nil
 }
 
-// diskLog reads the log from disk through w.readLog, or the store.
+// diskLog reads the log from disk, telling w.logRead.
 func (w *workspace) diskLog() store.Log {
-	if w.readLog != nil {
-		return w.readLog()
+	if w.logRead != nil {
+		w.logRead()
 	}
 	return w.st.ReadLog()
 }
@@ -146,7 +145,7 @@ func openCtxWorkspace(ctx *Ctx) (*workspace, error) {
 	if err != nil {
 		return nil, err
 	}
-	w.readLog = ctx.readLog
+	w.logRead = ctx.logRead
 	w.useProjection(ctx)
 	w.mirror = liveRunMirror(ctx)
 	w.modelBranch = modelBranchStep(ctx)
@@ -165,7 +164,7 @@ func openRootWorkspace(ctx *Ctx, root string, dryRun bool) (*workspace, error) {
 	}
 	c := *ctx
 	if root == ctx.Root {
-		w.readLog = ctx.readLog
+		w.logRead = ctx.logRead
 	} else {
 		c.Root, c.IndexPath = root, rootIndexPath(ctx, root)
 	}
