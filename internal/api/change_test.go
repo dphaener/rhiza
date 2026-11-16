@@ -766,3 +766,78 @@ func TestChangeWorkflow(t *testing.T) {
 	_, err = callOp(t, ctx, "change.workflow", `{"name":"docs"}`)
 	wantExit(t, err, 3)
 }
+
+// TestChangeLsIndexedReadsNoLog: with an index, change ls reads the log
+// zero times and lists the change sets and problems it lists over the log,
+// a damaged entry's problem included; a change set whose files vanished
+// after the index saw them (a rebase) is not listed.
+func TestChangeLsIndexedReadsNoLog(t *testing.T) {
+	t.Parallel()
+	ctx, landed, accepted := readLog(t)
+	later := newChange(t, ctx, `{"intent":"Later","title":"Afterwards"}`).ChangeSet
+	if _, err := callOp(t, ctx, "change.use", `{"ref":"`+accepted.String()+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(ctx.Root, store.Dir, store.LogDir, accepted.String())
+	if err := os.WriteFile(filepath.Join(dir, "garbage.json"), []byte(`{"x":1}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ls := func(c *Ctx) ChangeLsResponse {
+		t.Helper()
+		resp, err := callOp(t, c, "change.ls", `{}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(ChangeLsResponse)
+	}
+	same := func(step string, want []id.ID) {
+		t.Helper()
+		reads := countingCtx(ctx)
+		indexed := ls(ctx)
+		if *reads != 0 {
+			t.Errorf("%s: change ls over the index read the log %d times, want 0", step, *reads)
+		}
+		folded := *ctx
+		// The log side: no index on purpose, to compare against the indexed list.
+		folded.IndexPath = ""
+		logReads := countingCtx(&folded)
+		logged := ls(&folded)
+		if *logReads != 1 {
+			t.Errorf("%s: change ls over the log read it %d times, want 1", step, *logReads)
+		}
+		if !slices.EqualFunc(indexed.ChangeSets, logged.ChangeSets, func(a, b ChangeSetSummary) bool { return a == b }) ||
+			!slices.Equal(indexed.Problems, logged.Problems) {
+			t.Errorf("%s: over the index %+v %q, over the log %+v %q",
+				step, indexed.ChangeSets, indexed.Problems, logged.ChangeSets, logged.Problems)
+		}
+		if a, b := human(t, indexed), human(t, logged); a != b {
+			t.Errorf("%s: text over the index:\n%s\nover the log:\n%s", step, a, b)
+		}
+		var ids []id.ID
+		for _, c := range indexed.ChangeSets {
+			ids = append(ids, c.ID)
+		}
+		for _, w := range want {
+			if !slices.Contains(ids, w) {
+				t.Errorf("%s: change ls lacks %s: %v", step, w, ids)
+			}
+		}
+		if !slices.ContainsFunc(indexed.Problems, func(p string) bool {
+			return strings.HasPrefix(p, "log: ") && strings.Contains(p, "garbage.json")
+		}) {
+			t.Errorf("%s: problems lack the damaged entry: %q", step, indexed.Problems)
+		}
+	}
+	same("all", []id.ID{landed, accepted, later})
+
+	// A rebase drops the later change set's files after the index saw them.
+	if err := os.RemoveAll(filepath.Join(ctx.Root, store.Dir, store.LogDir, later.String())); err != nil {
+		t.Fatal(err)
+	}
+	same("rebased", []id.ID{landed, accepted})
+	for _, c := range ls(ctx).ChangeSets {
+		if c.ID == later {
+			t.Errorf("change ls still lists the vanished change set %s", later)
+		}
+	}
+}
