@@ -1,0 +1,93 @@
+{
+  "actor": "01M7GXMCEMEM0YQKCK07WG16Y8",
+  "after": [
+    "01M7GHMHWZ091K9TZHT4RCS4V5"
+  ],
+  "at": "2026-11-16T00:57:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Tests: go test -trimpath -p 2 -count=1 ./internal/check passes. A new TestWhatIfOnceMatches in internal/check, over a log with a landed base, two in-flight change sets where one depends on the other, one in-flight change set whose ops no longer apply, a duplicate handle, an in-flight link whose ends its type does not allow and an in-flight node whose text refers to a node that does not exist, shows check's in-flight findings listed exactly. Failure case: an in-flight change set whose what-if has problems, a bad in-flight link and a broken in-flight text ref are each reported once, not twice. Profile, at this leaf's base before any code change and again after: go build -trimpath -o $TMPDIR/rhiza-x ./cmd/rhiza, then in this repo's main checkout RHIZA_CPUPROFILE=$TMPDIR/check.prof $TMPDIR/rhiza-x check and go tool pprof -top -cum $TMPDIR/rhiza-x $TMPDIR/check.prof. The commit's Checks: block gives /usr/bin/time -f '%e s' for both builds, and the cumulative shares of store.ReadLog, changeset.FoldLog, model.WhatIf/WhatIfFrom, model.asIs and checker.render before and after. After the change, model.WhatIf and model.ToBe no longer appear under check.Run, and model.asIs is called once per check. Touches internal/check/check.go, internal/check/textrefs.go and their tests. Must not change what check reports, its order or its --json shape.",
+          "statement": "rhiza check builds the as-is view once with model.AsIsSeed, and from that one seed the to-be view with model.ToBeFrom (replacing checker.model's model.ToBe call, internal/check/check.go:378) and each in-flight change set's what-if once with model.WhatIfFrom; the in-flight problems pass (checker.model, :384), the in-flight links pass (checker.inFlightLinks, :456) and the text-ref pass (checker.textRefs, internal/check/textrefs.go:49, run from check.Run at :282) share those what-if views instead of each calling model.WhatIf"
+        },
+        "handle": "check-whatif-once",
+        "id": "01M7GFXTMA9VHC2FAQB50N4B5N",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests: go test -trimpath -p 2 -count=1 ./internal/model passes. The existing TestAsIsSeedWhatIfFrom in internal/model/seed_test.go, over a log with a landed base, two in-flight change sets where one depends on the other, one in-flight change set whose ops no longer apply and a duplicate handle, also shows that ToBeFrom over AsIsSeed's seed equals ToBe (model and problems). ToBeFrom and every WhatIfFrom call run over one shared seed, the results are compared only after every call has run, and the seed is then compared with a fresh AsIsSeed: each must still be equal (no aliasing between views or with the seed). Failure case: a ToBeFrom whose result shared a node's History or Fields with the seed, or with a WhatIfFrom view, fails that comparison. Touches internal/model/seed.go and internal/model/seed_test.go only; adds no rule and changes no existing function's result.",
+          "statement": "model.ToBeFrom(seed Seed, sets []changeset.ChangeSet) (Model, []Problem) in internal/model/seed.go builds the to-be view from a seed (the accepted change sets layered on a copy of it), beside the model.AsIsSeed and the copying Seed.builder that the parity harness (#599, decision parity-seed-bridge-in-model) already added and this leaf reuses, adding no second constructor; TestAsIsSeedWhatIfFrom covers ToBeFrom too"
+        },
+        "handle": "model-seed-views",
+        "id": "01M7GXQ4ZM9QJX1G85W50GSG9A",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "id": "01M7GXQ514EGJ3H5YRY9MBWKJH",
+        "link": "01M7GXQ514EGJ3H5YRY67424RS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GHM0P1KCRS7SMH71QMT3VE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "id": "01M7GXQ53JD33DTZ2QX9DCNEP7",
+        "link": "01M7GXQ53JD33DTZ2QX8D95D84",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GGEBTPYMQHBY4882KF2V4X",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "id": "01M7GXQ56QGSQES4CG6K6MNS58",
+        "link": "01M7GXQ56QGSQES4CG6FDNHC7V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GHVXD5JEMBCN02TEQ6NJ4D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "id": "01M7GXQ5ANGDSQVAW9E7Q6N2FS",
+        "link": "01M7GXQ5ANGDSQVAW9E6EG8GJ6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GXQ4ZKWZZKMTP9JQPEPA3D",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7GFXTMA9VHC2FAQB33P1KA1",
+        "id": "01M7GXQ5CRVQ0FQC4RZX03J4QT",
+        "link": "01M7GXQ5CRVQ0FQC4RZSB3RT2T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GHM0P1KCRS7SMH71QMT3VE",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7GFT8ADJN38YJCZ3ZGDJ6YH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7GXQ5EH6CE7C6M553TGJCD2",
+  "type": "ops",
+  "v": 1
+}
