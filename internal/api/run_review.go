@@ -1070,7 +1070,8 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 // adds a question node per confirmed finding, linked blocks to the
 // finding's node when that is a live capability where the question goes
 // (reviewQuestionTarget): the open plan change set that created the node
-// (a serving draft's leaf), whether or not the run's change set has
+// (a serving draft's leaf), or for a link finding the link or its from
+// node, whether or not the run's change set has
 // landed; else the run's change set while it is open; else a record
 // write. It writes one entry per target as the caller, journals an asked
 // entry for each question (Step RHIZA_STEP, no Session, Change the change
@@ -1161,15 +1162,15 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	}
 	var targets []reviewTarget
 	items := map[reviewTarget][]applyItem{}
-	// in is the change set each question's handle went into, journalled
-	// on its asked entry when it is not the run's (the arbiter decides it
-	// there).
-	in := map[string]string{}
+	// askedIn is the change set each question's handle went into,
+	// journalled on its asked entry when it is not the run's (the arbiter
+	// decides it there).
+	askedIn := map[string]string{}
 	for _, f := range confirmed {
 		v, _ := rd.Verdict(f.ID)
 		base := reviewQuestionHandle(rr.id, rd.Number, f.ID)
 		text := reviewQuestionText(rd.Number, f, v.Reason)
-		t := reviewQuestionTarget(c, plan, mustParseID(f.Node))
+		t := reviewQuestionTarget(c, plan, f)
 		q := RunReviewQuestion{Handle: base, Finding: f.ID}
 		var qid id.ID
 		found := false
@@ -1208,7 +1209,7 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 			}
 		}
 		if !t.record && t.cs != rr.change {
-			in[q.Handle] = t.cs.String()
+			askedIn[q.Handle] = t.cs.String()
 		}
 		resp.Questions = append(resp.Questions, q)
 	}
@@ -1241,7 +1242,7 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		f, _ := rd.Finding(q.Finding)
 		v, _ := rd.Verdict(q.Finding)
 		e := run.Entry{Type: run.TypeAsked, At: ctx.Now(), Step: step, Question: resp.Questions[i].ID,
-			Handle: q.Handle, Detail: reviewQuestionText(rd.Number, f, v.Reason), Change: in[q.Handle]}
+			Handle: q.Handle, Detail: reviewQuestionText(rd.Number, f, v.Reason), Change: askedIn[q.Handle]}
 		if err := rr.journal(ctx, "question "+q.Handle, e); err != nil {
 			return nil, err
 		}
@@ -1427,14 +1428,30 @@ type reviewTarget struct {
 // not the run's change set rc has landed; else rc while it is open; else a
 // record write (decisions review-questions-follow-the-node and
 // review-ruling-in-node-change-set).
-func reviewQuestionTarget(rc changeset.ChangeSet, plan []changeset.ChangeSet, node id.ID) reviewTarget {
-	for _, c := range plan {
-		if !planInFlight(c.State) {
-			continue
+//
+// A finding on a link (no Node, Link set) goes to the in-flight plan
+// change set whose ops create that link, else to the one that creates the
+// link's from node, else as above: the arbiter's Decision must sit where
+// the reviser can link the from node decided-by it.
+func reviewQuestionTarget(rc changeset.ChangeSet, plan []changeset.ChangeSet, f run.Finding) reviewTarget {
+	creates := func(match func(o op.Op) bool) (id.ID, bool) {
+		for _, c := range plan {
+			if planInFlight(c.State) && slices.ContainsFunc(c.Ops, match) {
+				return c.ID, true
+			}
 		}
-		if slices.ContainsFunc(c.Ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Node == node }) {
-			return reviewTarget{cs: c.ID}
+		return id.ID{}, false
+	}
+	node := mustParseID(f.Node)
+	if f.Node == "" && f.Link != "" {
+		link := mustParseID(f.Link)
+		if cs, ok := creates(func(o op.Op) bool { return o.Type == op.TypeLinkCreate && o.Link == link }); ok {
+			return reviewTarget{cs: cs}
 		}
+		node = mustParseID(f.LinkFrom)
+	}
+	if cs, ok := creates(func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Node == node }); ok {
+		return reviewTarget{cs: cs}
 	}
 	if !rc.State.Terminal() {
 		return reviewTarget{cs: rc.ID}

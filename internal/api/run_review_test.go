@@ -803,18 +803,28 @@ func TestReviewCheckQuestionInNodeChangeSet(t *testing.T) {
 	def := "name = \"plan\"\n[step.check]\nkind = \"command\"\nrun = \"true\"\n"
 	// review runs review-check on run rid of change set cs after two clean
 	// rounds and a round 3 whose findings on nodes are confirmed.
+	// reviewFindings is review with findings given whole (IDs f1, f2, ...
+	// and kind, reason set here), such as one on a link.
+	var reviewFindings func(t *testing.T, f *sessionFixture, rid string, cs id.ID, findings ...run.Finding) (RunReviewCheckResponse, run.State)
 	review := func(t *testing.T, f *sessionFixture, rid string, cs id.ID, nodes ...id.ID) (RunReviewCheckResponse, run.State) {
+		t.Helper()
+		var findings []run.Finding
+		for _, n := range nodes {
+			findings = append(findings, run.Finding{Node: n.String()})
+		}
+		return reviewFindings(t, f, rid, cs, findings...)
+	}
+	reviewFindings = func(t *testing.T, f *sessionFixture, rid string, cs id.ID, findings ...run.Finding) (RunReviewCheckResponse, run.State) {
 		t.Helper()
 		store := run.NewStore(run.Dir(f.common))
 		if err := store.Create(rid, run.Entry{Type: run.TypeStarted, Step: "check", At: t0,
 			Started: &run.Started{Workflow: "plan", Change: cs.String(), Title: "Plan it", Definition: def, Autonomous: true}}); err != nil {
 			t.Fatal(err)
 		}
-		var findings []run.Finding
 		var verdicts []run.Verdict
-		for i, n := range nodes {
+		for i := range findings {
 			fid := fmt.Sprintf("f%d", i+1)
-			findings = append(findings, run.Finding{ID: fid, Node: n.String(), Kind: run.KindContradiction, Reason: "wrong"})
+			findings[i].ID, findings[i].Kind, findings[i].Reason = fid, run.KindContradiction, "wrong"
 			verdicts = append(verdicts, run.Verdict{Finding: fid, Verdict: run.Confirmed, Reason: "right"})
 		}
 		for _, e := range []run.Entry{
@@ -897,6 +907,32 @@ func TestReviewCheckQuestionInNodeChangeSet(t *testing.T) {
 		}
 		if len(st.Asked) != 2 || changes[qb.ID] != b.String() || changes[qa.ID] != "" {
 			t.Errorf("asked changes %v, want %s=%s and %s=\"\"", changes, qb.ID, b, qa.ID)
+		}
+	})
+
+	t.Run("link", func(t *testing.T) {
+		t.Parallel()
+		f := newSessionFixture(t, "qinnodelink")
+		a := newChange(t, f.ctx, `{"intent":"Plan A"}`).ChangeSet
+		mustWrite(t, f.ctx, "add", `{"kind":"intent","handle":"goal","fields":["statement=Ship it"]}`)
+		own := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"own-leaf","fields":["statement=Does A",`+contract+`]}`).Nodes[0]
+		b := newChange(t, f.ctx, `{"intent":"Serve A"}`).ChangeSet
+		mustWrite(t, f.ctx, "link", `{"from":"`+b.String()+`","type":"depends-on","to":"`+a.String()+`"}`)
+		mustWrite(t, f.ctx, "link", `{"from":"`+b.String()+`","type":"serves","to":"goal"}`)
+		leaf := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-b","fields":["statement=Does B",`+contract+`]}`).Nodes[0]
+		lk := mustWrite(t, f.ctx, "link", `{"from":"leaf-b","type":"depends-on","to":"own-leaf"}`).Links[0]
+
+		resp, st := reviewFindings(t, f, "R52", a, run.Finding{Link: lk.String(), LinkType: string(op.LinkDependsOn),
+			LinkFrom: leaf.String(), LinkTo: own.String()})
+		if !resp.Passed || len(resp.Questions) != 1 {
+			t.Fatalf("passed %v questions %+v", resp.Passed, resp.Questions)
+		}
+		q := resp.Questions[0]
+		if c := holder(t, f, q.ID); c.ID != b {
+			t.Errorf("the draft link's question is in %s, want the draft %s that created the link", c.ID, b)
+		}
+		if len(st.Asked) != 1 || st.Asked[0].Change != b.String() {
+			t.Errorf("asked %+v, want one naming %s", st.Asked, b)
 		}
 	})
 
