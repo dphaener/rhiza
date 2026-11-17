@@ -8,8 +8,8 @@ owner in a chat. Every leaf, acceptance check, Decision and question goes in thr
 
 ## Expected outcome
 
-Each leaf has a `statement`, a runnable `acceptance` scoped to its tests and the files it
-touches; every choice is a Decision with provenance or a parked question; the interview is a
+Each leaf has a `statement`, a runnable `acceptance` scoped to its tests and holding a
+failure case (or a `failure_waiver`), its `files` and its `must_not`; every choice is a Decision with provenance or a parked question; the interview is a
 Source; `rhiza check` is clean.
 
 ## Read first
@@ -36,7 +36,7 @@ Raise a question only for what that reading cannot settle.
 4. Milestone only: `rhiza land` the record, then the leaves of the change sets planned now.
 5. Self-check: re-read `rhiza slice <change> --json` and check that every intent clause is
    served by a leaf; every leaf is one concern with a runnable acceptance scoped to its
-   tests; every Decision has provenance (`quote`, `wording` or a `derived-from` Source); no
+   tests, a failure case or `failure_waiver`, `files` and `must_not`; every Decision has provenance (`quote`, `wording` or a `derived-from` Source); no
    depends-on link is unreal. Run `rhiza check`. Fix what they find.
 
 <!-- shared: command-budget nested -->

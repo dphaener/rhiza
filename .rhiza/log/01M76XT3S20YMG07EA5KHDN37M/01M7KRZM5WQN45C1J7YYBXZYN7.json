@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KR2RA8DSRVTVQ7WM659E80",
+  "after": [
+    "01M7KPKY142KQJ2R9FR3VNQ99G"
+  ],
+  "at": "2026-11-17T03:32:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f326fd5b5 (capped scope, -p 2): go test -trimpath ./internal/api exit 0; -run 'ReviewCheck' exit 0 (TestReviewCheckLeafContract covers a clean round passing, a leaf missing files failing with its handle and 'lacks files', no failure case failing and a failure_waiver passing, round 3 still failing with no asked question and round 3 the latest, a conductor run unaffected); go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-workflow|plan-review|autonomous-review|review-check)' exit 0; the other changed scripts describe-golden (no -update), plan-milestone-backlog and run-arbitrate-asked pass; docs/reference and the golden are current (no diff). Diff read: conductorReviewCheck untouched (dispatched before the new check); only ops of plan change sets are checked, so landed leaves the plan doesn't touch are skipped; the leaf-contract error returns before the round-cap question path; no TODOs. Caveat: each node is read in the view of the last plan change set touching it, so a parent created in one plan change set whose child is added in a later one could be flagged as a leaf."
+        },
+        "handle": "leaf-contract-review-check-verified",
+        "id": "01M7KRZM24ACRZ8E6WJ4KK9KSS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KRZM24ACRZ8E6WJ1NBH55Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KRZM24ACRZ8E6WJ1NBH55Y",
+        "id": "01M7KRZM3SD3921W5MFX9XMGSY",
+        "link": "01M7KRZM3SD3921W5MFWFD7B6K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M7KHX72387SBN6CG6KPPR5S9",
+  "id": "01M7KRZM5WQN45C1J7YYBXZYN7",
+  "type": "ops",
+  "v": 1
+}

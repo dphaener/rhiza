@@ -1,0 +1,132 @@
+{
+  "actor": "01M7KVXQ5RTVYTB2QNJBN7NP3N",
+  "after": [
+    "01M7KSNGPY49A0C4RG959NPN9S"
+  ],
+  "at": "2026-11-17T04:25:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build of cs/leaf-contract (go build -trimpath to $TMPDIR, scratch repo and root): rhiza add capability with files and must_not, rhiza set failure_waiver and rhiza apply with files/must_not all wrote and rhiza show read them back; rhiza add constraint with files refused exit 2 (known fields acceptance, statement); a capability field file refused exit 2 listing failure_waiver, files, must_not. A fake-agent run wrote brief.md listing Files:, Must not: and Failure waiver: under each leaf acceptance for the fields it has and none for a leaf without them."
+        },
+        "handle": "leaf-contract-fields-qa-1",
+        "id": "01M7KW24SRJBBC41GD7K5V3G0Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KW24SRJBBC41GD7JWZ1ST5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KW24SRJBBC41GD7JWZ1ST5",
+        "id": "01M7KW24W6MQ42S4T8E93TGWJM",
+        "link": "01M7KW24W6MQ42S4T8E5FY59T3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SXVPYE91ZCAQASJ6E4C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary on a hold-workflow plan run: review-check failed exit 1 naming cap-b lacks files, must_not, a failure case; a parent with a live child was skipped and an uppercase FAILURE CASE passed; a waiver satisfied the failure case; whitespace-only must_not reported as lacking; round 2 printed both the leaf-contract and confirmed-finding failures; round 3 still failed with no question or asked entry; once fixed, round 4 passed leaving the confirmed finding as a question; retiring the child made the parent a leaf and review-check failed naming it."
+        },
+        "handle": "leaf-contract-review-check-qa-1",
+        "id": "01M7KW24XRKHA0QADGHZDW1N7H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KW24XRKHA0QADGHVEVSXHA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KW24XRKHA0QADGHVEVSXHA",
+        "id": "01M7KW24Z9BQQY7ZA8YRKRYJXG",
+        "link": "01M7KW24Z9BQQY7ZA8YQ8BG0HW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary: rhiza run findings accepted kind no-failure-case, refused no-failure exit 2 listing eight kinds ending oversized-leaf, no-failure-case; a confirmed no-failure-case finding failed review-check at round 2 and became a question at round 4; rhiza guide check-qa severities block names no-failure-case major."
+        },
+        "handle": "no-failure-case-kind-qa-1",
+        "id": "01M7KW251B65XBE07FA4V8A0A5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KW251B65XBE07FA1R2HJK6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KW251B65XBE07FA1R2HJK6",
+        "id": "01M7KW253J5ETTVG7E80C9YFVT",
+        "link": "01M7KW253J5ETTVG7E7ZPVN85E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SZXSN16GPF6JZ0CEBHM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary: rhiza guide plan-reviewer lists eight kinds with no-failure-case after oversized-leaf, narrows missing-acceptance to vague, unrunnable or full-suite, and says never to record what rhiza run review-check checks or rhiza check reports; plan-reviser and plan-critic name no-failure-case; no topic says seven kinds."
+        },
+        "handle": "plan-reviewer-leaf-contract-qa-1",
+        "id": "01M7KW255QR55GSP311059VZXQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KW255QR55GSP310Y6NV61T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KW255QR55GSP310Y6NV61T",
+        "id": "01M7KW2584DDK8RW2B8HMX5F6V",
+        "link": "01M7KW2584DDK8RW2B8GGZMRCA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4TDSR009HWJED70174PC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary: rhiza guide plan-recipes Leaves section teaches files, must_not, failure_waiver, the words failure case and one fresh session, its apply recipe carrying files= and must_not=; rhiza guide planner names files, must_not and the failure case."
+        },
+        "handle": "planner-leaf-contract-qa-1",
+        "id": "01M7KW259W4JSXDEFHS2PER1JA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KW259W4JSXDEFHRYPX9P7X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KW259W4JSXDEFHRYPX9P7X",
+        "id": "01M7KW25BMTQ1MFZFG19H7WJPZ",
+        "link": "01M7KW25BMTQ1MFZFG17S12V6G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M7KHX72387SBN6CG6KPPR5S9",
+  "id": "01M7KW25DHKRYMM8SPBFY1X820",
+  "type": "ops",
+  "v": 1
+}

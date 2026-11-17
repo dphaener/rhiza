@@ -29,6 +29,8 @@ and `rhiza why <node> --change <cs> --json`, and the code and tests it names.
      over and retire the original.
    - `uncovered-intent`: add a leaf serving the intent clause no leaf served, with a runnable
      `acceptance`.
+   - `no-failure-case`: give the leaf's `acceptance` a failure case that is a real failure
+     path of the leaf, or drop a `failure_waiver` with no real reason for one.
    - `missing-acceptance`, `missing-provenance`, `unreal-depends-on`, `outside-intent` and
      `contradiction`: make the model say what the finding asked for, and no more.
 2. Write the fixes with one `rhiza apply <file> --change <cs> --json` per change set holding the

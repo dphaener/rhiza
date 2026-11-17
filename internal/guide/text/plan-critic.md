@@ -19,12 +19,15 @@ severity and reason. Read each finding's node with `rhiza slice --change <cs> --
 ## Must do
 
 1. Check each finding against the model and the code: is the problem real, and is its
-   severity right? Run what the reason cites; do not take it on trust.
+   severity right? Run what the reason cites; do not take it on trust. A `no-failure-case`
+   finding holds only when the leaf's failure case is not a real failure path of its code, or
+   its `failure_waiver` gives no real reason.
 2. Give each finding one verdict:
    - `confirmed`: the problem is real and the severity stands.
    - `downgraded`: the problem is real but a blocker or major finding is too severe; give the
      lower `severity` it deserves.
-   - `dropped`: the problem is not real, or `rhiza check` already reports it; give the reason.
+   - `dropped`: the problem is not real, or `rhiza run review-check`
+     or `rhiza check` already reports it; give the reason.
 3. Record every verdict from stdin with a heredoc, no temp file:
 
 ```

@@ -36,15 +36,15 @@ exec sh -c 'rhiza show dec-l --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*
 # A draft serves want-l with a capability.
 exec sh -c 'rhiza change new "Serve L" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/s1'
 exec sh -c 'rhiza link $(cat $WORK/s1) serves want-l'
-exec rhiza add capability cap-l --field 'statement=Does L'
+exec rhiza add capability cap-l --field 'statement=Does L' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
 exec sh -c 'rhiza show cap-l --json | sed -n "s/^    \"id\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/cap'
 
 # A second draft serves want-l; it and the first each add a cap-x, so
 # cap-x names different nodes in the plan: a finding on it is usage.
 exec sh -c 'rhiza change new "Serve L two" --json | sed -n "s/.*\"change_set\": \"\([0-9A-Z]*\)\".*/\1/p" > $WORK/s2'
 exec sh -c 'rhiza link $(cat $WORK/s2) serves want-l'
-exec rhiza add capability cap-x --field 'statement=Does X'
-exec sh -c 'rhiza add capability cap-x --field "statement=Does X too" --change $(cat $WORK/s1)'
+exec rhiza add capability cap-x --field 'statement=Does X' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
+exec sh -c 'rhiza add capability cap-x --field "statement=Does X too" --field "acceptance=It works; failure case: bad input is refused" --field "files=internal/x.go" --field "must_not=touch other files" --change $(cat $WORK/s1)'
 exec sh -c 'RHIZA_RUN=$(cat $WORK/runid) rhiza run findings $WORK/dup.json --json; echo exit=$?'
 stdout '"code": "usage"'
 stdout 'finding 1: node \\"cap-x\\": names different nodes in the plan.s change sets: 01[0-9A-Z]{24}, 01[0-9A-Z]{24}'

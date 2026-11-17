@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KSKR90G5MGZPPKQ98PJZRA",
+  "after": [
+    "01M7KS9RMP1KNPEDP2SMKZ1B1C"
+  ],
+  "at": "2026-11-17T03:44:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at fd9a92409: go test -trimpath -p 2 ./internal/guide/... -count=1 ok; TestPlanReviewerText (eight kinds, no-failure-case after oversized-leaf, missing-acceptance narrowed to vague/unrunnable/full-suite, Must not names rhiza run review-check), TestPlanReviserText and TestPlanCriticText (no-failure-case where kinds are named) and the failure-case TestNoTextSaysSevenKinds all PASS; rhiza ship generate exit 0 (0 files changed), rhiza render exit 0. Diff touches only internal/guide text, guide.go's plan-reviewer description, the three plan review tests and the builder's actor record; run.Kinds and severities.md untouched; no TODOs. No guide topic or description says seven kinds (grep)."
+        },
+        "handle": "plan-reviewer-leaf-contract-verified",
+        "id": "01M7KSNGK383BKTRN1TR0X1NEG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KSNGK2VMPCYB48YZQRBTFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KSNGK2VMPCYB48YZQRBTFJ",
+        "id": "01M7KSNGMVWFFQM83ZPCP1P1T4",
+        "link": "01M7KSNGMVWFFQM83ZPAG3P0H2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4TDSR009HWJED70174PC",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M7KHX72387SBN6CG6KPPR5S9",
+  "id": "01M7KSNGPY49A0C4RG959NPN9S",
+  "type": "ops",
+  "v": 1
+}

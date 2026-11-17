@@ -151,6 +151,8 @@ func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefIn
 		}
 		in.Leaves = append(in.Leaves, run.BriefLeaf{
 			Handle: l.Handle, Statement: nodeField(n.Fields, "statement"), Acceptance: nodeField(n.Fields, "acceptance"),
+			Files: nodeField(n.Fields, "files"), MustNot: nodeField(n.Fields, "must_not"),
+			FailureWaiver: nodeField(n.Fields, "failure_waiver"),
 		})
 	}
 	in.Decisions = focusStatements(sl, op.KindDecision, sl.Decisions)

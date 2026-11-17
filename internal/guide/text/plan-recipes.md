@@ -22,7 +22,8 @@ Tell the scope from `kind` in `rhiza change show --json`:
 
 ## Leaves
 
-A leaf is a capability with `statement` (one sentence) and `acceptance`, linked
+A leaf is a capability with its contract: `statement` (one sentence), `acceptance`, `files`
+(the paths it touches, line ranges allowed) and `must_not` (what it must not do), linked
 `decided-by` its Decision:
 
 ```json
@@ -33,14 +34,19 @@ A leaf is a capability with `statement` (one sentence) and `acceptance`, linked
   {"op":"link","from":"csv-streaming","type":"derived-from","to":"<source>"},
   {"op":"add","kind":"capability","handle":"export-csv","parent":"reports","fields":[
     "statement=Users export any report as CSV",
-    "acceptance=A test exports a 100k-row report with flat memory use"]},
+    "acceptance=A test exports a 100k-row report with flat memory use; (failure case) a bad column is refused",
+    "files=reports/csv.go, reports/csv_test.go",
+    "must_not=Change the JSON export"]},
   {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
 ]}
 ```
 
 Write each acceptance as the tests covering that leaf, never the repo's full suite: CI runs
-it before merge. A write refers only to landed nodes and its own change set's; pass
-`--change <id>` for another change set.
+it before merge. Each acceptance holds at least one failure case marked with the words
+`failure case`; a leaf with none carries `failure_waiver` with its reason. Review fails a
+leaf missing any of these. A leaf is one concern, sized for one fresh session: split one
+with two unrelated concerns or a `files` list too long to hold. A write refers only to
+landed nodes and its own change set's; pass `--change <id>` for another change set.
 
 ## Who records a pick
 

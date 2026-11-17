@@ -71,8 +71,8 @@ fold-ok
 -- leaf.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"export-csv","fields":[
-    "statement=Users export any report as CSV",
-    "acceptance=A test exports a 100k-row report with flat memory use"]}
+    "statement=Users export any report as CSV", "files=internal/export/csv.go", "must_not=change other report formats",
+    "acceptance=A test exports a 100k-row report with flat memory use; failure case: an unknown report is refused"]}
 ]}
 -- clean.json --
 {"findings":[]}

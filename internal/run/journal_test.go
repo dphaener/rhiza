@@ -1116,17 +1116,17 @@ func TestStandingDowngrade(t *testing.T) {
 	}
 }
 
-// Kinds ends with the two later plan-review kinds, uncovered-intent then
-// oversized-leaf, and both carry major severity.
+// Kinds ends with the three later plan-review kinds, uncovered-intent,
+// oversized-leaf then no-failure-case, and all three carry major severity.
 func TestKindsPlanReviewAdditions(t *testing.T) {
 	n := len(Kinds)
-	if n < 2 || Kinds[n-2] != KindUncoveredIntent || Kinds[n-1] != KindOversizedLeaf {
-		t.Fatalf("Kinds = %v, want it to end with uncovered-intent, oversized-leaf", Kinds)
+	if n < 3 || Kinds[n-3] != KindUncoveredIntent || Kinds[n-2] != KindOversizedLeaf || Kinds[n-1] != KindNoFailureCase {
+		t.Fatalf("Kinds = %v, want it to end with uncovered-intent, oversized-leaf, no-failure-case", Kinds)
 	}
-	if KindUncoveredIntent != "uncovered-intent" || KindOversizedLeaf != "oversized-leaf" {
-		t.Fatalf("kind names %q, %q", KindUncoveredIntent, KindOversizedLeaf)
+	if KindUncoveredIntent != "uncovered-intent" || KindOversizedLeaf != "oversized-leaf" || KindNoFailureCase != "no-failure-case" {
+		t.Fatalf("kind names %q, %q, %q", KindUncoveredIntent, KindOversizedLeaf, KindNoFailureCase)
 	}
-	for _, k := range []string{KindUncoveredIntent, KindOversizedLeaf} {
+	for _, k := range []string{KindUncoveredIntent, KindOversizedLeaf, KindNoFailureCase} {
 		if !ValidKind(k) {
 			t.Errorf("%s is not a valid kind", k)
 		}

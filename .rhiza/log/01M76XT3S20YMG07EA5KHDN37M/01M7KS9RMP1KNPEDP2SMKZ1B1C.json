@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KS7DDP5GYGKM608F9XC0E2",
+  "after": [
+    "01M7KRZM5WQN45C1J7YYBXZYN7"
+  ],
+  "at": "2026-11-17T03:37:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 364011c48 re-ran the Checks: block: go test -trimpath -p 2 ./internal/guide/... exit 0 (TestPlanLeafContract, TestCaps PASS with -count=1 -v), rhiza ship generate exit 0 with 0 changed files, rhiza render exit 0 with a clean tree. Diff read: plan-recipes Leaves names files, must_not, failure_waiver, `failure case`, one fresh session and the split rule, and its apply recipe carries files= and must_not= with a (failure case) acceptance; planner Expected outcome and self-check name files, must_not and the failure case; the test checks each, plus both topics within TopicCap (failure case; planner 860 tokens, plan-recipes about 882, cap 1000). Only plan-recipes.md, planner.md, the plan-recipes description in guide.go, plan_test.go and the builder's actor record changed; no plan reviewer, critic or reviser topic touched; no stubs or TODOs."
+        },
+        "handle": "planner-leaf-contract-verified",
+        "id": "01M7KS9RJC10325DMHTG9QBGER",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KS9RJC10325DMHTEP2JF2V",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KS9RJC10325DMHTEP2JF2V",
+        "id": "01M7KS9RKKZG4Y4FWWZPPGQY1C",
+        "link": "01M7KS9RKKZG4Y4FWWZJX8Q0RS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M7KHX72387SBN6CG6KPPR5S9",
+  "id": "01M7KS9RMP1KNPEDP2SMKZ1B1C",
+  "type": "ops",
+  "v": 1
+}

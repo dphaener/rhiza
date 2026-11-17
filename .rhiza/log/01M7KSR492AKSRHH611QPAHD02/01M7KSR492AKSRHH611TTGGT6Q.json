@@ -1,0 +1,15 @@
+{
+  "actor": "01M7KHX72387SBN6CG6KPPR5S9",
+  "after": [],
+  "at": "2026-11-17T03:45:27Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ccb5ad69 for session ccb5ad69-97fc-41c4-a3d7-01a1e79c0d5f",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7KSR492AKSRHH611QPAHD02",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KSR492AKSRHH611TTGGT6Q",
+  "type": "open",
+  "v": 1
+}

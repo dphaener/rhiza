@@ -186,3 +186,43 @@ func TestPlanMilestoneNumber(t *testing.T) {
 		"plan-milestone-number": {"RHIZA_MILESTONE_NUMBER", "milestone-N", "milestone=N", "`mN-`", "Never count milestones"},
 	})
 }
+
+// plan-recipes' Leaves section teaches the leaf contract review-check
+// requires, its apply recipe writes files and must_not, and the planner
+// names them in Expected outcome and the self-check; both stay in cap.
+func TestPlanLeafContract(t *testing.T) {
+	r, _ := Lookup("plan-recipes")
+	leaves := sectionOf(r.Body, "## Leaves")
+	for _, w := range []string{"`files`", "`must_not`", "`failure_waiver`", "`failure case`", "one fresh session", "two unrelated concerns", "too long to hold"} {
+		if !strings.Contains(leaves, w) {
+			t.Errorf("plan-recipes Leaves: no %s", w)
+		}
+	}
+	i, j := strings.Index(leaves, "```json"), strings.LastIndex(leaves, "```")
+	if i < 0 || j <= i {
+		t.Fatalf("plan-recipes Leaves: no apply recipe")
+	}
+	recipe := leaves[i:j]
+	for _, w := range []string{`"statement=`, `"acceptance=`, `"files=`, `"must_not=`, "failure case"} {
+		if !strings.Contains(recipe, w) {
+			t.Errorf("plan-recipes apply recipe: no %s", w)
+		}
+	}
+	p, _ := Lookup("planner")
+	outcome := sectionOf(p.Body, "## Expected outcome")
+	must := sectionOf(p.Body, "## Must do")
+	check := must[strings.Index(must, "Self-check"):]
+	for where, sec := range map[string]string{"Expected outcome": outcome, "self-check": check} {
+		for _, w := range []string{"`files`", "`must_not`", "failure case"} {
+			if !strings.Contains(sec, w) {
+				t.Errorf("planner %s: no %s", where, w)
+			}
+		}
+	}
+	// failure case: neither expanded topic may pass TopicCap.
+	for _, tx := range []Text{r, p} {
+		if n := Tokens(tx.Body); n > TopicCap {
+			t.Errorf("%s costs %d tokens, cap %d", tx.Name, n, TopicCap)
+		}
+	}
+}

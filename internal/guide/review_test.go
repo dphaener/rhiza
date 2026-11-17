@@ -220,13 +220,13 @@ func TestSeveritiesBlockShared(t *testing.T) {
 			t.Errorf("severities mapping lacks %s", c)
 		}
 	}
-	for _, k := range []string{"`missing-acceptance`", "`contradiction`", "`outside-intent`", "`uncovered-intent`", "`oversized-leaf`"} {
+	for _, k := range []string{"`missing-acceptance`", "`contradiction`", "`outside-intent`", "`uncovered-intent`", "`oversized-leaf`", "`no-failure-case`"} {
 		if !strings.Contains(block, k) {
 			t.Errorf("severities mapping lacks plan review kind %s", k)
 		}
 	}
-	if !strings.Contains(block, "`uncovered-intent` and `oversized-leaf` major") {
-		t.Errorf("severities block does not make uncovered-intent and oversized-leaf major")
+	if !strings.Contains(block, "`uncovered-intent`, `oversized-leaf` and `no-failure-case` major") {
+		t.Errorf("severities block does not make uncovered-intent, oversized-leaf and no-failure-case major")
 	}
 	if strings.Contains(block, "`scope`") {
 		t.Errorf("severities mapping names a `scope` check")

@@ -30,7 +30,7 @@ func TestPlanReviserText(t *testing.T) {
 	if !strings.Contains(ctx, strings.TrimRight(shared["session-done.md"], "\n")) {
 		t.Errorf("plan-reviser: the session-done block is not expanded inside Context")
 	}
-	for _, w := range []string{"`rhiza apply <file> --change <cs> --json`", "`rhiza apply <file> --record --json`", "split the leaf into leaves of one concern each", "add a leaf serving the intent clause", "Never invent an owner's words", "`quote`"} {
+	for _, w := range []string{"`rhiza apply <file> --change <cs> --json`", "`rhiza apply <file> --record --json`", "split the leaf into leaves of one concern each", "add a leaf serving the intent clause", "Never invent an owner's words", "`quote`", "`no-failure-case`: give the leaf's `acceptance` a failure case"} {
 		if !strings.Contains(must, w) {
 			t.Errorf("plan-reviser Must do: no %q", w)
 		}

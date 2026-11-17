@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KPCQ8Q1DVETD1PTS0SRB5G",
+  "after": [
+    "01M7KNFMG9FPV242C8M4DT1MQJ"
+  ],
+  "at": "2026-11-17T02:50:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified f5cb4e13e at HEAD: re-ran its Checks: go test -trimpath -p 2 ./internal/run/..., ./internal/api/..., ./internal/guide/... exit 0; ./cmd/rhiza -run TestScripts/describe-golden -update exit 0 with no golden diff; -run 'TestScripts/(describe-golden|run-review-journal)' exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0. Diff: run.Kinds ends oversized-leaf, no-failure-case and KindSeverity makes it major (TestKindsPlanReviewAdditions); TestRunFindingsPlanKinds runs each plan kind in its own run's round 1 so a confirmed no-failure-case fails review-check before round 3, and the unknown kind no-failure is refused with exit 2 listing all eight kinds and journals nothing; TestSeveritiesBlockShared needs the severities block to name no-failure-case major; run-review-journal.txtar, describe-golden and docs/reference/cli.md list the eighth kind. Scope: the severities.md rewording keeps every severity and per-check mapping and is in the leaf's allowed files; the plan_reviewer_test.go skip of no-failure-case is needed because the leaf must not change plan-reviewer's text, and the plan-reviewer-leaf-contract leaf's acceptance makes that topic list eight kinds. No stubs or TODOs. Nit: the RunFinding kind desc lacks a comma after '(an intent clause no leaf serves)'."
+        },
+        "handle": "no-failure-case-kind-verified",
+        "id": "01M7KPKXYE8WFYY60E2QRYH9NR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KPKXYE8WFYY60E2M67XH7F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KPKXYE8WFYY60E2M67XH7F",
+        "id": "01M7KPKXZV5TPSA56NH6GC6RS3",
+        "link": "01M7KPKXZV5TPSA56NH3TVF6RZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SZXSN16GPF6JZ0CEBHM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M7KHX72387SBN6CG6KPPR5S9",
+  "id": "01M7KPKY142KQJ2R9FR3VNQ99G",
+  "type": "ops",
+  "v": 1
+}

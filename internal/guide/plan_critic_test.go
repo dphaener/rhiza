@@ -33,7 +33,7 @@ func TestPlanCriticText(t *testing.T) {
 	if !strings.Contains(sectionOf(p.Body, "## Read first"), "`rhiza run status --json`") {
 		t.Errorf("plan-critic Read first: no rhiza run status --json")
 	}
-	for _, w := range []string{"rhiza run verdict - --json <<'EOF'", "`confirmed`", "`downgraded`", "`dropped`", `"severity":"minor"`, `{"verdicts":[`} {
+	for _, w := range []string{"rhiza run verdict - --json <<'EOF'", "`confirmed`", "`downgraded`", "`dropped`", `"severity":"minor"`, `{"verdicts":[`, "A `no-failure-case`\n   finding holds only", "`rhiza run review-check`"} {
 		if !strings.Contains(must, w) {
 			t.Errorf("plan-critic Must do: no %q", w)
 		}
