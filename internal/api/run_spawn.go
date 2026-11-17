@@ -5,7 +5,10 @@ package api
 // process, never the daemon's; the child is started as any run session is
 // (through the run's agent adapter and permission mode), is journaled as a
 // child of the calling step, and counts against no rhiza.daemon.maxRuns: only
-// a usage hold or the machine load hold makes the spawn wait.
+// a usage hold or the machine load hold makes the spawn wait. The child ends
+// when it says done (rhiza session done) or its process exits, whichever
+// comes first; a child that said done has its Rex pane closed by the spawn
+// itself, so its agent exits with or without a daemon.
 
 import (
 	"fmt"
@@ -34,6 +37,9 @@ func init() {
 
 const runSpawnNext = "rhiza describe run.spawn"
 
+// childSaidDone is the detail of a child that ended by saying done.
+const childSaidDone = "said done"
+
 // spawnPoll is how often a spawn re-reads the holds and the child's record.
 const spawnPoll = 2 * time.Second
 
@@ -58,8 +64,8 @@ type RunSpawnResponse struct {
 	Cycle   int    `json:"cycle,omitempty" desc:"Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges"`
 	Brief   string `json:"brief,omitempty" desc:"The child's brief.md, an absolute path"`
 	Held    bool   `json:"held,omitempty" desc:"True if the spawn waited on a usage or machine hold before it started the child"`
-	Outcome string `json:"outcome,omitempty" enum:"pass,fail" desc:"pass when the child's agent exited 0, else fail"`
-	Detail  string `json:"detail,omitempty" desc:"The child's exit, or why it failed"`
+	Outcome string `json:"outcome,omitempty" enum:"pass,fail" desc:"pass when the child said done (rhiza session done) or its agent exited 0, else fail"`
+	Detail  string `json:"detail,omitempty" desc:"said done, the child's exit, or why it failed"`
 	DryRun  bool   `json:"dry_run,omitempty" desc:"True if nothing was started or journaled"`
 }
 
@@ -189,9 +195,9 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 	if err := rs.Append(rr.id, run.Entry{Type: run.TypeSpawn, At: ctx.Now(), Step: step, Parent: parent, Session: sid, Role: role, Leaf: resp.Leaf, Model: req.model}); err != nil {
 		return resp, Errorf("journal the child session %s in run %s: %v", sid, rr.id, err)
 	}
+	var rec session.Record
 	for {
-		rec, err := readSession(sessions, sid)
-		if err != nil {
+		if rec, err = readSession(sessions, sid); err != nil {
 			return resp, err
 		}
 		if outcome, detail, done := childOutcome(rec); done {
@@ -202,6 +208,13 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 	}
 	if _, err := rs.AppendSpawnEnded(rr.id, run.Entry{At: ctx.Now(), Step: step, Parent: parent, Session: sid, Outcome: resp.Outcome, Detail: resp.Detail}); err != nil {
 		return resp, Errorf("journal the end of child session %s in run %s: %v", sid, rr.id, err)
+	}
+	if rec.Status.SaidDone() {
+		// A child that said done waits at its prompt: close its pane so
+		// its agent exits. A failed close changes no outcome.
+		if _, err := closeSessionPane(ctx, rec, ctx.Root); err != nil && ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: run spawn: child session %s said done, but its pane stays open: %v\n", sid, err)
+		}
 	}
 	return resp, nil
 }
@@ -267,9 +280,15 @@ func spawnSleep(ctx *Ctx) {
 	ctxSleep(ctx)(spawnPoll)
 }
 
-// childOutcome is a child session's outcome once its process has exited:
-// pass for exit 0, else fail with the exit or the reason it ended.
+// childOutcome is a child session's outcome once it has ended: pass with
+// detail "said done" once it said done (rhiza session done), whatever exit
+// follows (its pane closed, its agent killed or marked lost), as the engine
+// counts a done mark for a step waiting for done; else, once its process
+// has exited, pass for exit 0 and fail with the exit or the reason it ended.
 func childOutcome(rec session.Record) (outcome, detail string, done bool) {
+	if rec.Status.SaidDone() {
+		return workflow.OutcomePass, childSaidDone, true
+	}
 	if !rec.Status.Exited() {
 		return "", "", false
 	}

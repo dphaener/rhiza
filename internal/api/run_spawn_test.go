@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +26,9 @@ type spawnFixture struct {
 	slept int
 	// onSleep runs at each sleep, to lift a hold.
 	onSleep func()
+	// child, when set, shapes the child's record in place of the exit
+	// with code.
+	child func(*session.Record)
 }
 
 func newSpawnFixture(t *testing.T) *spawnFixture {
@@ -66,8 +71,12 @@ func newSpawnFixture(t *testing.T) *spawnFixture {
 			return "", err
 		}
 		code := s.code
-		return "child-1", sessions.Write(session.Record{ID: "child-1", Run: r.Run, Step: r.Step, Parent: r.parent, Autonomous: r.autonomous,
-			Status: session.Status{Exit: &session.Report{State: session.StateExited, Code: &code}}})
+		rec := session.Record{ID: "child-1", Run: r.Run, Step: r.Step, Parent: r.parent, Autonomous: r.autonomous,
+			Status: session.Status{Exit: &session.Report{State: session.StateExited, Code: &code}}}
+		if s.child != nil {
+			s.child(&rec)
+		}
+		return "child-1", sessions.Write(rec)
 	}}
 	return s
 }
@@ -399,6 +408,104 @@ func TestRunSpawnCheck(t *testing.T) {
 		}
 		if r := s.reqs[0]; r.check != "" || r.cycle != 0 {
 			t.Errorf("start request check %q cycle %d", r.check, r.cycle)
+		}
+	})
+}
+
+// spawnRex captures the rex commands a spawn runs, failing each with err.
+type spawnRex struct {
+	calls []string
+	err   error
+}
+
+func (x *spawnRex) exec(name string, args []string, _ string, _ []string) ([]byte, error) {
+	x.calls = append(x.calls, name+" "+strings.Join(args, " "))
+	return nil, x.err
+}
+
+// A child that said done ends the spawn with pass and detail said done,
+// journaled, whatever exit follows its done mark, and spawn closes its
+// pane; a live child keeps it waiting until it exits, closing nothing; a
+// pane close that fails changes neither the outcome nor the journal.
+func TestRunSpawnSaidDone(t *testing.T) {
+	t.Parallel()
+	three := 3
+	done := func(rec *session.Record) {
+		rec.Tab = session.Tab{Session: "s1", Block: "block:c1"}
+		rec.Status = session.Status{Done: &session.Report{State: session.StateDone}}
+	}
+	for _, c := range []struct {
+		name  string
+		child func(*session.Record)
+		err   error
+	}{
+		{"NoExit", done, nil},
+		{"LaterExit", func(rec *session.Record) {
+			done(rec)
+			rec.Status.Exit = &session.Report{State: session.StateExited, Code: &three}
+		}, nil},
+		{"Lost", func(rec *session.Record) {
+			done(rec)
+			rec.Status.Exit = &session.Report{State: session.StateLost, Detail: lostHookEnded}
+		}, nil},
+		{"CloseFails", done, errors.New("rex block close: server down")},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			s := newSpawnFixture(t)
+			s.child = c.child
+			rex := &spawnRex{err: c.err}
+			var stderr bytes.Buffer
+			s.f.ctx.Exec, s.f.ctx.Stderr = rex.exec, &stderr
+			resp, err := s.sp.spawn(s.req())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if resp.Outcome != "pass" || resp.Detail != "said done" || resp.ExitCode() != 0 || s.slept != 0 {
+				t.Fatalf("response %+v, slept %d", resp, s.slept)
+			}
+			if sp := s.state(t).Spawns[0]; !sp.Ended || sp.Outcome != "pass" || sp.Detail != "said done" {
+				t.Errorf("spawn %+v", sp)
+			}
+			if want := "rex block close -s s1 block:c1"; len(rex.calls) != 1 || rex.calls[0] != want {
+				t.Errorf("rex calls %q, want %q", rex.calls, want)
+			}
+			if got := stderr.String(); (c.err != nil) != strings.Contains(got, "server down") {
+				t.Errorf("stderr %q", got)
+			}
+		})
+	}
+
+	t.Run("LiveThenExit", func(t *testing.T) {
+		s := newSpawnFixture(t)
+		s.child = func(rec *session.Record) {
+			rec.Tab = session.Tab{Session: "s1", Block: "block:c1"}
+			rec.Status = session.Status{}
+		}
+		rex := &spawnRex{}
+		s.f.ctx.Exec = rex.exec
+		sessions := session.NewStore(session.Dir(s.f.common))
+		s.onSleep = func() {
+			if s.slept < 2 {
+				return
+			}
+			if _, err := sessions.Update("child-1", func(r *session.Record) {
+				r.Status.Exit = &session.Report{State: session.StateExited, Code: &three}
+			}); err != nil {
+				t.Error(err)
+			}
+		}
+		resp, err := s.sp.spawn(s.req())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if resp.Outcome != "fail" || resp.Detail != "exit 3" || s.slept != 2 {
+			t.Fatalf("response %+v, slept %d", resp, s.slept)
+		}
+		if sp := s.state(t).Spawns[0]; !sp.Ended || sp.Outcome != "fail" || sp.Detail != "exit 3" {
+			t.Errorf("spawn %+v", sp)
+		}
+		if len(rex.calls) != 0 {
+			t.Errorf("rex calls %q", rex.calls)
 		}
 	})
 }
