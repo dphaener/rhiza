@@ -70,21 +70,51 @@ It pushes the change set's branch and opens its pull request, titled by the chan
 
 A `wait` step runs its `until` command every `interval` until it exits 0, and gives up after `timeout`. Outcomes are `pass` and `timeout`. With `max_interval`, each check whose output didn't change doubles the sleep up to that, and a changed output resets it, which keeps a long CI wait from hammering GitHub.
 
-`ship-change` waits on CI with `rhiza ship check --settled --no-rebase`. `--settled` passes once every check has finished, green or red, so a red CI ends the wait as soon as it's in rather than at the timeout. The red itself is caught by the merge step next. A timeout hands back with `on.timeout = "handback:conduct"`.
+`ship-change` waits on CI with `rhiza ship check --settled`, then checks it with a `pr-green` command step:
+
+```toml
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled"
+timeout = "2h"
+interval = "30s"
+max_interval = "2m"
+max_visits = 6
+on.pass = "pr-green"
+on.timeout = "handback:conduct"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 6
+on.pass = "merge"
+on.fail = "handback:conduct"
+```
+
+`--settled` passes once every check has finished, green or red, so a red CI ends the wait as soon as it's in rather than at the timeout. When GitHub reports the pull request conflicting, the wait merges `origin/main` into the branch: a clean merge is pushed and waited on, and a code conflict is left in progress and settles the wait. `pr-green` passes only when every check is green and records the head it tested, so a red CI, a conflict left in progress or a merged head the local gate failed on fails there and hands back. A timeout hands back with `on.timeout = "handback:conduct"`.
 
 ## Merge
 
-The merge is `rhiza ship merge`, again run by a `command` step, behind a `rhiza ship check` that passes only when every CI check is green and records the head it tested:
+The merge is `rhiza ship merge`, again run by a `command` step, after `pr-green` passed. A failed merge goes to a `rebase` step rather than handing back:
 
 ```toml
 [step.merge]
 kind = "command"
-run = "rhiza ship check --no-rebase && rhiza ship merge"
+run = "rhiza ship merge"
+max_visits = 6
 on.pass = "main-ci"
+on.fail = "rebase"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+stall = "70m"
+max_visits = 6
+on.pass = "wait-ci"
 on.fail = "handback:conduct"
 ```
 
-`rhiza ship merge` squash-merges the pull request, pinned to the head whose checks passed. If `origin/main` has moved past that head it merges nothing and fails, and the hand-back gives the agent its output. `ship-change`'s conductor then brings main in with `rhiza ship rebase --no-push` and goes through the gate, sign-off and push again. A red CI or a conflicting pull request fails the `rhiza ship check` half the same way.
+`rhiza ship merge` squash-merges the pull request, pinned to the head whose checks passed. If `origin/main` has moved past that head it merges nothing and fails, and `rebase` brings main in: `rhiza ship rebase` merges `origin/main` into the branch, settles rendered-only conflicts by rendering again, runs the local gate and the pre-push check on the merged head, pushes it and goes back to `wait-ci` for a CI round on the new head (sign-off isn't asked again). When main hasn't moved it merges nothing, and the wait, check and merge retry. It hands back only on a code conflict left in progress or a local gate or pre-push check failing on the merged head, so the conductor spawns the conflict or gate fixer and never runs `rhiza ship rebase` itself.
 
 A command step can also stop the run instead of failing it: exit 75 and the run stops with the last `stop:` line of the output, waits for the owner, and picks up at the same step on `rhiza run resume`. `rhiza ship merge` does that for a draft pull request or a merge GitHub refused, since no agent can fix either.
 

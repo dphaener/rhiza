@@ -54,17 +54,34 @@ on.fail = "handback:conduct"
 
 [step.wait-ci]
 kind = "wait"
-until = "rhiza ship check --settled --no-rebase"
+until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
 max_interval = "2m"
-on.pass = "merge"
+max_visits = 6
+on.pass = "pr-green"
 on.timeout = "handback:conduct"
+
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 6
+on.pass = "merge"
+on.fail = "handback:conduct"
 
 [step.merge]
 kind = "command"
-run = "rhiza ship check --no-rebase && rhiza ship merge"
+run = "rhiza ship merge"
+max_visits = 6
 on.pass = "main-ci"
+on.fail = "rebase"
+
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+stall = "70m"
+max_visits = 6
+on.pass = "wait-ci"
 on.fail = "handback:conduct"
 
 [step.main-ci]

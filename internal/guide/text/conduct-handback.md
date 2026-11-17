@@ -32,11 +32,19 @@ One per step that hands back (`handback:conduct`):
 - `wait-ci`: the timeout; CI never settled, so there are no failing tests or findings to
   fix and you spawn no role. Read `rhiza ship check --json`, change nothing and finish:
   the run goes through gate, signoff, push and a fresh CI wait.
-- `merge`: by `## Cause` or `## Failed CI runs`.
+- `pr-green`: `rhiza ship check` failed; by `## Cause` or `## Failed CI runs`.
   - A settled red CI: the ci-fix role.
-  - A conflicting PR or main moved past the tested head: `rhiza ship rebase --no-push`
-    (never plain `rhiza ship rebase`), then the conflict-fix role for a code conflict it
-    leaves in progress.
+  - An unresolved merge of main (the CI wait left it in progress on a conflicting PR):
+    the conflict-fix role.
+  - A merged head the local gate or pre-push check failed on: the gate-fix role.
+- `rebase`: bringing origin/main in after a failed merge went red; by `## Output tail`.
+  - A code conflict left in progress: the conflict-fix role.
+  - The local gate or pre-push check failing on the merged head: the gate-fix role.
+  - Any other failure (a gh, fetch or git error): nothing on the branch to fix, so you
+    spawn no role. Change nothing and finish.
+
+The merge step never hands back: a merge that fails goes to the rebase step.
+Never run `rhiza ship rebase` yourself; the run's own steps bring main in.
 
 Every route then lands and renders again on the branch (`rhiza land`, `rhiza render`,
 commit what they change) and ends with `rhiza session done`.

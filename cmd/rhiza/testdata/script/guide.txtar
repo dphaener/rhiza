@@ -110,7 +110,9 @@ rhiza guide check-qa
 stdout 'Evidence written as yourself on'
 rhiza guide conduct-handback
 stdout '^# Conduct hand-back$'
-stdout 'never plain `rhiza ship rebase`'
+stdout '^Never run `rhiza ship rebase` yourself'
+stdout '^- `rebase`: '
+! stdout '--no-push'
 rhiza guide conduct-roles
 stdout '^# Conduct roles$'
 stdout '^- `check-qa` \(`rhiza guide check-qa`\)'

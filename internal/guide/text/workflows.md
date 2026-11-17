@@ -48,9 +48,10 @@ rhiza run start --workflow mine --dry-run
 `.rhiza/dispatch.toml` maps a kind to a workflow name in `[request]` (plan runs: `feature`,
 `bug`, `milestone`) and `[ready]` (ready change sets: `feature`, `bug`).
 Unset: `plan` and `ship-change`, the conductor default: one `conduct` agent step, then the
-`gate`, `signoff`, `push`, `wait-ci`, `merge`, `main-ci`, `close-out`, `ship` and `deploy-check`
-steps, every red up to the merge handing back to `conduct`. `ship-change-classic` is the old
-build-then-review flow; pin it with `feature = "ship-change-classic"` in `[ready]`. `rhiza request --workflow <name>` is recorded on the change
+`gate`, `signoff`, `push`, `wait-ci`, `pr-green`, `merge`, `rebase`, `main-ci`, `close-out`,
+`ship` and `deploy-check` steps, every red up to the merge handing back to `conduct`; a
+failed merge goes to `rebase`, which brings origin/main in and hands back only when it
+cannot. `ship-change-classic` is the old build-then-review flow; pin it with `feature = "ship-change-classic"` in `[ready]`. `rhiza request --workflow <name>` is recorded on the change
 set it opens. A ready run takes `run start --workflow`, else the request's, else `[ready]`,
 else `ship-change`. An unresolved name never falls back: `rhiza daemon status`
 shows a `workflow-unresolved` skip.
