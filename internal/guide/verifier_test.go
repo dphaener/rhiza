@@ -44,6 +44,10 @@ func TestVerifierText(t *testing.T) {
 			"rhiza apply <file> --change \"$RHIZA_CHANGE\" --json", `"kind":"evidence"`, `"type":"verifies"`,
 			"result=PASS", "Evidence written by anyone else does not count",
 		},
+		"note": {
+			"Before `rhiza session done`", "something a later leaf can use",
+			"`rhiza run note \"<learning>\"`",
+		},
 		"findings": {
 			"rhiza run findings --leaf <leaf> - <<'EOF'", "Each finding names the file, command or acceptance point",
 			"without re-diagnosing",
@@ -52,6 +56,39 @@ func TestVerifierText(t *testing.T) {
 	for _, banned := range []string{"Checks:\n- <acceptance", "Co-Authored-By", "Actor: ", "Leaf: ", "Record agent actor", "git add", "ship generate", "one new commit"} {
 		if strings.Contains(v.Body, banned) {
 			t.Errorf("verifier carries builder instruction %q", banned)
+		}
+	}
+	// The note line must not turn the verifier into an editor: its only
+	// mention of editing code stays the ban, and it never updates nodes.
+	if n := strings.Count(strings.ToLower(v.Body), "edit code"); n != 1 || !strings.Contains(v.Body, "Never edit code") {
+		t.Errorf("verifier mentions editing code %d times, want only \"Never edit code\"", n)
+	}
+	for _, banned := range []string{"rhiza set", "update that node", "fix the code", "fix commit"} {
+		if strings.Contains(v.Body, banned) {
+			t.Errorf("verifier carries edit instruction %q", banned)
+		}
+	}
+}
+
+// TestRunNoteOnlyInBuildTopics checks that only builders and verifiers are
+// told to journal run notes: no check or critic topic names rhiza run note.
+func TestRunNoteOnlyInBuildTopics(t *testing.T) {
+	for _, name := range []string{
+		"check-plan", "check-code", "check-qa", "check-compliance", "check-quality", "check-model",
+		"critic", "plan-critic",
+	} {
+		g, ok := Lookup(name)
+		if !ok {
+			t.Fatalf("no guide %q", name)
+		}
+		if strings.Contains(g.Body, "rhiza run note") {
+			t.Errorf("%s names rhiza run note", name)
+		}
+	}
+	for _, name := range []string{"builder", "verifier"} {
+		g, _ := Lookup(name)
+		if !strings.Contains(g.Body, "rhiza run note") {
+			t.Errorf("%s does not name rhiza run note", name)
 		}
 	}
 }

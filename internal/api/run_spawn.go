@@ -179,7 +179,7 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 	req.briefFor = func(sid string) (string, error) {
 		dir := run.KeyedSessionDir(common, rr.id, "spawn", sid)
 		resp.Brief = filepath.Join(dir, briefFile)
-		return dir, run.WriteBriefFile(dir, run.RenderSpawnBrief(string(brief)))
+		return dir, run.WriteBriefFile(dir, run.RenderSpawnBrief(string(brief), spawnNotes(role, rr.state.Notes)))
 	}
 	sid, err := sp.start(req)
 	if err != nil {
@@ -272,4 +272,14 @@ func childOutcome(rec session.Record) (outcome, detail string, done bool) {
 		detail += ": " + x.Detail
 	}
 	return workflow.OutcomeFail, detail, true
+}
+
+// spawnNotes are the run's notes a child with role gets at the end of its
+// brief.md: all of them, oldest first, for a builder or verifier; none for
+// any other role (a check, critic or fixer).
+func spawnNotes(role string, notes []run.Note) []run.Note {
+	if role != workflow.RoleBuilder && role != workflow.RoleVerifier {
+		return nil
+	}
+	return notes
 }

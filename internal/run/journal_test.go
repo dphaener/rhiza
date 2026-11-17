@@ -1150,3 +1150,52 @@ func TestPastLanding(t *testing.T) {
 		t.Error("no visit counts as past landing")
 	}
 }
+
+// Two note entries fold into State.Notes oldest first, each with its step,
+// session, role and leaf, and change nothing else in the fold.
+func TestNoteFolds(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01RUNNOTE", startedEntry("build", 0)); err != nil {
+		t.Fatal(err)
+	}
+	notes := []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeNote, At: at(2), Step: "build", Session: "s1", Role: "builder", Leaf: "leaf-a", Text: "go test ./internal/api takes 6 minutes: scope it with -run"},
+		{Type: TypeNote, At: at(3), Step: "build", Session: "s2", Role: "verifier", Leaf: "leaf-b", Text: "the fixture needs a git repo"},
+	}
+	for _, e := range notes {
+		if err := s.Append("01RUNNOTE", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := s.Read("01RUNNOTE")
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := j.State()
+	want := []Note{
+		{Step: "build", Session: "s1", Role: "builder", Leaf: "leaf-a", Text: notes[1].Text, At: at(2)},
+		{Step: "build", Session: "s2", Role: "verifier", Leaf: "leaf-b", Text: notes[2].Text, At: at(3)},
+	}
+	if !reflect.DeepEqual(st.Notes, want) {
+		t.Fatalf("notes %+v, want %+v", st.Notes, want)
+	}
+	if st.Current != "build" || st.Ended || len(st.Sessions) != 0 || len(st.Messages) != 0 {
+		t.Errorf("a note changed the fold: %+v", st)
+	}
+}
+
+// NoteProblem refuses an empty, a blank, a multi-line and an over-long
+// note, and takes one line of up to NoteMax characters.
+func TestNoteProblem(t *testing.T) {
+	for _, ok := range []string{"x", strings.Repeat("é", NoteMax)} {
+		if p := NoteProblem(ok); p != "" {
+			t.Errorf("NoteProblem(%q) = %q", ok, p)
+		}
+	}
+	for _, bad := range []string{"", "   ", "one\ntwo", "one\rtwo", strings.Repeat("x", NoteMax+1)} {
+		if NoteProblem(bad) == "" {
+			t.Errorf("NoteProblem(%q) took it", bad)
+		}
+	}
+}

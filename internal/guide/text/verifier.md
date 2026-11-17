@@ -49,6 +49,10 @@ End with exactly one of:
 Each finding names the file, command or acceptance point and what to change, so a fixer
 can act without re-diagnosing.
 
+Before `rhiza session done`, when you learned something a later leaf can use (a test
+that needs a scoped command, a fixture's trap), journal it in one line:
+`rhiza run note "<learning>"`.
+
 <!-- shared: test-scope -->
 
 <!-- shared: command-budget nested -->

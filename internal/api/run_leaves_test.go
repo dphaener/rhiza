@@ -629,6 +629,110 @@ func TestLeafPrompt(t *testing.T) {
 	}
 }
 
+// A retry builder's prompt quotes the previous attempt's findings byte
+// for byte, a multi-line one and one past 200 characters among them, and
+// tells it to inspect the working tree first and address every finding as
+// written; with no findings it quotes the attempt's failure instead, and a
+// first attempt gets no findings section.
+func TestLeafPromptQuotesFindings(t *testing.T) {
+	t.Parallel()
+	role := workflow.Role{Prompt: "build {leaf}"}
+	vars := workflow.PromptVars{Change: "CS1"}
+	multi := "the exit code is wrong:\n  got 0\n  want 2\n"
+	long := "  leading space kept; " + strings.Repeat("this reason runs well past two hundred characters, ", 6) + "and ends here.  "
+	spec := run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 2, RoundAttempt: 2,
+		Findings: []run.Finding{
+			{ID: "f1", Check: "verifier", Severity: "major", Place: "cmd/x.go:12", Reason: multi},
+			{ID: "f2", Reason: long},
+		},
+		Failure: "verifier failed: verifier found 2 problem(s)"}
+	got := leafPrompt(role, spec, vars)
+	for _, want := range []string{
+		"Finding f1 (verifier, major at cmd/x.go:12):\n" + multi,
+		"Finding f2:\n" + long,
+		"inspect the working tree and the earlier attempts' commits",
+		"address every finding exactly as written, in one fix commit with the trailer `Leaf: leaf-a`",
+		"`rhiza run status --json`",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("retry prompt lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "it failed with") {
+		t.Errorf("retry prompt with findings quotes the failure:\n%s", got)
+	}
+
+	// No findings journalled: the failure detail is quoted, no list.
+	spec.Findings = nil
+	spec.Failure = "verifier failed: no Evidence verifies the leaf"
+	got = leafPrompt(role, spec, vars)
+	for _, want := range []string{
+		"journalled no findings; it failed with:\n\nverifier failed: no Evidence verifies the leaf\n\n",
+		"inspect the working tree",
+		"`rhiza run status --json`",
+		"`Leaf: leaf-a`",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("no-findings prompt lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "Finding ") || strings.Contains(got, "these findings") {
+		t.Errorf("no-findings prompt has a findings list:\n%s", got)
+	}
+
+	// A first attempt has no findings section.
+	spec = run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 1, RoundAttempt: 1}
+	if got := leafPrompt(role, spec, vars); got != "build leaf-a" {
+		t.Errorf("first attempt = %q", got)
+	}
+}
+
+// The run's notes, journaled and read back oldest first, end a later
+// leaf's builder and verifier prompts under their heading; a fixer's
+// prompt carries none, and a run with no notes adds nothing.
+func TestLeafPromptNotes(t *testing.T) {
+	t.Parallel()
+	store := run.NewStore(t.TempDir())
+	t0 := time.Date(2026, 11, 17, 5, 0, 0, 0, time.UTC)
+	if err := store.Create("R1", run.Entry{Type: run.TypeStarted, Step: "build", At: t0,
+		Started: &run.Started{Workflow: "w", Change: "CS1"}}); err != nil {
+		t.Fatal(err)
+	}
+	for i, text := range []string{"first: make gate needs RHIZA_GATE_BASE", "second: the fake rex ignores -b"} {
+		if err := store.Append("R1", run.Entry{Type: run.TypeNote, At: t0.Add(time.Duration(i+1) * time.Minute), Step: "build", Role: "builder", Leaf: "leaf-a", Text: text}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := store.Read("R1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	notes := j.State().Notes
+	role := workflow.Role{Prompt: "work on {leaf}"}
+	vars := workflow.PromptVars{Change: "CS1"}
+	want := "work on leaf-b\n\nNotes from earlier sessions of this run:\n" +
+		"- first: make gate needs RHIZA_GATE_BASE\n- second: the fake rex ignores -b"
+	for _, r := range []string{workflow.RoleBuilder, workflow.RoleVerifier} {
+		spec := run.LeafSpec{Role: r, Leaf: run.Leaf{Handle: "leaf-b"}, Attempt: 1}
+		if got := withRunNotes(leafPrompt(role, spec, vars), r, notes); got != want {
+			t.Errorf("%s prompt =\n%q\nwant\n%q", r, got, want)
+		}
+		if got := withRunNotes(leafPrompt(role, spec, vars), r, nil); got != "work on leaf-b" || strings.Contains(got, run.NotesHeading) {
+			t.Errorf("%s prompt with no notes = %q", r, got)
+		}
+	}
+	// A retry builder's notes follow its retry lines.
+	spec := run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-b"}, Attempt: 2, RoundAttempt: 2, Failure: "verifier failed"}
+	if got := withRunNotes(leafPrompt(role, spec, vars), workflow.RoleBuilder, notes); !strings.HasSuffix(got, "\n\n"+run.NotesSection(notes)) || !strings.Contains(got, "This is attempt 2") {
+		t.Errorf("retry builder prompt = %q", got)
+	}
+	fixer := workflow.Role{Prompt: "fix {leaf}"}
+	fspec := run.LeafSpec{Role: workflow.RoleFixer, Leaf: run.Leaf{Handle: "leaf-b"}, Attempt: 1, Cycle: 1}
+	if got := withRunNotes(leafPrompt(fixer, fspec, vars), workflow.RoleFixer, notes); strings.Contains(got, run.NotesHeading) || strings.Contains(got, "first:") {
+		t.Errorf("fixer prompt carries notes: %q", got)
+	}
+}
+
 // A round the retry gave shows as the retry's in run status, with no
 // decision.
 func TestRunInfoRetryRound(t *testing.T) {

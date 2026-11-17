@@ -98,8 +98,8 @@ const contractSection = "Build or check only what your role's prompt names, to t
 
 // RenderSpawnBrief renders a spawned child's brief.md: the contract section
 // only, then the caller's brief file as the caller wrote it under its own
-// heading.
-func RenderSpawnBrief(callerBrief string) string {
+// heading, then NotesSection of notes (nothing when there are none).
+func RenderSpawnBrief(callerBrief string, notes []Note) string {
 	var b strings.Builder
 	b.WriteString("# Brief\n\n## Contract\n\n")
 	b.WriteString(contractSection)
@@ -108,7 +108,28 @@ func RenderSpawnBrief(callerBrief string) string {
 	if !strings.HasSuffix(callerBrief, "\n") {
 		b.WriteString("\n")
 	}
+	if sec := NotesSection(notes); sec != "" {
+		b.WriteString("\n" + sec + "\n")
+	}
 	return b.String()
+}
+
+// NotesHeading heads the run's notes in a builder's or verifier's prompt
+// and in a spawned builder's or verifier's brief.md.
+const NotesHeading = "Notes from earlier sessions of this run:"
+
+// NotesSection is NotesHeading and one "- <text>" line per note, in the
+// order given (a journal's, oldest first), with no trailing newline; ""
+// when there are no notes.
+func NotesSection(notes []Note) string {
+	if len(notes) == 0 {
+		return ""
+	}
+	lines := []string{NotesHeading}
+	for _, n := range notes {
+		lines = append(lines, "- "+n.Text)
+	}
+	return strings.Join(lines, "\n")
 }
 
 // WriteBriefFile creates dir and writes brief.md alone there: a spawned

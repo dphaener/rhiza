@@ -1,0 +1,59 @@
+# rhiza run note journals a one-line learning on RHIZA_RUN's run (or
+# --run's) with the session, role and leaf from RHIZA_SESSION, RHIZA_ROLE
+# and RHIZA_LEAF; rhiza run status lists the notes oldest first, human and
+# --json. An empty or over-200-character note is usage and
+# journals nothing, and the model's log is untouched.
+
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+cp ../R1.jsonl .git/rhiza/runs/01RUNNOTE0000000000000000A.jsonl
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/before'
+
+# Outside a run with no --run: usage naming RHIZA_RUN.
+! rhiza run note 'scope go test with -run'
+stderr 'RHIZA_RUN'
+
+env RHIZA_RUN=01RUNNOTE0000000000000000A
+env RHIZA_SESSION=s1
+env RHIZA_ROLE=builder
+env RHIZA_LEAF=leaf-a
+rhiza run note 'go test ./internal/api takes 6 minutes: scope it with -run'
+stdout '^Noted on run 01RUNNOTE0000000000000000A \(builder on leaf-a, session s1\): go test'
+
+# --run names the run outside it.
+env RHIZA_RUN=
+env RHIZA_SESSION=s2
+env RHIZA_ROLE=verifier
+env RHIZA_LEAF=leaf-b
+rhiza run note --run 01RUNNOTE 'the fixture needs a git repo' --json
+stdout '"role": "verifier"'
+stdout '"leaf": "leaf-b"'
+
+# Refused, exit 2, nothing journaled.
+env RHIZA_RUN=01RUNNOTE0000000000000000A
+! rhiza run note ''
+stderr 'a note needs text'
+! rhiza run note 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+stderr 'at most 200 characters: it has 201'
+exec sh -c 'grep -c "\"type\":\"note\"" .git/rhiza/runs/01RUNNOTE0000000000000000A.jsonl'
+stdout '^2$'
+
+# Status lists both, oldest first.
+rhiza run status 01RUNNOTE
+stdout '^## Notes$'
+stdout '\(builder on leaf-a, session s1\): go test ./internal/api takes 6 minutes'
+stdout '\(verifier on leaf-b, session s2\): the fixture needs a git repo'
+rhiza run status 01RUNNOTE --json
+stdout '(?s)"notes": \[.*"leaf": "leaf-a".*"leaf": "leaf-b"'
+
+exec sh -c 'find .rhiza/log -type f | sort | xargs cat > $WORK/after'
+cmp $WORK/before $WORK/after
+
+-- R1.jsonl --
+{"type":"started","at":"2026-11-17T12:00:00Z","step":"build","started":{"workflow":"conduct","change":"01M76F4G0JQ649RR29M9QPFX68","title":"Notes"}}
+{"type":"entered","at":"2026-11-17T12:00:00Z","step":"build","visit":1}

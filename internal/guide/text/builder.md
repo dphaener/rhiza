@@ -52,6 +52,13 @@ Stage your untracked actor record in `.rhiza/log`, never another actor's:
 git add $(grep -l "Record agent actor $RHIZA_ACTOR " .rhiza/log/*/*.json | xargs -n1 dirname | sort -u)
 ```
 
+If your leaf changes what a landed node says, update that node with `rhiza set` in the
+change set so the model matches the code; raise a question when you cannot.
+
+Before `rhiza session done`, when you learned something a later leaf can use (a test
+that needs a scoped command, a fixture's trap), journal it in one line:
+`rhiza run note "<learning>"`.
+
 On a retry (`RHIZA_ATTEMPT` > 1), load `/rhiza-build-retry` (`rhiza guide build-retry`) first.
 
 <!-- shared: test-scope -->

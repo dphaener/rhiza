@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KXENVN2WZQ7KMPW8DHQREK",
+  "after": [
+    "01M7KXB0V0RGBM6P258XS2SW28"
+  ],
+  "at": "2026-11-17T04:51:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d24142b31 re-ran the Checks: block: go test -trimpath ./internal/api -run TestLeafPrompt (exit 0; TestLeafPromptQuotesFindings passes: a multi-line reason and one over 200 chars with leading/trailing spaces quoted byte for byte under 'Finding <id> (...)' heads, the inspect-the-working-tree and address-every-finding-exactly-as-written lines, the run status pointer kept; with no findings the failure detail is quoted and no findings list; a first attempt's prompt is exactly the rendered role prompt), go test -trimpath ./internal/run -run TestLeaves (exit 0; TestLeavesStepRetries finds the second builder's spec carrying both journalled findings verbatim and the third's spec the verifier failure with no findings), rhiza ship generate (exit 0, 0 changed) and rhiza render (exit 0, only this verifier's own actor rendered). rhiza show build-retries has the updated statement and acceptance naming the verbatim findings. Diff touches only the listed files plus rendered/actor records; findingLines, the checks step's fixer prompt and verifier journalling are unchanged; no TODOs."
+        },
+        "handle": "retry-prompt-quotes-findings-verified",
+        "id": "01M7KXGGB5BFWBWXTXBB2ZX2EV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KXGGB5BFWBWXTXB7KF6GY7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KXGGB5BFWBWXTXB7KF6GY7",
+        "id": "01M7KXGGCW76X0NNTQKA357VEN",
+        "link": "01M7KXGGCW76X0NNTQK84360T8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHED131Y2GBPMA3KT4XK4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KXGGEK3HSXGVRK39ES30KJ",
+  "type": "ops",
+  "v": 1
+}

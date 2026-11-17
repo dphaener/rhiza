@@ -156,3 +156,23 @@ func TestHandbackFile(t *testing.T) {
 		t.Error("empty cause written")
 	}
 }
+
+// A spawned child's brief.md ends with the notes given, oldest first,
+// after the caller's brief; with none it has no notes heading, and the
+// contract section is the same either way.
+func TestRenderSpawnBrief(t *testing.T) {
+	notes := []Note{{Text: "first note"}, {Text: "second note"}}
+	got := RenderSpawnBrief("Build leaf a.", notes)
+	want := "# Brief\n\n## Contract\n\n" + contractSection + "\n## Brief\n\nBuild leaf a.\n\n" +
+		"Notes from earlier sessions of this run:\n- first note\n- second note\n"
+	if got != want {
+		t.Errorf("brief with notes =\n%q\nwant\n%q", got, want)
+	}
+	bare := RenderSpawnBrief("Build leaf a.\n", nil)
+	if bare != "# Brief\n\n## Contract\n\n"+contractSection+"\n## Brief\n\nBuild leaf a.\n" || strings.Contains(bare, NotesHeading) {
+		t.Errorf("brief with no notes = %q", bare)
+	}
+	if NotesSection(nil) != "" {
+		t.Errorf("NotesSection(nil) = %q", NotesSection(nil))
+	}
+}
