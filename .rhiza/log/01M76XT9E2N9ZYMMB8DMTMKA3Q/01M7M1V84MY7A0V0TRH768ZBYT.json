@@ -1,0 +1,109 @@
+{
+  "actor": "01M7M1NMVFGDEPZSKFMZJR4QM7",
+  "after": [
+    "01M7KZEEP8QCA9C21NMMDVEER3"
+  ],
+  "at": "2026-11-17T06:06:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c404b4730, scratch-built rhiza: run note journals with role/leaf/session from env (role-only and leaf-only too), via --run, --json and api call run.note -; run status human '## Notes' and --json notes oldest first; empty, spaces-only, \\n, \\r, 201 chars, missing and extra args exit 2 with nothing journalled (200 x and 200 é accepted, tab accepted); no RHIZA_RUN names RHIZA_RUN; unknown run exit 4; --dry-run writes nothing. Scoped tests internal/run TestNote, internal/api TestRunNote, TestScripts/run-note and describe-golden pass."
+        },
+        "handle": "run-note-command-qa-2",
+        "id": "01M7M1V7MB843Z9Y9G3G5QN7F6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M1V7MB843Z9Y9G3E3PXYRX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M1V7MB843Z9Y9G3E3PXYRX",
+        "id": "01M7M1V7P7KPEF16ED1H5JT502",
+        "link": "01M7M1V7P7KPEF16ED1F2WPQZ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c404b4730, scratch-built rhiza driving a leaves run with fake rex/claude: a verifier that journals two findings (multi-line with trailing newline, 200+ chars with leading/trailing spaces) and then exits 1 gives the attempt-2 builder a prompt quoting both byte for byte with the inspect-the-working-tree and address-every-finding-exactly-as-written lines (the cycle-1 qa f1 is fixed); a verifier ending with neither gives a retry quoting 'verifier failed: verifier ended with neither Evidence nor findings' and no findings list; attempt 1 has no retry section; three failures give no fourth builder, the leaf fails and attempt 3 quotes attempt 2's findings. TestLeafPrompt and internal/run TestLeaves pass."
+        },
+        "handle": "retry-prompt-quotes-findings-qa-2",
+        "id": "01M7M1V7QXMM59ZQGAWCN9D17K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M1V7QXMM59ZQGAW8SXAZ6K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M1V7QXMM59ZQGAW8SXAZ6K",
+        "id": "01M7M1V7T2M6J1APFTX0Z7GBD2",
+        "link": "01M7M1V7T2M6J1APFTWZQ9HCDH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHED131Y2GBPMA3KT4XK4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c404b4730, same scratch leaves run: builder and verifier prompts after notes were journalled end with 'Notes from earlier sessions of this run:' and '- <note>' lines oldest first (retry prompts after the retry section); the first builder, with no notes, has no heading; rhiza run spawn children: builder and verifier brief.md carry both notes oldest first after the caller's brief (one with no trailing newline), check-plan, critic and fixer briefs carry none. TestLeafPrompt|TestRunSpawn, TestRenderSpawnBrief and TestScripts/run-spawn pass."
+        },
+        "handle": "leaf-prompts-carry-run-notes-qa-2",
+        "id": "01M7M1V7XC2N4T129B4K4DHH1V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M1V7XC2N4T129B4GKSVWXK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M1V7XC2N4T129B4GKSVWXK",
+        "id": "01M7M1V801ARPSMFGJJJCF6MAR",
+        "link": "01M7M1V801ARPSMFGJJEY1ZG6E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEHXWHCRXW0CQVV9CF2J",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 at c404b4730, scratch-built rhiza guide: builder and verifier carry `rhiza run note \"<learning>\"` before session done; builder carries update-the-landed-node-with-rhiza-set-or-raise-a-question; build-retry says findings are quoted verbatim in the prompt; conduct says the retry brief quotes findings verbatim and inspects the working tree; verifier keeps 'Never edit code'; check-*, critic, plan-critic and fixer topics tell no session to journal a note (checks name run notes only in their unchanged never-read rule). internal/guide tests and internal/api TestGuideInstall pass."
+        },
+        "handle": "build-topics-notes-and-drift-qa-2",
+        "id": "01M7M1V81VEF98FGFMMHFNB9FP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M1V81VEF98FGFMMFG0G8FK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M1V81VEF98FGFMMFG0G8FK",
+        "id": "01M7M1V83AET27RRT8KFCA99SC",
+        "link": "01M7M1V83AET27RRT8KDX7V7R9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHENJAYXZ8T9MQKCWP4MP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7M1V84MY7A0V0TRH768ZBYT",
+  "type": "ops",
+  "v": 1
+}
