@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KY7G21B7CSB4327E1BA60A",
+  "after": [
+    "01M7KY3EFYYWTATH5DYWVKFFNV"
+  ],
+  "at": "2026-11-17T05:06:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5529d114f: go test -count=1 -trimpath ./internal/guide/... ok (TestBuilderText note+drift phrases, TestVerifierText note phrases plus the negative check that 'edit code' appears only as 'Never edit code' and no rhiza set/fix commit, TestRunNoteOnlyInBuildTopics over check-plan/code/qa/compliance/quality/model, critic and plan-critic, TestBuildRetryText 'quoted verbatim in the prompt', TestConduct retry-brief phrases, topic token caps); go test -trimpath ./internal/api -run TestGuideInstall ok; make self-check exit 0 and rhiza ship generate / rhiza render with no diff in a clean detached worktree (in the run worktree self-check only flagged the verifier's own untracked actor record). Diff touches only internal/guide text and tests, plus node.update entries for builder-topic, verifier-topic, build-retry-topic and conduct-skill matching the new text; builder text names no Go/make command; no stubs or TODOs."
+        },
+        "handle": "build-topics-notes-and-drift-verified",
+        "id": "01M7KYBS5H07KW28K8XDRWAEAS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KYBS5H07KW28K8XDKY0Y2Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KYBS5H07KW28K8XDKY0Y2Z",
+        "id": "01M7KYBS70V1QZ8T1CSTP3AHFN",
+        "link": "01M7KYBS70V1QZ8T1CSREE7CGH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHENJAYXZ8T9MQKCWP4MP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KYBS86HC260B4SA21KGVNS",
+  "type": "ops",
+  "v": 1
+}
