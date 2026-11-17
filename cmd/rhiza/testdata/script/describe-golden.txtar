@@ -4433,6 +4433,10 @@ cmp stdout describe.golden.json
                       "description": "When it was asked, RFC 3339 UTC",
                       "type": "string"
                     },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
+                      "type": "string"
+                    },
                     "decision": {
                       "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
                       "type": "string"
@@ -6412,6 +6416,10 @@ cmp stdout describe.golden.json
                     },
                     "at": {
                       "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
                       "type": "string"
                     },
                     "decision": {
@@ -10484,6 +10492,10 @@ cmp stdout describe.golden.json
                       "description": "When it was asked, RFC 3339 UTC",
                       "type": "string"
                     },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
+                      "type": "string"
+                    },
                     "decision": {
                       "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
                       "type": "string"
@@ -12299,6 +12311,10 @@ cmp stdout describe.golden.json
                     },
                     "at": {
                       "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
                       "type": "string"
                     },
                     "decision": {
@@ -15278,6 +15294,10 @@ cmp stdout describe.golden.json
                       "description": "When it was asked, RFC 3339 UTC",
                       "type": "string"
                     },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
+                      "type": "string"
+                    },
                     "decision": {
                       "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
                       "type": "string"
@@ -17137,6 +17157,10 @@ cmp stdout describe.golden.json
                     },
                     "at": {
                       "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
                       "type": "string"
                     },
                     "decision": {
@@ -19106,6 +19130,10 @@ cmp stdout describe.golden.json
                     },
                     "at": {
                       "description": "When it was asked, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
                       "type": "string"
                     },
                     "decision": {
@@ -21105,6 +21133,10 @@ cmp stdout describe.golden.json
                       "description": "When it was asked, RFC 3339 UTC",
                       "type": "string"
                     },
+                    "change": {
+                      "description": "The change set the question and its Decision live in; absent when that is the run's change set",
+                      "type": "string"
+                    },
                     "decision": {
                       "description": "The handle of the Decision that answers it, once the arbiter passed; empty otherwise",
                       "type": "string"
@@ -22809,6 +22841,10 @@ cmp stdout describe.golden.json
                 },
                 "at": {
                   "description": "When it was asked, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "change": {
+                  "description": "The change set the question and its Decision live in; absent when that is the run's change set",
                   "type": "string"
                 },
                 "decision": {

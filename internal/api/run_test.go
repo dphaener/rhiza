@@ -645,7 +645,7 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 			{Step: "build", Question: "Q2", Handle: "failed-q", Text: "How?", At: at},
 			{Step: "build", Question: "Q3", Handle: "answered-q", Text: "Why?", At: at, Answered: "use-x"},
 			{Step: "build", Session: "S4", Question: "Q4", Handle: "passed-q", Text: "When?", At: at},
-			{Step: "check", Question: "Q5", Handle: "review-q", Text: "Split?", At: at},
+			{Step: "check", Question: "Q5", Handle: "review-q", Text: "Split?", At: at, Change: "C2"},
 		},
 		Arbitrations: []run.Arbitration{
 			{Step: "build", Session: "S1", Question: "Q1", At: at},
@@ -662,14 +662,14 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 	}
 	got := []RunQuestion{}
 	for _, q := range info.Questions {
-		got = append(got, RunQuestion{Question: q.Question, Session: q.Session, Outcome: q.Outcome, Decision: q.Decision, Answered: q.Answered})
+		got = append(got, RunQuestion{Question: q.Question, Session: q.Session, Change: q.Change, Outcome: q.Outcome, Decision: q.Decision, Answered: q.Answered})
 	}
 	wantQ := []RunQuestion{
 		{Question: "Q1"},
 		{Question: "Q2", Outcome: "fail"},
 		{Question: "Q3", Outcome: "pass", Decision: "use-x", Answered: true},
 		{Question: "Q4", Session: "S4", Outcome: "pass", Decision: "use-y"},
-		{Question: "Q5", Outcome: "pass", Decision: "use-z"},
+		{Question: "Q5", Change: "C2", Outcome: "pass", Decision: "use-z"},
 	}
 	if !slices.Equal(got, wantQ) {
 		t.Errorf("questions = %+v", got)
@@ -700,6 +700,20 @@ func TestRunInfoAcceptsAndQuestions(t *testing.T) {
 		}
 		if has := strings.Contains(string(b), `"session"`); has != wantSession {
 			t.Errorf("question %d JSON session field = %v: %s", i, has, b)
+		}
+	}
+	// A question journalled with a change carries it; one without has no
+	// change key.
+	for i, wantChange := range map[int]bool{3: false, 4: true} {
+		b, err := json.Marshal(info.Questions[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if has := strings.Contains(string(b), `"change":"C2"`); has != wantChange {
+			t.Errorf("question %d JSON change = %v: %s", i, has, b)
+		}
+		if !wantChange && strings.Contains(string(b), `"change"`) {
+			t.Errorf("question %d JSON has a change key: %s", i, b)
 		}
 	}
 	plain := human(t, runInfo(nil, run.State{ID: "R2"}, false, nil))
