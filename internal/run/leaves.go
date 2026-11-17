@@ -706,7 +706,7 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 	if err != nil {
 		return false, result{}, false, err
 	}
-	if r.arbitrates(status.Blocked) {
+	if r.arbitrates(step.Name, status.Blocked) {
 		res, ended, err := r.ask(step, a.session, status.Blocked)
 		if err != nil || ended {
 			return false, res, ended, err

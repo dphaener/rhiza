@@ -2889,3 +2889,122 @@ func TestHandbackCauseOf(t *testing.T) {
 		t.Errorf("ship check cause %+v", c)
 	}
 }
+
+// conductorWF has a conductor step: an agent step declaring checks.
+const conductorWF = `
+name = "wf"
+[step.conduct]
+kind = "agent"
+prompt = "conduct"
+[[step.conduct.check]]
+name = "plan"
+[step.decide]
+kind = "arbiter"
+interval = "3s"
+`
+
+const conductorInner = `
+name = "ship"
+[step.conduct]
+kind = "agent"
+prompt = "conduct"
+[[step.conduct.check]]
+name = "plan"
+`
+
+const conductorOuter = `
+name = "wf"
+[step.w]
+kind = "workflow"
+workflow = "ship"
+[step.decide]
+kind = "arbiter"
+interval = "3s"
+`
+
+// conductorSetup starts a run, not autonomous, whose conductor step is
+// conduct at top level or ship/conduct through a workflow step, and
+// returns its engine, fakes (an advisor can be launched) and the step.
+func conductorSetup(t *testing.T, included bool) (*Engine, *fakeRunner, string) {
+	t.Helper()
+	src, step := conductorWF, "conduct"
+	read := func(string) ([]byte, error) { return []byte(conductorInner), nil }
+	if included {
+		src, step = conductorOuter, "ship/conduct"
+	}
+	def, err := workflow.ParseWith("wf", []byte(src), read)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !def.Steps[step].Conducts() {
+		t.Fatalf("step %s is no conductor step", step)
+	}
+	store := newStore(t)
+	if err := Start(store, runID, Started{Workflow: "wf", Definition: src, Includes: def.Includes, Change: "CS1", Title: "Conducted"}, t0, def); err != nil {
+		t.Fatal(err)
+	}
+	r := newFakeRunner()
+	r.store = store
+	r.advisorOK = true
+	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
+	return &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}, r, step
+}
+
+// TestConductorQuestionArbitratedInNormalRun: in a run not started
+// autonomous, the question a conductor step's session (at top level, and
+// included through a workflow step) is blocked on goes to the arbiter as
+// an autonomous run's does: a question node, an asked entry, the arbiter
+// and the answer delivered, with no advisor and no owner notice. A failing
+// verdict ends the step with an error naming the question.
+func TestConductorQuestionArbitratedInNormalRun(t *testing.T) {
+	for _, included := range []bool{false, true} {
+		t.Run(fmt.Sprintf("included=%v", included), func(t *testing.T) {
+			e, r, step := conductorSetup(t, included)
+			if (Journal{ID: runID, Entries: mustEntries(t, e)}).State().Autonomous {
+				t.Fatal("the run is autonomous")
+			}
+			ns := noticeLog(e)
+			sess := "S-" + step
+			r.agentSeq[sess] = []AgentStatus{idle, blocked, idle}
+			r.outcome[sess] = "pass"
+			r.agentSeq["S-decide-Q1"] = []AgentStatus{{SaidDone: true}}
+			r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite", Statement: "Use SQLite."}
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != Succeeded {
+				t.Fatalf("result %q detail %q steps %v", st.Result, st.Detail, outcomes(st))
+			}
+			if !reflect.DeepEqual(r.asked, []string{sess + " Ship it?"}) || !reflect.DeepEqual(r.arbiters, []string{"decide Q1"}) {
+				t.Errorf("asked %v arbiters %v", r.asked, r.arbiters)
+			}
+			if !reflect.DeepEqual(r.delivered, []string{sess + " Q1 assume-sqlite Use SQLite."}) {
+				t.Errorf("delivered %q", r.delivered)
+			}
+			if countType(t, e, TypeAsked) != 1 || countType(t, e, TypeAdvisor) != 0 || len(r.advisors) != 0 {
+				t.Errorf("asked entries %d advisor entries %d advisors %v", countType(t, e, TypeAsked), countType(t, e, TypeAdvisor), r.advisors)
+			}
+			if len(*ns) != 0 {
+				t.Errorf("notices = %+v, want none", *ns)
+			}
+
+			// The arbiter fails: the step ends with an error naming the question.
+			e, r, _ = conductorSetup(t, included)
+			ns = noticeLog(e)
+			r.agentSeq[sess] = []AgentStatus{blocked}
+			r.agentSeq["S-decide-Q1"] = []AgentStatus{{SaidDone: true}}
+			st, err = e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wantDetail := "arbiter failed on question question-s-1 (Q1): no live Decision answers question Q1"
+			if st.Result != Failed || !strings.Contains(st.Detail, wantDetail) || !reflect.DeepEqual(outcomes(st)[:1], []string{step + ":error"}) {
+				t.Fatalf("result %q detail %q steps %v", st.Result, st.Detail, outcomes(st))
+			}
+			if len(r.advisors) != 0 || len(*ns) != 0 {
+				t.Errorf("advisors %v notices %+v", r.advisors, *ns)
+			}
+		})
+	}
+}
