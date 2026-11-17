@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KX0KJD4D99NYM9JP7XWQTJ",
+  "after": [
+    "01M7KWHERTV6ZDVTQSWPQGCSXP"
+  ],
+  "at": "2026-11-17T04:43:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at d122c8ae9 re-ran every Checks: line, all exit 0: go test -trimpath ./internal/run -run TestNote (TestNoteFolds, TestNoteProblem), ./internal/api -run TestRunNote (InStatus, Refused, DryRun), ./cmd/rhiza TestScripts/run-note, describe-golden -update (golden unchanged) then describe-golden, rhiza ship generate (0 changed), rhiza render (only the verifier's own actor, reverted). Tests journal two notes found in run status notes oldest first with role and leaf; empty, newline and 201-char notes exit 2 with nothing journaled; no --run names RHIZA_RUN. A scratch-built binary confirmed exit 2 for a newline, an empty and a run-less note. Diff adds only the run.note op, the note journal entry and a Notes field/section; rhiza note add and existing status fields untouched; the script cmp's .rhiza/log unchanged; no TODOs."
+        },
+        "handle": "run-note-command-verified",
+        "id": "01M7KX2SBYQ94XS6GJ4DGY2PH5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KX2SBYQ94XS6GJ49VH7V8A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KX2SBYQ94XS6GJ49VH7V8A",
+        "id": "01M7KX2SE3F7K8BMRSWJ18RVJ3",
+        "link": "01M7KX2SE3F7K8BMRSWEMZC70W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KX2SFVCEVD29GF400CBEXG",
+  "type": "ops",
+  "v": 1
+}
