@@ -1,0 +1,30 @@
+{
+  "actor": "01M7M52GPXEGNNYEMY4GTZHWBD",
+  "after": [
+    "01M7M51W2S30H06K0BG177WHNA"
+  ],
+  "at": "2026-11-17T07:06:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "4060ff02-8832-4dfd-8bd3-01a1e8513fe0",
+          "statement": "Bug 01M7M51 (conductor questions stall): the engine sends a question to the arbiter only when State.Autonomous is set, and that is set only by `run start --autonomous`. Conductor runs 01M7DVV7 and 01M7E56M (ship-rhiza, every rhiza.autonomy stage `auto`) started without the flag, so the conductor's AskUserQuestion launched an advisor and the run waited for the owner. The same happens for a hand-queued `rhiza run start <cs>`, and when daemonStart drops --autonomous because the sign-off stage is `owner`. Yet `rhiza guide conduct` says the conductor's questions always go to the arbiter. Which fix should the plan build?"
+        },
+        "handle": "question-4060ff02-1",
+        "id": "01M7M5904F9KDG6PYQJ50KF650",
+        "key": null,
+        "kind": "question",
+        "node": "01M7M5904F9KDG6PYQJ266WA1M",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7M51W2S30H06K0BFZ6MK7PF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M5904GZZNF6DYGEJXZ2Q95",
+  "type": "ops",
+  "v": 1
+}

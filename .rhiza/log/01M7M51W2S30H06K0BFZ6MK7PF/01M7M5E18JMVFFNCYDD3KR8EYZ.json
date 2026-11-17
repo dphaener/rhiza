@@ -1,0 +1,122 @@
+{
+  "actor": "01M7M52GPXEGNNYEMY4GTZHWBD",
+  "after": [
+    "01M7M5CYKVPPX6JHF1RFYFYV6Q"
+  ],
+  "at": "2026-11-17T07:09:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7M51W2S30H06K0BFZ6MK7PF",
+        "id": "01M7M5E0SRTQKJXTP3BPJTZ1BX",
+        "link": "01M7M5E0SRTQKJXTP3BP1TA99N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7M5A6P8PEBTC0P87WMJ8J8K",
+        "id": "01M7M5E0V7NPE6QEGPSNNS2Q8M",
+        "link": "01M7M5E0V7NPE6QEGPSJAEZEKV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5CYJJ84ERCPH5KHTA8BZT",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run 'TestConductorQuestion|TestNormalRunQuestionNotArbitrated|TestAutonomousQuestionGoesToArbiter|TestAutonomousArbiterFailFailsRun': a new TestConductorQuestionArbitratedInNormalRun runs a workflow not started autonomous whose agent step declares checks (once at top level and once included through a workflow step, as ship-rhiza includes ship-change/conduct); its session blocked on a question gets an AddQuestion with the asked text, an asked entry, StartArbiter on the question's ID and Deliver of the answer to that session, with no StartAdvisor call, no advisor entry and no Notify; (failure case) a failing arbiter verdict ends that step with an error outcome naming the question, as in an autonomous run; TestNormalRunQuestionNotArbitrated still shows a plain agent step's (no checks) question notified to the owner with no arbiter and no asked entry.",
+          "files": "internal/run/engine.go (arbitrates, block, unblock, pollAgent), internal/run/engine_test.go, internal/workflow/workflow.go (a Step predicate for a conductor step, if one is added)",
+          "must_not": "Change State.Autonomous, the signoff step, the gates or daemonStart; force --autonomous on any run; launch an advisor or notify the owner for a conductor step's question; arbitrate a non-question block",
+          "statement": "In any run, autonomous or not, a question the session of a conductor step (an agent step that declares checks, such as ship-change's conduct, nested through a workflow step included) is blocked on goes to the arbiter exactly as an autonomous run's does: a question node, an asked entry, the arbiter, the answer delivered, with no advisor launched and no owner notice; every other step's question in a run not started --autonomous still goes to the owner with an advisor."
+        },
+        "handle": "conductor-question-arbitrated",
+        "id": "01M7M5E0WTFG4BFTK6Z8E84HG6",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7M5E0WTFG4BFTK6Z7J15C8H",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M7M5E0WTFG4BFTK6Z7J15C8H",
+        "id": "01M7M5E0Y9RP1BVYK5YZGK1QF7",
+        "link": "01M7M5E0Y9RP1BVYK5YZ1GX7PF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5A6P8PEBTC0P87WMJ8J8K",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestRunSpawn|TestSessionHook|TestStepRunnerConductorAutonomous': in a run not started --autonomous whose current step is an agent step declaring checks, a new TestStepRunnerConductorAutonomous shows the session stepRunner.StartAgent starts for that step recorded Autonomous with RHIZA_AUTONOMOUS=1 in its launch env, and a TestRunSpawn case shows a child spawned in that step recorded Autonomous too; a hook PreToolUse AskUserQuestion payload from either is answered with the deny reply carrying autonomousAskReason and sets the record's asked mark; (failure case) in the same non-autonomous run a session started for an agent step without checks, and a child spawned in such a step, are not autonomous and their AskUserQuestion is not denied.",
+          "files": "internal/api/run.go (stepRunner.StartAgent), internal/api/run_spawn.go (runSpawn's SessionStartRequest), internal/api/run_spawn_test.go, internal/api/session_ask_test.go",
+          "must_not": "Change the run's State.Autonomous, daemonStart, the signoff step or the gates; mark sessions of non-conductor steps autonomous; change autonomousAskReason or the hook's deny format",
+          "statement": "The session of a conductor step (an agent step that declares checks), and every child session rhiza run spawn starts while the run is in such a step, is recorded autonomous whether or not the run started --autonomous: its launch carries RHIZA_AUTONOMOUS=1, its AskUserQuestion is denied with the arbiter reason and kept as the asked mark, and no Rex blocked notice is written for its question."
+        },
+        "handle": "conductor-sessions-launch-autonomous",
+        "id": "01M7M5E1000DMWWQVN07P0P3D9",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7M5E1000DMWWQVN057JWBV5",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M7M5E1000DMWWQVN057JWBV5",
+        "id": "01M7M5E12CYQGCYVT9JS7S2F2V",
+        "link": "01M7M5E12CYQGCYVT9JNV4S3A1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5A6P8PEBTC0P87WMJ8J8K",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run 'TestSpawnedChildQuestion': a new TestSpawnedChildQuestionArbitrated runs a conductor step (agent step declaring checks) in a run not started autonomous whose journal has a spawn entry for a child session the fake runner reports blocked on a question while the conductor's own session works: AddQuestion gets the child's question, an asked entry names the child session, StartArbiter runs on the question's ID, Deliver goes to the child session and an answered entry follows, with no StartAdvisor call and no Notify, and the step then finishes on the conductor's own outcome; (failure case) a failing arbiter verdict on the child's question ends the step with an error outcome naming the question; a child with a spawn-ended entry is never polled.",
+          "files": "internal/run/engine.go (pollAgent, ask), internal/run/engine_test.go",
+          "must_not": "Arbitrate a child's non-question block (a permission prompt stays the owner's); launch an advisor; change how reconcileSpawns records a child's end; make the conductor step's outcome depend on a child's outcome",
+          "statement": "While a conductor step runs, the engine watches the step's live spawned children, and a child blocked on a question gets the same arbiter handling as the conductor's own: a question node, an asked entry keyed on the child's session, the arbiter, and the answer delivered to the child, its block ended; no advisor and no owner notice."
+        },
+        "handle": "spawned-child-question-arbitrated",
+        "id": "01M7M5E14QHSACYM4E09JX4TFQ",
+        "key": "zr",
+        "kind": "capability",
+        "node": "01M7M5E14QHSACYM4E06M4E3BW",
+        "op": "node.create",
+        "parent": "01M5WRHF3WYWZGR13RCYDS6NXY"
+      },
+      {
+        "decision": null,
+        "from": "01M7M5E14QHSACYM4E06M4E3BW",
+        "id": "01M7M5E1654T95YHW41T9RGGN5",
+        "link": "01M7M5E1654T95YHW41R1KZQKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5A6P8PEBTC0P87WMJ8J8K",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7M5E14QHSACYM4E06M4E3BW",
+        "id": "01M7M5E17FJPV7QEVJ923AGHBT",
+        "link": "01M7M5E17FJPV7QEVJ8YZ3J1WE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E0WTFG4BFTK6Z7J15C8H",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7M51W2S30H06K0BFZ6MK7PF",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M5E18JMVFFNCYDD3KR8EYZ",
+  "type": "ops",
+  "v": 1
+}
