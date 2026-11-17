@@ -1,0 +1,66 @@
+{
+  "actor": "01M7MP0PKP9VP4A9Q3CYT4E08X",
+  "after": [
+    "01M7MNR5XKNZBTFDKJZRMV1DBV"
+  ],
+  "at": "2026-11-17T12:00:15Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConductHandback|TestConductReadsHandback|TestConductRoles|TestConductReadsRoles|TestWorkflowsText|TestList' passes, TestConductHandback requiring the topic to name rhiza ship rebase, the conflict-fix and gate-fix roles and routes for pr-green and rebase, and no longer requiring rhiza ship rebase --no-push; (failure case) TestConductHandbackCatchesDrift fails naming the step when the topic keeps a route for merge (which no longer hands back) and when it drops the rebase route, and fails when a route tells the conductor to run rhiza ship rebase. go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/guide' passes, docs/examples/byo/conductor.toml passing rhiza workflow check with steps wait-ci (until rhiza ship check --settled), pr-green, merge and rebase routed as ship-change's; grep -- --no-rebase docs/examples/byo/conductor.toml docs/bring-your-own-agent.md finds nothing, and bring-your-own-agent.md no longer says a failed merge hands back to conduct. grep -n 'ten steps' docs/runs-and-daemon.md finds nothing, its ship-change entry naming the 12 steps conduct, gate, signoff, push, wait-ci, pr-green, merge, rebase, main-ci, close-out, ship, deploy-check and no longer saying every red result up to the merge hands back to conduct.",
+          "files": "internal/guide/text/conduct-handback.md, internal/guide/text/conduct-roles.md, internal/guide/text/workflows.md, internal/guide/conduct_handback_test.go, internal/guide/conduct_roles_test.go, internal/guide/guide.go (the conduct-handback description), docs/primitives.md, docs/bring-your-own-agent.md, docs/examples/byo/conductor.toml, docs/runs-and-daemon.md",
+          "must_not": "Change ship-change.toml, the hand-back mechanism or handback.md's rendering; change any fixer role topic (gate-fix, ci-fix, conflict-fix); grow a topic past TopicCap; tell the conductor to fix anything itself or to run rhiza ship rebase",
+          "statement": "The conduct-handback, conduct-roles and workflows guide topics, docs/primitives.md, docs/runs-and-daemon.md, docs/bring-your-own-agent.md and docs/examples/byo/conductor.toml describe the ship steps' own rebase: conduct-handback has routes for pr-green and rebase as conduct-handback-routes-ship-rebase decides and none for merge, never tells the conductor to run rhiza ship rebase, conduct-roles gives conflict-fix for a code conflict the ship steps leave in progress, workflows lists ship-change's 12 steps, runs-and-daemon.md's ship-change entry lists the 12 steps (with pr-green and rebase) and says a failed merge goes to rebase instead of every red up to the merge handing back, primitives.md's Wait and Merge sections show wait-ci without --no-rebase and the pr-green, merge and rebase steps, and the byo conductor example copies the built-in's steps after conduct (wait-ci on rhiza ship check --settled, pr-green, merge, rebase) so bring-your-own-agent.md's \"Everything after conduct is the built-in's\" holds, its hand-back paragraph naming pr-green and rebase instead of a failed merge."
+        },
+        "handle": "conduct-handback-ship-rebase",
+        "id": "01M7MNGTBKNAMKGF3848729T8N",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "base": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "handle": null,
+        "id": "01M7MNGTKB55VDTY33R2M3ZT5J",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows the steps and routes ship-steps-rebase-clean's acceptance gives, the conduct step declaring exactly the checks plan, code and qa, the gate step of kind gate with its four commands, the hand-back cap at 3 and no leaves or checks step; go test -trimpath ./internal/api -run TestBuildCheck shows build-check failing on a leaf with no Evidence; rhiza workflow describe ship-change lists those steps.",
+          "statement": "The builtin ship-change is the conductor default: conduct (the conduct skill, its step declaring the review checks plan, code and qa), gate (a step of the gate step kind running rhiza run build-check, rhiza run review-check, rhiza check and rhiza ship gate; the pre-push check runs inside the push step's rhiza ship open-pr and inside rhiza ship rebase), signoff, push and open the PR, wait for CI at that head (rhiza ship check --settled, which merges main on a conflicting PR), pr-green (rhiza ship check), merge the tested head (rhiza ship merge), rebase (rhiza ship rebase, back to the CI wait), main's CI (one step), close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy), as ship-steps-rebase-clean gives them; every red result before the merge (conduct, gate, signoff, push, wait-ci and pr-green) hands back to conduct, at most three times; every merge fail (main moved, or a gh, fetch or git error) goes to the rebase step, which hands back only on a code conflict or a local gate or pre-push check failing on the merged head. The steps after the merge (main's CI, close-out, ship and deploy-check) have no on.fail route and no hand-back: nothing on the branch can fix a merged change set. A draft or a merge GitHub refused stops the run (rhiza ship merge's stop exit)."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79KPE3XB2JBTEB9ZZYPMBM4",
+        "handle": null,
+        "id": "01M7MP247YPT3CS1X39VHP42MX",
+        "node": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "op": "node.update",
+        "set": {
+          "acceptance": "In this repo, rhiza workflow describe ship-change resolves to the builtin; rhiza workflow describe ship-rhiza shows the [env], the go-cleanup cleanup running sh .rhiza/workflows/go-cleanup.sh, the builtin's 12 steps and every hand-back route as handback:ship-change/conduct; rhiza workflow describe bugfix still shows the go-cleanup cleanup and its hand-back routes as handback:ship-change/conduct; rhiza workflow check passes with no new warning beyond the autonomous ones AGENTS.md expects; rhiza check accepts .rhiza/dispatch.toml naming ship-rhiza for [ready] feature and bugfix for bug; go test -trimpath ./internal/workflow -run TestShipFixPromptsOneLine passes with .rhiza/workflows/ship-change.toml gone, its repo-file loop reading ship-rhiza and docs; make self-check passes. Touches .rhiza/workflows/ship-change.toml (removed), .rhiza/workflows/ship-rhiza.toml, .rhiza/dispatch.toml, .rhiza/workflows/bugfix.toml and internal/workflow/workflow_test.go (only TestShipFixPromptsOneLine's repo-file loop)."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M7AHS4650X7Q6THEFRX6XG5D",
+        "handle": null,
+        "id": "01M7MP249ZH9V5Q50RPX9TP38N",
+        "node": "01M7AHS4650X7Q6THEFQR2D2CB",
+        "op": "node.update",
+        "set": {
+          "statement": "(1) The new builtin ship-change keeps ship (rhiza ship command) and deploy-check (rhiza ship deploy) after close-out, unchanged: conduct, gate, signoff, push/PR, CI, pr-green, merge, rebase, main CI, close-out, ship, deploy is exactly 12 steps (10 when first decided; ship-steps-rebase-clean-merge adds pr-green and rebase). (2) A red main CI after the merge stops the run, as classic does: main-green has no on.fail route and no hand-back, and its output says main is red after the merge of this change set; the hand-back rule covers every red before the merge. (3) Rhiza's shadow .rhiza/workflows/ship-change.toml is removed; its [env] (GOTMPDIR, SHIP_HEAD_RHIZA, SHIP_HEAD_BUILD) moves to a thin repo workflow .rhiza/workflows/ship-rhiza.toml that includes the builtin ship-change (like bugfix.toml does), and .rhiza/dispatch.toml sets [ready] feature = \"ship-rhiza\"; bugfix.toml keeps its own [env]. The builtin has no head-build steps: the ship commands that land or render run SHIP_HEAD_BUILD themselves before doing so when it is set, as ship rebase already does. (4) The classic tests stay and are pointed at ship-change-classic (by name, or with the workflow pinned in the script), since classic stays available and pinnable; only the tests of the default itself (bugfix-workflow-autonomous, daemon-root-ship-workflow, the daemon pick tests that assert the default's steps) move to the new builtin, and the new builtin gets its own tests (TestBuiltinShipChange, ship-change-one-ci). No classic test is deleted."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MP24DKHDDY6ZMQ7SCARYDV",
+  "type": "ops",
+  "v": 1
+}

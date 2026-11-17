@@ -1,0 +1,44 @@
+{
+  "actor": "01M7MNPVRACTJB21EZ4MM6MVS0",
+  "after": [
+    "01M7MNGTTAZE6MAM3WS21JZKGX"
+  ],
+  "at": "2026-11-17T11:54:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConductHandback|TestConductReadsHandback|TestConductRoles|TestConductReadsRoles|TestWorkflowsText|TestList' passes, TestConductHandback requiring the topic to name rhiza ship rebase, the conflict-fix and gate-fix roles and routes for pr-green and rebase, and no longer requiring rhiza ship rebase --no-push; (failure case) TestConductHandbackCatchesDrift fails naming the step when the topic keeps a route for merge (which no longer hands back) and when it drops the rebase route, and fails when a route tells the conductor to run rhiza ship rebase. go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/guide' passes, docs/examples/byo/conductor.toml passing rhiza workflow check with steps wait-ci (until rhiza ship check --settled), pr-green, merge and rebase routed as ship-change's; grep -- --no-rebase docs/examples/byo/conductor.toml docs/bring-your-own-agent.md finds nothing, and bring-your-own-agent.md no longer says a failed merge hands back to conduct.",
+          "files": "internal/guide/text/conduct-handback.md, internal/guide/text/conduct-roles.md, internal/guide/text/workflows.md, internal/guide/conduct_handback_test.go, internal/guide/conduct_roles_test.go, internal/guide/guide.go (the conduct-handback description), docs/primitives.md, docs/bring-your-own-agent.md, docs/examples/byo/conductor.toml",
+          "must_not": "Change ship-change.toml, the hand-back mechanism or handback.md's rendering; change any fixer role topic (gate-fix, ci-fix, conflict-fix); grow a topic past TopicCap; tell the conductor to fix anything itself or to run rhiza ship rebase",
+          "statement": "The conduct-handback, conduct-roles and workflows guide topics, docs/primitives.md, docs/bring-your-own-agent.md and docs/examples/byo/conductor.toml describe the ship steps' own rebase: conduct-handback has routes for pr-green and rebase as conduct-handback-routes-ship-rebase decides and none for merge, never tells the conductor to run rhiza ship rebase, conduct-roles gives conflict-fix for a code conflict the ship steps leave in progress, workflows lists ship-change's 12 steps, primitives.md's Wait and Merge sections show wait-ci without --no-rebase and the pr-green, merge and rebase steps, and the byo conductor example copies the built-in's steps after conduct (wait-ci on rhiza ship check --settled, pr-green, merge, rebase) so bring-your-own-agent.md's \"Everything after conduct is the built-in's\" holds, its hand-back paragraph naming pr-green and rebase instead of a failed merge."
+        },
+        "handle": "conduct-handback-ship-rebase",
+        "id": "01M7MNGTBKNAMKGF3848729T8N",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "base": "01M7MJXKVHQXE1B5MWRRJZPYZ1",
+        "handle": null,
+        "id": "01M7MNGTR18256T6ZE7NN06ENX",
+        "node": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConductHandback|TestConduct|TestList' shows the conduct-handback topic listed and under TopicCap, the conduct topic's Read first naming rhiza guide conduct-handback and staying under TopicCap, and conduct-handback naming handback.md's section titles as internal/run/brief.go renders them (Failing step, Outcome, Failing commands, Output tail, Cause, Failed CI runs, Conflicted files), rhiza run build-check, rhiza run review-check, rhiza check, rhiza ship gate, rhiza ship open-pr, the roles verifier, critic, fixer, gate-fix, ci-fix and conflict-fix, handback_cap and rhiza session done, with routes for pr-green and rebase and none for merge, and not naming rhiza ship rebase --no-push; the test parses the built-in ship-change with the workflow package and requires the topic to name every step whose on.* target is handback:conduct and every command of its gate step; (failure case) the test fails naming the step or command when ship-change hands back from a step, or its gate runs a command, the topic does not name, and the topic's Routes section (one entry per hand-back step) naming a step whose on.* targets include no handback:conduct (merge, main-ci, close-out, ship, deploy-check, derived from the parsed ship-change) as a route fails it naming that step; the wait-ci route naming the ci-fix role fails it; a route telling the conductor to run rhiza ship rebase, with or without --no-push, fails it; go test -trimpath ./cmd/rhiza -run TestScripts/guide passes.",
+          "statement": "The guide has a conduct-handback topic, named in the conduct topic's Read first, giving the shape of handback.md (Failing step, Outcome, Failing commands with output paths, Output tail, Cause, Failed CI runs, Conflicted files) and, for each step of the conductor default ship-change that hands back to conduct, the route a conductor takes as conduct-handback-routes-ship-rebase decides: the gate's four commands, signoff changes, push, wait-ci's timeout, pr-green (CI red, an unresolved merge of main, a merged head the gate failed on) and rebase (a code conflict, the gate or pre-push check failing on the merged head), each by spawning the named role, then land, render and rhiza session done; plus handback_cap and that the steps after the merge never hand back."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MNR5XKNZBTFDKJZRMV1DBV",
+  "type": "ops",
+  "v": 1
+}

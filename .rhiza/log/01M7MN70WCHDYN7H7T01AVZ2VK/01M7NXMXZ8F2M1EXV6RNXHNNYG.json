@@ -1,0 +1,58 @@
+{
+  "actor": "01M7NXJEMCXK5W3N52P5P38523",
+  "after": [
+    "01M7NXAKCR4SJV5YE10D6NF877"
+  ],
+  "at": "2026-11-17T23:32:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "handle": null,
+        "id": "01M7MNGTKB55VDTY33R2M3ZT5J",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows the steps and routes ship-steps-rebase-clean's acceptance gives, the conduct step declaring exactly the checks plan, code and qa, the gate step of kind gate with its four commands, the hand-back cap at 3 and no leaves or checks step; rhiza workflow describe ship-change lists those steps. (failure case) go test -trimpath ./internal/api -run TestBuildCheck shows build-check failing on a leaf with no Evidence, and TestBuiltinShipChange fails when merge's fail route is handback:conduct or when main-ci, close-out, ship or deploy-check has an on.fail route.",
+          "files": "internal/workflow/builtin/ship-change.toml, internal/workflow/workflow_test.go",
+          "must_not": "Change internal/api (rhiza run build-check, rhiza ship rebase, ship check and ship merge stay as they are), ship-change-classic.toml, plan.toml or the repo's .rhiza/workflows; give main-ci, close-out, ship or deploy-check an on.fail route or a hand-back; raise the hand-back cap above 3",
+          "statement": "The builtin ship-change is the conductor default: conduct (the conduct skill, its step declaring the review checks plan, code and qa), gate (a step of the gate step kind running rhiza run build-check, rhiza run review-check, rhiza check and rhiza ship gate; the pre-push check runs inside the push step's rhiza ship open-pr and inside rhiza ship rebase), signoff, push and open the PR, wait for CI at that head (rhiza ship check --settled, which merges main on a conflicting PR), pr-green (rhiza ship check), merge the tested head (rhiza ship merge), rebase (rhiza ship rebase, back to the CI wait), main's CI (one step), close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy), as ship-steps-rebase-clean gives them; every red result before the merge (conduct, gate, signoff, push, wait-ci and pr-green) hands back to conduct, at most three times; every merge fail (main moved, or a gh, fetch or git error) goes to the rebase step, which hands back only on a code conflict or a local gate or pre-push check failing on the merged head. The steps after the merge (main's CI, close-out, ship and deploy-check) have no on.fail route and no hand-back: nothing on the branch can fix a merged change set. A draft or a merge GitHub refused stops the run (rhiza ship merge's stop exit)."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79KPE2V3AZWKX2HR4D2GYXV",
+        "handle": null,
+        "id": "01M7MNGTNSB0E0GE32SPQ7GRT0",
+        "node": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/ship-change-one-ci shows, with a fake gh and a fake conductor that lands and renders on the branch, exactly one CI wait and one push on the happy path and the change set landed on main after the merge with no ship land step; (failure case) when main moves before the merge, rhiza ship merge fails and the run shows two CI waits, two pushes and no hand-back to conduct.",
+          "files": "cmd/rhiza/testdata/script/ship-change-one-ci.txtar",
+          "must_not": "Start any process the script's processScripts entry in cmd/rhiza/main_test.go does not already allow; touch the network, Rex, agents or the real gh; change ship-change.toml or internal/api",
+          "statement": "On the conductor default the change set lands on the branch before the first push, so a run whose PR is green and whose main has not moved waits on CI once; a second CI round happens only when the merge finds main has moved, and the ship steps rebase and wait for it without a conductor visit."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M79KPE3XB2JBTEB9ZZYPMBM4",
+        "handle": null,
+        "id": "01M7MP247YPT3CS1X39VHP42MX",
+        "node": "01M79KPE3XB2JBTEB9ZZEQPEZF",
+        "op": "node.update",
+        "set": {
+          "acceptance": "In this repo, rhiza workflow describe ship-change resolves to the builtin; rhiza workflow describe ship-rhiza shows the [env], the go-cleanup cleanup running sh .rhiza/workflows/go-cleanup.sh, the builtin's 12 steps and every hand-back route as handback:ship-change/conduct; rhiza workflow describe bugfix still shows the go-cleanup cleanup and its hand-back routes as handback:ship-change/conduct; rhiza workflow check passes with no new warning beyond the autonomous ones AGENTS.md expects; rhiza check accepts .rhiza/dispatch.toml naming ship-rhiza for [ready] feature and bugfix for bug; go test -trimpath ./internal/workflow -run TestShipFixPromptsOneLine passes with .rhiza/workflows/ship-change.toml gone, its repo-file loop reading ship-rhiza and docs; make self-check passes. (failure case) TestShipFixPromptsOneLine fails when .rhiza/workflows/ship-rhiza.toml is missing, and go test -trimpath ./cmd/rhiza -run TestScripts/dispatch-check shows rhiza check failing on a dispatch.toml rule naming a workflow the repo and the built-ins do not resolve.",
+          "files": ".rhiza/workflows/ship-change.toml (removed), .rhiza/workflows/ship-rhiza.toml, .rhiza/dispatch.toml, .rhiza/workflows/bugfix.toml, internal/workflow/workflow_test.go (only TestShipFixPromptsOneLine's repo-file loop)",
+          "must_not": "Change the builtin ship-change.toml or internal/api; drop bugfix.toml's [env] or its go-cleanup cleanup; change plan-bug.toml or the docs workflows; change any test in internal/workflow/workflow_test.go other than TestShipFixPromptsOneLine's repo-file loop"
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NXMXZ8F2M1EXV6RNXHNNYG",
+  "type": "ops",
+  "v": 1
+}
