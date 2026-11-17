@@ -1,0 +1,30 @@
+{
+  "actor": "01M7M2ZGNQ67GTQJQXN63VANXY",
+  "after": [
+    "01M7M2YWF55SJBF3Q54B4MQH20"
+  ],
+  "at": "2026-11-17T06:29:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "d921f30c-ba7e-42c6-89ad-01a1e82fbf90",
+          "statement": "Bug 'cmd/rhiza testscripts inherit RHIZA_*, SHIP_* and REX_*' does not reproduce on main: a probe script run from this run session (RHIZA_CHANGE, RHIZA_ACTOR, REX_SESSION... set) saw only RHIZA_TEST_* and GIT_CONFIG_*, because testscript starts from a fixed env and the in-process rhiza gets only scriptEnv's kept names (#605). The one host-env path left in the script path is daemon.NewReexec (internal/daemon/reexec.go) taking os.Environ()/os.Args, used by an in-process `rhiza daemon run`. How should this change set be scoped?"
+        },
+        "handle": "question-d921f30c-1",
+        "id": "01M7M34556E8DAX0FWZFENXWCE",
+        "key": null,
+        "kind": "question",
+        "node": "01M7M34556E8DAX0FWZDJQYE5M",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7M2YWF4KEF5RV32ZS0C4XK7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M34557Y5SHW7E7GMA9B76F",
+  "type": "ops",
+  "v": 1
+}

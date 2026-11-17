@@ -1,0 +1,40 @@
+{
+  "actor": "01M7M3T0ZRW02J6YPZD4A8J67A",
+  "after": [
+    "01M7M3DDA9S1DGJE3E36DE6VWD"
+  ],
+  "at": "2026-11-17T06:42:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 53f29ac4f: go test -trimpath ./cmd/rhiza -run TestScriptEnvIsolated -count=1 exit 0; go test -trimpath ./cmd/rhiza -run 'TestScripts/^session-run$' -count=1 exit 0; go vet ./cmd/rhiza exit 0; rhiza ship generate and rhiza render exit 0 with a clean tree. Failure case: keepScriptEnv changed to also add every os.Environ() name made TestScriptEnvIsolated exit 1 with 'scriptEnv: leaked from the test process: ... RHIZA_CHANGE (in RHIZA_CHANGE=) ...', then reverted. Diff: code change is only cmd/rhiza/script_env_test.go (new) plus the builder's actor record under .rhiza; the test uses t.Setenv for all eight RHIZA_/SHIP_/REX_ names, a t.TempDir() fixture via writeFixture, checks exec sh -c env and scriptEnv for names and marker values and requires RHIZA_TEST_NOW/RHIZA_TEST_SEED; no main_test.go, reexec.go, production, txtar or processScripts change, no t.Parallel, no TODOs."
+        },
+        "handle": "scripts-env-isolated-guard-verified",
+        "id": "01M7M3WC4CBSG7B8A22QFDBZ4A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M3WC4CBSG7B8A22NCQB9A8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M3WC4CBSG7B8A22NCQB9A8",
+        "id": "01M7M3WC5B3YX7P70P8DJVYZ42",
+        "link": "01M7M3WC5B3YX7P70P8B5ZQ5JX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M3874NE4M6GA6XEVKK3RW2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M2YWF4KEF5RV32ZS0C4XK7",
+  "for": "01M7M3JWNYAPYRAKHDP3CBG315",
+  "id": "01M7M3WC67JCSKKAK1H4P3E2JJ",
+  "type": "ops",
+  "v": 1
+}

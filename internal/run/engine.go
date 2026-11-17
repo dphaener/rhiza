@@ -813,7 +813,7 @@ func (r *running) command(step workflow.Step, env []string) result {
 	return result{outcome: workflow.OutcomeFail, detail: d}
 }
 
-// arbitrateAsked has the arbiter decide, in an autonomous run, each
+// arbitrateAsked has the arbiter decide, where arbitratesIn says, each
 // question a command step's process journalled (an asked entry with no
 // session, such as `rhiza run review-check` writes) that it has not
 // decided yet, once the step's command has run with result res. The
@@ -830,7 +830,7 @@ func (r *running) arbitrateAsked(step workflow.Step, res result) (result, error)
 		return result{}, err
 	}
 	r.j = j
-	if st := r.j.State(); !st.Autonomous {
+	if st := r.j.State(); !r.arbitratesIn(step.Name) {
 		advised := map[string]bool{}
 		for _, a := range st.Advice {
 			advised[a.Asker] = true
@@ -1078,8 +1078,17 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 		if err != nil {
 			return result{}, err
 		}
-		if r.arbitrates(status.Blocked) {
+		if r.arbitrates(step.Name, status.Blocked) {
 			res, ended, err := r.ask(step, session, status.Blocked)
+			if err != nil || ended {
+				return res, err
+			}
+		}
+		if step.Conducts() {
+			res, ended, err := r.askChildren(step)
+			if err == nil && ended {
+				err = r.unblock(step.Name, session)
+			}
 			if err != nil || ended {
 				return res, err
 			}
@@ -1097,14 +1106,72 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 	}
 }
 
-// arbitrates reports whether the engine, not the owner, answers block b:
-// only a question, and only in an autonomous run.
-func (r *running) arbitrates(b *Block) bool {
-	return b != nil && b.Kind == "question" && r.j.State().Autonomous
+// askChildren has the arbiter answer the questions conductor step's live
+// spawned children (the journal's spawn entries under step with no
+// spawn-ended entry) are blocked on, as ask does the conductor's own: a
+// question node, an asked entry keyed on the child's session, the arbiter
+// and the answer delivered to the child, its block ended, with no advisor
+// and no owner notice. A child's other block (a permission prompt, say)
+// stays the owner's and is not journalled here; a child no longer on a
+// question has its journalled block ended. The children's ends are
+// reconcileSpawns' to record, and their outcomes never decide the step: a
+// failed verdict on a child's question ends the step (ended true) with an
+// error outcome naming the question. The error return is for journal
+// failures. The children are polled through the Runner's AgentStatus
+// alone: they are the conductor's sessions, not the run's to rejoin.
+func (r *running) askChildren(step workflow.Step) (result, bool, error) {
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		return result{}, false, err
+	}
+	r.j = j
+	for _, sp := range r.j.State().Spawns {
+		if sp.Ended || sp.Step != step.Name {
+			continue
+		}
+		status, err := r.e.Runner.AgentStatus(sp.Session)
+		if err != nil {
+			r.log("step %s: spawned session %s: %v", step.Name, sp.Session, err)
+			continue
+		}
+		b := status.Blocked
+		if status.Done || b == nil || b.Kind != "question" {
+			if err := r.unblock(step.Name, sp.Session); err != nil {
+				return result{}, false, err
+			}
+			continue
+		}
+		if err := r.block(step.Name, sp.Session, b); err != nil {
+			return result{}, false, err
+		}
+		if res, ended, err := r.ask(step, sp.Session, b); err != nil || ended {
+			return res, ended, err
+		}
+	}
+	return result{}, false, nil
+}
+
+// arbitrates reports whether the engine, not the owner, answers block b
+// of a session of step: only a question, and only where arbitratesIn says.
+func (r *running) arbitrates(step string, b *Block) bool {
+	return b != nil && b.Kind == "question" && r.arbitratesIn(step)
+}
+
+// arbitratesIn reports whether the arbiter, not the owner, answers the
+// questions asked in step: every step's in an autonomous run, and a
+// conductor step's (workflow.Step.Conducts, one included through a
+// workflow step too) in any run. Such questions get no advisor and no
+// owner notice.
+func (r *running) arbitratesIn(step string) bool {
+	if r.j.State().Autonomous {
+		return true
+	}
+	s, ok := r.def.Steps[step]
+	return ok && s.Conducts()
 }
 
 // ask has the arbiter answer the question step's session is blocked on,
-// in an autonomous run. Once per block (the journal's asked entry for it,
+// in an autonomous run or a conductor step (arbitratesIn). Once per block (the journal's asked entry for it,
 // State.BlockAsked), it adds the question as a node in the run's change
 // set and journals an asked entry; then it arbitrates the question, or
 // rejoins its open arbitration (a resume), or reads its verdict. A failed
@@ -1245,7 +1312,7 @@ func (r *running) block(step, session string, b *Block) error {
 		on = "the owner"
 	}
 	r.log("step %s: blocked on %s", step, on)
-	if !r.arbitrates(&cp) {
+	if !r.arbitrates(step, &cp) {
 		r.notify(st, step, session, true, &cp)
 		if cp.Kind == "question" {
 			if err := r.advise(step, session, &cp); err != nil {
@@ -1282,12 +1349,13 @@ func (r *running) advise(step, session string, b *Block) error {
 // the owner, and journals an advisor entry whose Asker is the node's ID.
 // The advisor restates the question in plain words and recommends; the
 // node's statement stays the engineering record. An autonomous run's
-// arbiter answers such questions, so it gets no advisor. An advisor that
+// arbiter answers such questions, as it does a conductor step's
+// (arbitratesIn), so they get no advisor. An advisor that
 // cannot be launched is only logged. The error return is for journal
 // failures.
 func (r *running) adviseQuestion(step workflow.Step, q Question, text string) error {
 	st := r.j.State()
-	if st.Autonomous || q.ID == "" {
+	if r.arbitratesIn(step.Name) || q.ID == "" {
 		return nil
 	}
 	s, err := r.e.Runner.StartAdvisor(r.def.Arbiter(), q.ID, text, r.stepEnv(workflow.ArbiterName, st.Change))
@@ -1313,7 +1381,7 @@ func (r *running) unblock(step, session string) error {
 		return err
 	}
 	r.log("step %s: unblocked", step)
-	if !r.arbitrates(b) {
+	if !r.arbitrates(step, b) {
 		r.notify(st, step, session, false, b)
 	}
 	return nil

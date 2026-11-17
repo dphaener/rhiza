@@ -1,0 +1,35 @@
+# plan-fix-testscript-env
+
+source · `01M7M37MX6WZ9CY7KQY8G9VM6J`
+
+## quotes
+
+```json
+[]
+```
+
+## raw_sha256
+
+9363d557e90eb9cf3c1af419dbe9843492c04508a22769644335eed70f0418e6
+
+## session
+
+d921f30c-ba7e-42c6-89ad-01a1e82fbf90
+
+## summary
+
+Autonomous plan run for bug change set 01M7M2YWF4 (no owner; the arbiter answers). Research: testscript v1.14.1 starts each script from a fixed environment (WORK, PATH, HOME=/no-home, TMPDIR, GOCOVERDIR/GORACE only; testscript.go:465-505), and cmd/rhiza's setup adds RHIZA_TEST_*, NOROOT and hermetic git settings. Since #605 the in-process rhiza gets scriptEnv(ts): only the names keepScriptEnv kept (Setup's env.Vars plus the script's own env lines). A probe script run from inside a run session with RHIZA_CHANGE, RHIZA_ACTOR, RHIZA_SESSION, REX_SESSION and REX_BLOCK set saw only RHIZA_TEST_* and GIT_CONFIG_* via exec sh -c env, so the bug does not reproduce on main. Production code reads no RHIZA_/SHIP_/REX_ variable through os.Getenv and every child process is started through envexec.Command with an explicit environment. The one host-env path left is daemon.NewReexec (internal/daemon/reexec.go:44, os.Environ and os.Args), used only when a daemon re-execs after its executable changes. The planner asked the arbiter how to scope the change set; the arbiter ruled a regression guard only (decision-scope-env-regression-guard), leaving NewReexec unchanged.
+
+## title
+
+Planning Fix cmd/rhiza testscripts (autonomous)
+
+## Links
+
+### In
+
+- derived-from [decision-scope-env-regression-guard](../decision/decision-scope-env-regression-guard.md)
+
+## History
+
+- `01M7M2YWF4KEF5RV32ZS0C4XK7` Fix cmd/rhiza testscripts inherit the calling session's RHIZA_*, SHIP_* and REX_* variables, so a script run from inside a run session fails or passes differently than in CI

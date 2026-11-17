@@ -1,0 +1,32 @@
+{
+  "actor": "01M7M2ZGNQ67GTQJQXN63VANXY",
+  "after": [
+    "01M7M3879CP5APHJ8CYT4YT780"
+  ],
+  "at": "2026-11-17T06:31:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScriptEnvIsolated passes: the test sets, with t.Setenv, RHIZA_CHANGE, RHIZA_ACTOR, RHIZA_SESSION, RHIZA_RUN, SHIP_HEAD_BUILD, SHIP_HEAD_RHIZA, REX_SESSION and REX_BLOCK to marker values, runs testscript through scriptParams over a script written to t.TempDir() (not under testdata/script, so TestScripts never picks it up), and checks both that an exec'd command's environment (exec sh -c env) and the names and values scriptEnv returns hold none of those variables, while RHIZA_TEST_NOW and RHIZA_TEST_SEED are still there; go test -trimpath ./cmd/rhiza -run 'TestScripts/^session-run$' still passes. (failure case) With keepScriptEnv temporarily changed to keep every name in os.Environ(), TestScriptEnvIsolated fails and its message names a leaked variable (e.g. RHIZA_CHANGE); the change is reverted before commit",
+          "files": "cmd/rhiza/script_env_test.go (new)",
+          "must_not": "Change main_test.go's setup, keepScriptEnv or scriptEnv, internal/daemon/reexec.go or any production code; add a txtar under cmd/rhiza/testdata/script or an entry on processScripts; call t.Parallel (t.Setenv forbids it)",
+          "statement": "A cmd/rhiza test proves that RHIZA_*, SHIP_* and REX_* variables set in the test process's own environment reach neither a testscript's environment nor the environment the in-process rhiza is handed (scriptEnv), so a script behaves the same inside a run session as in CI"
+        },
+        "handle": "scripts-env-isolated-guard",
+        "id": "01M7M3874NE4M6GA6XEYN5A8QY",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M7M3874NE4M6GA6XEVKK3RW2",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      }
+    ]
+  },
+  "change_set": "01M7M2YWF4KEF5RV32ZS0C4XK7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M38HJ0GMR51CBQBG5MA4TH",
+  "type": "ops",
+  "v": 1
+}

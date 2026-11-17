@@ -1,0 +1,40 @@
+{
+  "actor": "01M7M808YKXV2H8QKG0YQ1HKMT",
+  "after": [
+    "01M7M7QAQ5Q7A0F5J8PVD4YG92"
+  ],
+  "at": "2026-11-17T07:55:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at 289c5fa77, under the MemoryMax/TasksMax cap: go test -p 2 -trimpath ./internal/run -run 'TestSpawnedChildQuestion|TestConductorQuestion|TestSpawnResume' -count=1 -v exit 0 (TestSpawnedChildQuestionArbitrated included=false/true PASS); go test -p 2 -trimpath ./internal/run/... exit 0; go vet ./internal/run exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0, tree clean. Diff read: pollAgent calls the new askChildren for step.Conducts() steps, which polls live spawns of the step via AgentStatus only, journals a block and reuses ask (AddQuestion, asked entry keyed on the child session, arbiter, Deliver to the child, answered entry, unblock) with no advisor or notice since arbitratesIn holds; non-question blocks are not journalled or arbitrated; reconcileSpawns untouched; a failed verdict ends the step with an error naming the question. The test asserts asked/arbiter/deliver/answered order, no StartAdvisor and no Notify in a non-autonomous run, the step finishing on the conductor's pass, the failing-verdict error detail, a spawn-ended child never polled, and a permission block not arbitrated. Only engine.go, engine_test.go and the leaf's .rhiza log/render changed; no TODOs."
+        },
+        "handle": "spawned-child-question-arbitrated-verified",
+        "id": "01M7M82V9A4TF24FP0ZPM6TKFY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M82V9A4TF24FP0ZK218BS1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M82V9A4TF24FP0ZK218BS1",
+        "id": "01M7M82VA63EEZ656WMN1306N4",
+        "link": "01M7M82VA63EEZ656WMMFD7PMN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E14QHSACYM4E06M4E3BW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M51W2S30H06K0BFZ6MK7PF",
+  "for": "01M7M5SJQP7WZB25T535ZWX4GN",
+  "id": "01M7M82VB4WQJQ5KZZZN9MJ5NE",
+  "type": "ops",
+  "v": 1
+}
