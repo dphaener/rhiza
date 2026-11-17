@@ -2878,9 +2878,11 @@ func TestBuiltinClassicUnchanged(t *testing.T) {
 	}
 }
 
-// The builtin ship-change is the conductor default: ten steps, the conduct
-// step declaring plan, code and qa, a gate step, every red up to the merge
-// handing back to conduct, and nothing after the merge able to.
+// The builtin ship-change is the conductor default: twelve steps, the
+// conduct step declaring plan, code and qa, a gate step, every red before
+// the merge handing back to conduct, a failed merge going to a rebase step
+// that hands back only when main cannot come in cleanly, and nothing after
+// the merge able to hand back.
 func TestBuiltinShipChange(t *testing.T) {
 	data, ok := Builtin("ship-change")
 	if !ok {
@@ -2890,7 +2892,7 @@ func TestBuiltinShipChange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"conduct", "gate", "signoff", "push", "wait-ci", "merge", "main-ci", "close-out", "ship", "deploy-check"}
+	want := []string{"conduct", "gate", "signoff", "push", "wait-ci", "pr-green", "merge", "rebase", "main-ci", "close-out", "ship", "deploy-check"}
 	if got := def.Order; strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Fatalf("steps = %v; want %v", got, want)
 	}
@@ -2907,8 +2909,13 @@ func TestBuiltinShipChange(t *testing.T) {
 	if strings.Join(checks, ",") != "plan,code,qa" {
 		t.Errorf("conduct checks = %v", checks)
 	}
-	if !strings.Contains(conduct.Prompt, "rhiza ship rebase --no-push") {
-		t.Errorf("conduct prompt does not tell the conductor to run rhiza ship rebase --no-push: %q", conduct.Prompt)
+	// The run's own steps rebase: the conductor never runs ship rebase
+	// --no-push, and is told to have the conflict fixer resolve a conflict.
+	if strings.Contains(conduct.Prompt, "--no-push") {
+		t.Errorf("conduct prompt still mentions --no-push: %q", conduct.Prompt)
+	}
+	if !strings.Contains(conduct.Prompt, "conflict fixer") {
+		t.Errorf("conduct prompt does not name the conflict fixer: %q", conduct.Prompt)
 	}
 	gate := def.Steps["gate"]
 	if gate.Kind != KindGate {
@@ -2919,7 +2926,8 @@ func TestBuiltinShipChange(t *testing.T) {
 		t.Errorf("gate commands = %v", gate.Commands)
 	}
 	back := HandbackPrefix + "conduct"
-	for _, name := range want[:6] {
+	// Every red before the merge hands back.
+	for _, name := range []string{"conduct", "gate", "signoff", "push", "wait-ci", "pr-green"} {
 		s := def.Steps[name]
 		for o, target := range s.On {
 			if o == OutcomePass {
@@ -2933,20 +2941,34 @@ func TestBuiltinShipChange(t *testing.T) {
 			t.Errorf("step %s has no failure route", name)
 		}
 	}
-	if got := def.Steps["merge"].On; len(got) != 2 || got[OutcomePass] != "main-ci" || got[OutcomeFail] != back {
-		t.Errorf("merge routes = %v; want only pass and fail", got)
+	// A settled red CI ends the wait at once, not at the timeout. A
+	// conflicting PR is merged with main by the wait itself (no
+	// --no-rebase): a clean merge is pushed and waited on, a code conflict
+	// settles the wait and pr-green hands it back.
+	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled" || s.On[OutcomeTimeout] != back || s.On[OutcomePass] != "pr-green" {
+		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on exactly rhiza ship check --settled passing to pr-green and timing out to %s", s.Kind, s.Until, s.On, back)
 	}
-	// A settled red CI ends the wait at once, not at the timeout: wait-ci
-	// waits only for CI to settle, and the merge step's ship check fails on
-	// a red and hands back before anything is merged. A conflicting PR
-	// settles the wait with nothing merged or pushed (--no-rebase), and the
-	// merge step's ship check fails on it, so conduct brings main in and
-	// the new head goes through gate, signoff and push.
-	if s := def.Steps["wait-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --settled --no-rebase" || s.On[OutcomeTimeout] != back {
-		t.Errorf("wait-ci = kind %s until %q on %v; want a wait on rhiza ship check --settled --no-rebase timing out to %s", s.Kind, s.Until, s.On, back)
+	if s := def.Steps["pr-green"]; s.Kind != KindCommand || s.Run != "rhiza ship check" || len(s.On) != 2 || s.On[OutcomePass] != "merge" || s.On[OutcomeFail] != back {
+		t.Errorf("pr-green = kind %s run %q on %v; want a command running rhiza ship check, pass to merge, fail to %s", s.Kind, s.Run, s.On, back)
 	}
-	if s := def.Steps["merge"]; s.Run != "rhiza ship check --no-rebase && rhiza ship merge" {
-		t.Errorf("merge runs %q; want rhiza ship check --no-rebase && rhiza ship merge, so a settled red or a conflict hands back", s.Run)
+	// A failed merge (main moved, or a gh, fetch or git error) rebases in
+	// the steps rather than handing back.
+	if s := def.Steps["merge"]; s.Kind != KindCommand || s.Run != "rhiza ship merge" || len(s.On) != 2 || s.On[OutcomePass] != "main-ci" || s.On[OutcomeFail] != "rebase" {
+		t.Errorf("merge = kind %s run %q on %v; want exactly rhiza ship merge with only pass to main-ci and fail to rebase", s.Kind, s.Run, s.On)
+	}
+	// ship rebase runs the local gate on the merged head, so its stall is
+	// at least the gate step's, above the watchdog's command default.
+	rebase := def.Steps["rebase"]
+	if rebase.Kind != KindCommand || rebase.Run != "rhiza ship rebase" || len(rebase.On) != 2 || rebase.On[OutcomePass] != "wait-ci" || rebase.On[OutcomeFail] != back {
+		t.Errorf("rebase = kind %s run %q on %v; want exactly rhiza ship rebase, pass to wait-ci, fail to %s", rebase.Kind, rebase.Run, rebase.On, back)
+	}
+	if rebase.Stall != 70*time.Minute || rebase.Stall < gate.Stall {
+		t.Errorf("rebase stall = %v; want 70m, at least the gate step's %v", rebase.Stall, gate.Stall)
+	}
+	for _, name := range []string{"wait-ci", "pr-green", "merge", "rebase"} {
+		if got := def.Steps[name].MaxVisits; got != 6 {
+			t.Errorf("step %s max_visits = %d; want 6", name, got)
+		}
 	}
 	// Classic still merges main into the branch from its wait.
 	if data, ok := Builtin("ship-change-classic"); !ok {
@@ -2969,7 +2991,7 @@ func TestBuiltinShipChange(t *testing.T) {
 	if s := def.Steps["main-ci"]; s.Kind != KindWait || s.Until != "rhiza ship check --main" {
 		t.Errorf("main-ci = kind %s until %q", s.Kind, s.Until)
 	}
-	for _, name := range want[6:] {
+	for _, name := range want[8:] {
 		s := def.Steps[name]
 		for o, target := range s.On {
 			if o != OutcomePass || strings.HasPrefix(target, HandbackPrefix) {
