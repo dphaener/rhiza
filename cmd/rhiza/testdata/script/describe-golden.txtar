@@ -4426,7 +4426,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -4447,6 +4447,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -6403,7 +6407,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -6424,6 +6428,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -10469,7 +10477,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -10490,6 +10498,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -12282,7 +12294,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -12303,6 +12315,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -15255,7 +15271,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -15276,6 +15292,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -17112,7 +17132,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -17133,6 +17153,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -19039,7 +19063,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -19060,6 +19084,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -21032,7 +21060,7 @@ cmp stdout describe.golden.json
                   "additionalProperties": false,
                   "properties": {
                     "answered": {
-                      "description": "True once the answer was delivered to the asking session",
+                      "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                       "type": "boolean"
                     },
                     "at": {
@@ -21053,6 +21081,10 @@ cmp stdout describe.golden.json
                     },
                     "question": {
                       "description": "The question node's ID",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                       "type": "string"
                     },
                     "step": {
@@ -22734,7 +22766,7 @@ cmp stdout describe.golden.json
               "additionalProperties": false,
               "properties": {
                 "answered": {
-                  "description": "True once the answer was delivered to the asking session",
+                  "description": "True once the answer was delivered to the asking session; a question no session asked is never delivered",
                   "type": "boolean"
                 },
                 "at": {
@@ -22755,6 +22787,10 @@ cmp stdout describe.golden.json
                 },
                 "question": {
                   "description": "The question node's ID",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)",
                   "type": "string"
                 },
                 "step": {
