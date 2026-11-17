@@ -1,0 +1,40 @@
+{
+  "actor": "01M7K6BNHMAVBW715TWN8Z5567",
+  "after": [
+    "01M7K619Q4Q24KX6RYCSPB2YWH"
+  ],
+  "at": "2026-11-16T22:08:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at 22f10f8db. The acceptance grep over status.go, inbox.go, proposals.go and daemon_fold.go printed nothing; the IndexPath grep over render.go printed nothing and grep -c FoldLog render.go printed 1 (the !HoldsLog fallback). go vet ./internal/api exit 0. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestStatus|TestInbox|TestUncoveredProposals|TestDaemonPlansProposalsPending|TestDaemonIdlePollSkipsFold|TestDaemonPollCacheInvalidates|TestDaemonFoldIndexedMatchesLog|TestRender|TestPropertyProjectionParity)' ok, including TestRenderIndexedAfterInPlaceEdit (the in-place edit failure case) and the parity test. go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/(status|inbox-|render|daemon-plans-proposals)' ok with RHIZA_/SHIP_/REX_ vars unset. Diff read: only the five named files change in code; the log-fold branches are removed rather than left as fallbacks, the projection is never nil (useProjection opens a throwaway index when IndexPath is empty, a failedProjection on error), no --json shape or rendered file changes, no stubs or TODOs."
+        },
+        "handle": "folds-from-projection-verified",
+        "id": "01M7K6EHJNAJKQJQFRV7QC3R3R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K6EHJNAJKQJQFRV5YDQGJW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K6EHJNAJKQJQFRV5YDQGJW",
+        "id": "01M7K6EHKZTSFB3PT0YXYKAJR7",
+        "link": "01M7K6EHKZTSFB3PT0YX8ZC1JR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "id": "01M7K6EHN6RJ8N553XHMG1R1C9",
+  "type": "ops",
+  "v": 1
+}

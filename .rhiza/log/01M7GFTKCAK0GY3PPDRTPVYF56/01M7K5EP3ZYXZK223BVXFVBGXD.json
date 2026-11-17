@@ -1,0 +1,40 @@
+{
+  "actor": "01M7K5289Y0P8P7YE6H6NAN8YW",
+  "after": [
+    "01M7K3D2G7BPD42YE5EQGVQ1ZA"
+  ],
+  "at": "2026-11-16T21:50:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a48d03df4: both acceptance greps (IndexPath/len(w.pending)/newModel(/FoldLog over workspace, read, change, ship, slice, run_model_cache, run_milestone.go; index.Open(ctx.Root, ctx.IndexPath) over read, ship, repair.go) print nothing. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestWorkspace|...|TestPropertyProjectionParity)' ok (86s); full ./internal/api ok (238s); go vet ./internal/api ok; ./cmd/rhiza -run 'TestScripts/(apply|change-show|slice|ship-|repair)' ok (45s, RHIZA_/SHIP_/REX_ unset). Diff: workspace model/entriesOfSet/changeSets/resolveChangeSet go only through the projection with pending overlaid; openReaderIn, findShipTarget, repair indexBytes take store() from the projection; reserveMilestoneNumber uses w.model; run_model_cache opens via openWriteIndex. TestApplyDryRunResolvesPending covers the pending-overlay apply; TestDefaultViewFoldsNothing checks unknown change set is exit 4 with next rhiza change ls. newModel still defined (model.go:136); no request/response types changed; no TODOs. rhiza ship generate and rhiza render not re-run (they write files; verifier edits nothing)."
+        },
+        "handle": "writes-from-projection-verified",
+        "id": "01M7K5EP1B9EVRCRZ80B0JDAC6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K5EP1B9EVRCRZ809CZPQR7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K5EP1B9EVRCRZ809CZPQR7",
+        "id": "01M7K5EP2KM37DJ8SQMC258NMV",
+        "link": "01M7K5EP2KM37DJ8SQMAESQWXZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "id": "01M7K5EP3ZYXZK223BVXFVBGXD",
+  "type": "ops",
+  "v": 1
+}

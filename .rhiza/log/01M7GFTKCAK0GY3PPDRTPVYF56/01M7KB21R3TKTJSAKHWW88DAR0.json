@@ -1,0 +1,132 @@
+{
+  "actor": "01M7K9RNV7RBCHE3GKREWQ788X",
+  "after": [
+    "01M7K92ERPGQMPN1Q8KAWDSW1Z"
+  ],
+  "at": "2026-11-16T23:28:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA, branch HEAD a2ef70341 built with go build -trimpath to $TMPDIR/rhiza-qa-orp, run in a hermetic scratch repo. With HOME and XDG_CACHE_HOME unset (empty IndexPath), status --json and show --json were byte-identical to the indexed run, add wrote a node that show then read, and TMPDIR was left empty. XDG_CACHE_HOME on a read-only folder: status --json identical, add succeeded, nothing left in the cache or TMPDIR. Failure: TMPDIR read-only or missing with no index path exits 1 'no index path; throwaway index in <tmp>: ...'; read-only cache plus read-only TMPDIR exits 1 naming both the index path and the temporary folder. An index file overwritten with garbage was rebuilt and show answered. The base build (9064447e1) refused the no-index case with 'no index path', so this is new behaviour. go test -run '^(TestProjection|TestPropertyProjectionParity)' ./internal/api ok."
+        },
+        "handle": "throwaway-index-fallback-qa-1",
+        "id": "01M7KB215YE4MSJ7KNFDZK5D7D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KB215YE4MSJ7KNFCPZJW76",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KB215YE4MSJ7KNFCPZJW76",
+        "id": "01M7KB217FKQ0T0RVWRETYZSJP",
+        "link": "01M7KB217FKQ0T0RVWRDM4RZBT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the built binary in a scratch repo: add, apply, show, ls, change show, change ls, slice, log, propose, accept and land all read and write through the projection. A dry-run apply whose second write names a parent the first adds, then links it to an existing node, resolved through the pending overlay and wrote nothing (show gizmos not_found afterwards); the real apply then succeeded. Failure: change show of an unknown change set exits 4 'no change set ...' with next rhiza change ls; show nope exits 4; apply with a taken handle and with an unknown parent are refused naming writes[0]. The scoped api tests (TestWorkspace|TestRead|TestChange|TestShip|TestSlice|TestWrite|TestApply|... ) ok in 112 s and the cmd/rhiza scripts apply|change-show|slice|ship-|repair ok. The acceptance greps print nothing."
+        },
+        "handle": "writes-from-projection-qa-1",
+        "id": "01M7KB2196Q8YPX95EFW3SPZSH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KB2196Q8YPX95EFSA2W3KP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KB2196Q8YPX95EFSA2W3KP",
+        "id": "01M7KB21ATJ46EP0SZRHSYRPCR",
+        "link": "01M7KB21ATJ46EP0SZRED0TNX1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: a root rhiza.toml registering project alpha (a copy of the scratch repo, with two overlapping change sets and a blocking question). rhiza inbox --json at the root tagged alpha's items and was byte-identical to the base build's and to a run with no index path; alpha's own index file was created under the test HOME's cache. question answer color-q into a change set (both with and without an index) wrote the Decision and cleared the blocker items as the base build does; a second answer is refused 'not an open question blocking this change set', an unknown question 'no question' and an unknown --run 'no run matches'. Scoped api tests (TestDaemonHomePrefersWorkingProject|TestPollGitBounded|TestGateAnswer|TestInbox|TestWebAnswerAction|TestWebApproveAction|TestSessionBrief|TestDriverPollIsCheap|TestEvidenceReadsPastSessionWrites) ok; scripts daemon-projects|inbox-gate-questions|inbox-projects ok. The IndexPath = \"\" grep prints nothing."
+        },
+        "handle": "other-roots-own-projection-qa-1",
+        "id": "01M7KB21D2KBB8Y390K9BP5C81",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KB21D2KBB8Y390K7Q2B3Y5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KB21D2KBB8Y390K7Q2B3Y5",
+        "id": "01M7KB21F65794M2XJBQ7EBS0C",
+        "link": "01M7KB21F65794M2XJBKHWHJR2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: status, inbox (overlap and blocker items), overlaps, ready, render and check on the scratch repo, and inbox --json identical to the base build and to the no-index run. Failure: after an entry was edited in place, render exits refusing the damaged log with next rhiza repair --dry-run (with and without an index), and repair --dry-run names the entry to restore. Targets on ~/code/rhiza (load ~5-7 on 4 cores, warm, /usr/bin/time, capped scope): status 0.04 s (target 0.2 s, met); inbox 0.53-0.88 s, interleaved with the base build median 0.65 s vs base 0.67 s (no worse than baseline); check 9.7-12.2 s, interleaved 9.7/9.7 s vs base 8.8/11.6 s (over the 5 s target and the 7.1 s baseline under this load, but not worse than the base build). Scoped tests TestStatus|TestInbox|TestUncoveredProposals|TestDaemon*|TestRender ok; scripts status|inbox-|render|daemon-plans-proposals ok."
+        },
+        "handle": "folds-from-projection-qa-1",
+        "id": "01M7KB21H3D011SCZ07ZW3T07K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KB21H3D011SCZ07ZC6A7S9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KB21H3D011SCZ07ZC6A7S9",
+        "id": "01M7KB21JYKEM7EZBQE01SFZJS",
+        "link": "01M7KB21JYKEM7EZBQDW4KCKXH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: every acceptance grep prints nothing except write_indexed.go:61 (the throwaway-index check) and render.go's one FoldLog (the HoldsLog fallback). go test ./internal/api ran past my 240 s cap under load ~7 with no output, so I ran it in two halves: -run '^Test[A-Q]' ok in 110 s and -run '^Test[R-Z]' ok in 165 s (no failure, no hang). The parity test with -rapid.checks=1000 ok in 63 s. The behaviour checks above (the no-index reads, the damaged index rebuilt, inbox and status matching the base build byte for byte) show no fold fallback is left and no --json shape changed."
+        },
+        "handle": "interim-model-deleted-qa-1",
+        "id": "01M7KB21MKW682QWWPAYGAX93Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KB21MKW682QWWPAY1V6EV0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KB21MKW682QWWPAY1V6EV0",
+        "id": "01M7KB21PCN8DG59BW07PC7SX8",
+        "link": "01M7KB21PCN8DG59BW06K22VAH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "id": "01M7KB21R3TKTJSAKHWW88DAR0",
+  "type": "ops",
+  "v": 1
+}

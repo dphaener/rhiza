@@ -20,6 +20,10 @@ When a worktree's index cannot be opened or created (no user cache folder, a rea
 
 - derived-from [projection-milestone-interview](../source/projection-milestone-interview.md)
 
+### In
+
+- decided-by [throwaway-index-fallback](../capability/rhiza/views/fast-reads/throwaway-index-fallback.md)
+
 ## History
 
 - `01M7GFRBHB4ZXKD4882FQ480Q3` Reads come from the projection. Owner, 2026-11-15, after the orchestrator measured this repo's log (24,560 entries, 127 MB: rhiza status 2.0 s, inbox 2.3 s, check 15.3 s) and ran an architecture survey (~/orchestrator/architecture-survey-2026-11-15.md): reads and writes come from the incremental index instead of folding the whole log, under one set of model rules with the strict engine as the spec; four change sets (parity harness, check without repeated what-if rebuilds, finishing the projection, rhiza in-process in scripts), the application-layer move and the log-size investigation later; milestone 38's cold and CI targets carried here.

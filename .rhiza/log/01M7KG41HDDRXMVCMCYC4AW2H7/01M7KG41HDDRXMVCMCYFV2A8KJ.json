@@ -1,0 +1,15 @@
+{
+  "actor": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "after": [],
+  "at": "2026-11-17T00:57:11Z",
+  "body": {
+    "intent": "Record agent actor claude-code-69572f11 for session 69572f11-c978-4535-bc83-01a1e701f6ed",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7KG41HDDRXMVCMCYC4AW2H7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KG41HDDRXMVCMCYFV2A8KJ",
+  "type": "open",
+  "v": 1
+}

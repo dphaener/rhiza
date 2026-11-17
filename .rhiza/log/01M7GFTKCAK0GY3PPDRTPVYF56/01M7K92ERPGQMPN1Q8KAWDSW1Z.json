@@ -1,0 +1,40 @@
+{
+  "actor": "01M7K8RJCXXXGHH1MJBG36MBDB",
+  "after": [
+    "01M7K6EHN6RJ8N553XHMG1R1C9"
+  ],
+  "at": "2026-11-16T22:53:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At a2ef70341 in a clean detached worktree (load avg 4.5-7.3 on 4 cores), go test -trimpath -count=1 -p 2 -timeout 4m ./internal/api run in two capped halves: -run '^Test[A-Ka-k]' (214 tests) ok in 70.4s and -run '^Test([^A-Ka-k]|$)' (595 tests) ok in 208.0s; go test -list shows the two patterns cover all 809 tests (the other 12 names are benchmarks). Earlier verifiers of this leaf found the acceptance greps, go vet, the projection parity test at 1000 checks, the test counts 2014/398 and make self-check all passing, so the whole acceptance holds."
+        },
+        "handle": "interim-model-deleted-verified",
+        "id": "01M7K92ENHMND22R6F63V1QRW4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7K92ENGGRGT632WYVQ9VBDQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7K92ENGGRGT632WYVQ9VBDQ",
+        "id": "01M7K92EPXX1ZFHP967EAJ7CKA",
+        "link": "01M7K92EPXX1ZFHP967AFCT03X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "id": "01M7K92ERPGQMPN1Q8KAWDSW1Z",
+  "type": "ops",
+  "v": 1
+}
