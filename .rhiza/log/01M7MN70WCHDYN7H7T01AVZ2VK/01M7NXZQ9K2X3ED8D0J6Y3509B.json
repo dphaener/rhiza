@@ -1,0 +1,41 @@
+{
+  "actor": "01M7NXYX6X57HV78BMCYM7ZG2D",
+  "after": [
+    "01M7NXYT0HP25AN43R206P611E"
+  ],
+  "at": "2026-11-17T23:37:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Confirmed the finding against the code: watchdog_policy.go sets DefaultCommandLimit to 30m and StallLimit returns it for a command step with no stall of its own, while ship rebase runs the local gate (make gate, up to an hour) on the merged head before pushing. Without a stall the watchdog would stop and retry the rebase partway through the gate. The repo's own convention (ship-change-classic.toml and docs.toml comments, the builtin gate step) is stall = \"70m\" on every step that runs the gate, so following it is the least surprising answer and needs no new mechanism; the acceptance must check it so the defect cannot ship.",
+          "statement": "The new rebase step that runs rhiza ship rebase sets stall = \"70m\" (at least the gate step's stall), like every other step that runs ship rebase or ship gate. The leaf ship-steps-rebase-clean's acceptance requires that stall on the step, and its failure case fails when the stall is missing or below the gate's.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "ship-steps-rebase-stall-70m",
+        "id": "01M7NXZQ6T5HC52MJWP0CYWEBP",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NXZQ6T5HC52MJWNX3M75FR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NXZQ6T5HC52MJWNX3M75FR",
+        "id": "01M7NXZQ832FTA63JMTKA84K6M",
+        "link": "01M7NXZQ832FTA63JMTJ623DPM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NXYSW3GQH10DF4RHEKKQA3",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NXZQ9K2X3ED8D0J6Y3509B",
+  "type": "ops",
+  "v": 1
+}

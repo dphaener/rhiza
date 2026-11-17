@@ -1,0 +1,254 @@
+{
+  "actor": "01M7MN7GPC8983W1M2SSB6PG5A",
+  "after": [
+    "01M7MNEHWZV1BX0PD6D6JTVGAS"
+  ],
+  "at": "2026-11-17T11:50:48Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7MN70WCHDYN7H7T01AVZ2VK",
+        "id": "01M7MNGSW5P3BW90Q12WMY4Y3D",
+        "link": "01M7MNGSW5P3BW90Q12VNEJ0YK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M79KKVJZBSHJ5RXCG4JKBSP4",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "reasoning": "ship rebase and ship check --settled already settle rendered-only conflicts, run the local gate and pre-push check on the merged head and push it, and record the pushed head so the next CI wait follows it; only the workflow routing sends a clean merge to the conductor. Splitting the merge step is needed because a command step has only pass and fail: ship check's red (CI red, unresolved conflict) must hand back while ship merge's main-moved exit must rebase. The merged head is re-checked by the local gate and the pre-push check inside ship rebase and by CI in wait-ci and pr-green before merge runs again.",
+          "statement": "The builtin ship-change brings origin/main into the branch in its own steps and hands back to conduct only when that cannot finish cleanly: wait-ci runs rhiza ship check --settled without --no-rebase, so a PR GitHub reports conflicting is merged with main there (a clean merge pushed and waited on, a code conflict left in progress and the wait settled); the old merge step splits into pr-green (rhiza ship check, fail hands back) and merge (rhiza ship merge alone, fail goes to a new rebase step); rebase runs plain rhiza ship rebase, which merges main, renders, runs the local gate and the pre-push check and pushes, then passes back to wait-ci for a CI round on the new head, and hands back on fail: a code conflict left in progress (the conflict fixer's) or the local gate or pre-push check failing on the merged head, kept unpushed (the gate fixer's, since only a fixer can change code). A merge that failed for a gh, fetch or git error also goes to rebase, which merges nothing when main has not moved, so the wait, check and merge retry in the steps. wait-ci, pr-green, merge and rebase each take max_visits 6, as plan.toml's merge-rebase loop does; a hand-back gives them their visits again. The conductor never runs rhiza ship rebase, with or without --no-push; the --no-push and --no-rebase flags stay for other workflows. Signoff is not asked again after a rebase, as in ship-change-classic.",
+          "wording": "Derived from the change set's intent and the code (internal/api/ship_rebase.go, shipSettleConflict in internal/api/ship.go, plan.toml's merge and rebase steps), autonomous plan run"
+        },
+        "handle": "ship-steps-rebase-clean-merge",
+        "id": "01M7MNGSXE269TM6M1G5NSPDX0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "id": "01M7MNGSYJ21B6ZS6SXDDKC91Q",
+        "link": "01M7MNGSYJ21B6ZS6SX9VM706R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNEHW3HGWMD6S0K4X9Z15P",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "id": "01M7MNGT0339WP5W9QPVEZ51T8",
+        "link": "01M7MNGT0339WP5W9QPRM4MSVP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7BZH7GVNV67V0HKHY2RSD5P",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "statement": "A conductor handed back by ship-change reads handback.md and spawns, never fixes: gate's rhiza run build-check a verifier for the leaf lacking independent Evidence (a builder retry if it fails); gate's rhiza run review-check a critic for the check with an open blocker or major, then a fixer for confirmed findings and the checks again; gate's rhiza check a fixer with the output as its findings; gate's rhiza ship gate and the push step's rhiza ship open-pr (its pre-push check) the gate-fix role; signoff changes a fixer with the owner's requested changes, then the checks; wait-ci's timeout no role (read rhiza ship check --json, change nothing, finish); pr-green's settled red CI the ci-fix role, its unresolved merge of main (left by the CI wait on a conflicting PR) the conflict-fix role, and a merged head the local gate or pre-push check failed on the gate-fix role; rebase's code conflict left in progress the conflict-fix role, its local gate or pre-push check failing on the merged head the gate-fix role, and any other rebase failure (a gh, fetch or git error) no role: change nothing and finish. The merge step no longer hands back. The conductor never runs rhiza ship rebase itself. Every route lands and renders again, then rhiza session done; handback_cap and the steps after the merge are as before.",
+          "wording": "Hand-back routes as ship-change's new pr-green and rebase steps and the fixer role topics give them (derived from the code, autonomous plan run)"
+        },
+        "handle": "conduct-handback-routes-ship-rebase",
+        "id": "01M7MNGT1EYZJED01XCFXJX5QR",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MNGT1EYZJED01XCCWWXEET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGT1EYZJED01XCCWWXEET",
+        "id": "01M7MNGT2G0GWTTFHBPNVG3NW3",
+        "link": "01M7MNGT2G0GWTTFHBPJFQ08ZY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNEHW3HGWMD6S0K4X9Z15P",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGT1EYZJED01XCCWWXEET",
+        "id": "01M7MNGT46DATPYMMR0J81P8RW",
+        "link": "01M7MNGT46DATPYMMR0J1E074F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKKW7XVHWGYFHWAW2QAD",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run 'TestBuiltinShipChange|TestPlainRedLoopsShipChangeHasNone|TestMergeWithoutGate' passes, TestBuiltinShipChange asserting exactly the 12 steps conduct, gate, signoff, push, wait-ci, pr-green, merge, rebase, main-ci, close-out, ship, deploy-check in that order; wait-ci's until exactly rhiza ship check --settled, its timeout handing back to conduct; pr-green a command step running rhiza ship check, pass to merge, fail to handback:conduct; merge running exactly rhiza ship merge, with only pass to main-ci and fail to rebase; rebase running exactly rhiza ship rebase, pass to wait-ci, fail to handback:conduct; max_visits 6 on wait-ci, pr-green, merge and rebase; handback_cap 3; main-ci, close-out, ship and deploy-check with no on.fail route and no hand-back; the conduct prompt naming the conflict fixer and not containing --no-push; every other non-pass route of conduct, gate, signoff, push, wait-ci and pr-green handing back to conduct; (failure case) TestBuiltinShipChange fails when merge's fail route is handback:conduct, when wait-ci's until carries --no-rebase, or when rebase's fail goes anywhere but handback:conduct. go test -trimpath ./cmd/rhiza -run TestScripts/workflow-new passes.",
+          "files": "internal/workflow/builtin/ship-change.toml, internal/workflow/workflow_test.go",
+          "must_not": "Change internal/api (ship rebase, ship check, ship merge, the --no-push and --no-rebase flags stay as they are), ship-change-classic.toml, plan.toml or the repo's .rhiza/workflows; give main-ci, close-out, ship or deploy-check an on.fail route or a hand-back; change handback_cap; touch the guide topics or docs (another leaf's)",
+          "statement": "The builtin ship-change rebases a clean merge of main in its own steps: wait-ci waits on rhiza ship check --settled (no --no-rebase), pr-green runs rhiza ship check and hands back on fail, merge runs rhiza ship merge alone and goes to a new rebase step on fail, and rebase runs rhiza ship rebase, passing back to wait-ci and handing back to conduct on fail; the conduct prompt no longer tells the conductor to run rhiza ship rebase --no-push."
+        },
+        "handle": "ship-steps-rebase-clean",
+        "id": "01M7MNGT7KV1QW8BA3VZFWMQ5B",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "op": "node.create",
+        "parent": "01M5SWT9EFKV8YB9VXVTRK4755"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "id": "01M7MNGT9C7JE13ZEF4BHVC0PC",
+        "link": "01M7MNGT9C7JE13ZEF49C34EWB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConductHandback|TestConductReadsHandback|TestConductRoles|TestConductReadsRoles|TestWorkflowsText|TestList' passes, TestConductHandback requiring the topic to name rhiza ship rebase, the conflict-fix and gate-fix roles and routes for pr-green and rebase, and no longer requiring rhiza ship rebase --no-push; (failure case) TestConductHandbackCatchesDrift fails naming the step when the topic keeps a route for merge (which no longer hands back) and when it drops the rebase route, and fails when a route tells the conductor to run rhiza ship rebase. go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestScripts/guide' passes.",
+          "files": "internal/guide/text/conduct-handback.md, internal/guide/text/conduct-roles.md, internal/guide/text/workflows.md, internal/guide/conduct_handback_test.go, internal/guide/conduct_roles_test.go, internal/guide/guide.go (the conduct-handback description), docs/primitives.md",
+          "must_not": "Change ship-change.toml, the hand-back mechanism or handback.md's rendering; change any fixer role topic (gate-fix, ci-fix, conflict-fix); grow a topic past TopicCap; tell the conductor to fix anything itself or to run rhiza ship rebase",
+          "statement": "The conduct-handback, conduct-roles and workflows guide topics and docs/primitives.md describe the ship steps' own rebase: conduct-handback has routes for pr-green and rebase as conduct-handback-routes-ship-rebase decides and none for merge, never tells the conductor to run rhiza ship rebase, conduct-roles gives conflict-fix for a code conflict the ship steps leave in progress, workflows lists ship-change's 12 steps, and primitives.md's Wait and Merge sections show wait-ci without --no-rebase and the pr-green, merge and rebase steps."
+        },
+        "handle": "conduct-handback-ship-rebase",
+        "id": "01M7MNGTBKNAMKGF3848729T8N",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "id": "01M7MNGTCX2TW35FJ2H5X5FCHA",
+        "link": "01M7MNGTCX2TW35FJ2H38Y1NGA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT1EYZJED01XCCWWXEET",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "id": "01M7MNGTE83FM12E02PJ2YW1QT",
+        "link": "01M7MNGTE83FM12E02PG75429S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/ship-change-one-ci passes: the happy path keeps one CI wait, one push and one merge; when main moves between the CI check and the merge, rhiza run status shows merge (visit 1) fail then rebase, rebase (visit 1) pass then wait-ci, wait-ci (visit 2), pr-green (visit 2) and merge (visit 2) pass then main-ci, conduct visited once and no handback in the status or the fake conductor's log, two pushes of the PR branch, one pr merge and the change set landed; (failure case) when the commit that moves main changes a file the branch also changes, rebase fails and hands back to conduct with the merge of main in progress (rhiza run status shows rebase fail and conduct (visit 2)), the fake conductor resolves and commits it, and the run goes through gate, signoff and push to a merge.",
+          "files": "cmd/rhiza/testdata/script/ship-change-one-ci.txtar",
+          "must_not": "Start any process the script's processScripts entry in cmd/rhiza/main_test.go does not already allow; touch the network, Rex, agents or the real gh; change ship-change.toml or internal/api",
+          "statement": "The ship-change-one-ci script shows a main-moved merge rebased in the ship steps with no hand-back, and a code conflict with main handed back to conduct with the merge left in progress."
+        },
+        "handle": "ship-one-ci-rebase-in-steps",
+        "id": "01M7MNGTG0TSZM85WSJ7C0KAYM",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7MNGTG0TSZM85WSJ79R55P3",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGTG0TSZM85WSJ79R55P3",
+        "id": "01M7MNGTH32AF3C6DG792J0GTP",
+        "link": "01M7MNGTH32AF3C6DG787VZAM5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MNGTG0TSZM85WSJ79R55P3",
+        "id": "01M7MNGTJ4ZPKATW4FC1KF8RK6",
+        "link": "01M7MNGTJ4ZPKATW4FBYDC53F2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "type": "depends-on"
+      },
+      {
+        "base": "01M79KPE0KMZHN6W97EDHJ5H21",
+        "handle": null,
+        "id": "01M7MNGTKB55VDTY33R2M3ZT5J",
+        "node": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/workflow -run TestBuiltinShipChange shows the steps and routes ship-steps-rebase-clean's acceptance gives, the conduct step declaring exactly the checks plan, code and qa, the gate step of kind gate with its four commands, the hand-back cap at 3 and no leaves or checks step; go test -trimpath ./internal/api -run TestBuildCheck shows build-check failing on a leaf with no Evidence; rhiza workflow describe ship-change lists those steps.",
+          "statement": "The builtin ship-change is the conductor default: conduct (the conduct skill, its step declaring the review checks plan, code and qa), gate (a step of the gate step kind running rhiza run build-check, rhiza run review-check, rhiza check and rhiza ship gate; the pre-push check runs inside the push step's rhiza ship open-pr and inside rhiza ship rebase), signoff, push and open the PR, wait for CI at that head (rhiza ship check --settled, which merges main on a conflicting PR), pr-green (rhiza ship check), merge the tested head (rhiza ship merge), rebase (rhiza ship rebase, back to the CI wait), main's CI (one step), close-out, ship (rhiza ship command) and deploy-check (rhiza ship deploy), as ship-steps-rebase-clean gives them; every red result up to the merge hands back to conduct, at most three times, except that a merge refused because main moved goes to the rebase step, which hands back only on a code conflict or a local gate or pre-push check failing on the merged head. The steps after the merge (main's CI, close-out, ship and deploy-check) have no on.fail route and no hand-back: nothing on the branch can fix a merged change set. A draft or a merge GitHub refused stops the run (rhiza ship merge's stop exit)."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE0KMZHN6W97EDAZFNT3",
+        "id": "01M7MNGTM92HJYZ4PFCE4QGHYV",
+        "link": "01M7MNGTM92HJYZ4PFCBFQGXQ0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M79KPE2V3AZWKX2HR4D2GYXV",
+        "handle": null,
+        "id": "01M7MNGTNSB0E0GE32SPQ7GRT0",
+        "node": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/ship-change-one-ci shows, with a fake gh and a fake conductor that lands and renders on the branch, exactly one CI wait and one push on the happy path, two CI waits and no hand-back when main moves cleanly before the merge, and the change set landed on main after the merge with no ship land step.",
+          "statement": "On the conductor default the change set lands on the branch before the first push, so a run whose PR is green and whose main has not moved waits on CI once; a second CI round happens only when the merge finds main has moved, and the ship steps rebase and wait for it without a conductor visit."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M79KPE2V3AZWKX2HR1X1PZ1M",
+        "id": "01M7MNGTPXTPF784ZAQB2BW17B",
+        "link": "01M7MNGTPXTPF784ZAQ7AR1SYA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGSXE269TM6M1G3V0AAVD",
+        "type": "decided-by"
+      },
+      {
+        "base": "01M7MJXKVHQXE1B5MWRRJZPYZ1",
+        "handle": null,
+        "id": "01M7MNGTR18256T6ZE7NN06ENX",
+        "node": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "op": "node.update",
+        "set": {
+          "statement": "The guide has a conduct-handback topic, named in the conduct topic's Read first, giving the shape of handback.md (Failing step, Outcome, Failing commands with output paths, Output tail, Cause, Failed CI runs, Conflicted files) and, for each step of the conductor default ship-change that hands back to conduct, the route a conductor takes as conduct-handback-routes-ship-rebase decides: the gate's four commands, signoff changes, push, wait-ci's timeout, pr-green (CI red, an unresolved merge of main, a merged head the gate failed on) and rebase (a code conflict, the gate or pre-push check failing on the merged head), each by spawning the named role, then land, render and rhiza session done; plus handback_cap and that the steps after the merge never hand back."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "id": "01M7MNGTS8A8QKDDR2ZG9FDWW5",
+        "link": "01M7MNGTS8A8QKDDR2ZCPVPRKP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT1EYZJED01XCCWWXEET",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MNGTTAZE6MAM3WS21JZKGX",
+  "type": "ops",
+  "v": 1
+}

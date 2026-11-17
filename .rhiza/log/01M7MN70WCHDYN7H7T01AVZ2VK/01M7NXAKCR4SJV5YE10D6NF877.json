@@ -1,0 +1,32 @@
+{
+  "actor": "01M7NX9HBHEZV0DE6D5X66AZPJ",
+  "after": [
+    "01M7MP24DKHDDY6ZMQ7SCARYDV"
+  ],
+  "at": "2026-11-17T23:26:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConductHandback|TestConductReadsHandback|TestConductRoles|TestConductReadsRoles|TestWorkflowsText|TestList' passes, TestConductHandback requiring the topic to name rhiza ship rebase, the conflict-fix and gate-fix roles and routes for pr-green and rebase, and no longer requiring rhiza ship rebase --no-push; (failure case) TestConductHandbackCatchesDrift fails naming the step when the topic keeps a route for merge (which no longer hands back) and when it drops the rebase route, and fails when a route tells the conductor to run rhiza ship rebase. go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/guide' passes, docs/examples/byo/conductor.toml passing rhiza workflow check with steps wait-ci (until rhiza ship check --settled), pr-green, merge and rebase routed as ship-change's; grep -- --no-rebase docs/examples/byo/conductor.toml docs/bring-your-own-agent.md docs/primitives.md finds nothing, and bring-your-own-agent.md no longer says a failed merge hands back to conduct. grep -n 'ten steps' docs/runs-and-daemon.md finds nothing, its ship-change entry naming the 12 steps conduct, gate, signoff, push, wait-ci, pr-green, merge, rebase, main-ci, close-out, ship, deploy-check and no longer saying every red result up to the merge hands back to conduct. grep -n 'ship rebase --no-push' internal/guide/text/conduct-roles.md finds nothing, its conflict-fix entry naming a code conflict the ship steps leave in progress. grep -n 'pr-green' internal/guide/text/workflows.md and grep -n 'rebase' internal/guide/text/workflows.md each find ship-change's step list, which names the 12 steps conduct, gate, signoff, push, wait-ci, pr-green, merge, rebase, main-ci, close-out, ship and deploy-check. grep -n 'pr-green' docs/primitives.md finds a line, its Wait and Merge sections showing the pr-green, merge and rebase steps.",
+          "files": "internal/guide/text/conduct-handback.md, internal/guide/text/conduct-roles.md, internal/guide/text/workflows.md, internal/guide/conduct_handback_test.go, internal/guide/conduct_roles_test.go, internal/guide/guide.go (the conduct-handback description), docs/primitives.md, docs/bring-your-own-agent.md, docs/examples/byo/conductor.toml, docs/runs-and-daemon.md",
+          "must_not": "Change ship-change.toml, the hand-back mechanism or handback.md's rendering; change any fixer role topic (gate-fix, ci-fix, conflict-fix); grow a topic past TopicCap; tell the conductor to fix anything itself or to run rhiza ship rebase",
+          "statement": "The conduct-handback, conduct-roles and workflows guide topics, docs/primitives.md, docs/runs-and-daemon.md, docs/bring-your-own-agent.md and docs/examples/byo/conductor.toml describe the ship steps' own rebase: conduct-handback has routes for pr-green and rebase as conduct-handback-routes-ship-rebase decides and none for merge, never tells the conductor to run rhiza ship rebase, conduct-roles gives conflict-fix for a code conflict the ship steps leave in progress, workflows lists ship-change's 12 steps, runs-and-daemon.md's ship-change entry lists the 12 steps (with pr-green and rebase) and says a failed merge goes to rebase instead of every red up to the merge handing back, primitives.md's Wait and Merge sections show wait-ci without --no-rebase and the pr-green, merge and rebase steps, and the byo conductor example copies the built-in's steps after conduct (wait-ci on rhiza ship check --settled, pr-green, merge, rebase) so bring-your-own-agent.md's \"Everything after conduct is the built-in's\" holds, its hand-back paragraph naming pr-green and rebase instead of a failed merge."
+        },
+        "handle": "conduct-handback-ship-rebase",
+        "id": "01M7MNGTBKNAMKGF3848729T8N",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NXAKCR4SJV5YE10D6NF877",
+  "type": "ops",
+  "v": 1
+}
