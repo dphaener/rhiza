@@ -1,0 +1,53 @@
+{
+  "actor": "01M7M2853Y6TEBKM4CE9VE1HAT",
+  "after": [
+    "01M7M2DWT1EBKEEC8PBE4XTSVH"
+  ],
+  "at": "2026-11-17T06:18:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quote": "yes, pass those ideas to the planner",
+          "quote_where": "the owner to the orchestrator, 2026-11-17, handing the ideas to this planner (planner-notes 01M7EAYT013); the owner's words cover only the hand-off, not this choice",
+          "reasoning": "The intent is the hang: spawn waits for an exit that a done child never makes, and nothing closes it. The orchestrator's 2026-11-17 finding (run 01M7KHWS2DRWVTKAKNSZ99TR7W: a builder done at 01:46:45Z stayed up until about 02:29Z with the daemon on) has the same cause, and spawn-ends-on-done fixes both, since spawn runs in the caller's process. A non-blocking spawn changes the conductor's protocol (rhiza-conduct, run.spawn's response, session.done's side effects), and check-in alarms add a new timer surface. Both reach past this bug's intent, so they are drafted for their own plans, where the requirement that every child stays a Rhiza session on the run's ledger can be planned in full.",
+          "statement": "This change set keeps rhiza run spawn blocking and fixes only how it ends: on the child's done mark, closing the child's pane from the spawn process, which also covers runs with the daemon on. The orchestrator's two rex-teams ideas, a spawn that returns at start with the child waking the conductor through rhiza session message, and check-in alarms on a conductor's own children, are drafted as their own change sets (01M7M2FB5BNRSDSN7HFWQSC2WN and 01M7M2FE1SMCJ681K15CBZ3R6D, discovered-from this one), not built here.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "spawn-fix-stays-blocking",
+        "id": "01M7M2FV0RQF0FPQZ7HGJ8W3RS",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7M2FV0RQF0FPQZ7HEWP6KV5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M2FV0RQF0FPQZ7HEWP6KV5",
+        "id": "01M7M2FV2CMSHZF17M52ZEAZPV",
+        "link": "01M7M2FV2CMSHZF17M4Z6Q7DZE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M2D9YCHMXKE0SJ0G18V686",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7M2DV5ES8B1RNXF8R2JYEP0",
+        "id": "01M7M2FV3HFGZ4G573GKZ0Z83Y",
+        "link": "01M7M2FV3HFGZ4G573GHZHR0V2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M2FV0RQF0FPQZ7HEWP6KV5",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7M27J4MMS8X5PT4W3EXKDTM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M2FV4E8F82XH43KSR6KTTW",
+  "type": "ops",
+  "v": 1
+}

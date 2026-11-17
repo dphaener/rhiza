@@ -1,0 +1,15 @@
+{
+  "actor": "01M7M2853Y6TEBKM4CE9VE1HAT",
+  "after": [],
+  "at": "2026-11-17T06:17:59Z",
+  "body": {
+    "intent": "A conductor that spawns a child gets a check-in on itself (a Rex alarm or a run-owned timer) that wakes it if the child has no done mark by then, so a stalled or crashed child wakes the conductor with no daemon or watchdog; every child stays a Rhiza session on the run's ledger (idea from rex-teams, passed on by the orchestrator 2026-11-17)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7M2FE1SMCJ681K15CBZ3R6D",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M2FE1SMCJ681K15DMZ8YN4",
+  "type": "open",
+  "v": 1
+}
