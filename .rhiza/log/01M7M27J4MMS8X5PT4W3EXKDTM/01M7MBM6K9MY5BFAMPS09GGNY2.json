@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MBHSSX2ZFTS40CX0ZE08EZ",
+  "after": [
+    "01M7M2VSBBVKB840DAXT3563FH"
+  ],
+  "at": "2026-11-17T08:57:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 8c10aeb1d (capped scope, RHIZA_/SHIP_/REX_ unset): go test -trimpath ./internal/api -run 'TestRunSpawn|TestStepRunnerChild' -count=1 passed (TestRunSpawnSaidDone NoExit/LaterExit/Lost/CloseFails/LiveThenExit, TestStepRunnerChild done/done-red/done-lost, TestStepRunnerChildDoneLost via markLostIfEnded); go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-spawn|describe-golden)' -count=1 passed; rhiza docs, rhiza ship generate and rhiza render left the tree clean. Diff read: childOutcome returns pass/'said done' on a done mark before checking the exit; spawn journals the end then calls closeSessionPane (rex block close -s s1 block:c1 captured via ctx.Exec), a close error only goes to stderr; live child sleeps twice then fails exit 3 with no rex call. Files stay within the leaf's list (plus .rhiza log/rendered); internal/run/engine.go and session.done untouched; no TODOs; tests use fakes only."
+        },
+        "handle": "spawn-ends-on-done-verified",
+        "id": "01M7MBM6H1R485KPFY5KPM9X6A",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MBM6H03HC1Q0W1WGKNWKMX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MBM6H03HC1Q0W1WGKNWKMX",
+        "id": "01M7MBM6J6BDEA5R0VHF8N1TKP",
+        "link": "01M7MBM6J6BDEA5R0VHBGRT3V3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M2DV5ES8B1RNXF8R2JYEP0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M27J4MMS8X5PT4W3EXKDTM",
+  "for": "01M7MB9HQXG20CF8E6H9BP0RN1",
+  "id": "01M7MBM6K9MY5BFAMPS09GGNY2",
+  "type": "ops",
+  "v": 1
+}

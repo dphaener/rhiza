@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MC9GBSM4XV5P2Z5RNF8M49",
+  "after": [
+    "01M7MBM6K9MY5BFAMPS09GGNY2"
+  ],
+  "at": "2026-11-17T09:13:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA built 8c10aeb1d to a scratch path and ran rhiza run start --foreground in a scratch root, with a fake claude whose step session calls rhiza run spawn and a fake rex that runs the spawned child in the background and kills it on rex block close. A child that ran rhiza session done and then idled: spawn returned outcome pass, detail said done, in 2 s, journaled spawn-ended pass, ran rex block close block:b1, and the child's process was gone. A child that exited 3 without a done mark: spawn waited about 6 s, returned fail with exit 3, rc 1, and closed no pane. A rex block close that errors: still pass, said done, rc 0, with a stderr line naming the pane that stays open. A child that said done and then exited 7: pass, said done. go test -trimpath ./internal/api -run 'TestRunSpawn|TestStepRunnerChild' and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-spawn|describe-golden)$' pass; rhiza docs from the build leaves docs/reference unchanged in a detached worktree at HEAD."
+        },
+        "handle": "spawn-ends-on-done-qa-1",
+        "id": "01M7MCHMMWTFP3PFMMHE47JQ7R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MCHMMWTFP3PFMMHBWWP40W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MCHMMWTFP3PFMMHBWWP40W",
+        "id": "01M7MCHMNPKKK7KPZK65HSN81Q",
+        "link": "01M7MCHMNPKKK7KPZK642H7J1R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M2DV5ES8B1RNXF8R2JYEP0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M27J4MMS8X5PT4W3EXKDTM",
+  "for": "01M7MB9HQXG20CF8E6H9BP0RN1",
+  "id": "01M7MCHMPMAGWC7CSX7QBGJBDT",
+  "type": "ops",
+  "v": 1
+}
