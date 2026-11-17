@@ -108,6 +108,9 @@ rhiza guide fixer
 stdout '`Review: <run>`'
 rhiza guide check-qa
 stdout 'Evidence written as yourself on'
+rhiza guide conduct-handback
+stdout '^# Conduct hand-back$'
+stdout 'never plain `rhiza ship rebase`'
 rhiza guide conduct-roles
 stdout '^# Conduct roles$'
 stdout '^- `check-qa` \(`rhiza guide check-qa`\)'
@@ -118,7 +121,7 @@ stdout '^## Stored fields$'
 
 # guide ls lists all thirty-four texts with their kinds and sizes.
 rhiza guide ls
-stdout -count=38 '^- '
+stdout -count=39 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -132,6 +135,7 @@ stdout '^- carving +topic +[0-9]+ tokens  '
 stdout '^- change-sets +topic +[0-9]+ tokens  '
 stdout '^- check-compliance +topic +[0-9]+ tokens  The compliance check'
 stdout '^- check-model +topic +[0-9]+ tokens  The model check'
+stdout '^- conduct-handback +topic +[0-9]+ tokens  Conduct hand-back'
 stdout '^- conduct-roles +topic +[0-9]+ tokens  Conduct roles'
 stdout '^- contract +topic +[0-9]+ tokens  The agent contract on one page'
 stdout '^- conflict-fix +topic +[0-9]+ tokens  The conflict fixer'
