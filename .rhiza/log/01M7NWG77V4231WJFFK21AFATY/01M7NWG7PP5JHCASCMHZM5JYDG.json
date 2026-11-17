@@ -1,0 +1,65 @@
+{
+  "actor": "01M7NWE067FEQR264SYNVY1PP5",
+  "after": [
+    "01M7NWG77V4231WJFFK3F7SKQ5"
+  ],
+  "at": "2026-11-17T23:12:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7NVQCFJ4Y7Z7EZVGY9FFCWK",
+        "id": "01M7NWG5X7EM6TPH8C794KAK1Z",
+        "link": "01M7NVQCFJ4Y7Z7EZVGXVTE99J",
+        "op": "link.retire"
+      },
+      {
+        "base": "01M7NVQEJS35SXY60S07DY9G9Z",
+        "id": "01M7NWG5YYQTRWD92CB8T81HB4",
+        "link": "01M7NVQEJS35SXY60S03GASF19",
+        "op": "link.retire"
+      },
+      {
+        "base": "01M7NVQNMETRHJNHD33QJ4PZZM",
+        "id": "01M7NWG602DQXKGWFV000D5SFJ",
+        "link": "01M7NVQNMETRHJNHD33NSQMAK5",
+        "op": "link.retire"
+      },
+      {
+        "decision": null,
+        "from": "01M7NWFRZTGPHG4DHNN8B6NWSP",
+        "id": "01M7NWG66PWXXV60272A8WH4BH",
+        "link": "01M7NWG66PWXXV60272A2HKNRY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ7ZQNEKVZEP01124NGNM",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7NWFV54PDK3XDSGH07HK0K7",
+        "id": "01M7NWG6B4AWSFW10HGTXXVPQP",
+        "link": "01M7NWG6B4AWSFW10HGS8CESC0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ83YD8JE3TEPTPHSM25G",
+        "type": "serves"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVN06JNCCW1NVGPD4WZB16",
+        "id": "01M7NWG76TM2JD24NP2WH0D0E4",
+        "link": "01M7NWG76TM2JD24NP2V57W9BZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NWFV54PDK3XDSGH07HK0K7",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NWG77V4231WJFFK21AFATY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NWG7PP5JHCASCMHZM5JYDG",
+  "type": "ops",
+  "v": 1
+}

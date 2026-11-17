@@ -1,0 +1,15 @@
+{
+  "actor": "01M7NWE067FEQR264SYNVY1PP5",
+  "after": [],
+  "at": "2026-11-17T23:12:02Z",
+  "body": {
+    "intent": "apply /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-the-daemon-runs-any-workflow/9c4f9408-dd71-4d7d-813f-01a1ebc6fdd0/scratchpad/m.json",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7NWG77V4231WJFFK21AFATY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NWG77V4231WJFFK3F7SKQ5",
+  "type": "open",
+  "v": 1
+}

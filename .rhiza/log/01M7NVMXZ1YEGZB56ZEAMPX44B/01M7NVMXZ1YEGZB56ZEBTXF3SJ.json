@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:57:08Z",
+  "body": {
+    "intent": "rhiza.daemon.maxRuns=auto lets the daemon start another run only while the pre-start checks (load, memory, free tmp, disk) have room; a number still pins the limit",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMXZ1YEGZB56ZEBTXF3SJ",
+  "type": "open",
+  "v": 1
+}

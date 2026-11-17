@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:57:05Z",
+  "body": {
+    "intent": "The run journal records every outside intervention in a run (a session message from outside the run, a manual resume, retry, abandon or approve, a hand commit on the run's branch), and rhiza run status and rhiza daemon status count them, so runs finished with no intervention can be counted",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMTWKY42RACP2Q4VQHEEH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMTWKY42RACP2Q7JW1NNC",
+  "type": "open",
+  "v": 1
+}

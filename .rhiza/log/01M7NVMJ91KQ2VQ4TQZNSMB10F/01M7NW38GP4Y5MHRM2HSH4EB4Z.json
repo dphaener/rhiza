@@ -1,0 +1,39 @@
+{
+  "actor": "01M7NW0K6KKNB2XQ31Z9JX2HQ3",
+  "after": [
+    "01M7NVMJ91KQ2VQ4TQZR4HG2GG"
+  ],
+  "at": "2026-11-17T23:04:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Scope restated by plan review (milestone 40, finding f1): {run_tmp} is already removed when a run ends (internal/run/engine.go defer, and on abandon internal/api/run.go). The gap this change set builds is that a run's agents and commands write to the shared tmp unless the workflow's [env] sets TMPDIR = \"{run_tmp}\": the daemon sets TMPDIR to {run_tmp} for every process a run's steps start unless [env] sets TMPDIR itself. Retiring the tmpsweep unit also needs bug 01M7M3JZFW (the projection leak). See done point m40-run-tmp."
+        },
+        "handle": "note-01m7nw38ef7k07",
+        "id": "01M7NW38EF7K07G97E1AG5ZXJ2",
+        "key": null,
+        "kind": "note",
+        "node": "01M7NW38EF7K07G97E18DV5DFJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NW38EF7K07G97E18DV5DFJ",
+        "id": "01M7NW38FV877KQ2C8DPD0TSJR",
+        "link": "01M7NW38FV877KQ2C8DMHJHV4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMJ91KQ2VQ4TQZNSMB10F",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7NVMJ91KQ2VQ4TQZNSMB10F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NW38GP4Y5MHRM2HSH4EB4Z",
+  "type": "ops",
+  "v": 1
+}

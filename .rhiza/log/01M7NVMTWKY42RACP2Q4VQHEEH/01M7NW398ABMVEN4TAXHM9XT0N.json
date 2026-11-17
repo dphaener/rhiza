@@ -1,0 +1,39 @@
+{
+  "actor": "01M7NW0K6KKNB2XQ31Z9JX2HQ3",
+  "after": [
+    "01M7NVMTWKY42RACP2Q7JW1NNC"
+  ],
+  "at": "2026-11-17T23:04:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Scope restated by plan review (milestone 40, finding f4): approving a step the workflow itself asks the owner to approve (a signoff step) is not an outside intervention and is not counted; only an approve outside such a step is. See done point m40-interventions."
+        },
+        "handle": "note-01m7nw395ww8ae",
+        "id": "01M7NW395WW8AE0H59VP5QK64E",
+        "key": null,
+        "kind": "note",
+        "node": "01M7NW395WW8AE0H59VM9SH1KV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NW395WW8AE0H59VM9SH1KV",
+        "id": "01M7NW397HJZ9YYGC2J833T8J1",
+        "link": "01M7NW397HJZ9YYGC2J6CVWTNM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMTWKY42RACP2Q4VQHEEH",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7NVMTWKY42RACP2Q4VQHEEH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NW398ABMVEN4TAXHM9XT0N",
+  "type": "ops",
+  "v": 1
+}
