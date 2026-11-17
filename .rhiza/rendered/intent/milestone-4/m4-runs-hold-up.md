@@ -43,6 +43,7 @@ A build, review or ship-change run finishes without hand repair: no hand-made re
 - serves change set `01M7B7P8D389GB7N94YPTXAQCS` (Fix flaky test TestReadBudget: failed then passed on a rerun in PR #567 at head c5cc453c8b33b60fd6078c0aeaf5e1331ce3239f; reproduce it locally, repeatedly, then fix it or quarantine it)
 - serves change set `01M7M27J4MMS8X5PT4W3EXKDTM` (Fix rhiza run spawn waits for the child agent's process to exit, and with no daemon nothing closes a child that already said rhiza session done, so spawn and its run hang until someone closes the child's pane)
 - serves change set `01M7M2YWF4KEF5RV32ZS0C4XK7` (Fix cmd/rhiza testscripts inherit the calling session's RHIZA_*, SHIP_* and REX_* variables, so a script run from inside a run session fails or passes differently than in CI)
+- serves change set `01M7MGF8J9MA30XXQ8GTR4KXRW` (Fix Resuming a classic ship-change run whose check sessions died in a crash marks the whole review cycle failed and opens a new cycle of all four checks, even when every check's round was later recorded and rhiza run review-check passes)
 
 ## History
 

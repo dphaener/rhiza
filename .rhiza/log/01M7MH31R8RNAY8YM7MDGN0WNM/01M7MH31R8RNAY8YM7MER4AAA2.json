@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MGXDJN2ST3K498QY6NKTWQ",
+  "after": [],
+  "at": "2026-11-17T10:33:22Z",
+  "body": {
+    "intent": "Record agent actor claude-code-5013a51b for session 5013a51b-38dc-41d7-85ed-01a1e91182dd",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7MH31R8RNAY8YM7MDGN0WNM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MH31R8RNAY8YM7MER4AAA2",
+  "type": "open",
+  "v": 1
+}
