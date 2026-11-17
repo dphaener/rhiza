@@ -1,0 +1,29 @@
+{
+  "actor": "01M7KY04514Y14JAM6NNK75SHJ",
+  "after": [
+    "01M7KY38MVY8BR85PK9D2XPQH2"
+  ],
+  "at": "2026-11-17T05:01:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7974G189EFBV82T8QDZZJVE",
+        "handle": null,
+        "id": "01M7KY3AQ9FB2MR58AJ2E9V1A1",
+        "node": "01M7974G189EFBV82T8PZ626EZ",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a verifier test that finds the six section headings in order, the shared done, test-scope, command-budget and never-list blocks expanded, the detached checkout, Never edit code, fakes only, the re-run of the Checks: block and acceptance commands with a missing block or a different exit code a finding naming the command (the verifier-reruns-reported-checks points, moved from build.md's tests), the scope and no-stub points, the Evidence apply example and the rhiza run findings heredoc, the rule that each finding names a file, command or acceptance point, and the rhiza run note line before session done; negative cases assert it carries no builder commit or trailer instructions and no edit-code instruction beyond Never edit code, and that rhiza run note appears in no check or critic topic.",
+          "statement": "`rhiza guide verifier` gives a leaf's verifier afk's verifier prompt in Rhiza's words on the same six sections: in a detached checkout at the leaf's commit it re-runs every command of the Checks: block and every acceptance command, reads the diff and confirms each acceptance point is met and tested, nothing outside the leaf changed and no stubs or TODOs were left; it never edits code and uses fakes only; it ends with Evidence written as itself or with findings, each naming the file, command or acceptance point and what to change so a fixer can act without re-diagnosing; before session done it journals one rhiza run note line of a learning a later leaf can use when it has one; then session done as its own command."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KY3ARACVBZR7TDKDDAKDDM",
+  "type": "ops",
+  "v": 1
+}

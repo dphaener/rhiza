@@ -1,0 +1,29 @@
+{
+  "actor": "01M7KY04514Y14JAM6NNK75SHJ",
+  "after": [
+    "01M7KY3ARACVBZR7TDKDDAKDDM"
+  ],
+  "at": "2026-11-17T05:01:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7974G5P60MM2EHVR8C5XF21",
+        "handle": null,
+        "id": "01M7KY3CDS7K5YFAQ6P452XRN2",
+        "node": "01M7974G5P60MM2EHVR5M79X51",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a build-retry test that finds the inspect-the-working-tree rule, the findings quoted verbatim in the prompt, rhiza run status --json, address every finding as written, the same `Leaf:` trailer fix commit and never rewrite history, and asserts the text stays under a third of the TopicCap and repeats none of the builder topic's shared blocks.",
+          "statement": "`rhiza guide build-retry` tells a builder on a later attempt only what a retry adds: inspect the working tree and the earlier attempts' commits for their partial work, read the previous attempt's findings (quoted verbatim in the prompt when there, else `rhiza run status --json`), address every finding exactly as written, and add one fix commit with the same Leaf: trailer, never rewriting history."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KY3CF4T5AXCKZRGB85KG0J",
+  "type": "ops",
+  "v": 1
+}

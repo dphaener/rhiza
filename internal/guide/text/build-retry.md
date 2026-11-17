@@ -11,8 +11,8 @@ verifier saw. Build on it; do not redo it.
 
 ## Read the findings
 
-Read the previous attempt's findings: in the prompt when they are there, else
-`rhiza run status --json`. Address every finding exactly as written, one by one. Do not
+Read the previous attempt's findings: quoted verbatim in the prompt when they are there,
+else `rhiza run status --json`. Address every finding exactly as written, one by one. Do not
 re-diagnose, narrow or skip one.
 
 ## Commit

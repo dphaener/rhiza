@@ -12,7 +12,7 @@ func TestBuildRetryText(t *testing.T) {
 	}
 	checkPhrases(t, "build-retry", map[string][]string{
 		"tree":     {"inspect the working tree", "earlier attempts' commits"},
-		"findings": {"`rhiza run status --json`", "Address every finding exactly as written"},
+		"findings": {"quoted verbatim in the prompt", "`rhiza run status --json`", "Address every finding exactly as written"},
 		"commit":   {"one fix commit with the same `Leaf:` trailer", "Never rewrite history"},
 	})
 	if n := Tokens(r.Body); n > TopicCap/3 {

@@ -1,0 +1,29 @@
+{
+  "actor": "01M7KY04514Y14JAM6NNK75SHJ",
+  "after": [
+    "01M7KXWT41SJSW8R6W8AEAE68Y"
+  ],
+  "at": "2026-11-17T05:01:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7974FWT13ZEJX4QK31M74FT",
+        "handle": null,
+        "id": "01M7KY38K7KAN0V59G8862AKQV",
+        "node": "01M7974FWT13ZEJX4QJZQKJBFB",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a builder test that finds the six section headings in order, the shared done, test-scope, unstable-CI, command-budget, outside-work and never-list blocks expanded, the read-patterns-first and question-before-work rules, the acceptance commands, rhiza ship generate, rhiza render and the Checks: block above the one final trailer paragraph (the builder-prehandoff-checklist and guides-one-final-paragraph points, moved from build.md's tests), the actor-record git add line, the update-landed-nodes-with-rhiza-set-or-raise-a-question rule, the rhiza run note line before session done, and the RHIZA_ATTEMPT > 1 rule naming both /rhiza-build-retry and `rhiza guide build-retry`; a negative case asserts the builder text names no Go, make or repo-specific command.",
+          "statement": "`rhiza guide builder` gives a leaf's builder afk's builder prompt in Rhiza's words on six sections in order (Task, Expected outcome, Read first, Must do, Must not do, Context): the leaf's acceptance is the contract; read the slice, the leaf and the existing code and tests that follow the pattern before writing; raise a question the owner must answer before starting work, not midway; run the pre-handoff checklist and report a Checks: block; when the leaf changes what a landed node says, update that node with rhiza set in the change set, or raise a question when it cannot; end with one commit carrying the trailers and the staged actor record; before session done, journal one rhiza run note line of a learning a later leaf can use when it has one; then session done as its own command; no stubs, TODOs, placeholders or new dependencies; and on attempt > 1 (RHIZA_ATTEMPT > 1) load build-retry first."
+        },
+        "unset": []
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KY38MVY8BR85PK9D2XPQH2",
+  "type": "ops",
+  "v": 1
+}

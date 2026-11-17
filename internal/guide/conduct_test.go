@@ -57,6 +57,10 @@ func TestConduct(t *testing.T) {
 		"never":     {"Merge or push", "Edit `.rhiza/log`", "Pass your own gate"},
 		"contract":  {"rhiza guide contract"},
 		"spawn-tag": {"--brief <file>"},
+		"retry": {
+			"builder retry whose brief quotes the verifier's findings verbatim",
+			"tells it to inspect the working tree",
+		},
 	})
 	if n := Tokens(c.Body); n > TopicCap {
 		t.Errorf("conduct costs %d tokens, cap %d", n, TopicCap)

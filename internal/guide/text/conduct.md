@@ -31,7 +31,8 @@ Run these phases in order.
   stands. Load `rhiza guide planner`.
 - Build: for each leaf, `rhiza run spawn --role builder --leaf <leaf> --brief <file>`,
   then `rhiza run spawn --role verifier --leaf <leaf> --brief <file>`. A leaf that fails
-  verification gets a builder retry with the findings in its brief.
+  verification gets a builder retry whose brief quotes the verifier's findings verbatim
+  and tells it to inspect the working tree first.
 - Check: spawn `--role check-plan`, `--role check-code` and `--role check-qa`, each with
   `--brief <file>`; the spawn sets each child's `RHIZA_CHECK` (plan, code or qa, from its
   role) and `RHIZA_CYCLE`, and it records a round with `rhiza run findings --check "$RHIZA_CHECK"`.

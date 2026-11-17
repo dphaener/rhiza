@@ -47,6 +47,14 @@ func TestBuilderText(t *testing.T) {
 		},
 		"actor": {"Record agent actor $RHIZA_ACTOR ", "git add $(", "never another actor's"},
 		"retry": {"RHIZA_ATTEMPT` > 1", "/rhiza-build-retry", "`rhiza guide build-retry`"},
+		"note": {
+			"Before `rhiza session done`", "something a later leaf can use",
+			"`rhiza run note \"<learning>\"`",
+		},
+		"drift": {
+			"If your leaf changes what a landed node says, update that node with `rhiza set`",
+			"in the\nchange set", "raise a question when you cannot",
+		},
 	})
 	i := strings.Index(b.Body, "\nStream CSV exports\n")
 	if i < 0 {
