@@ -101,9 +101,14 @@ type LeafSpec struct {
 	// Cycle is, on a checks step, the cycle a leaf's fixer or verifier
 	// works in, its Attempt too; 0 on a leaves step. Findings are a
 	// fixer's: the confirmed review findings on its leaf, read from the
-	// journal, each with its check, for its prompt to name.
+	// journal, each with its check, for its prompt to name. On a leaves
+	// step they are, for a retry builder (RoundAttempt past 1), the
+	// findings the previous attempt's verifier journalled on the leaf, as
+	// journalled, for its prompt to quote; Failure is that attempt's
+	// failure: the role that failed it and its judgement's detail.
 	Cycle    int
 	Findings []Finding
+	Failure  string
 	// Answers are, for a fixer in a checks step's answered cycle (one
 	// fresh cycle past the cap), the Decisions answering the questions
 	// the capped cycle raised, their statements read anew; nil otherwise.
@@ -470,6 +475,9 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 			}
 		}
 	}
+	if step.Kind != workflow.KindChecks && a.role == workflow.RoleBuilder && spec.RoundAttempt > 1 {
+		spec.Findings, spec.Failure = l.AttemptFindings(a.attempt-1), attemptFailure(l, a.attempt-1)
+	}
 	if step.Kind == workflow.KindChecks {
 		spec.Cycle, spec.Findings = a.cycle, a.findings
 		spec.Owner = r.j.State().OwnerCycle(step.Name, a.cycle)
@@ -523,6 +531,18 @@ func (r *running) startLeaf(lr LeafRunner, step workflow.Step, env []string, a l
 		}
 	}
 	return result{}, false, nil
+}
+
+// attemptFailure is how the leaf's attempt failed, "<role> failed:
+// <detail>" for the role whose judgement failed it, verifier first; "" when
+// neither failed it.
+func attemptFailure(l LeafState, attempt int) string {
+	for _, role := range []string{workflow.RoleVerifier, workflow.RoleBuilder} {
+		if j, ok := l.Judged(role, attempt); ok && j.Outcome != workflow.OutcomePass {
+			return role + " failed: " + j.Detail
+		}
+	}
+	return ""
 }
 
 // lowRiskModel is the model of a verifier role's low-risk ladder at attempt.

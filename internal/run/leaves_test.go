@@ -1044,7 +1044,7 @@ func TestLeavesStepRetries(t *testing.T) {
 		}
 		if err := e.Store.Append(runID, Entry{
 			Type: TypeFindings, At: at(2), Step: "build", Leaf: "L1", Handle: "leaf-a", Attempt: 1,
-			Findings: []Finding{{ID: "f1", Reason: "no test"}},
+			Findings: []Finding{{ID: "f1", Reason: "no test"}, {ID: "f2", Reason: retryLong}},
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -1076,10 +1076,35 @@ func TestLeavesStepRetries(t *testing.T) {
 	if want := []string{"leaf-a H1", "leaf-a H2", "leaf-a H3"}; !reflect.DeepEqual(r.leafSince, want) {
 		t.Errorf("LeafCommit calls = %v, want %v", r.leafSince, want)
 	}
-	if f := l.AttemptFindings(1); len(f) != 1 || f[0].Reason != "no test" {
+	if f := l.AttemptFindings(1); len(f) != 2 || f[0].Reason != "no test" {
 		t.Errorf("attempt 1 findings = %+v", f)
 	}
+	// Each retry builder carries the previous attempt's findings as
+	// journalled, or with none its failure; the first carries neither.
+	var builders []LeafSpec
+	for _, sp := range r.leafSpecs {
+		if sp.Role == workflow.RoleBuilder {
+			builders = append(builders, sp)
+		}
+	}
+	if len(builders) != 3 {
+		t.Fatalf("builder specs = %+v", builders)
+	}
+	if b := builders[0]; len(b.Findings) != 0 || b.Failure != "" {
+		t.Errorf("first builder findings %+v, failure %q", b.Findings, b.Failure)
+	}
+	want := []Finding{{ID: "f1", Reason: "no test"}, {ID: "f2", Reason: retryLong}}
+	if b := builders[1]; !reflect.DeepEqual(b.Findings, want) || b.Failure != "verifier failed: verifier found 2 problem(s)" {
+		t.Errorf("second builder findings %+v, failure %q", b.Findings, b.Failure)
+	}
+	if b := builders[2]; len(b.Findings) != 0 || !strings.HasPrefix(b.Failure, "verifier failed: ") {
+		t.Errorf("third builder findings %+v, failure %q", b.Findings, b.Failure)
+	}
 }
+
+// retryLong is a multi-line finding reason over 200 characters, which a
+// retry builder's spec carries as journalled.
+var retryLong = "  first line\n" + strings.Repeat("a long reason that is not trimmed or joined, ", 5) + "\nlast line  "
 
 // A verifier that fails all MaxAttempts attempts fails the leaf after the
 // third builder: no fourth builder starts.

@@ -143,9 +143,12 @@ func (r *stepRunner) ClosePane(sid string) error {
 // the leaf and attempt. A builder in a fresh round (spec.Decision set)
 // gets a line naming the question the leaf's failure raised and the
 // Decision that answers it, with its statement, to build by. A retry
-// builder's (attempt past 1 within its round) ends with a line naming the
-// leaf and the attempt and telling it to read the earlier attempts'
-// findings from the run and add a fix commit for the leaf.
+// builder's (attempt past 1 within its round) ends with lines naming the
+// leaf and the attempt, telling it to inspect the working tree and the
+// earlier attempts' commits first, quoting verbatim each finding the
+// previous attempt's verifier journalled (or, with none, that attempt's
+// failure) and telling it to address every finding as written in one fix
+// commit for the leaf, with a pointer to the run's status.
 //
 // A checks step's fixer gets its fixer prompt, rendered with the leaf and
 // the cycle, then a line naming the leaf, the cycle (or, in an owner
@@ -180,14 +183,59 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 		lines = append(lines, line+fmt.Sprintf("Build the leaf as it says; this round has %d fresh attempts.", run.MaxAttempts))
 	}
 	if try > 1 {
-		lines = append(lines, fmt.Sprintf("This is attempt %d of %d on leaf %s: earlier attempts failed. "+
-			"Read their findings with `rhiza run status --json`, then add a fix commit with the trailer `Leaf: %s`.",
-			try, run.MaxAttempts, spec.Leaf.Handle, spec.Leaf.Handle))
+		lines = append(lines, retryLines(spec, try)...)
 	}
 	if len(lines) == 0 {
 		return p
 	}
 	return strings.TrimRight(p, "\n") + "\n\n" + strings.Join(lines, "\n\n")
+}
+
+// retryLines are a retry builder's lines, as leafPrompt describes: the
+// attempt and the inspect-first line; then each finding the previous
+// attempt's verifier journalled, its reason quoted verbatim, and the
+// address-every-finding line, or, when it journalled none, that attempt's
+// failure quoted; then the fix-commit line with the run status pointer.
+func retryLines(spec run.LeafSpec, try int) []string {
+	lines := []string{fmt.Sprintf("This is attempt %d of %d on leaf %s: earlier attempts failed. "+
+		"Before you write anything, inspect the working tree and the earlier attempts' commits for partial work.",
+		try, run.MaxAttempts, spec.Leaf.Handle)}
+	fix := "add one fix commit"
+	switch {
+	case len(spec.Findings) > 0:
+		lines = append(lines, "The previous attempt's verifier journalled these findings on the leaf, each quoted as written:")
+		for _, f := range spec.Findings {
+			lines = append(lines, retryFindingHead(f)+"\n"+f.Reason)
+		}
+		fix = "address every finding exactly as written, in one fix commit"
+	case spec.Failure != "":
+		lines = append(lines, "The previous attempt journalled no findings; it failed with:", spec.Failure)
+		fix = "fix what made it fail, in one fix commit"
+	}
+	return append(lines, fmt.Sprintf("Then %s with the trailer `Leaf: %s`. "+
+		"`rhiza run status --json` has every earlier attempt's findings too.", fix, spec.Leaf.Handle))
+}
+
+// retryFindingHead is the line above a retry builder's quoted finding:
+// "Finding <id> (<check>, <severity> at <place>):", the parts it lacks
+// left out.
+func retryFindingHead(f run.Finding) string {
+	var parts []string
+	if f.Check != "" {
+		parts = append(parts, f.Check)
+	}
+	sev := f.Severity
+	if f.Place != "" {
+		sev = strings.TrimSpace(sev + " at " + f.Place)
+	}
+	if sev != "" {
+		parts = append(parts, sev)
+	}
+	head := "Finding " + f.ID
+	if len(parts) > 0 {
+		head += " (" + strings.Join(parts, ", ") + ")"
+	}
+	return head + ":"
 }
 
 // fixerPrompt is a leaf fixer's prompt, as leafPrompt describes.

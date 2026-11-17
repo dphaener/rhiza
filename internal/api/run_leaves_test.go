@@ -629,6 +629,64 @@ func TestLeafPrompt(t *testing.T) {
 	}
 }
 
+// A retry builder's prompt quotes the previous attempt's findings byte
+// for byte, a multi-line one and one past 200 characters among them, and
+// tells it to inspect the working tree first and address every finding as
+// written; with no findings it quotes the attempt's failure instead, and a
+// first attempt gets no findings section.
+func TestLeafPromptQuotesFindings(t *testing.T) {
+	t.Parallel()
+	role := workflow.Role{Prompt: "build {leaf}"}
+	vars := workflow.PromptVars{Change: "CS1"}
+	multi := "the exit code is wrong:\n  got 0\n  want 2\n"
+	long := "  leading space kept; " + strings.Repeat("this reason runs well past two hundred characters, ", 6) + "and ends here.  "
+	spec := run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 2, RoundAttempt: 2,
+		Findings: []run.Finding{
+			{ID: "f1", Check: "verifier", Severity: "major", Place: "cmd/x.go:12", Reason: multi},
+			{ID: "f2", Reason: long},
+		},
+		Failure: "verifier failed: verifier found 2 problem(s)"}
+	got := leafPrompt(role, spec, vars)
+	for _, want := range []string{
+		"Finding f1 (verifier, major at cmd/x.go:12):\n" + multi,
+		"Finding f2:\n" + long,
+		"inspect the working tree and the earlier attempts' commits",
+		"address every finding exactly as written, in one fix commit with the trailer `Leaf: leaf-a`",
+		"`rhiza run status --json`",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("retry prompt lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "it failed with") {
+		t.Errorf("retry prompt with findings quotes the failure:\n%s", got)
+	}
+
+	// No findings journalled: the failure detail is quoted, no list.
+	spec.Findings = nil
+	spec.Failure = "verifier failed: no Evidence verifies the leaf"
+	got = leafPrompt(role, spec, vars)
+	for _, want := range []string{
+		"journalled no findings; it failed with:\n\nverifier failed: no Evidence verifies the leaf\n\n",
+		"inspect the working tree",
+		"`rhiza run status --json`",
+		"`Leaf: leaf-a`",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("no-findings prompt lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "Finding ") || strings.Contains(got, "these findings") {
+		t.Errorf("no-findings prompt has a findings list:\n%s", got)
+	}
+
+	// A first attempt has no findings section.
+	spec = run.LeafSpec{Role: workflow.RoleBuilder, Leaf: run.Leaf{Handle: "leaf-a"}, Attempt: 1, RoundAttempt: 1}
+	if got := leafPrompt(role, spec, vars); got != "build leaf-a" {
+		t.Errorf("first attempt = %q", got)
+	}
+}
+
 // A round the retry gave shows as the retry's in run status, with no
 // decision.
 func TestRunInfoRetryRound(t *testing.T) {
