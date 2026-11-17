@@ -1,0 +1,65 @@
+{
+  "actor": "01M7MD35C3TQ57Z43P0GS5ZJ5Q",
+  "after": [
+    "01M7MD6PKPWTA3KRMWJJ6H9AZA"
+  ],
+  "at": "2026-11-17T09:25:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A hand-back that messages a live session clears that session's done mark (Status.Done) before the message is typed, as resuming an ended session already clears its whole status; the asked mark and the hook, rex and start reports are left as they are, so the visit counts as done only on a fresh rhiza session done",
+          "wording": "(derived from code: the resume path already clears the status; the live path is the gap the bug names)"
+        },
+        "handle": "handback-clears-done-mark",
+        "id": "01M7MD742M9ZVWG0J0HWQK73Z9",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MD742M9ZVWG0J0HSJA2SB6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MD742M9ZVWG0J0HSJA2SB6",
+        "id": "01M7MD743KR0A8QJPNW3CAZH2P",
+        "link": "01M7MD743KR0A8QJPNW2FWREPY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MD6PJZ98G485C02QK5Q0J0",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestHandbackDeliver' passes with a new subtest: a live idle session whose record carries a done mark is handed back; afterwards the record has no done mark, the hand-back message is written and typed, and stepRunner.AgentStatus reports SaidDone false; then rhiza session done's mark set again makes AgentStatus report SaidDone true. (failure case) a hand-back to the same done-marked live session through a step with no handback template fails naming the step and leaves the done mark in place, with no message written.",
+          "files": "internal/api/run.go (Handback, messageSession), internal/api/run_handback_test.go",
+          "must_not": "Clear the asked mark or the hook, rex, started or prompted reports; change the resume path for an ended session; change rhiza session done, session message or the engine in internal/run; clear the done mark when the hand-back fails before any message is sent",
+          "statement": "When a run hands back to a live session that said done on an earlier visit, stepRunner.Handback clears the record's done mark before messaging it, so AgentStatus reports it not said done and a step waiting for done (ship-change's conduct) passes only after the session says done again"
+        },
+        "handle": "handback-clears-live-done-mark",
+        "id": "01M7MD744F3AQHKM0BZKBK4V0R",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7MD744F3AQHKM0BZJ7E03FN",
+        "op": "node.create",
+        "parent": "01M79KPCETKJR0AX7B576P4C76"
+      },
+      {
+        "decision": null,
+        "from": "01M7MD744F3AQHKM0BZJ7E03FN",
+        "id": "01M7MD745MT22SKQSKCBTCN7NT",
+        "link": "01M7MD745MT22SKQSKC9QM9RND",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MD742M9ZVWG0J0HSJA2SB6",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7MD2K2BE981QPPF5HE8M551",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MD747726TEQAE9Z1AMH15E",
+  "type": "ops",
+  "v": 1
+}
