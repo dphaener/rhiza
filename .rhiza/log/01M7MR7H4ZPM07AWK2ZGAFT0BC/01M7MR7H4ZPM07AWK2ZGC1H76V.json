@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MQ630EE0PH44Z04XNBVARX",
+  "after": [],
+  "at": "2026-11-17T12:38:09Z",
+  "body": {
+    "intent": "Record agent actor claude-code-b640f674 for session b640f674-6c33-43b9-9259-01a1e983c15d",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7MR7H4ZPM07AWK2ZGAFT0BC",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MR7H4ZPM07AWK2ZGC1H76V",
+  "type": "open",
+  "v": 1
+}

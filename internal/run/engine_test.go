@@ -2207,6 +2207,46 @@ func TestCommandAskedArbitrated(t *testing.T) {
 	}
 }
 
+// TestCommandAskedArbitratedInChange: the arbiter for a session-less asked
+// entry naming change set X starts with RHIZA_CHANGE=X (where the question
+// was written), and one naming none starts with the run's change set
+// (decision review-ruling-in-node-change-set).
+func TestCommandAskedArbitratedInChange(t *testing.T) {
+	for _, tc := range []struct{ name, change, want string }{
+		{"named", "CS2", "CS2"},
+		{"none", "", "CS1"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e, r := autonomousSetup(t, askedWF)
+			r.onCommand = func(step string) {
+				if step != "check" {
+					return
+				}
+				if err := e.Store.Append(runID, Entry{
+					Type: TypeAsked, At: at(1), Step: "check", Question: "Q9", Handle: "review-x-r3-f1", Detail: "How?", Change: tc.change,
+				}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			r.agentSeq["S-decide-Q9"] = []AgentStatus{{SaidDone: true}}
+			r.answers["Q9"] = Answer{OK: true, Decision: "assume-x", Statement: "Do x."}
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != Succeeded {
+				t.Fatalf("result %q detail %q", st.Result, st.Detail)
+			}
+			if want := []string{"RHIZA_CHANGE=" + tc.want, "RHIZA_RUN=" + runID, "RHIZA_STEP=decide"}; !reflect.DeepEqual(r.envs["decide"], want) {
+				t.Errorf("arbiter env %v, want %v", r.envs["decide"], want)
+			}
+			if len(st.Asked) != 1 || st.Asked[0].Change != tc.change {
+				t.Errorf("asked %+v, want change %q", st.Asked, tc.change)
+			}
+		})
+	}
+}
+
 // TestCommandAskedArbiterFailFailsRun: a failed arbiter fails the run,
 // whatever the step's on. entries say, naming the question.
 func TestCommandAskedArbiterFailFailsRun(t *testing.T) {

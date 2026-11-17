@@ -1069,12 +1069,13 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 // passes. Before round 3 such a finding fails it (exit 1), writing nothing. From round 3 it
 // adds a question node per confirmed finding, linked blocks to the
 // finding's node when that is a live capability where the question goes
-// (reviewQuestionTarget): the run's change set while it is open; once it
-// has landed, as a milestone plan's record does after the interview, the
-// open plan change set that created the node, else a record write. It
-// writes one entry per target as the caller, journals an asked entry for
-// each question (Step RHIZA_STEP, no Session), so an autonomous run's
-// arbiter decides it, and passes. A question already created in any open
+// (reviewQuestionTarget): the open plan change set that created the node
+// (a serving draft's leaf), whether or not the run's change set has
+// landed; else the run's change set while it is open; else a record
+// write. It writes one entry per target as the caller, journals an asked
+// entry for each question (Step RHIZA_STEP, no Session, Change the change
+// set it went into when that is not the run's), so an autonomous run's
+// arbiter decides it there, and passes. A question already created in any open
 // or landed change set, or already journalled, is not again.
 func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	const cmd = "run review-check"
@@ -1150,11 +1151,9 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		return nil, NotFoundf("run %s's change set %s is not in the log", rr.id, rr.change).WithNext("rhiza run status " + rr.id)
 	}
 	sets := w.changeSets()
-	var plan []changeset.ChangeSet
-	if c.State.Terminal() {
-		if plan, err = planChangeSets(sets, w.model(rr.change), rr.change); err != nil {
-			return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
-		}
+	plan, err := planChangeSets(sets, w.model(rr.change), rr.change)
+	if err != nil {
+		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
 	}
 	asked := map[string]bool{}
 	for _, a := range rr.state.Asked {
@@ -1162,6 +1161,10 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	}
 	var targets []reviewTarget
 	items := map[reviewTarget][]applyItem{}
+	// in is the change set each question's handle went into, journalled
+	// on its asked entry when it is not the run's (the arbiter decides it
+	// there).
+	in := map[string]string{}
 	for _, f := range confirmed {
 		v, _ := rd.Verdict(f.ID)
 		base := reviewQuestionHandle(rr.id, rd.Number, f.ID)
@@ -1204,6 +1207,9 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 				items[t] = append(items[t], applyItem{op: "link", build: func(b writeBase) (edit, error) { return buildLink(b, link) }})
 			}
 		}
+		if !t.record && t.cs != rr.change {
+			in[q.Handle] = t.cs.String()
+		}
 		resp.Questions = append(resp.Questions, q)
 	}
 	created := map[string]string{}
@@ -1235,7 +1241,7 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		f, _ := rd.Finding(q.Finding)
 		v, _ := rd.Verdict(q.Finding)
 		e := run.Entry{Type: run.TypeAsked, At: ctx.Now(), Step: step, Question: resp.Questions[i].ID,
-			Handle: q.Handle, Detail: reviewQuestionText(rd.Number, f, v.Reason)}
+			Handle: q.Handle, Detail: reviewQuestionText(rd.Number, f, v.Reason), Change: in[q.Handle]}
 		if err := rr.journal(ctx, "question "+q.Handle, e); err != nil {
 			return nil, err
 		}
@@ -1415,14 +1421,13 @@ type reviewTarget struct {
 	record bool
 }
 
-// reviewQuestionTarget is where the question on node goes: the run's
-// change set rc while it is open; else the draft, proposed or accepted
-// change set among plan whose ops create node; else a record write
-// (decision review-questions-follow-the-node).
+// reviewQuestionTarget is where the question on node goes: the draft,
+// proposed or accepted change set among plan whose ops create node (a
+// serving draft's leaf, or the run's own change set's node), whether or
+// not the run's change set rc has landed; else rc while it is open; else a
+// record write (decisions review-questions-follow-the-node and
+// review-ruling-in-node-change-set).
 func reviewQuestionTarget(rc changeset.ChangeSet, plan []changeset.ChangeSet, node id.ID) reviewTarget {
-	if !rc.State.Terminal() {
-		return reviewTarget{cs: rc.ID}
-	}
 	for _, c := range plan {
 		if !planInFlight(c.State) {
 			continue
@@ -1430,6 +1435,9 @@ func reviewQuestionTarget(rc changeset.ChangeSet, plan []changeset.ChangeSet, no
 		if slices.ContainsFunc(c.Ops, func(o op.Op) bool { return o.Type == op.TypeNodeCreate && o.Node == node }) {
 			return reviewTarget{cs: c.ID}
 		}
+	}
+	if !rc.State.Terminal() {
+		return reviewTarget{cs: rc.ID}
 	}
 	return reviewTarget{record: true}
 }

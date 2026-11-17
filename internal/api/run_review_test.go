@@ -1,12 +1,16 @@
 package api
 
 import (
+	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -782,4 +786,137 @@ func TestRunReviewCheckRulings(t *testing.T) {
 	fail("the second ruling unapplied", "review-r40-r1-f2", "nest-one")
 	recordWrite(t, f.ctx, "link", `{"from":"keep-flat","type":"decided-by","to":"nest-one"}`)
 	pass("a landed Decision linked decided-by the ruling", "review-r40-r1-f1", "review-r40-r1-f2")
+}
+
+// A round-3 question goes into the change set that holds the finding's
+// node (decision review-ruling-in-node-change-set): with the run's change
+// set open, a serving draft's leaf gets its question (and blocks link) in
+// that draft and the asked entry names the draft; a node the run's change
+// set created keeps its question there, the asked entry naming none. With
+// the run's change set landed, a finding on a node no in-flight plan
+// change set created is still a record write.
+func TestReviewCheckQuestionInNodeChangeSet(t *testing.T) {
+	t.Parallel()
+	contract := `"acceptance=go test passes; failure case: a bad input is refused","files=internal/a.go","must_not=touch b"`
+	t0 := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	def := "name = \"plan\"\n[step.check]\nkind = \"command\"\nrun = \"true\"\n"
+	// review runs review-check on run rid of change set cs after two clean
+	// rounds and a round 3 whose findings on nodes are confirmed.
+	review := func(t *testing.T, f *sessionFixture, rid string, cs id.ID, nodes ...id.ID) (RunReviewCheckResponse, run.State) {
+		t.Helper()
+		store := run.NewStore(run.Dir(f.common))
+		if err := store.Create(rid, run.Entry{Type: run.TypeStarted, Step: "check", At: t0,
+			Started: &run.Started{Workflow: "plan", Change: cs.String(), Title: "Plan it", Definition: def, Autonomous: true}}); err != nil {
+			t.Fatal(err)
+		}
+		var findings []run.Finding
+		var verdicts []run.Verdict
+		for i, n := range nodes {
+			fid := fmt.Sprintf("f%d", i+1)
+			findings = append(findings, run.Finding{ID: fid, Node: n.String(), Kind: run.KindContradiction, Reason: "wrong"})
+			verdicts = append(verdicts, run.Verdict{Finding: fid, Verdict: run.Confirmed, Reason: "right"})
+		}
+		for _, e := range []run.Entry{
+			{Type: run.TypeEntered, Step: "review", Visit: 1},
+			{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}},
+			{Type: run.TypeEntered, Step: "review", Visit: 2},
+			{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}},
+			{Type: run.TypeEntered, Step: "review", Visit: 3},
+			{Type: run.TypeFindings, Step: "review", Findings: findings},
+			{Type: run.TypeVerdict, Step: "critic", Verdicts: verdicts},
+		} {
+			e.At = t0
+			if err := store.Append(rid, e); err != nil {
+				t.Fatal(err)
+			}
+		}
+		f.ctx.Getenv = func(k string) string {
+			switch k {
+			case envRun:
+				return rid
+			case "RHIZA_STEP":
+				return "check"
+			}
+			return ""
+		}
+		resp, err := callOp(t, f.ctx, "run.review-check", `{}`)
+		if err != nil {
+			t.Fatalf("review-check: %v", err)
+		}
+		j, err := store.Read(rid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.(RunReviewCheckResponse), j.State()
+	}
+	// holder is the change set whose ops create question node q.
+	holder := func(t *testing.T, f *sessionFixture, q string) changeset.ChangeSet {
+		t.Helper()
+		for _, c := range ctxWorkspace(t, f.ctx).changeSets() {
+			for _, o := range c.Ops {
+				if o.Type == op.TypeNodeCreate && o.Node.String() == q {
+					return c
+				}
+			}
+		}
+		t.Fatalf("no change set creates question %s", q)
+		return changeset.ChangeSet{}
+	}
+	blocks := func(c changeset.ChangeSet, q, node string) bool {
+		return slices.ContainsFunc(c.Ops, func(o op.Op) bool {
+			return o.Type == op.TypeLinkCreate && o.LinkType == op.LinkBlocks && o.From.String() == q && o.To.String() == node
+		})
+	}
+
+	t.Run("open", func(t *testing.T) {
+		t.Parallel()
+		f := newSessionFixture(t, "qinnodeopen")
+		a := newChange(t, f.ctx, `{"intent":"Plan A"}`).ChangeSet
+		mustWrite(t, f.ctx, "add", `{"kind":"intent","handle":"goal","fields":["statement=Ship it"]}`)
+		own := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"own-leaf","fields":["statement=Does A",`+contract+`]}`).Nodes[0]
+		b := newChange(t, f.ctx, `{"intent":"Serve A"}`).ChangeSet
+		mustWrite(t, f.ctx, "link", `{"from":"`+b.String()+`","type":"depends-on","to":"`+a.String()+`"}`)
+		mustWrite(t, f.ctx, "link", `{"from":"`+b.String()+`","type":"serves","to":"goal"}`)
+		leaf := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-b","fields":["statement=Does B",`+contract+`]}`).Nodes[0]
+
+		resp, st := review(t, f, "R50", a, leaf, own)
+		if !resp.Passed || len(resp.Questions) != 2 {
+			t.Fatalf("passed %v questions %+v", resp.Passed, resp.Questions)
+		}
+		qb, qa := resp.Questions[0], resp.Questions[1]
+		if c := holder(t, f, qb.ID); c.ID != b || !blocks(c, qb.ID, leaf.String()) {
+			t.Errorf("the draft leaf's question is in %s (blocks %v), want %s blocking %s", c.ID, blocks(c, qb.ID, leaf.String()), b, leaf)
+		}
+		if c := holder(t, f, qa.ID); c.ID != a || !blocks(c, qa.ID, own.String()) {
+			t.Errorf("the run's own node's question is in %s, want %s", c.ID, a)
+		}
+		changes := map[string]string{}
+		for _, as := range st.Asked {
+			changes[as.Question] = as.Change
+		}
+		if len(st.Asked) != 2 || changes[qb.ID] != b.String() || changes[qa.ID] != "" {
+			t.Errorf("asked changes %v, want %s=%s and %s=\"\"", changes, qb.ID, b, qa.ID)
+		}
+	})
+
+	t.Run("landed", func(t *testing.T) {
+		t.Parallel()
+		f := newSessionFixture(t, "qinnodelanded")
+		a := newChange(t, f.ctx, `{"intent":"Plan A"}`).ChangeSet
+		lc := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"landed-cap","fields":["statement=Does A",`+contract+`]}`).Nodes[0]
+		for _, s := range []string{"propose", "accept", "land"} {
+			move(t, f.ctx, s, `{}`)
+		}
+		resp, st := review(t, f, "R51", a, lc)
+		if !resp.Passed || len(resp.Questions) != 1 {
+			t.Fatalf("passed %v questions %+v", resp.Passed, resp.Questions)
+		}
+		q := resp.Questions[0]
+		if c := holder(t, f, q.ID); c.ID == a || c.Open.Kind != changeset.KindRecord || c.State != changeset.StateLanded {
+			t.Errorf("the landed node's question is in %s (%s, %s), want a landed record", c.ID, c.Open.Kind, c.State)
+		}
+		if len(st.Asked) != 1 || st.Asked[0].Change != "" {
+			t.Errorf("asked %+v, want one naming no change set", st.Asked)
+		}
+	})
 }
