@@ -1,0 +1,33 @@
+{
+  "actor": "01M7KHX72387SBN6CG6KPPR5S9",
+  "after": [
+    "01M779BS5F1H038R7T2AWVHFRT"
+  ],
+  "at": "2026-11-17T01:31:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "af50ab966583d458ac701861664e32d89be2f519fa50181ee3cacde652415498",
+          "session": "d69efb4e-12a2-4bd8-8dc8-01a1e71e989c",
+          "summary": "Autonomous conductor run 01M7KHWS planned change set 01M76XT3 (Leaf contract) with no owner. Research: prompt-gap.md rec 7 and section 2.1 items 2-5 ask for per-leaf files and must-not, a failure case or a waiver in every acceptance, one-concern sizing, a no-failure-case plan-review kind, and mechanical checks moved from the reviewer to review-check; section 5 names Go model fields files and must-not, interim inside acceptance text. Code read: internal/op/fields.go refuses unknown fields on new writes (knownFieldsOnly in internal/api/write_node.go); run.Kinds in internal/run/journal.go holds seven kinds, uncovered-intent and oversized-leaf already landed with Plan role topics (01M76XRP), so this change set adds only no-failure-case (the scope note 01M76YY); review-check's plan-review path (runRunReviewCheck in internal/api/run_review.go) reads rounds only and checks no leaf field; brief.md (internal/run/brief.go, internal/api/run_brief.go) lists each leaf's statement and acceptance; landed acceptances already mark a failure case with the words (failure case); rhiza check already reports duplicate handles. Planner rulings, no owner asked: the contract is capability fields files, must_not and failure_waiver rather than acceptance text; review-check tests the fields and the words failure case at every round; no-failure-case is major and judges whether the failure case is real. This change set's own leaves carry files and must-not in their statement text, because the fields do not exist until its first leaf is built.",
+          "title": "Leaf contract plan (autonomous conductor)"
+        },
+        "handle": "leaf-contract-plan",
+        "id": "01M7KJ3AWBTJ2ZYPF20HPSH6NR",
+        "key": null,
+        "kind": "source",
+        "node": "01M7KJ3AWBTJ2ZYPF20HGSZ2MA",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KJ3B11WBJ84H9P5Q4FT6E4",
+  "type": "ops",
+  "v": 1
+}

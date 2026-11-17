@@ -1,0 +1,284 @@
+{
+  "actor": "01M7KHX72387SBN6CG6KPPR5S9",
+  "after": [
+    "01M7KJ3B11WBJ84H9P5Q4FT6E4"
+  ],
+  "at": "2026-11-17T01:32:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "prompt-gap section 5 names Go model fields files and must-not; fields let review-check test them mechanically and a later parallel-leaf scheduler compare files, which acceptance prose would not",
+          "statement": "A leaf's contract is three capability fields, files (the paths it touches, line ranges allowed), must_not (what it must not do) and failure_waiver (why its acceptance has no failure case), not text inside acceptance"
+        },
+        "handle": "leaf-contract-as-fields",
+        "id": "01M7KJ4SNGBQ8RQ0V96PBVZGP0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7KJ4SNGBQ8RQ0V96MGSWZVM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SNGBQ8RQ0V96MGSWZVM",
+        "id": "01M7KJ4SPGBW969W1341HMGJ9P",
+        "link": "01M7KJ4SPGBW969W133ZH028ZX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ3AWBTJ2ZYPF20HGSZ2MA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "A deterministic test needs a marker; the model already uses this one, and judging the case's substance stays with the reviewer",
+          "statement": "An acceptance shows its failure case with the words `failure case` (any case), as landed acceptances already write `(failure case)`; review-check tests only that the words or a failure_waiver are there, and the plan reviewer's no-failure-case kind judges whether the case is a real failure path"
+        },
+        "handle": "failure-case-words",
+        "id": "01M7KJ4SQDPV7ZY5V2KT0BFN08",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7KJ4SQDPV7ZY5V2KS6J432H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SQDPV7ZY5V2KS6J432H",
+        "id": "01M7KJ4SRGTY8H26QSCNP0ZHDS",
+        "link": "01M7KJ4SRGTY8H26QSCK9HKCD8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ3AWBTJ2ZYPF20HGSZ2MA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "A reviser can always add a missing field or failure case, and a leaf without its contract must not reach a build",
+          "statement": "review-check's leaf-contract check fails at every review round, its problems never left as questions at the round cap"
+        },
+        "handle": "leaf-contract-check-every-round",
+        "id": "01M7KJ4SSK00BB6VTBGWA4JSCK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7KJ4SSK00BB6VTBGS78MXBB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SSK00BB6VTBGS78MXBB",
+        "id": "01M7KJ4STSSYXXVRG0FYKX4Y1K",
+        "link": "01M7KJ4STSSYXXVRG0FWZ2EK5K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ3AWBTJ2ZYPF20HGSZ2MA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "100 of 160 verifier findings were acceptance points unmet or untested (prompt-gap rec 7): an untested failure path is an acceptance gap, the same severity as missing-acceptance",
+          "statement": "A no-failure-case plan-review finding is major, so review-check fails on a confirmed one before round 3"
+        },
+        "handle": "no-failure-case-major",
+        "id": "01M7KJ4SVS7PSKZMRDNCR1EV0C",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7KJ4SVS7PSKZMRDNAFXT04F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SVS7PSKZMRDNAFXT04F",
+        "id": "01M7KJ4SWVBRVE3M1WSGAN1XZE",
+        "link": "01M7KJ4SWVBRVE3M1WSG35M1TZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ3AWBTJ2ZYPF20HGSZ2MA",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/op/... passes with FieldKnown true for capability files, must_not and failure_waiver and (failure case) false for constraint files; go test -trimpath ./internal/run/... passes with a brief test whose leaf with all three fields lists the Files:, Must not: and Failure waiver: lines under its acceptance and whose leaf with none lists none of them; go test -trimpath ./internal/api/... passes with a test that adds a capability with files and must_not and reads both back, and (failure case) a capability write with a field `file` refused with an error whose known fields name files, must_not and failure_waiver.",
+          "statement": "A capability may carry the fields `files`, `must_not` and `failure_waiver` (rhiza add, set and apply accept them on a capability and still refuse them on other kinds), and brief.md lists, under each leaf's acceptance, a `Files:` line, a `Must not:` line and a `Failure waiver:` line for each field the leaf has, leaving out a field it lacks. Files: internal/op/fields.go, internal/run/brief.go, internal/api/run_brief.go and their tests (internal/op/fields_test.go, internal/run/brief_test.go, the internal/api brief test). Must not: change how statement or acceptance read, refuse nodes already in the log, or change review-check."
+        },
+        "handle": "leaf-contract-fields",
+        "id": "01M7KJ4SXVPYE91ZCAQAW2DXM6",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M7KJ4SXVPYE91ZCAQASJ6E4C",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SXVPYE91ZCAQASJ6E4C",
+        "id": "01M7KJ4SYZ3TWQREVY83CSHWFT",
+        "link": "01M7KJ4SYZ3TWQREVY81P16GQH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SNGBQ8RQ0V96MGSWZVM",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run/... passes with tests that run.Kinds ends with oversized-leaf then no-failure-case and KindSeverity returns major for no-failure-case; go test -trimpath ./internal/api/... passes with a round holding a confirmed no-failure-case finding failing review-check before round 3, and (failure case) a finding of an unknown kind such as no-failure still refused with an error listing the eight kinds; go test -trimpath ./internal/guide/... passes with the severities block naming no-failure-case major; go test -trimpath ./cmd/rhiza -run 'TestScripts/(describe-golden|run-review-journal)' passes after regenerating describe-golden with -update.",
+          "statement": "`rhiza run findings` accepts an eighth plan-review kind, `no-failure-case` (a leaf whose acceptance has no real failure case and no failure_waiver with a reason), listed after oversized-leaf in run.Kinds, and KindSeverity, run review-check's summary, the findings input summary, the shared severities block and the generated reference docs name it major. Files: internal/run/journal.go, internal/api/run_review.go, internal/guide/text/shared/severities.md, cmd/rhiza/testdata/script/describe-golden.txtar, cmd/rhiza/testdata/script/run-review-journal.txtar, docs/reference (regenerated with rhiza ship generate) and the tests naming the kinds (internal/run/journal_test.go, internal/guide/review_test.go, internal/api/run_round_recorded_test.go). Must not: change the guide topics' text other than severities.md, or add a leaf-field check."
+        },
+        "handle": "no-failure-case-kind",
+        "id": "01M7KJ4SZXSN16GPF6K0MFJ64T",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7KJ4SZXSN16GPF6JZ0CEBHM",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4SZXSN16GPF6JZ0CEBHM",
+        "id": "01M7KJ4T0YC6KXENJ92TYPHECM",
+        "link": "01M7KJ4T0YC6KXENJ92TX9H0NY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SVS7PSKZMRDNAFXT04F",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'ReviewCheck' passes with tests that a clean round over leaves with all fields and a failure case passes; (failure case) a leaf missing files fails with an error naming the leaf and files; (failure case) a leaf whose acceptance has no failure case fails, and the same leaf with a failure_waiver passes; (failure case) the leaf-contract failure still fails at round 3 with no question added; and a conductor-run review-check is unaffected; go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-workflow|plan-review|autonomous-review|review-check)' passes.",
+          "statement": "`rhiza run review-check` on the plan-review path (no checks step; not --fresh or --findings) fails, at every round, with an error listing each live leaf (a capability with no live child capability) that a plan change set creates or changes and that lacks a statement, acceptance, files or must_not, or whose acceptance holds no `failure case` (any case) and that has no failure_waiver, naming the leaf and what it lacks; it then checks the round as today, and passes only when both pass. The conductor path is unchanged. Files: internal/api/run_review.go (or a new internal/api/run_review_leaves.go beside it), internal/api/run_review_test.go, and the plan-review fixtures in internal/api tests and cmd/rhiza/testdata/script (plan-workflow*.txtar, plan-review-*.txtar, autonomous-review.txtar and others that run review-check) given the fields so they pass. Must not: change conductorReviewCheck, turn a leaf-contract problem into a question at the round cap, or check landed leaves the plan does not touch."
+        },
+        "handle": "leaf-contract-review-check",
+        "id": "01M7KJ4T26ZW4X7KSWP9Q95CD6",
+        "key": "zzzzzzzi",
+        "kind": "capability",
+        "node": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "id": "01M7KJ4T364DMVY08MAE2KZHXX",
+        "link": "01M7KJ4T364DMVY08MABKH0NH5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SQDPV7ZY5V2KS6J432H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "id": "01M7KJ4T4M1YC4HSMF3RFM6VB8",
+        "link": "01M7KJ4T4M1YC4HSMF3Q3JNR5X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SSK00BB6VTBGS78MXBB",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "id": "01M7KJ4T632TDYTXCPF6GH2E11",
+        "link": "01M7KJ4T632TDYTXCPF48TBNB3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SXVPYE91ZCAQASJ6E4C",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a plan-recipes test finding files, must_not, failure_waiver, `failure case` and one fresh session in the Leaves section and its apply recipe JSON carrying files= and must_not= fields; a planner test finding files, must_not and the failure case in Expected outcome and in the self-check step; and (failure case) both topics' expanded bodies within TopicCap.",
+          "statement": "`rhiza guide plan-recipes`' Leaves section teaches the leaf contract: its apply recipe writes a leaf with statement, acceptance, files and must_not; each acceptance holds at least one failure case marked with the words `failure case`, or the leaf carries failure_waiver with its reason; a leaf is one concern sized for one fresh session, split on two unrelated concerns or a files list too long to hold; and `rhiza guide planner`'s Expected outcome and self-check name files, must_not and the failure case. Files: internal/guide/text/plan-recipes.md, internal/guide/text/planner.md, internal/guide/guide.go (the two descriptions, if they change) and internal/guide's plan tests. Must not: touch the plan reviewer, critic or reviser topics, or push either topic past TopicCap."
+        },
+        "handle": "planner-leaf-contract",
+        "id": "01M7KJ4T7B9ARS7P07FAA4N661",
+        "key": "zzzzzzzr",
+        "kind": "capability",
+        "node": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "id": "01M7KJ4T8JZ96BF5ARAMBY1H11",
+        "link": "01M7KJ4T8JZ96BF5ARAHD7GFS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SNGBQ8RQ0V96MGSWZVM",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "id": "01M7KJ4T9X7VDVMSZ2NMWGYSVY",
+        "link": "01M7KJ4T9X7VDVMSZ2NKFAFC5H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SQDPV7ZY5V2KS6J432H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4T7B9ARS7P07F9M1G7K2",
+        "id": "01M7KJ4TB7MWPSXTZ2D5Y1SBW4",
+        "link": "01M7KJ4TB7MWPSXTZ2D1Z33SYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SXVPYE91ZCAQASJ6E4C",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a plan-reviewer test finding eight kinds with no-failure-case after oversized-leaf, the narrowed missing-acceptance wording, and a Must not line naming rhiza run review-check; the reviser and critic tests finding no-failure-case wherever they list kinds; and (failure case) no topic or description still saying seven kinds.",
+          "statement": "`rhiza guide plan-reviewer` lists eight kinds, adding `no-failure-case` (an acceptance whose failure case is not a real failure path of the leaf, or a failure_waiver with no real reason); narrows `missing-acceptance` to an acceptance that is vague, could not run or runs the full suite; and says never to record what `rhiza run review-check` already checks (a leaf missing statement, acceptance, files or must_not, or with no failure case words and no waiver) or what `rhiza check` reports, such as duplicate handles; `rhiza guide plan-reviser` and `plan-critic` name no-failure-case wherever they list the kinds. Files: internal/guide/text/plan-reviewer.md, internal/guide/text/plan-reviser.md, internal/guide/text/plan-critic.md, internal/guide/guide.go (the descriptions naming seven kinds) and internal/guide's plan review tests. Must not: change run.Kinds, severities.md or any Go outside internal/guide."
+        },
+        "handle": "plan-reviewer-leaf-contract",
+        "id": "01M7KJ4TDSR009HWJEDANK0T4W",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M7KJ4TDSR009HWJED70174PC",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4TDSR009HWJED70174PC",
+        "id": "01M7KJ4TG7224WDD2CH7NXRGFX",
+        "link": "01M7KJ4TG7224WDD2CH6PN1YTT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SVS7PSKZMRDNAFXT04F",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4TDSR009HWJED70174PC",
+        "id": "01M7KJ4TMAWWFKPCB7AA3RNG7K",
+        "link": "01M7KJ4TMAWWFKPCB7A9VDMDYB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4SZXSN16GPF6JZ0CEBHM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7KJ4TDSR009HWJED70174PC",
+        "id": "01M7KJ4TP5TD46T06J3J9Z8MY1",
+        "link": "01M7KJ4TP5TD46T06J3F3GVRS6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KJ4T26ZW4X7KSWP850DHDF",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XT3S20YMG07EA5KHDN37M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KJ4TS2HWT7CSPWTYV3NZ32",
+  "type": "ops",
+  "v": 1
+}
