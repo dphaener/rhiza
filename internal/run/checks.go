@@ -602,6 +602,36 @@ func checkVerdict(c CheckState, cycle int) (outcome, detail string, ok bool) {
 	return CheckPassed, fmt.Sprintf("cycle %d: %s", cycle, strings.Join(parts, "; ")), true
 }
 
+// lostWorkRecorded says whether a check's session in role on cycle,
+// found lost (it ended while no run watched it, so its exit code is
+// unknown), recorded its work in the journal: a check session its
+// findings round for the cycle, a critic its verdict on every blocker and
+// major finding of that round. Only then is a lost session judged pass;
+// why says what was found. The done mark is not asked for, as a crash can
+// come between recording the work and saying done.
+func lostWorkRecorded(c CheckState, role string, cycle int) (why string, ok bool) {
+	r, ok := c.RoundFor(cycle)
+	if !ok {
+		return "", false
+	}
+	switch role {
+	case workflow.RoleCheck:
+		return "findings round recorded", true
+	case workflow.RoleCritic:
+		serious := r.Serious()
+		if len(serious) == 0 {
+			return "", false
+		}
+		for _, f := range serious {
+			if _, ok := r.Verdict(f.ID); !ok {
+				return "", false
+			}
+		}
+		return "verdicts recorded", true
+	}
+	return "", false
+}
+
 // checkStates are step's folded checks, by name.
 func (r *running) checkStates(step string) map[string]CheckState {
 	out := map[string]CheckState{}
@@ -1020,7 +1050,9 @@ func sessionWord(role string) string {
 // judgement (judged true), removes its checkout whatever the judgement,
 // reports its end to the Runner and closes its pane at once
 // (closeEndedCheckPanes): a later cycle or critic starts a fresh session,
-// so none is reused. A live session's block is journalled and
+// so none is reused. A session found lost (its exit code unknown) is
+// judged by the work it recorded, not its exit (lostWorkRecorded): pass
+// with it, fail without. A live session's block is journalled and
 // notified as an agent step's, and in an autonomous run its question goes
 // to the arbiter; a failed verdict ends the step (ended true) with res.
 func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (judged bool, res result, ended bool, err error) {
@@ -1047,6 +1079,11 @@ func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (
 			return false, result{}, false, err
 		}
 		r.j = j
+		if status.Done && status.Lost && !status.Environment {
+			if why, ok := lostWorkRecorded(r.checkStates(step.Name)[a.check], a.role, a.cycle); ok {
+				outcome, detail = workflow.OutcomePass, status.Detail+"; "+why
+			}
+		}
 		if err := r.append(Entry{
 			Type: TypeCheckJudged, Step: step.Name, Check: a.check, Role: a.role, Cycle: a.cycle, Outcome: outcome, Detail: detail,
 		}); err != nil {
