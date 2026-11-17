@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MTE8ZK6TN75G9J18G4WAZB",
+  "after": [
+    "01M7MTBE7AFKP0541PKXQ9ESZD"
+  ],
+  "at": "2026-11-17T13:22:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 4, scratch binary (go build -trimpath) in a scratch autonomous plan run with fake agents (two round-3 findings: serving-draft leaf export-csv, landed Decision keep-flat): rhiza run review-check --rulings failed listing both question, Decision and node handles while unapplied, and passed ('2 arbiter ruling(s) applied') once each node linked decided-by its Decision; a run whose apply-rulings visit wrote nothing ended failed before the gate."
+        },
+        "handle": "plan-review-check-rulings-qa-4",
+        "id": "01M7MTS3ZR8B69B6ENK8X165A3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTS3ZR8B69B6ENK5FGCNZH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTS3ZR8B69B6ENK5FGCNZH",
+        "id": "01M7MTS415VBT9XMWGV10DN3F3",
+        "link": "01M7MTS415VBT9XMWGTZPB8EGY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 4, same scratch plan run: steps went check (visit 3) pass then rulings; rulings (visit 1) fail then apply-rulings; apply-rulings (visit 1) pass then rulings; rulings (visit 2) pass then gate; gate pass. With a reviser that wrote nothing, rulings visit 2 failed and the run failed with step apply-rulings over max_visits 1, no gate entered."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-4",
+        "id": "01M7MTS441Q66JMNPJX69X2AJ6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTS441Q66JMNPJX4RVA914",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTS441Q66JMNPJX4RVA914",
+        "id": "01M7MTS46XQA7A0JNWPR7W1CMR",
+        "link": "01M7MTS46XQA7A0JNWPQ2QFFRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 4, same scratch plan run: the leaf finding's question and the arbiter's Decision landed in the serving draft (rhiza show --change <serving draft> shows Created: the serving draft); the landed keep-flat finding's question and Decision in the run's draft intention change set."
+        },
+        "handle": "review-question-in-node-change-set-qa-4",
+        "id": "01M7MTS490E3XP6RYS3ABHADM4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTS490E3XP6RYS39YZQ9JZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTS490E3XP6RYS39YZQ9JZ",
+        "id": "01M7MTS4AVDKCMWKT5ZCTSVZ2C",
+        "link": "01M7MTS4AVDKCMWKT5ZACPPX7A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 4, same scratch plan run: rhiza run status printed both review questions as '— decision settle-...' with no 'not yet delivered', and --json questions carried no session field."
+        },
+        "handle": "run-status-sessionless-ruling-qa-4",
+        "id": "01M7MTS4DH6A9PV2GE732439E7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTS4DH6A9PV2GE710MCHYV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTS4DH6A9PV2GE710MCHYV",
+        "id": "01M7MTS4F33PGMY8YARZ2HFRHA",
+        "link": "01M7MTS4F33PGMY8YARWC02PHK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA cycle 4: followed rhiza guide plan-reviser 'Applying the arbiter's rulings' literally inside the apply-rulings visit of a scratch autonomous plan run (RHIZA_CHANGE = the run's draft change set). rhiza run status --json listed both questions with their decisions; rhiza apply --record changed the landed node; rhiza show <decision> named the run's change set for the landed-node ruling; but for the serving-draft leaf ruling rhiza show <decision> failed with 'no node or link matches', so the guide's way to find the change set does not work in that case."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-4",
+        "id": "01M7MTS4GVZJ30B9SWV5V938Z4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTS4GVZJ30B9SWV33SW2XD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTS4GVZJ30B9SWV33SW2XD",
+        "id": "01M7MTS4K1ZTAVD411DWBJ1XA0",
+        "link": "01M7MTS4K1ZTAVD411DV28QYG5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MTS4MWX152VBZAGG6W8E1C",
+  "type": "ops",
+  "v": 1
+}

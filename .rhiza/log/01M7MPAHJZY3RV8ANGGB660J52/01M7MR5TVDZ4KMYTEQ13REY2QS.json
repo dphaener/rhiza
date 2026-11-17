@@ -1,0 +1,83 @@
+{
+  "actor": "01M7MQ630EE0PH44Z04XNBVARX",
+  "after": [
+    "01M7MR433TKJG842SGT22TRY3X"
+  ],
+  "at": "2026-11-17T12:37:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestReviewCheckQuestionInNodeChangeSet' passes, covering, with the run's change set open: a confirmed round-3 finding on a leaf a serving draft created puts its question (and blocks link) in that draft and the asked entry's change names the draft; a finding on a node the run's change set created stays in the run's change set; and, with the run's change set landed, a finding on a node no in-flight plan change set created is still a record write. go test -trimpath ./internal/run -run 'TestCommandAskedArbitratedInChange' passes: the arbiter for a session-less asked entry naming change set X starts with RHIZA_CHANGE=X, and one naming none starts with the run's change set. go test -trimpath ./internal/run -run 'TestCommandAsked|TestArbitrate' and go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-review-check|run-review-check-landed|run-review-check-handles|run-arbitrate-asked)$' still pass.",
+          "failure_waiver": "Placement only: the failure paths are unchanged and already covered (an arbiter that cannot decide fails the run naming the question, TestArbitrateFailsWithoutAnswer); a ruling left unapplied failing the run is plan-workflow-applies-rulings' failure case.",
+          "files": "internal/api/run_review.go, internal/api/run_review_test.go, internal/run/engine.go, internal/run/engine_test.go, internal/run/journal.go",
+          "must_not": "Change where questions on landed nodes or the run's own nodes go; change what review-check --rulings reads; change how a question a session asked is arbitrated or delivered; let the arbiter write anything but its Decision.",
+          "statement": "rhiza run review-check puts a round-3 question on a finding whose node an in-flight plan change set created (a serving draft's leaf) into that change set, whether or not the run's change set has landed (reviewQuestionTarget no longer returns the run's change set first while it is open), and journals the change set it wrote the question into on the asked entry's omitempty change field. The engine starts the arbiter for a session-less asked entry with RHIZA_CHANGE set to the entry's change, falling back to the run's change set when the entry names none, so the question, the arbiter's Decision and the leaf share one change set's view. Findings on landed nodes or on nodes of the run's own change set keep today's placement."
+        },
+        "handle": "review-question-in-node-change-set",
+        "id": "01M7MR5TM3RWMPVJ2ANEEMMS46",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "id": "01M7MR5TN970XMDS4BA5XGVMTD",
+        "link": "01M7MR5TN970XMDS4BA5NGB5GP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR431E9SSZAZ9BVDWC7T04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "id": "01M7MR5TPAD1067A7Q0W2TMNHM",
+        "link": "01M7MR5TPAD1067A7Q0RMGKRDA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "id": "01M7MR5TQF6A07B7T1SE32QVKZ",
+        "link": "01M7MR5TQF6A07B7T1SBX6QPK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "id": "01M7MR5TRQDZZ0YDHSFKWN14B4",
+        "link": "01M7MR5TRQDZZ0YDHSFKBDKNG9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR431E9SSZAZ9BVDWC7T04",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MR431E9SSZAZ9BVDWC7T04",
+        "id": "01M7MR5TT5YPD9CJP11E6YH6WP",
+        "link": "01M7MR5TT5YPD9CJP11DZPG563",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MQZE172EGW6NDZ6R3Z2PFZ",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MR5TVDZ4KMYTEQ13REY2QS",
+  "type": "ops",
+  "v": 1
+}

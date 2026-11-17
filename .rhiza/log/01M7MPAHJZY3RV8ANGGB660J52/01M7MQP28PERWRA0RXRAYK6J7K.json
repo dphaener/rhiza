@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MQMBCSTB2B3CYGXJNEA82W",
+  "after": [
+    "01M7MQCFXMRMZVX2XCHDEJTCHV"
+  ],
+  "at": "2026-11-17T12:28:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 5752832ae: go test -p 2 -trimpath -count=1 ./internal/api -run 'TestRunReviewCheckRulings|TestReviewCheck' exit 0 (TestRunReviewCheckRulings plus the 6 existing TestReviewCheck* pass); go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden exit 0, and with -update leaves no diff; rhiza docs, rhiza ship generate, rhiza render (scratch build) exit 0, render touching only other sessions' uncommitted actors. The test covers no asked entry, open review questions, a session's question ignored, a capability linked decided-by, a landed record Decision linked decided-by, and both failure cases (answers link only; the only decided-by link retired) asserting the question handle, Decision handle and next rhiza run status R40. Diff read: --rulings returns before checksDeclaringStep, so review-check without it is unchanged; reviewRulingsCheck only reads (reviewQuestions filters Session==\"\"); no stubs or TODOs; files match the leaf plus the builder's actor record and render."
+        },
+        "handle": "plan-review-check-rulings-verified",
+        "id": "01M7MQP26H683PE8YA6SB36WDM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MQP26H683PE8YA6QQP5YNP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MQP26H683PE8YA6QQP5YNP",
+        "id": "01M7MQP27MSCVX20KNAHWTRV4Q",
+        "link": "01M7MQP27MSCVX20KNAHM5C2AB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MQP28PERWRA0RXRAYK6J7K",
+  "type": "ops",
+  "v": 1
+}

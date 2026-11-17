@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MS0WVRG9Q7RP9RVH9HY4KB",
+  "after": [
+    "01M7MS09QW3NJZF77FDGGA96QZ"
+  ],
+  "at": "2026-11-17T12:53:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-verified at HEAD 2c96751c5 (attempt 1 retry). Re-ran every Checks: command of f2230efd0, each exit 0: go test -trimpath ./internal/api -run TestReviewCheckQuestionInNodeChangeSet; ./internal/api -run 'Review|Rulings|Verdict|Findings'; ./internal/run -run 'TestCommandAskedArbitratedInChange|TestCommandAsked|TestArbitrate' (both InChange subtests pass: named->RHIZA_CHANGE=CS2, none->run's CS1); ./internal/run whole; ./cmd/rhiza TestScripts/(run-review-check|run-review-check-landed|run-review-check-handles|run-arbitrate-asked)$; TestScripts/(describe-golden|inbox-question-advisor|run-gate|plan-workflow-ci-infra-wait|plan-workflow|plan-workflow-pr)$; rhiza ship generate (0 changed) and rhiza render with a scratch build, no code diff. The earlier failure is resolved: go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous-left$' passes at HEAD (2c96751c5 moved its fake reviser's decided-by link into the draft). Diff read: reviewQuestionTarget checks in-flight plan change sets creating the node before the open run change set, then record; asked entry carries Change only when not the run's; engine arbitrateIn starts the arbiter with the entry's change, falling back to st.Change. Test covers open (draft leaf -> draft with blocks, asked.Change=draft; own node -> run cs, Change empty) and landed (record write, Change empty). Only the leaf's files plus .rhiza log/rendered changed; no TODOs or stubs."
+        },
+        "handle": "review-question-in-node-change-set-verified-2",
+        "id": "01M7MS3D427T29E5W575ZPZ0HT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MS3D427T29E5W5734AMSJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MS3D427T29E5W5734AMSJR",
+        "id": "01M7MS3D562WJQ1RJV13AMR3X3",
+        "link": "01M7MS3D562WJQ1RJV10FC492G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MS3D6FK51Q3XSF9DX5TSKZ",
+  "type": "ops",
+  "v": 1
+}
