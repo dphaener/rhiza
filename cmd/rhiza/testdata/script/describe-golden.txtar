@@ -19902,7 +19902,7 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "detail": {
-            "description": "The child's exit, or why it failed",
+            "description": "said done, the child's exit, or why it failed",
             "type": "string"
           },
           "dry_run": {
@@ -19918,7 +19918,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "outcome": {
-            "description": "pass when the child's agent exited 0, else fail",
+            "description": "pass when the child said done (rhiza session done) or its agent exited 0, else fail",
             "enum": [
               "pass",
               "fail"

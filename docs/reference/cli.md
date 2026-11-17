@@ -1904,11 +1904,11 @@ Output (`--json` fields):
 - `brief` (string): The child's brief.md, an absolute path
 - `check` (string): The review check it worked on, its RHIZA_CHECK
 - `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
-- `detail` (string): The child's exit, or why it failed
+- `detail` (string): said done, the child's exit, or why it failed
 - `dry_run` (boolean): True if nothing was started or journaled
 - `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
 - `leaf` (string): The leaf it worked on
-- `outcome` (string): pass when the child's agent exited 0, else fail
+- `outcome` (string): pass when the child said done (rhiza session done) or its agent exited 0, else fail
 - `parent` (string): The calling session
 - `role` (string): The child's role
 - `run` (string): The run's full ID
