@@ -119,12 +119,39 @@ func TestRunSpawn(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := run.RenderSpawnBrief("Check leaf run-spawn.\n")
+		want := run.RenderSpawnBrief("Check leaf run-spawn.\n", nil)
 		if string(b) != want || !strings.HasPrefix(want, "# Brief\n\n## Contract\n\n") || !strings.Contains(want, run.ContractLastLine+"\n\n## Brief\n\nCheck leaf run-spawn.\n") {
 			t.Errorf("brief.md\n%s", b)
 		}
 		if _, err := os.Stat(filepath.Join(filepath.Dir(resp.Brief), sliceFile)); err == nil {
 			t.Error("a spawned child's directory holds a slice.json")
+		}
+		if strings.Contains(string(b), run.NotesHeading) {
+			t.Errorf("a run with no notes gives a brief with a notes heading:\n%s", b)
+		}
+	})
+
+	// A builder child spawned after two notes were journaled finds both,
+	// oldest first, after the caller's brief.
+	t.Run("Notes", func(t *testing.T) {
+		s := newSpawnFixture(t)
+		for _, text := range []string{"make gate needs RHIZA_GATE_BASE", "the fake rex ignores -b"} {
+			if err := s.store.Append("R1", run.Entry{Type: run.TypeNote, At: s.f.ctx.Now(), Step: "build", Role: "builder", Leaf: "leaf-a", Text: text}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		resp, err := s.sp.spawn(RunSpawnRequest{Role: "builder", Leaf: "run-spawn", Brief: s.brief})
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := os.ReadFile(resp.Brief)
+		if err != nil {
+			t.Fatal(err)
+		}
+		tail := "## Brief\n\nCheck leaf run-spawn.\n\nNotes from earlier sessions of this run:\n" +
+			"- make gate needs RHIZA_GATE_BASE\n- the fake rex ignores -b\n"
+		if !strings.HasSuffix(string(b), tail) {
+			t.Errorf("builder brief.md does not end with the notes after the caller's brief:\n%s", b)
 		}
 	})
 
@@ -272,6 +299,24 @@ func TestRunSpawnCheck(t *testing.T) {
 		}
 		if resp.Check != "plan" || resp.Cycle != 1 {
 			t.Errorf("response %+v", resp)
+		}
+	})
+	// A check-plan child's brief carries none of the run's notes.
+	t.Run("CheckRoleNoNotes", func(t *testing.T) {
+		s := conductor(t)
+		if err := s.store.Append("R2", run.Entry{Type: run.TypeNote, At: s.f.ctx.Now(), Step: "conduct", Text: "a note for builders"}); err != nil {
+			t.Fatal(err)
+		}
+		resp, err := s.sp.spawn(RunSpawnRequest{Role: "check-plan", Brief: s.brief})
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := os.ReadFile(resp.Brief)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(b), run.NotesHeading) || strings.Contains(string(b), "a note for builders") {
+			t.Errorf("check-plan brief.md carries the run's notes:\n%s", b)
 		}
 	})
 	t.Run("Critic", func(t *testing.T) {

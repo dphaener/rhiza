@@ -116,7 +116,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if spec.Cycle > 0 {
 		name = run.LeafFixSessionName(spec.Role, spec.Leaf.Handle, spec.Cycle, spec.Attempt)
 	}
-	req.Prompt = leafPrompt(*role, spec, r.promptVars(t, spec.Step.Name, name))
+	req.Prompt = withRunNotes(leafPrompt(*role, spec, r.promptVars(t, spec.Step.Name, name)), spec.Role, r.runState().Notes)
 	if err := r.prepareSession(&req, spec.Step.Name, name); err != nil {
 		return "", err
 	}
@@ -189,6 +189,21 @@ func leafPrompt(role workflow.Role, spec run.LeafSpec, vars workflow.PromptVars)
 		return p
 	}
 	return strings.TrimRight(p, "\n") + "\n\n" + strings.Join(lines, "\n\n")
+}
+
+// withRunNotes is prompt p for a leaf session with role, ending, for a
+// builder or verifier, with the run's notes so far under their heading
+// (run.NotesSection, oldest first); a fixer's prompt, or any prompt when
+// the run has no notes, is p as it is.
+func withRunNotes(p, role string, notes []run.Note) string {
+	if role != workflow.RoleBuilder && role != workflow.RoleVerifier {
+		return p
+	}
+	sec := run.NotesSection(notes)
+	if sec == "" {
+		return p
+	}
+	return strings.TrimRight(p, "\n") + "\n\n" + sec
 }
 
 // retryLines are a retry builder's lines, as leafPrompt describes: the
