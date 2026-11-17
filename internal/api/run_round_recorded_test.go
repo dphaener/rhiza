@@ -246,9 +246,9 @@ func TestReviewCheckFindingsFlag(t *testing.T) {
 	}
 }
 
-// run findings takes the plan-review kinds uncovered-intent and
-// oversized-leaf, a confirmed one of either fails review-check before round
-// 3 as a major finding, and a kind outside the seven is still refused with
+// run findings takes the plan-review kinds uncovered-intent, oversized-leaf
+// and no-failure-case, a confirmed one of any fails review-check before round
+// 3 as a major finding, and a kind outside the eight is still refused with
 // an error listing them, journalling nothing.
 func TestRunFindingsPlanKinds(t *testing.T) {
 	t.Parallel()
@@ -257,16 +257,21 @@ func TestRunFindingsPlanKinds(t *testing.T) {
 	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
-	if err := store.Create("R13", run.Entry{
-		Type: run.TypeStarted, Step: "review", At: t0,
-		Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it",
-			Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n"},
-	}); err != nil {
-		t.Fatal(err)
+	runID := "R13"
+	start := func(id string) {
+		if err := store.Create(id, run.Entry{
+			Type: run.TypeStarted, Step: "review", At: t0,
+			Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it",
+				Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n"},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		runID = id
 	}
+	start("R13")
 	f.ctx.Getenv = func(k string) string {
 		if k == envRun {
-			return "R13"
+			return runID
 		}
 		return ""
 	}
@@ -278,19 +283,21 @@ func TestRunFindingsPlanKinds(t *testing.T) {
 	if err := store.Append("R13", run.Entry{Type: run.TypeEntered, Step: "review", At: t0, Visit: 1}); err != nil {
 		t.Fatal(err)
 	}
-	_, err := findings("no-failure-case")
+	_, err := findings("no-failure")
 	wantExit(t, err, 2)
-	want := "missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf"
+	want := "missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf, no-failure-case"
 	if e := AsError(err); e == nil || !strings.Contains(e.Message, want) {
-		t.Fatalf("unknown kind: %v, want the seven kinds listed", err)
+		t.Fatalf("unknown kind: %v, want the eight kinds listed", err)
 	}
 	if st, _ := store.Read("R13"); len(st.State().Rounds) != 0 {
 		t.Fatal("a refused kind journalled a round")
 	}
 
-	for i, kind := range []string{run.KindUncoveredIntent, run.KindOversizedLeaf} {
+	// Each kind in its own run's first round, before the round 3 cap.
+	for i, kind := range []string{run.KindUncoveredIntent, run.KindOversizedLeaf, run.KindNoFailureCase} {
 		if i > 0 {
-			if err := store.Append("R13", run.Entry{Type: run.TypeEntered, Step: "review", At: t0, Visit: i + 1}); err != nil {
+			start("R13-" + kind)
+			if err := store.Append(runID, run.Entry{Type: run.TypeEntered, Step: "review", At: t0, Visit: 1}); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -303,7 +310,7 @@ func TestRunFindingsPlanKinds(t *testing.T) {
 		}
 		_, err := callOp(t, f.ctx, "run.review-check", `{}`)
 		if err == nil || !strings.Contains(err.Error(), "f1") {
-			t.Fatalf("review-check round %d with a confirmed %s: %v, want a failure naming f1", i+1, kind, err)
+			t.Fatalf("review-check round 1 with a confirmed %s: %v, want a failure naming f1", kind, err)
 		}
 	}
 }

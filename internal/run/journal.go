@@ -172,10 +172,11 @@ const (
 	KindContradiction     = "contradiction"
 	KindUncoveredIntent   = "uncovered-intent"
 	KindOversizedLeaf     = "oversized-leaf"
+	KindNoFailureCase     = "no-failure-case"
 )
 
 // Kinds are the finding kinds, in the order they are documented.
-var Kinds = []string{KindMissingAcceptance, KindMissingProvenance, KindUnrealDependsOn, KindOutsideIntent, KindContradiction, KindUncoveredIntent, KindOversizedLeaf}
+var Kinds = []string{KindMissingAcceptance, KindMissingProvenance, KindUnrealDependsOn, KindOutsideIntent, KindContradiction, KindUncoveredIntent, KindOversizedLeaf, KindNoFailureCase}
 
 // ValidKind reports whether kind is one of Kinds.
 func ValidKind(kind string) bool {
@@ -188,12 +189,12 @@ func ValidKind(kind string) bool {
 }
 
 // KindSeverity is the severity a plan-review finding of kind carries:
-// missing-acceptance, contradiction, outside-intent, uncovered-intent and
-// oversized-leaf are major, missing-provenance and unreal-depends-on minor;
+// missing-acceptance, contradiction, outside-intent, uncovered-intent,
+// oversized-leaf and no-failure-case are major, missing-provenance and unreal-depends-on minor;
 // "" for any other kind.
 func KindSeverity(kind string) string {
 	switch kind {
-	case KindMissingAcceptance, KindContradiction, KindOutsideIntent, KindUncoveredIntent, KindOversizedLeaf:
+	case KindMissingAcceptance, KindContradiction, KindOutsideIntent, KindUncoveredIntent, KindOversizedLeaf, KindNoFailureCase:
 		return SeverityMajor
 	case KindMissingProvenance, KindUnrealDependsOn:
 		return SeverityMinor
