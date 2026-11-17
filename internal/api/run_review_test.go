@@ -768,7 +768,8 @@ func TestRunReviewCheckRulings(t *testing.T) {
 	app(run.Entry{Type: run.TypeArbitrated, Step: "plan", Question: q3.String(), Outcome: workflow.OutcomePass, Decision: "use-z"})
 	pass("a session's question")
 
-	// The review question's ruling passes with only the answers link.
+	// The arbiter passes the review question's ruling; with only the answers link
+	// it is not applied, so the check fails.
 	app(run.Entry{Type: run.TypeArbitrated, Step: "check", Question: q1.String(), Outcome: workflow.OutcomePass, Decision: "use-z"})
 	fail("a ruling with only its answers link", "review-r40-r1-f1", "use-z", "leaf-a")
 

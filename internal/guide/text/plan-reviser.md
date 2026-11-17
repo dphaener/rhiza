@@ -46,7 +46,9 @@ and `rhiza why <node> --change <cs> --json`, and the code and tests it names.
 If your prompt says to apply the arbiter's rulings, read the run's questions that carry a
 decision in `rhiza run status --json`. For each, change the node of the finding it answers as
 the Decision says, with `rhiza apply <file> --change <cs> --json` in the change set holding the
-node (`--record` for a landed record), and link a live node `decided-by` the Decision:
+node (`--record` for a landed record). Link a live node `decided-by` the Decision in the change
+set that holds the question and its Decision (`rhiza run status --json` or
+`rhiza show <decision>` names it), with `--record` only when that is a landed record:
 - the finding's node, when it stays live;
 - the link's `from` node, when the finding targets a link;
 - each node that replaces it, when the ruling retires the finding's node (an oversized-leaf

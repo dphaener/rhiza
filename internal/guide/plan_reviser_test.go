@@ -41,7 +41,7 @@ func TestPlanReviserText(t *testing.T) {
 	} else {
 		t.Errorf("plan-reviser Must do: no rulings section")
 	}
-	for _, w := range []string{"`rhiza run status --json`", "`decided-by` the Decision", "the finding's node, when it stays live", "the link's `from` node, when the finding targets a link", "each node that replaces it, when the ruling retires the finding's node", "every new leaf", "(`--record` for a landed record)", "Never edit, retire or re-link the Decision", "change nothing a ruling does not name", "`rhiza run review-check --rulings`"} {
+	for _, w := range []string{"`rhiza run status --json`", "`decided-by` the Decision", "the finding's node, when it stays live", "the link's `from` node, when the finding targets a link", "each node that replaces it, when the ruling retires the finding's node", "every new leaf", "(`--record` for a landed record)", "in the change\nset that holds the question and its Decision", "`rhiza show <decision>` names it", "with `--record` only when that is a landed record", "Never edit, retire or re-link the Decision", "change nothing a ruling does not name", "`rhiza run review-check --rulings`"} {
 		if !strings.Contains(rulings, w) {
 			t.Errorf("plan-reviser rulings section: no %q", w)
 		}
