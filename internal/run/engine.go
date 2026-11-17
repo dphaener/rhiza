@@ -1084,6 +1084,15 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 				return res, err
 			}
 		}
+		if step.Conducts() {
+			res, ended, err := r.askChildren(step)
+			if err == nil && ended {
+				err = r.unblock(step.Name, session)
+			}
+			if err != nil || ended {
+				return res, err
+			}
+		}
 		if ready, why := readyForUntil(step, status); ready {
 			held, err := r.e.Runner.Holds(step, env)
 			if err != nil {
@@ -1095,6 +1104,51 @@ func (r *running) pollAgent(step workflow.Step, env []string, session string) (r
 		}
 		c.Sleep(interval)
 	}
+}
+
+// askChildren has the arbiter answer the questions conductor step's live
+// spawned children (the journal's spawn entries under step with no
+// spawn-ended entry) are blocked on, as ask does the conductor's own: a
+// question node, an asked entry keyed on the child's session, the arbiter
+// and the answer delivered to the child, its block ended, with no advisor
+// and no owner notice. A child's other block (a permission prompt, say)
+// stays the owner's and is not journalled here; a child no longer on a
+// question has its journalled block ended. The children's ends are
+// reconcileSpawns' to record, and their outcomes never decide the step: a
+// failed verdict on a child's question ends the step (ended true) with an
+// error outcome naming the question. The error return is for journal
+// failures. The children are polled through the Runner's AgentStatus
+// alone: they are the conductor's sessions, not the run's to rejoin.
+func (r *running) askChildren(step workflow.Step) (result, bool, error) {
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		return result{}, false, err
+	}
+	r.j = j
+	for _, sp := range r.j.State().Spawns {
+		if sp.Ended || sp.Step != step.Name {
+			continue
+		}
+		status, err := r.e.Runner.AgentStatus(sp.Session)
+		if err != nil {
+			r.log("step %s: spawned session %s: %v", step.Name, sp.Session, err)
+			continue
+		}
+		b := status.Blocked
+		if status.Done || b == nil || b.Kind != "question" {
+			if err := r.unblock(step.Name, sp.Session); err != nil {
+				return result{}, false, err
+			}
+			continue
+		}
+		if err := r.block(step.Name, sp.Session, b); err != nil {
+			return result{}, false, err
+		}
+		if res, ended, err := r.ask(step, sp.Session, b); err != nil || ended {
+			return res, ended, err
+		}
+	}
+	return result{}, false, nil
 }
 
 // arbitrates reports whether the engine, not the owner, answers block b

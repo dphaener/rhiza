@@ -3008,3 +3008,117 @@ func TestConductorQuestionArbitratedInNormalRun(t *testing.T) {
 		})
 	}
 }
+
+// spawnChildren journals spawn entries under the conductor step for each
+// child session, and a spawn-ended entry for each ended one.
+func spawnChildren(t *testing.T, e *Engine, step string, live, ended []string) {
+	t.Helper()
+	for _, c := range append(append([]string{}, live...), ended...) {
+		if err := e.Store.Append(runID, Entry{Type: TypeSpawn, At: at(1), Step: step, Parent: "S-" + step, Session: c, Role: "builder"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, c := range ended {
+		if _, err := e.Store.AppendSpawnEnded(runID, Entry{At: at(1), Step: step, Parent: "S-" + step, Session: c, Outcome: workflow.OutcomePass, Detail: "exit 0"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// TestSpawnedChildQuestionArbitrated: in a run not started autonomous, a
+// live spawned child of a conductor step (at top level, and included
+// through a workflow step) blocked on a question while the conductor
+// works gets the arbiter: a question node, an asked entry naming the
+// child, the arbiter and the answer delivered to the child, with no
+// advisor and no owner notice; the step finishes on the conductor's own
+// outcome. A failing verdict ends the step with an error naming the
+// question. A child whose end is journalled is never polled, and a
+// child's non-question block is not arbitrated.
+func TestSpawnedChildQuestionArbitrated(t *testing.T) {
+	for _, included := range []bool{false, true} {
+		t.Run(fmt.Sprintf("included=%v", included), func(t *testing.T) {
+			e, r, step := conductorSetup(t, included)
+			if (Journal{ID: runID, Entries: mustEntries(t, e)}).State().Autonomous {
+				t.Fatal("the run is autonomous")
+			}
+			ns := noticeLog(e)
+			sess := "S-" + step
+			spawnChildren(t, e, step, []string{"K-ask"}, []string{"K-ended"})
+			r.agentSeq[sess] = []AgentStatus{idle, idle, idle}
+			r.outcome[sess] = "pass"
+			r.agentSeq["K-ask"] = []AgentStatus{blocked, idle}
+			r.agentSeq["S-decide-Q1"] = []AgentStatus{{SaidDone: true}}
+			r.answers["Q1"] = Answer{OK: true, Decision: "assume-sqlite", Statement: "Use SQLite."}
+			st, err := e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st.Result != Succeeded || !reflect.DeepEqual(outcomes(st)[:1], []string{step + ":pass"}) {
+				t.Fatalf("result %q detail %q steps %v", st.Result, st.Detail, outcomes(st))
+			}
+			if !reflect.DeepEqual(r.asked, []string{"K-ask Ship it?"}) || !reflect.DeepEqual(r.arbiters, []string{"decide Q1"}) {
+				t.Errorf("asked %v arbiters %v", r.asked, r.arbiters)
+			}
+			if !reflect.DeepEqual(r.delivered, []string{"K-ask Q1 assume-sqlite Use SQLite."}) {
+				t.Errorf("delivered %q", r.delivered)
+			}
+			var askedAt, answeredAt int
+			for i, en := range mustEntries(t, e) {
+				switch {
+				case en.Type == TypeAsked && en.Session == "K-ask" && en.Question == "Q1":
+					askedAt = i
+				case en.Type == TypeAnswered && en.Session == "K-ask" && en.Question == "Q1":
+					answeredAt = i
+				}
+			}
+			if askedAt == 0 || answeredAt <= askedAt {
+				t.Errorf("asked entry at %d, answered entry at %d", askedAt, answeredAt)
+			}
+			if countType(t, e, TypeAsked) != 1 || countType(t, e, TypeAdvisor) != 0 || len(r.advisors) != 0 {
+				t.Errorf("asked entries %d advisor entries %d advisors %v", countType(t, e, TypeAsked), countType(t, e, TypeAdvisor), r.advisors)
+			}
+			if b, ok := (Journal{ID: runID, Entries: mustEntries(t, e)}).State().BlockOf("K-ask"); ok {
+				t.Errorf("child still blocked: %+v", b)
+			}
+			if len(*ns) != 0 {
+				t.Errorf("notices = %+v, want none", *ns)
+			}
+			if r.polls["K-ended"] != 0 {
+				t.Errorf("ended child polled %d times", r.polls["K-ended"])
+			}
+
+			// The arbiter fails: the step ends with an error naming the question.
+			e, r, _ = conductorSetup(t, included)
+			ns = noticeLog(e)
+			spawnChildren(t, e, step, []string{"K-ask"}, nil)
+			r.agentSeq[sess] = []AgentStatus{idle, idle, idle}
+			r.outcome[sess] = "pass"
+			r.agentSeq["K-ask"] = []AgentStatus{blocked, blocked}
+			r.agentSeq["S-decide-Q1"] = []AgentStatus{{SaidDone: true}}
+			st, err = e.Run(runID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wantDetail := "arbiter failed on question question-s-1 (Q1): no live Decision answers question Q1"
+			if st.Result != Failed || !strings.Contains(st.Detail, wantDetail) || !reflect.DeepEqual(outcomes(st)[:1], []string{step + ":error"}) {
+				t.Fatalf("result %q detail %q steps %v", st.Result, st.Detail, outcomes(st))
+			}
+			if len(r.advisors) != 0 || len(*ns) != 0 || len(r.delivered) != 0 {
+				t.Errorf("advisors %v notices %+v delivered %v", r.advisors, *ns, r.delivered)
+			}
+
+			// A child's permission prompt stays the owner's: no question, no arbiter.
+			e, r, _ = conductorSetup(t, included)
+			spawnChildren(t, e, step, []string{"K-perm"}, nil)
+			r.agentSeq[sess] = []AgentStatus{idle, idle}
+			r.outcome[sess] = "pass"
+			r.agentSeq["K-perm"] = []AgentStatus{{Blocked: &Block{Kind: "permission"}}, {Blocked: &Block{Kind: "permission"}}}
+			if st, err = e.Run(runID); err != nil || st.Result != Succeeded {
+				t.Fatalf("result %q detail %q err %v", st.Result, st.Detail, err)
+			}
+			if len(r.asked) != 0 || len(r.arbiters) != 0 || countType(t, e, TypeBlocked) != 0 {
+				t.Errorf("asked %v arbiters %v blocked entries %d", r.asked, r.arbiters, countType(t, e, TypeBlocked))
+			}
+		})
+	}
+}
