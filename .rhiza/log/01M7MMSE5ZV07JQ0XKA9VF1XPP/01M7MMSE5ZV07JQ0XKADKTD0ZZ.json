@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "after": [],
+  "at": "2026-11-17T11:38:01Z",
+  "body": {
+    "intent": "Record agent actor claude-code-c24f503f for session c24f503f-9e3f-450a-b011-01a1e94cb498",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7MMSE5ZV07JQ0XKA9VF1XPP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MMSE5ZV07JQ0XKADKTD0ZZ",
+  "type": "open",
+  "v": 1
+}

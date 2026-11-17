@@ -20,6 +20,7 @@ One conductor session conducts a change set end to end: it plans the leaves when
 - serves change set `01M7EHHAG3CTRQCJCWSG2W7BTZ` (Fix the gate step: the conductor default's gate runs rhiza check with the installed rhiza, not the PR head's build (SHIP_HEAD_RHIZA), so a change set that adds a CLI command, flag or setting fails the gate on docs/reference files its own build passes and hands back to conduct in a loop (runs 01M7DVV7GNJAWG29QZC5F2JWC3 and 01M7E56MGTY4M60XZNEG2A6537; request 01M7EAYSYK7Z32QRP0FB4XPKJN))
 - serves change set `01M7M51W2S30H06K0BFZ6MK7PF` (Fix In a conductor run, the conductor's planning questions go through AskUserQuestion and block the run: the engine spawns an advisor (which only recommends to the owner) and no arbiter decides, so an autonomous run with no owner at the pane stalls until someone answers by hand)
 - serves change set `01M7MD2K2BE981QPPF5HE8M551` (Fix A rejoined conductor session keeps its first visit's done mark, so after a gate hand-back the session reads as done before it has worked the hand-back (anything closing done sessions closes it mid-visit))
+- serves change set `01M7MJN83Y6EF727C2T0AF3Y5D` (The rhiza-conduct skill and its guide topics are enough on their own: a conductor outside this repo has no Rhiza source to read, so everything a conductor looked up in the code here (step roles, handback routes, workflow-new defaults, check roles) is in the guide)
 
 ## History
 

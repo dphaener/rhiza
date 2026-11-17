@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MKW4V7G9N2CZ1CXN3XW9QC",
+  "after": [
+    "01M7MKQQ7SXD73H84H2KYDFFQQ"
+  ],
+  "at": "2026-11-17T11:23:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 71b326d26 for conduct-handback-topic. Re-ran its Checks: go test -p 2 -trimpath ./internal/guide -run 'TestConductHandback|TestConduct|TestList' (TestConductHandback, TestConductReadsHandback, TestConductHandbackCatchesDrift, TestListOrder pass), go test -count=1 ./internal/guide/... ok, go test -count=1 ./cmd/rhiza -run TestScripts/guide ok (RHIZA_/SHIP_/REX_ unset), go vet ./internal/guide, rhiza ship generate and rhiza render all exit 0. Diff read: conduct-handback.md names handback.md's parts as internal/run/brief.go RenderHandback writes them (Failing step, Outcome, Failing commands with output in <path>, Output tail, Cause, Failed CI runs, Conflicted files), routes for gate (its four commands from ship-change.toml), signoff, push, wait-ci (no role, no ci-fix) and merge (ci-fix, rhiza ship rebase --no-push, conflict-fix), land/render/session done, handback_cap 3 and the post-merge steps that never hand back. The test parses the built-in ship-change and the drift test covers each failure case (unrouted hand-back step, unnamed gate command, routes for main-ci/close-out/ship/deploy-check, ci-fix on wait-ci). conduct.md Read first names rhiza guide conduct-handback; built binary reports conduct 723 and conduct-handback 629 tokens, under TopicCap 1000. Only the leaf's files plus the builder's actor record changed; no TODOs or stubs."
+        },
+        "handle": "conduct-handback-topic-verified",
+        "id": "01M7MKXZPK0FYKBEFTDZ6CNTYP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MKXZPK0FYKBEFTDYSZJ266",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MKXZPK0FYKBEFTDYSZJ266",
+        "id": "01M7MKXZRC8MW1KT4MDZ7HVDCN",
+        "link": "01M7MKXZRC8MW1KT4MDYB1XJVF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MJN83Y6EF727C2T0AF3Y5D",
+  "for": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "id": "01M7MKXZTQAG02BK0DVYZ3QH7T",
+  "type": "ops",
+  "v": 1
+}

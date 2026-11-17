@@ -1,0 +1,86 @@
+{
+  "actor": "01M7MMJ6NB4R8STANWRX5QDGCV",
+  "after": [
+    "01M7MM4SNDMKB80J6W0EQJ5AN3"
+  ],
+  "at": "2026-11-17T11:35:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build (go build -trimpath to a scratch path): rhiza guide conduct-roles prints the topic (708 tokens, listed by guide ls); rhiza guide conduct's Read first names conduct-roles; all ten roles it lists (builder..conflict-fix) resolve with rhiza guide <role>; its spawn flags match rhiza run spawn --help; the refusal text 'name one of its checks' is in internal/api/run_spawn.go; ship-change declares plan, code, qa; go test ./internal/guide (TestConductRoles*, TestConduct, TestList), ./internal/api -run TestRunSpawnCheck and ./cmd/rhiza TestScripts/guide pass"
+        },
+        "handle": "conduct-roles-topic-qa-1",
+        "id": "01M7MMMFTAJVTVY8ENA89CV324",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMMFT9WVV1M6H2BJD0DVSY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMMFT9WVV1M6H2BJD0DVSY",
+        "id": "01M7MMMFW6HBMVYJ1CG8WQ5KG9",
+        "link": "01M7MMMFW6HBMVYJ1CG8041HP1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKRW5GHYEGJPFV4GY7XT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build: rhiza guide conduct-handback prints the topic (629 tokens), named in conduct's Read first; its handback.md parts match internal/run/brief.go's headings; its routes (gate, signoff, push, wait-ci, merge) are exactly ship-change's handback:conduct steps and its four gate commands match the gate step; rhiza ship rebase --no-push exists per its --help; handback_cap 3 matches ship-change; TestConductHandback* and TestScripts/guide pass"
+        },
+        "handle": "conduct-handback-topic-qa-1",
+        "id": "01M7MMMFXK6WVS8KKGY9BRAHN2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMMFXK6WVS8KKGY73HWQVZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMMFXK6WVS8KKGY73HWQVZ",
+        "id": "01M7MMMFYQ4G07ZM6J52E0N2K8",
+        "link": "01M7MMMFYQ4G07ZM6J4Z65Q0F1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build in a scratch repo: rhiza guide workflow-keys prints the topic (910 tokens), named by conduct and workflows (which lists gate); rhiza workflow new demo writes start=build, agent step build, command step test with a failing placeholder, max_visits=3, on.fail=handback:build as the topic says; a second new demo is refused (exit 3, file left); new --from ship-change copies with name set; --from nosuch fails cleanly (exit 2); workflow check demo validates with the placeholder warning; TestWorkflowKeys*, TestWorkflowsText and TestScripts/guide pass"
+        },
+        "handle": "workflow-keys-topic-qa-1",
+        "id": "01M7MMMG05MQ8JWDHXKN5ETW7T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMMG05MQ8JWDHXKJMHS0A3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMMG05MQ8JWDHXKJMHS0A3",
+        "id": "01M7MMMG1P5GSKTZ6MP70DD2QV",
+        "link": "01M7MMMG1P5GSKTZ6MP4FZ5KJS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXM02SHB19P39VYGDNXSH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MJN83Y6EF727C2T0AF3Y5D",
+  "for": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "id": "01M7MMMG3PZK700H1MWCZ7NRN0",
+  "type": "ops",
+  "v": 1
+}

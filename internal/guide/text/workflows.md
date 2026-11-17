@@ -23,6 +23,9 @@ by `-`, at most 30 characters.
 - `signoff`: waits for the owner. Outcomes `pass`, `changes`.
 - `arbiter`: decides questions in an autonomous run; at most one.
 - `workflow`: `workflow = "<name>"`, `skip = [steps]`: its steps, named `<workflow>/<step>`.
+- `gate`: `commands`, run in order by the daemon. Outcomes `pass`, `fail`.
+
+Every key and its default: `rhiza guide workflow-keys`.
 
 Prompts take `{change}`, `{slug}`, `{title}`, `{run}`, `{step}`; leaf and check steps also
 `{leaf}`, `{attempt}`, `{check}`, `{cycle}`.
