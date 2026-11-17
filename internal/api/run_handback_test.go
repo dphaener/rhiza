@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -188,6 +189,30 @@ func TestHandbackDeliver(t *testing.T) {
 		}
 		if len(f.rex.calls) != 0 {
 			t.Errorf("rex calls %q", f.rex.calls)
+		}
+	})
+
+	t.Run("a hand-back rex cannot type leaves a live session's done mark in place", func(t *testing.T) {
+		f, r, _ := handbackFixture(t, askAgent)
+		f.setHook(t, session.StateIdle, "")
+		mark := &session.Report{State: session.StateDone, At: f.ctx.Now().UTC()}
+		if _, err := f.st.Update(f.sid, func(x *session.Record) { x.Status.Done = mark }); err != nil {
+			t.Fatal(err)
+		}
+		f.rex.calls, f.rex.err = nil, errors.New("rex: no such block")
+		err := r.Handback(handbackStep(), f.sid, run.CauseOf(cmd, "fail", "exit 1\nboom"))
+		if err == nil || !strings.Contains(err.Error(), "could not type") {
+			t.Fatalf("error %v: want rex's typing failure", err)
+		}
+		if len(f.rex.calls) != 1 || f.rex.calls[0][1] != "send" {
+			t.Errorf("rex calls %q: want the one failed send", f.rex.calls)
+		}
+		rec, err := f.st.Read(f.sid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !rec.Status.SaidDone() || !rec.Status.Done.At.Equal(mark.At) {
+			t.Errorf("done mark %+v after the failed hand-back: want %+v", rec.Status.Done, mark)
 		}
 	})
 

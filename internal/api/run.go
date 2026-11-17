@@ -2649,19 +2649,28 @@ func (r *stepRunner) messageSession(rec session.Record, text string) error {
 	if err != nil {
 		return err
 	}
-	// The session said done on an earlier visit: clear that mark before
-	// the hand-back reaches it, so this visit counts as done only on a
-	// fresh session done (resumeSession clears the whole status).
-	if rec.Status.SaidDone() {
-		if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Done = nil }); err != nil {
-			return fmt.Errorf("clear session %s's done mark: %v", rec.ID, err)
-		}
-	}
 	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
 	if err != nil {
 		return err
 	}
+	// The session said done on an earlier visit: clear that mark before
+	// the hand-back is typed, so this visit counts as done only on a
+	// fresh session done (resumeSession clears the whole status). If the
+	// typing fails, no message reached the session: the mark comes back.
+	done := rec.Status.Done
+	if done != nil {
+		if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Done = nil }); err != nil {
+			return fmt.Errorf("clear session %s's done mark: %v", rec.ID, err)
+		}
+	}
 	if _, err := typePointer(r.ctx, r.sessions, rec.ID, messagePointer(from.Handle, rel+"/"+name), defaultMessageTimeout); err != nil {
+		if done != nil {
+			_, _ = r.sessions.Update(rec.ID, func(x *session.Record) {
+				if x.Status.Done == nil {
+					x.Status.Done = done
+				}
+			})
+		}
 		return withNote(err, "the hand-back is in "+filepath.Join(dir, name))
 	}
 	return nil
