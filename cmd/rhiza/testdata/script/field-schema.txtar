@@ -27,7 +27,7 @@ rhiza add evidence e1 --field command=true
 stderr 'an evidence has no field "bogus"'
 rhiza add capability c1 --field statement=Reads --record
 ! rhiza set c1 --field bogus=x
-stderr 'known fields: acceptance, built_in, statement'
+stderr 'known fields: acceptance, built_in, failure_waiver, files, must_not, statement'
 
 # A hand-written entry with an unknown field still folds and checks.
 exec sh -c 'sed -i.bak "s/\"command\"/\"bogus\"/" .rhiza/log/*/*.json && rm .rhiza/log/*/*.bak'

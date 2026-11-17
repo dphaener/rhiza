@@ -113,3 +113,16 @@ func TestNoteFields(t *testing.T) {
 		t.Error("bogus known")
 	}
 }
+
+// A capability carries a leaf's contract fields; other kinds do not.
+func TestLeafContractFields(t *testing.T) {
+	for _, f := range []string{"files", "must_not", "failure_waiver"} {
+		if !FieldKnown(KindCapability, f) {
+			t.Errorf("capability field %s unknown", f)
+		}
+	}
+	// failure case: a constraint has no files.
+	if FieldKnown(KindConstraint, "files") {
+		t.Error("constraint files known")
+	}
+}

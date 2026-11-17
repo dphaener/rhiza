@@ -10,7 +10,8 @@ import (
 func briefInput() BriefInput {
 	return BriefInput{
 		ChangeTitle: "Every agent session a run", ChangeID: "01ABC", Intent: "files",
-		Leaves:      []BriefLeaf{{"a", "does a", "go test a"}, {"b", "does b", "go test b"}},
+		Leaves: []BriefLeaf{{Handle: "a", Statement: "does a", Acceptance: "go test a"},
+			{Handle: "b", Statement: "does b", Acceptance: "go test b"}},
 		Decisions:   []string{"d1"},
 		Constraints: []string{"c1", "c2"},
 		LocalGate:   "make gate",
@@ -45,6 +46,30 @@ func TestBriefFiles(t *testing.T) {
 	in.PrePushCheck = "make self-check"
 	if both := RenderBrief(in); !strings.Contains(both, "rhiza.ship.prePushCheck: make self-check") {
 		t.Errorf("prePushCheck missing:\n%s", both)
+	}
+}
+
+// A leaf lists a Files:, Must not: and Failure waiver: line under its
+// acceptance for each contract field it has, and none for a field it lacks.
+func TestBriefLeafContract(t *testing.T) {
+	in := briefInput()
+	in.Leaves[0].Files = "internal/a.go"
+	in.Leaves[0].MustNot = "touch b"
+	in.Leaves[0].FailureWaiver = "nothing can fail"
+	got := RenderBrief(in)
+	want := "### a\n\ndoes a\n\nAcceptance: go test a\nFiles: internal/a.go\nMust not: touch b\nFailure waiver: nothing can fail\n"
+	if !strings.Contains(got, want) {
+		t.Errorf("leaf a lacks its contract lines:\n%s", got)
+	}
+	_, b, _ := strings.Cut(got, "### b")
+	b, _, _ = strings.Cut(b, "## Decisions")
+	if b != "\n\ndoes b\n\nAcceptance: go test b\n\n" {
+		t.Errorf("leaf b with no contract fields = %q", b)
+	}
+	for _, s := range []string{"Files:", "Must not:", "Failure waiver:"} {
+		if strings.Count(got, s) != 1 {
+			t.Errorf("%s listed %d times:\n%s", s, strings.Count(got, s), got)
+		}
 	}
 }
 

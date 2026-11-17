@@ -16,6 +16,10 @@ type BriefLeaf struct {
 	Handle     string
 	Statement  string
 	Acceptance string
+	// The leaf's contract fields, each "" when the leaf lacks it.
+	Files         string
+	MustNot       string
+	FailureWaiver string
 }
 
 // BriefInput is what brief.md is rendered from. The same input renders the
@@ -47,6 +51,13 @@ func RenderBrief(in BriefInput) string {
 	}
 	for _, l := range in.Leaves {
 		fmt.Fprintf(&b, "\n### %s\n\n%s\n\nAcceptance: %s\n", l.Handle, l.Statement, l.Acceptance)
+		for _, f := range []struct{ name, text string }{
+			{"Files", l.Files}, {"Must not", l.MustNot}, {"Failure waiver", l.FailureWaiver},
+		} {
+			if f.text != "" {
+				fmt.Fprintf(&b, "%s: %s\n", f.name, f.text)
+			}
+		}
 	}
 
 	writeList := func(title string, items []string) {

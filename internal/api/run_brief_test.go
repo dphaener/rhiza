@@ -236,3 +236,38 @@ func TestSessionBriefOwnDecisionsConstraints(t *testing.T) {
 		}
 	}
 }
+
+// A capability takes files and must_not, which read back and reach brief.md
+// under the leaf's acceptance; (failure case) a field "file" is refused,
+// naming the contract fields among the known ones.
+func TestSessionBriefLeafContract(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "brief-contract")
+	cs := newChange(t, f.ctx, `{"intent":"Readable tabs"}`).ChangeSet
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"alpha","fields":["statement=Alpha","acceptance=go test a",`+
+		`"files=internal/a.go","must_not=touch b"]}`)
+	n := nodeAt(t, f.ctx, "alpha")
+	if got, want := string(n.Fields["files"])+" "+string(n.Fields["must_not"]), `"internal/a.go" "touch b"`; got != want {
+		t.Errorf("files, must_not = %s, want %s", got, want)
+	}
+	_, err := callOp(t, f.ctx, "add", `{"kind":"capability","handle":"beta","fields":["statement=Beta","file=x.go"]}`)
+	wantExit(t, err, 2)
+	if err == nil || !strings.Contains(err.Error(), "known fields: acceptance, built_in, failure_waiver, files, must_not, statement") {
+		t.Errorf("field file: %v", err)
+	}
+	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
+	dir := filepath.Join(t.TempDir(), "session")
+	if err := r.fillSession(dir); err != nil {
+		t.Fatal(err)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := "Acceptance: go test a\nFiles: internal/a.go\nMust not: touch b\n\n"; !strings.Contains(string(md), w) {
+		t.Errorf("brief.md lacks %q:\n%s", w, md)
+	}
+	if strings.Contains(string(md), "Failure waiver:") {
+		t.Errorf("brief.md lists a failure waiver the leaf lacks:\n%s", md)
+	}
+}

@@ -6,7 +6,7 @@ import "slices"
 // carry, sorted. It covers each field in use in the log today.
 var knownFields = map[Kind][]string{
 	KindIntent:     {"milestone", "statement", "umbrella"},
-	KindCapability: {"acceptance", "built_in", "statement"},
+	KindCapability: {"acceptance", "built_in", "failure_waiver", "files", "must_not", "statement"},
 	KindConstraint: {"acceptance", "statement"},
 	KindDecision: {"accepted_by", "authorized_by", "notes_quote", "options", "picked", "question", "quote", "quote_where",
 		"reason", "reasoning", "refines", "revised", "ruling", "session", "settled_by", "statement", "wording"},
