@@ -1,0 +1,40 @@
+{
+  "actor": "01M7ME4CJT6B9YBVGQQK5Y5R9C",
+  "after": [
+    "01M7MDA575Z8ZQK1PA8FK58TQW"
+  ],
+  "at": "2026-11-17T09:43:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At commit 05e811bf3: go test -trimpath -p 2 ./internal/api -run 'TestHandbackDeliver' -v passes (9 subtests, including the new 'a live session that said done on an earlier visit has its done mark cleared' and 'a failed hand-back leaves a live session's done mark in place'); go test -trimpath -p 2 ./internal/api/... ok; gofmt -l internal/api empty. The happy subtest covers the acceptance as written: the done mark is cleared, the hook stays idle, message 0001.md is written ending with the handback text, rex send is called (typed), AgentStatus reports SaidDone false, then session.done gives a fresh mark (not Already) and AgentStatus reports SaidDone true. The failure subtest uses a step with no handback template: the error names step build, the done mark is kept, no message is written and there are no rex calls. Diff read against must_not: only Status.Done is cleared in messageSession (asked, hook, rex, started and prompted are untouched). messageSession's only caller is Handback's live branch; resumeSession, session done/message and internal/run are unchanged. The mark is cleared only after the messageable, sender and folder checks, so a template failure, which returns earlier in Handback, leaves the mark."
+        },
+        "handle": "handback-clears-live-done-mark-verified",
+        "id": "01M7ME6Z4AJJMFJ65NVGN9KZ3M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7ME6Z4AJJMFJ65NVG064DB0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7ME6Z4AJJMFJ65NVG064DB0",
+        "id": "01M7ME6Z5V7KC1QN98HSQ8TDPQ",
+        "link": "01M7ME6Z5V7KC1QN98HNRJQ0WR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MD744F3AQHKM0BZJ7E03FN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MD2K2BE981QPPF5HE8M551",
+  "for": "01M7MDFP8MZ6EC1WAP4B8VREEX",
+  "id": "01M7ME6Z6Y9HYWS3VAF013FZBY",
+  "type": "ops",
+  "v": 1
+}
