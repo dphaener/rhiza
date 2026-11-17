@@ -464,7 +464,8 @@ func TestShipChangeBuiltin(t *testing.T) {
 
 // The built-in plan workflow: an interview driven by the rhiza-plan skill,
 // then review rounds (a fresh reviewer told only the change set, a critic,
-// rhiza run review-check, a reviser on a failed check), then the gate.
+// rhiza run review-check, a reviser on a failed check), then the rulings
+// check with one apply-rulings visit of the reviser, then the gate.
 func TestPlanBuiltin(t *testing.T) {
 	if !slices.Contains(BuiltinNames(), "plan") {
 		t.Fatalf("BuiltinNames = %v; want it to list plan", BuiltinNames())
@@ -480,7 +481,7 @@ func TestPlanBuiltin(t *testing.T) {
 	if def.Name != "plan" || def.Start != "interview" {
 		t.Errorf("name %q, start %q; want plan, interview", def.Name, def.Start)
 	}
-	want := []string{"interview", "milestone-check", "review", "has-findings", "critic", "fresh", "check", "revise", "gate", "open-pr", "prepush-triage", "prepush-fix", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
+	want := []string{"interview", "milestone-check", "review", "has-findings", "critic", "fresh", "check", "revise", "rulings", "apply-rulings", "gate", "open-pr", "prepush-triage", "prepush-fix", "wait-pr", "pr-green", "pr-green-infra", "pr-green-infra-wait", "rebase", "wait-rebased", "rebased-green", "rebased-green-infra", "rebased-green-infra-wait", "merge", "close-out"}
 	if !slices.Equal(def.Order, want) {
 		t.Fatalf("steps = %v; want %v", def.Order, want)
 	}
@@ -494,9 +495,10 @@ func TestPlanBuiltin(t *testing.T) {
 	}
 
 	roles := map[string]string{
-		"review": "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer.",
-		"critic": "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic.",
-		"revise": "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser.",
+		"review":        "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer.",
+		"critic":        "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic.",
+		"revise":        "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser.",
+		"apply-rulings": "/rhiza-plan-reviser Apply the arbiter's rulings on the plan of change set {change}: follow rhiza guide plan-reviser.",
 	}
 	for name, want := range roles {
 		s := def.Steps[name]
@@ -514,6 +516,10 @@ func TestPlanBuiltin(t *testing.T) {
 	check := def.Steps["check"]
 	if check.Kind != KindCommand || check.Run != "rhiza run review-check" {
 		t.Errorf("check = %+v; want command rhiza run review-check", check)
+	}
+	rulings := def.Steps["rulings"]
+	if rulings.Kind != KindCommand || rulings.Run != "rhiza run review-check --rulings" {
+		t.Errorf("rulings = %+v; want command rhiza run review-check --rulings", rulings)
 	}
 	gate := def.Steps["gate"]
 	if gate.Kind != KindCommand || gate.Run != "rhiza run gate" {
@@ -534,10 +540,14 @@ func TestPlanBuiltin(t *testing.T) {
 		{"critic", OutcomePass, "fresh", EndNone},
 		{"fresh", OutcomePass, "check", EndNone},
 		{"fresh", OutcomeFail, "review", EndNone},
-		{"check", OutcomePass, "gate", EndNone},
+		{"check", OutcomePass, "rulings", EndNone},
 		{"check", OutcomeFail, "revise", EndNone},
 		{"revise", OutcomePass, "review", EndNone},
 		{"revise", OutcomeFail, "", EndFailed},
+		{"rulings", OutcomePass, "gate", EndNone},
+		{"rulings", OutcomeFail, "apply-rulings", EndNone},
+		{"apply-rulings", OutcomePass, "rulings", EndNone},
+		{"apply-rulings", OutcomeFail, "", EndFailed},
 		{"gate", OutcomePass, "open-pr", EndNone},
 		{"gate", OutcomeFail, "", EndFailed},
 		{"open-pr", OutcomePass, "wait-pr", EndNone},
@@ -562,7 +572,7 @@ func TestPlanBuiltin(t *testing.T) {
 		}
 	}
 
-	caps := map[string]int{"rebase": 6, "wait-rebased": 6, "rebased-green": 6, "merge": 6, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
+	caps := map[string]int{"rebase": 6, "wait-rebased": 6, "rebased-green": 6, "merge": 6, "interview": 1, "review": 3, "critic": 3, "fresh": 3, "check": 3, "revise": 2, "rulings": 2, "apply-rulings": 1, "gate": 1, "open-pr": 3, "wait-pr": 3, "pr-green": 4}
 	for name, c := range caps {
 		if got := def.Steps[name].Cap(); got != c {
 			t.Errorf("%s cap = %d; want %d", name, got, c)
