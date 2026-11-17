@@ -1,0 +1,48 @@
+{
+  "actor": "01M7MPTC49CS7AENDQ7Y483EGV",
+  "after": [
+    "01M7MPK830SZ237S2J9PBMA1EF"
+  ],
+  "at": "2026-11-17T12:14:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview' passes with the step list, prompts, transitions and caps updated. go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous-left' passes with its fake reviser, on the apply-rulings prompt, linking each finding's node decided-by the arbiter's Decision: the run succeeds with rulings visit 1 failing, apply-rulings visit 1 passing, rulings visit 2 passing, then gate. go test -trimpath ./cmd/rhiza -run 'TestScripts/(plan-workflow|plan-workflow-pr|plan-workflow-autonomous|plan-review-visit-round|plan-milestone-backlog)$' passes, each script's 'check (visit N): pass, then gate' assertion updated to 'check (visit N): pass, then rulings' followed by 'rulings (visit 1): pass, then gate' (a clean review goes through rulings to the gate). Failure case: a new script plan-workflow-autonomous-unapplied.txtar, the same run with a reviser that writes nothing on the apply-rulings prompt, ends the run failed, no gate step was entered, the draft change set is not accepted, and run status names the unapplied Decision.",
+          "files": "internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml, internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/plan-workflow-autonomous-left.txtar, cmd/rhiza/testdata/script/plan-workflow-autonomous-unapplied.txtar, cmd/rhiza/testdata/script/plan-workflow.txtar, cmd/rhiza/testdata/script/plan-workflow-pr.txtar, cmd/rhiza/testdata/script/plan-workflow-autonomous.txtar, cmd/rhiza/testdata/script/plan-review-visit-round.txtar, cmd/rhiza/testdata/script/plan-milestone-backlog.txtar",
+          "must_not": "Change the review, critic, check or revise steps or their caps; add a review round after the rulings; let the arbiter write anything but its Decision; change the ship steps after the gate.",
+          "statement": "The built-in plan and plan-milestone workflows pass check to a rulings command step (run = rhiza run review-check --rulings, max_visits 2, on.pass gate, on.fail apply-rulings) and add an apply-rulings agent step (prompt '/rhiza-plan-reviser Apply the arbiter's rulings on the plan of change set {change}: follow rhiza guide plan-reviser.', until true, until_when done, max_visits 1, on.pass rulings), so a ruling still unapplied after one apply visit ends the run failed before the gate."
+        },
+        "handle": "plan-workflow-applies-rulings",
+        "id": "01M7MPK702EK9NJWH7V39W3FZ4",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestPlanReviserText' passes, asserting the rulings section names rhiza run status --json, the decided-by link from a live node to the Decision with its three cases (the finding's node, the from node of a link finding, each replacing node when the ruling retires the finding's node), --record for a landed record, and the rule never to edit the Decision, with the existing headings still in order.",
+          "failure_waiver": "Guide text only: the test asserts the text is present; there is no runtime failure path in this leaf (the run failing on an unapplied ruling is plan-workflow-applies-rulings' failure case).",
+          "files": "internal/guide/text/plan-reviser.md, internal/guide/plan_reviser_test.go",
+          "must_not": "Change the confirmed-findings instructions or other guide topics; tell the reviser to write a quote or a new Decision.",
+          "statement": "rhiza guide plan-reviser has a section for a visit told to apply the arbiter's rulings: read the run's questions with a decision in rhiza run status --json, and for each change the node of the finding it answers as the Decision says (with rhiza apply in the change set holding the node, --record for a landed record) and link a live node decided-by the Decision: the finding's node when it stays live; the link's from node when the finding targets a link; and each node that replaces it when the ruling retires the finding's node (an oversized-leaf split links every new leaf). Never edit, retire or re-link the Decision, and change nothing a ruling does not name."
+        },
+        "handle": "plan-reviser-applies-rulings",
+        "id": "01M7MPK73E4BCQACH2KHE2KS3H",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MPVCYD792KXQKNJT9BRV8X",
+  "type": "ops",
+  "v": 1
+}

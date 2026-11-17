@@ -1,0 +1,227 @@
+{
+  "actor": "01M7MPB24Y1J7DH85RJJRP7GS1",
+  "after": [
+    "01M7MPGTMFZZGGQNACCKBVET3C"
+  ],
+  "at": "2026-11-17T12:09:35Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Runs 01M7GG7GXSA97HESRNFEBFCZ4T and 01M7GG7HSBSB356BVGGQGH8YHB went check -> gate right after the arbiter wrote its Decision (internal/workflow/builtin/plan.toml), so the accepted plan still carried the confirmed major and a builder later applied the ruling by hand. The arbiter guide forbids the arbiter writing anything but its Decision, so applying it is the reviser's job, as revising is for rounds 1 and 2. The intent offers the run failing instead of accepting as the alternative; failing after one apply visit gives both. A re-review is not added: review is capped at 3 visits and the rulings check is mechanical.",
+          "statement": "In an autonomous plan run, a confirmed major left after review round 3 is decided by the arbiter and then applied to the plan before the gate: the check step passes to a rulings step (rhiza run review-check --rulings), which fails while a passed ruling is unapplied and sends the run to one apply-rulings visit of the plan reviser; a ruling still unapplied after it ends the run failed before the gate, so the gate never accepts a plan whose confirmed major the arbiter ruled on but nobody applied. An arbiter that cannot decide still fails the run naming the question. A normal run, whose review questions stay open for the owner, is unchanged."
+        },
+        "handle": "plan-rulings-applied-before-gate",
+        "id": "01M7MPK6PCG649WAMS3HW9E28B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "id": "01M7MPK6Q62YQTC24WWY6J55K5",
+        "link": "01M7MPK6Q62YQTC24WWX39FHTY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPGTKQMY2H0GF1R82ZQXFH",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "id": "01M7MPK6QXW98711972S9SPWCJ",
+        "link": "01M7MPK6QXW98711972P370RVZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5XG42916B2D34M1PNYPVJPB",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "reasoning": "The model has no other mechanical sign that a node followed a Decision; decided-by is the link every leaf uses for its Decisions and modellint.UnappliedDecisions already reads it the same way. Field-diff checks would need to guess which field the ruling changes. The finding's node can be a Decision in a landed record (plan-workflow-autonomous-left.txtar's keep-flat), so the check accepts any live node kind, written in any change set.",
+          "statement": "A ruling counts as applied when a live node links decided-by to the arbiter's Decision. The arbiter writes only the answers link to the question, so the reviser who changes the finding's node per the ruling links that node decided-by the Decision; the link is what rhiza run review-check --rulings tests. Only rulings whose arbitration passed count; open questions (a normal run) and failed arbitrations (which already fail the run) are not looked at."
+        },
+        "handle": "ruling-applied-means-decided-by",
+        "id": "01M7MPK6RXY3HBZHQ2EM44CAPC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MPK6RXY3HBZHQ2EJM5JV5D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6RXY3HBZHQ2EJM5JV5D",
+        "id": "01M7MPK6SVCDR8END9FSSPV3RX",
+        "link": "01M7MPK6SVCDR8END9FS7T0XKY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPGTKQMY2H0GF1R82ZQXFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "internal/api/run.go sets Answered only when the engine delivers to an asking session (an answered entry), which never happens for a session-less ask (engine.go arbitrateAsked: 'No session asked, so nothing is delivered'), so every review ruling reads 'not yet delivered', the symptom the intent quotes.",
+          "statement": "Run status says 'not yet delivered' only for a question a session asked and is waiting on. A question no session asked (a review question journalled by rhiza run review-check) has nothing to deliver: its passed ruling prints as '— decision <handle>' alone. RunQuestion gains an omitempty session field (the asking session) so the markdown can tell them apart; the --json change is additive."
+        },
+        "handle": "sessionless-ruling-not-undelivered",
+        "id": "01M7MPK6TPAPT4DB3KKN7MJX6H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7MPK6TPAPT4DB3KKJ1CT0GB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6TPAPT4DB3KKJ1CT0GB",
+        "id": "01M7MPK6VKVKZ2F8A6EQ5FAQAV",
+        "link": "01M7MPK6VKVKZ2F8A6EPCCSGFG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPGTKQMY2H0GF1R82ZQXFH",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestRunReviewCheckRulings' passes, covering: no asked entry passes; a passed ruling whose Decision a live node links decided-by passes (one case with a capability, one with a Decision node in a landed record); an open (unarbitrated) question passes; and go test -trimpath ./cmd/rhiza -run 'TestScripts/describe-golden' passes with the golden regenerated for the new flag. Failure case: a passed ruling whose Decision has only its answers link fails with an error naming the question handle and the Decision handle, and the same with the only decided-by link retired.",
+          "files": "internal/api/run_review.go, internal/api/run_review_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/reference/cli.md",
+          "must_not": "Change what review-check does without --rulings, its conductor path (checksDeclaringStep) or the questions it adds at round 3; write to the model or the journal; count a question a session asked.",
+          "statement": "rhiza run review-check --rulings passes when every review question of the run (a session-less asked entry) whose arbitration passed has its answering Decision applied, a live node linking decided-by to it, and when there is no such question; otherwise it exits non-zero listing each unapplied ruling (question handle, Decision handle, the node of the finding it came from) with next rhiza run status. It judges and writes nothing."
+        },
+        "handle": "plan-review-check-rulings",
+        "id": "01M7MPK6WHYWK078TGV1D3X2X5",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M7MPK6WHYWK078TGV14QZA33",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6WHYWK078TGV14QZA33",
+        "id": "01M7MPK6XJRW1JNT8G9ZJ45A3N",
+        "link": "01M7MPK6XJRW1JNT8G9W8Y50XA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK6WHYWK078TGV14QZA33",
+        "id": "01M7MPK6YMK6H8BS2HZMHE0PJY",
+        "link": "01M7MPK6YMK6H8BS2HZJMB0R2Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6RXY3HBZHQ2EJM5JV5D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview' passes with the step list, prompts, transitions and caps updated. go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous-left' passes with its fake reviser, on the apply-rulings prompt, linking each finding's node decided-by the arbiter's Decision: the run succeeds with rulings visit 1 failing, apply-rulings visit 1 passing, rulings visit 2 passing, then gate. go test -trimpath ./cmd/rhiza -run 'TestScripts/plan-workflow(-pr)?$' passes (a clean review goes through rulings to the gate). Failure case: a new script plan-workflow-autonomous-unapplied.txtar, the same run with a reviser that writes nothing on the apply-rulings prompt, ends the run failed, no gate step was entered, the draft change set is not accepted, and run status names the unapplied Decision.",
+          "files": "internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml, internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/plan-workflow-autonomous-left.txtar, cmd/rhiza/testdata/script/plan-workflow-autonomous-unapplied.txtar",
+          "must_not": "Change the review, critic, check or revise steps or their caps; add a review round after the rulings; let the arbiter write anything but its Decision; change the ship steps after the gate.",
+          "statement": "The built-in plan and plan-milestone workflows pass check to a rulings command step (run = rhiza run review-check --rulings, max_visits 2, on.pass gate, on.fail apply-rulings) and add an apply-rulings agent step (prompt '/rhiza-plan-reviser Apply the arbiter's rulings on the plan of change set {change}: follow rhiza guide plan-reviser.', until true, until_when done, max_visits 1, on.pass rulings), so a ruling still unapplied after one apply visit ends the run failed before the gate."
+        },
+        "handle": "plan-workflow-applies-rulings",
+        "id": "01M7MPK702EK9NJWH7V39W3FZ4",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "id": "01M7MPK711889NN4TPSVAXWX5M",
+        "link": "01M7MPK711889NN4TPSR1N1296",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "id": "01M7MPK725JSKJR1ADB1NTV4X4",
+        "link": "01M7MPK725JSKJR1ADB0S94VJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestPlanReviserText' passes, asserting the rulings section names rhiza run status --json, the decided-by link from the finding's node to the Decision, --record for a landed record, and the rule never to edit the Decision, with the existing headings still in order.",
+          "failure_waiver": "Guide text only: the test asserts the text is present; there is no runtime failure path in this leaf (the run failing on an unapplied ruling is plan-workflow-applies-rulings' failure case).",
+          "files": "internal/guide/text/plan-reviser.md, internal/guide/plan_reviser_test.go",
+          "must_not": "Change the confirmed-findings instructions or other guide topics; tell the reviser to write a quote or a new Decision.",
+          "statement": "rhiza guide plan-reviser has a section for a visit told to apply the arbiter's rulings: read the run's questions with a decision in rhiza run status --json, and for each change the node of the finding it answers as the Decision says (with rhiza apply in the change set holding the node, --record for a landed record) and link that node decided-by the Decision; never edit, retire or re-link the Decision, and change nothing a ruling does not name."
+        },
+        "handle": "plan-reviser-applies-rulings",
+        "id": "01M7MPK73E4BCQACH2KHE2KS3H",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "id": "01M7MPK74N750MEWEVAZSMJ2TD",
+        "link": "01M7MPK74N750MEWEVAWYK10MH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6PCG649WAMS3GN7ST9G",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "id": "01M7MPK760S9EJQ99G3YRPZ6VM",
+        "link": "01M7MPK760S9EJQ99G3W41JM0Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6RXY3HBZHQ2EJM5JV5D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestRunInfoAcceptsAndQuestions' passes with a session-less passed question printing '— decision <handle>' and no 'not yet delivered', and its JSON having no session field; go test -trimpath ./cmd/rhiza -run 'TestScripts/describe-golden' passes with the golden regenerated. Failure case: a session's passed question not yet delivered still prints ', not yet delivered' and carries its session.",
+          "files": "internal/api/run.go, internal/api/run_test.go, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change how or when the engine delivers answers, the arbitrated or answered journal entries, or any other run status section.",
+          "statement": "rhiza run status prints a passed ruling on a question no session asked as '— decision <handle>' without ', not yet delivered', which stays only for a session's question whose answer the engine has not delivered; RunQuestion carries the asking session in an omitempty session field."
+        },
+        "handle": "run-status-sessionless-ruling",
+        "id": "01M7MPK782XNNC37XVT70H3NSX",
+        "key": "zzzzzzzzr",
+        "kind": "capability",
+        "node": "01M7MPK782XNNC37XVT5G84EX9",
+        "op": "node.create",
+        "parent": "01M5WSGC24VYV3Y9D1N4WQ39PC"
+      },
+      {
+        "decision": null,
+        "from": "01M7MPK782XNNC37XVT5G84EX9",
+        "id": "01M7MPK79PD1QF3JBADB8PJJ3K",
+        "link": "01M7MPK79PD1QF3JBAD9RH55SA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6TPAPT4DB3KKJ1CT0GB",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MPK7B8R0E9QRY34P14EEAX",
+  "type": "ops",
+  "v": 1
+}
