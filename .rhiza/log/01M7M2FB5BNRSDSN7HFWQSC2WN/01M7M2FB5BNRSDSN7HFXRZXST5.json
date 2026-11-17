@@ -1,0 +1,15 @@
+{
+  "actor": "01M7M2853Y6TEBKM4CE9VE1HAT",
+  "after": [],
+  "at": "2026-11-17T06:17:56Z",
+  "body": {
+    "intent": "rhiza run spawn can return once the child starts, and the child's rhiza session done (or a blocked question) wakes the conductor with rhiza session message, so a conductor ends its turn instead of blocking on spawn; every child stays a Rhiza session on the run's ledger (idea from rex-teams, passed on by the orchestrator 2026-11-17)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7M2FB5BNRSDSN7HFWQSC2WN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7M2FB5BNRSDSN7HFXRZXST5",
+  "type": "open",
+  "v": 1
+}
