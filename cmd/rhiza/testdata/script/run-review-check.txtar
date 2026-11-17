@@ -18,7 +18,7 @@ exec git add -A
 exec git commit -qm init
 exec rhiza change new 'Review check' --title 'Review check' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
-exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add capability cap-a --field 'statement=Does A' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
 exec rhiza add decision dec-a --field 'statement=Use A'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml

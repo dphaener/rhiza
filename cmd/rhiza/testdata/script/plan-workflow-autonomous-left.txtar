@@ -1,7 +1,8 @@
 # An autonomous plan, on an intention change set, whose review leaves findings after round 3.
 # The planner writes an intent under a landed milestone, then a leaf with
-# no acceptance into its serving draft. Every round the reviewer finds the leaf missing its
-# acceptance and the record's Decision contradictory, the critic confirms
+# its whole contract into its serving draft, so review-check's leaf-contract
+# check passes. Every round the reviewer still finds the leaf's acceptance
+# wanting and the record's Decision contradictory, the critic confirms
 # both and the reviser does nothing. After round 3 the check leaves one
 # question in the draft (the leaf lives there) and one in a landed record
 # write (the Decision lives in the landed record). The arbiter answers
@@ -85,7 +86,7 @@ fold-ok
 -- leaf.json --
 {"writes":[
   {"op":"add","kind":"capability","handle":"export-csv","fields":[
-    "statement=Users export any report as CSV"]},
+    "statement=Users export any report as CSV", "files=internal/export/csv.go", "must_not=change other report formats", "acceptance=A test exports a 100k-row report with flat memory use; failure case: an unknown report is refused"]},
   {"op":"link","from":"export-csv","type":"decided-by","to":"keep-flat"}
 ]}
 -- findings.json --

@@ -82,8 +82,8 @@ func TestReviewFindingsNameLinks(t *testing.T) {
 	t.Parallel()
 	f := newSessionFixture(t, "links")
 	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
-	x := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`).Nodes[0]
-	y := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"y"}`).Nodes[0]
+	x := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x","fields":["statement=Does x","acceptance=It does x; (failure case) it refuses bad input","files=internal/x.go","must_not=touch other files"]}`).Nodes[0]
+	y := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"y","fields":["statement=Does y","acceptance=It does y; (failure case) it refuses bad input","files=internal/y.go","must_not=touch other files"]}`).Nodes[0]
 	modelLink := mustWrite(t, f.ctx, "link", `{"from":"x","type":"depends-on","to":"y"}`).Links[0]
 	b := newChange(t, f.ctx, `{"intent":"Plan B"}`)
 	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"z"}`)
@@ -254,7 +254,7 @@ func TestRunFindingsPlanKinds(t *testing.T) {
 	t.Parallel()
 	f := newSessionFixture(t, "plankinds")
 	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
-	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"x","fields":["statement=Does x","acceptance=It does x; (failure case) it refuses bad input","files=internal/x.go","must_not=touch other files"]}`)
 	t0 := time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
 	runID := "R13"

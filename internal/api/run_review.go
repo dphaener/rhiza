@@ -60,7 +60,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -1052,7 +1052,9 @@ func reviewQuestionText(n int, f run.Finding, reason string) string {
 }
 
 // runRunReviewCheck reads the run's latest review round. With no round
-// it fails; with no confirmed major finding (run.Round.Blocking) it
+// it fails. On this plan-review path it then fails, at every round and
+// writing nothing, while a live leaf of the plan lacks its contract
+// (planLeafContract). With no confirmed major finding (run.Round.Blocking) it
 // passes. Before round 3 such a finding fails it (exit 1), writing nothing. From round 3 it
 // adds a question node per confirmed finding, linked blocks to the
 // finding's node when that is a live capability where the question goes
@@ -1095,22 +1097,33 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 		return nil, Errorf("%s: run %s has no review round yet, so the plan is unreviewed: rhiza run findings opens one", cmd, rr.id).
 			WithNext("rhiza describe run.findings")
 	}
+	// The leaf contract fails at every round, never left as a question.
+	leaves, err := planLeafContract(ctx, cmd, rr)
+	if err != nil {
+		return nil, err
+	}
 	confirmed := rd.Blocking()
 	resp := RunReviewCheckResponse{Run: rr.id, Round: rd.Number, Confirmed: make([]RunFinding, 0, len(confirmed)), DryRun: ctx.DryRun}
 	for _, f := range confirmed {
 		resp.Confirmed = append(resp.Confirmed, runFinding(f, rd))
 	}
-	if len(confirmed) == 0 {
-		resp.Passed = true
-		return resp, nil
-	}
-	if rd.Number < reviewRoundCap {
+	var findings string
+	if len(confirmed) > 0 && rd.Number < reviewRoundCap {
 		lines := make([]string, 0, len(resp.Confirmed))
 		for _, f := range resp.Confirmed {
 			lines = append(lines, "- "+findingLine(f))
 		}
-		return nil, Errorf("%s: review round %d of run %s has %d confirmed finding(s); revise the plan and review it again:\n%s",
-			cmd, rd.Number, rr.id, len(confirmed), strings.Join(lines, "\n")).WithNext("rhiza run status " + rr.id)
+		findings = fmt.Sprintf("%s: review round %d of run %s has %d confirmed finding(s); revise the plan and review it again:\n%s",
+			cmd, rd.Number, rr.id, len(confirmed), strings.Join(lines, "\n"))
+	}
+	switch {
+	case len(leaves) > 0:
+		return nil, leafContractError(cmd, rr.id, rr.change, leaves, findings)
+	case len(confirmed) == 0:
+		resp.Passed = true
+		return resp, nil
+	case findings != "":
+		return nil, Errorf("%s", findings).WithNext("rhiza run status " + rr.id)
 	}
 
 	w, err := openCtxWorkspace(ctx)

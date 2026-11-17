@@ -95,7 +95,7 @@ fold-ok
 ]}
 -- leaf.json --
 {"writes":[
-  {"op":"add","kind":"capability","handle":"export-csv","fields":["statement=Users export any report as CSV"]},
+  {"op":"add","kind":"capability","handle":"export-csv","fields":["statement=Users export any report as CSV", "files=internal/export/csv.go", "must_not=change other report formats", "acceptance=A test exports a 100k-row report with flat memory use; failure case: an unknown report is refused"]},
   {"op":"link","from":"export-csv","type":"decided-by","to":"csv-streaming"}
 ]}
 -- findings.json --
@@ -106,7 +106,7 @@ fold-ok
 {"verdicts":[{"finding":"f1","verdict":"confirmed","reason":"export-csv has no acceptance field"}]}
 -- fix.json --
 {"writes":[
-  {"op":"set","ref":"export-csv","fields":["acceptance=A test exports a 100k-row report with flat memory use"]}
+  {"op":"set","ref":"export-csv","fields":["acceptance=A test exports a 100k-row report with flat memory use; failure case: an unknown report is refused"]}
 ]}
 -- transcript.jsonl --
 {"type": "user", "message": {"role": "user", "content": "Stream it, reports get huge"}}

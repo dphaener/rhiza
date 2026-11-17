@@ -1797,7 +1797,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run review-check
 
-Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass.
+Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver.
 
 ```
 rhiza run review-check [--fresh] [--findings]

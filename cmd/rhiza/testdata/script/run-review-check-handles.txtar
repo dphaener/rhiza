@@ -10,14 +10,14 @@ exec rhiza init
 exec git add -A
 exec git commit -qm init
 exec rhiza change new 'Handles' --title 'Handles' --json
-exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add capability cap-a --field 'statement=Does A' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
 mkdir .rhiza/workflows
 cp $WORK/hold.toml .rhiza/workflows/hold.toml
 exec sh -c 'ls .rhiza/log/*/*.json | wc -l > $WORK/n1'
 exec rhiza run start --foreground --workflow hold --no-wait
 exec sh -c 'ls .git/rhiza/runs | grep "\.jsonl$" | sed "s/\.jsonl$//" > $WORK/run1'
 exec rhiza change new 'Handles two' --title 'Handles two' --json
-exec rhiza add capability cap-b --field 'statement=Does B'
+exec rhiza add capability cap-b --field 'statement=Does B' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
 # The test clock adds a second per log entry, so start run 2 with its clock
 # wound back by the entries written since run 1: both start in the same
 # second, and their IDs share the first 8 characters the old handle used.

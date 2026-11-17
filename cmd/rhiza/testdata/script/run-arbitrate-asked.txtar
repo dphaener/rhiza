@@ -21,7 +21,7 @@ exec git add -A
 exec git commit -qm init
 exec rhiza change new 'Asked runs' --title 'Asked runs' --json
 stdout '"change_set": "[0-9A-Z]{26}"'
-exec rhiza add capability cap-a --field 'statement=Does A'
+exec rhiza add capability cap-a --field 'statement=Does A' --field 'acceptance=It works; failure case: bad input is refused' --field 'files=internal/x.go' --field 'must_not=touch other files'
 mkdir .rhiza/workflows
 cp $WORK/plan.toml .rhiza/workflows/plan.toml
 exec git add -A

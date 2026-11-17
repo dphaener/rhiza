@@ -101,7 +101,7 @@ func TestReviewCheckRefusesStaleRound(t *testing.T) {
 	store := run.NewStore(run.Dir(f.common))
 	if err := store.Create("R8", run.Entry{
 		Type: run.TypeStarted, Step: "review", At: t0,
-		Started: &run.Started{Workflow: "plan", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plan it"},
+		Started: &run.Started{Workflow: "plan", Change: currentOf(t, f.ctx).String(), Title: "Plan it"},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +244,7 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 	rs := run.NewStore(run.Dir(f.common))
 	if err := rs.Create("R12", run.Entry{
 		Type: run.TypeStarted, Step: "review", At: t0,
-		Started: &run.Started{Workflow: "plan", Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Plan it"},
+		Started: &run.Started{Workflow: "plan", Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n", Change: currentOf(t, f.ctx).String(), Title: "Plan it"},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -526,4 +526,109 @@ func TestReviewCheckDeclaredChecks(t *testing.T) {
 	if _, err := review(); err != nil {
 		t.Errorf("dropped major: %v", err)
 	}
+}
+
+// On the plan-review path review-check fails, at every round, while a live
+// leaf the plan creates or changes lacks statement, acceptance, files or
+// must_not, or a failure case in its acceptance with no failure_waiver,
+// naming the leaf and what it lacks; a clean round over leaves with all of
+// them passes. At round 3 the failure still fails and adds no question. A
+// parent capability and a conductor run's review-check are not checked.
+func TestReviewCheckLeafContract(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "leafcontract")
+	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"parent","fields":["statement=Holds the leaves"]}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-a","parent":"parent","fields":["statement=Does A","acceptance=go test passes; (Failure Case) a bad input is refused","files=internal/a.go","must_not=touch b"]}`)
+	t0 := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	runID := "R20"
+	start := func(rid, def, step string) {
+		t.Helper()
+		if err := store.Create(rid, run.Entry{
+			Type: run.TypeStarted, Step: step, At: t0,
+			Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it", Definition: def},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		runID = rid
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append(runID, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return runID
+		}
+		return ""
+	}
+	cleanRound := func(visit int) {
+		app(run.Entry{Type: run.TypeEntered, Step: "review", Visit: visit})
+		app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}})
+	}
+	set := func(fields string) {
+		t.Helper()
+		mustWrite(t, f.ctx, "set", `{"ref":"leaf-a",`+fields+`}`)
+	}
+	pass := func(what string) {
+		t.Helper()
+		if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
+			t.Fatalf("%s: %v", what, err)
+		}
+	}
+	fail := func(what string, names ...string) {
+		t.Helper()
+		_, err := callOp(t, f.ctx, "run.review-check", `{}`)
+		e := AsError(err)
+		if e == nil {
+			t.Fatalf("%s: passed, want a failure", what)
+		}
+		for _, n := range names {
+			if !strings.Contains(e.Message, n) {
+				t.Errorf("%s: %q missing from %v", what, n, e.Message)
+			}
+		}
+		if strings.Contains(e.Message, "parent (") {
+			t.Errorf("%s: the parent capability was checked: %v", what, e.Message)
+		}
+	}
+
+	plan := "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n"
+	start("R20", plan, "review")
+	cleanRound(1)
+	pass("a clean round over a leaf with its whole contract")
+
+	set(`"unset":["files"]`)
+	fail("a leaf missing files", "leaf-a", "lacks files")
+	set(`"fields":["files=internal/a.go","acceptance=go test passes"]`)
+	fail("an acceptance with no failure case", "leaf-a", "a failure case")
+	set(`"fields":["failure_waiver=A pure rename has no failure path"]`)
+	pass("the same leaf with a failure_waiver")
+
+	// Round 3: the leaf-contract failure still fails, leaving no question.
+	set(`"unset":["failure_waiver","must_not"]`)
+	cleanRound(2)
+	app(run.Entry{Type: run.TypeEntered, Step: "review", Visit: 3})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{{ID: "f1", Node: "leaf-a", Kind: run.KindContradiction, Reason: "wrong"}}})
+	app(run.Entry{Type: run.TypeVerdict, Step: "critic", Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed, Reason: "right"}}})
+	fail("round 3 with a leaf lacking its contract", "leaf-a", "must_not", "a failure case")
+	st, _ := store.Read(runID)
+	if n := len(st.State().Asked); n != 0 {
+		t.Fatalf("round 3 leaf-contract failure asked %d question(s)", n)
+	}
+	if rd, _ := st.State().LatestRound(); rd.Number != 3 {
+		t.Fatalf("latest round %d, want 3", rd.Number)
+	}
+
+	// A conductor run on the same plan reads only its checks' rounds.
+	conduct := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n[[step.conduct.check]]\nname = \"plan\"\n" +
+		"[step.gate]\nkind = \"command\"\nrun = \"true\"\n"
+	start("R21", conduct, "conduct")
+	app(run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1})
+	app(run.Entry{Type: run.TypeFindings, Step: "conduct", Check: "plan", Cycle: 1, Findings: []run.Finding{}})
+	pass("a conductor run with a leaf lacking its contract")
 }
