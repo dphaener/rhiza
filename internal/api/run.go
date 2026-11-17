@@ -2635,7 +2635,8 @@ func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.Handback
 }
 
 // messageSession sends a live session text as a message from the run's
-// caller (see Deliver).
+// caller (see Deliver), first clearing the done mark an earlier visit
+// left.
 func (r *stepRunner) messageSession(rec session.Record, text string) error {
 	if err := messageable(rec); err != nil {
 		return err
@@ -2647,6 +2648,14 @@ func (r *stepRunner) messageSession(rec session.Record, text string) error {
 	dir, rel, err := messageFolder(r.ctx, rec)
 	if err != nil {
 		return err
+	}
+	// The session said done on an earlier visit: clear that mark before
+	// the hand-back reaches it, so this visit counts as done only on a
+	// fresh session done (resumeSession clears the whole status).
+	if rec.Status.SaidDone() {
+		if _, err := r.sessions.Update(rec.ID, func(x *session.Record) { x.Status.Done = nil }); err != nil {
+			return fmt.Errorf("clear session %s's done mark: %v", rec.ID, err)
+		}
 	}
 	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
 	if err != nil {

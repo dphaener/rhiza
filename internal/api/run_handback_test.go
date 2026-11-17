@@ -115,6 +115,82 @@ func TestHandbackDeliver(t *testing.T) {
 		}
 	})
 
+	t.Run("a live session that said done on an earlier visit has its done mark cleared", func(t *testing.T) {
+		f, r, dir := handbackFixture(t, askAgent)
+		f.setHook(t, session.StateIdle, "")
+		if _, err := f.st.Update(f.sid, func(x *session.Record) {
+			x.Status.Done = &session.Report{State: session.StateDone, At: f.ctx.Now().UTC()}
+		}); err != nil {
+			t.Fatal(err)
+		}
+		f.rex.calls = nil
+		if err := r.Handback(handbackStep(), f.sid, run.CauseOf(cmd, "fail", "exit 1\nboom")); err != nil {
+			t.Fatal(err)
+		}
+		rec, err := f.st.Read(f.sid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if rec.Status.SaidDone() {
+			t.Errorf("done mark %+v kept after the hand-back", rec.Status.Done)
+		}
+		if rec.Status.Hook == nil || rec.Status.Hook.State != session.StateIdle {
+			t.Errorf("hook report %+v: want it left idle", rec.Status.Hook)
+		}
+		data, err := os.ReadFile(f.messageFile("0001.md"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := "Fix it, see " + filepath.Join(dir, "handback.md"); !strings.HasSuffix(strings.TrimSpace(string(data)), want) {
+			t.Errorf("message:\n%s\nwant it to end %q", data, want)
+		}
+		if len(f.rex.calls) != 2 || f.rex.calls[0][1] != "send" {
+			t.Errorf("rex calls %q", f.rex.calls)
+		}
+		if st, err := r.AgentStatus(f.sid); err != nil || st.SaidDone {
+			t.Fatalf("status after the hand-back %+v, %v: want not said done", st, err)
+		}
+		// A fresh session done marks the visit done again.
+		resp, err := callOp(t, f.ctx, "session.done", `{"id":"`+f.sid+`"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if d := resp.(SessionDoneResponse); d.Already {
+			t.Errorf("session done %+v: want a fresh mark, not already done", d)
+		}
+		if st, err := r.AgentStatus(f.sid); err != nil || !st.SaidDone {
+			t.Errorf("status after session done %+v, %v: want said done", st, err)
+		}
+	})
+
+	t.Run("a failed hand-back leaves a live session's done mark in place", func(t *testing.T) {
+		f, r, _ := handbackFixture(t, askAgent)
+		f.setHook(t, session.StateIdle, "")
+		mark := &session.Report{State: session.StateDone, At: f.ctx.Now().UTC()}
+		if _, err := f.st.Update(f.sid, func(x *session.Record) { x.Status.Done = mark }); err != nil {
+			t.Fatal(err)
+		}
+		f.rex.calls = nil
+		step := workflow.Step{Name: "build", Kind: workflow.KindAgent}
+		err := r.Handback(step, f.sid, run.CauseOf(cmd, "fail", "exit 1\nboom"))
+		if err == nil || !strings.Contains(err.Error(), "step build") {
+			t.Fatalf("error %v: want it to name step build", err)
+		}
+		rec, err := f.st.Read(f.sid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !rec.Status.SaidDone() {
+			t.Error("the failed hand-back cleared the done mark")
+		}
+		if _, err := os.Stat(f.messageFile("0001.md")); !os.IsNotExist(err) {
+			t.Errorf("message written: %v", err)
+		}
+		if len(f.rex.calls) != 0 {
+			t.Errorf("rex calls %q", f.rex.calls)
+		}
+	})
+
 	t.Run("an ended session is resumed with the same session ID", func(t *testing.T) {
 		f, r, dir := handbackFixture(t, resumeAgent)
 		code := 0
