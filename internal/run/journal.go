@@ -4,10 +4,12 @@
 package run
 
 import (
+	"fmt"
 	"maps"
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -120,6 +122,10 @@ const (
 	// TypeWarning records a warning on the run: Detail says what. It never
 	// changes the run's state or result, and may follow the finished entry.
 	TypeWarning = "warning"
+	// TypeNote is a one-line learning a session journaled on the run
+	// (rhiza run note): Text, and Step, Session, Role and Leaf as the
+	// session had them. It changes nothing else in the fold.
+	TypeNote = "note"
 )
 
 // Sign-off outcomes, a signoff entry's Outcome.
@@ -430,6 +436,9 @@ type Block struct {
 //	           resume on the run; it does so once)
 //	warning:   Detail (a warning on the run; the run's state is untouched,
 //	           and the entry may come after the run finished)
+//	note:      Text, Step, Session, Role, Leaf (a one-line learning journaled
+//	           by rhiza run note, with the step the run was at and the
+//	           noting session, role and leaf when set)
 //	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
 //	           or changes), Findings (signoff step Step's visit Visit was
 //	           signed off: approved, or with changes, the owner's findings,
@@ -691,6 +700,35 @@ type Message struct {
 	Summary    string
 	Structured bool
 	At         time.Time
+}
+
+// Note is one note entry: a one-line learning journaled on the run, with
+// the step the run was at and the session, role and leaf that wrote it
+// (each empty when not set).
+type Note struct {
+	Step    string
+	Session string
+	Role    string
+	Leaf    string
+	Text    string
+	At      time.Time
+}
+
+// NoteMax is the most characters a note may hold.
+const NoteMax = 200
+
+// NoteProblem says why text cannot be a note: empty (or only spaces),
+// more than one line, or over NoteMax characters; "" when it can.
+func NoteProblem(text string) string {
+	switch {
+	case strings.TrimSpace(text) == "":
+		return "a note needs text"
+	case strings.ContainsAny(text, "\n\r"):
+		return "a note is one line: it holds a line break"
+	case utf8.RuneCountInString(text) > NoteMax:
+		return fmt.Sprintf("a note is at most %d characters: it has %d", NoteMax, utf8.RuneCountInString(text))
+	}
+	return ""
 }
 
 // RunSession is one session the run launched or read token use for, with
@@ -1378,6 +1416,9 @@ type State struct {
 	DaemonResumedAt time.Time
 	// Warnings are the run's warning entries' details, in order.
 	Warnings []string
+	// Notes are the run's note entries, oldest first. A note changes
+	// nothing else in the fold.
+	Notes []Note
 	// StoppedAt is when the last stopped entry was journalled, and EndedAt
 	// when the finished entry was; zero while there is none.
 	StoppedAt time.Time
@@ -1599,6 +1640,8 @@ func (j Journal) State() State {
 			st.DaemonResumed, st.DaemonResumedAt = true, e.At
 		case TypeWarning:
 			st.Warnings = append(st.Warnings, e.Detail)
+		case TypeNote:
+			st.Notes = append(st.Notes, Note{Step: e.Step, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Text: e.Text, At: e.At})
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step

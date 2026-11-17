@@ -4334,6 +4334,44 @@ cmp stdout describe.golden.json
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
               },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -6272,6 +6310,44 @@ cmp stdout describe.golden.json
               "milestone_number": {
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
+              },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -10301,6 +10377,44 @@ cmp stdout describe.golden.json
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
               },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -12076,6 +12190,44 @@ cmp stdout describe.golden.json
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
               },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -13825,6 +13977,81 @@ cmp stdout describe.golden.json
       "write": false
     },
     {
+      "name": "run.note",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "run": {
+            "description": "The run: a full ID or a unique prefix of 4+ characters; defaults to RHIZA_RUN's",
+            "type": "string"
+          },
+          "text": {
+            "description": "The note: one line of at most 200 characters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "note": {
+            "additionalProperties": false,
+            "description": "The note as journaled",
+            "properties": {
+              "at": {
+                "description": "When it was journaled, RFC 3339 UTC",
+                "type": "string"
+              },
+              "leaf": {
+                "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                "type": "string"
+              },
+              "role": {
+                "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                "type": "string"
+              },
+              "session": {
+                "description": "The noting session (RHIZA_SESSION); absent when not set",
+                "type": "string"
+              },
+              "step": {
+                "description": "The step the run was at; absent when it was at none",
+                "type": "string"
+              },
+              "text": {
+                "description": "The note",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "text"
+            ],
+            "type": "object"
+          },
+          "run": {
+            "description": "The run's full ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note",
+          "run"
+        ],
+        "type": "object"
+      },
+      "summary": "Journal a one-line learning (at most 200 characters) on the run RHIZA_RUN names, or --run, with the noting session, role and leaf from RHIZA_SESSION, RHIZA_ROLE and RHIZA_LEAF when set; rhiza run status lists the run's notes oldest first",
+      "write": true
+    },
+    {
       "name": "run.open",
       "request": {
         "additionalProperties": false,
@@ -14935,6 +15162,44 @@ cmp stdout describe.golden.json
               "milestone_number": {
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
+              },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -16754,6 +17019,44 @@ cmp stdout describe.golden.json
               "milestone_number": {
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
+              },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -18643,6 +18946,44 @@ cmp stdout describe.golden.json
               "milestone_number": {
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
+              },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
@@ -20599,6 +20940,44 @@ cmp stdout describe.golden.json
                 "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
                 "type": "integer"
               },
+              "notes": {
+                "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "description": "When it was journaled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "leaf": {
+                      "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                      "type": "string"
+                    },
+                    "role": {
+                      "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                      "type": "string"
+                    },
+                    "session": {
+                      "description": "The noting session (RHIZA_SESSION); absent when not set",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    },
+                    "text": {
+                      "description": "The note",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "text"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "pick": {
                 "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",
                 "type": "string"
@@ -22262,6 +22641,44 @@ cmp stdout describe.golden.json
           "milestone_number": {
             "description": "The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none",
             "type": "integer"
+          },
+          "notes": {
+            "description": "The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "description": "When it was journaled, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "leaf": {
+                  "description": "The leaf it worked on (RHIZA_LEAF); absent when not set",
+                  "type": "string"
+                },
+                "role": {
+                  "description": "The noting session's role (RHIZA_ROLE), such as builder or verifier; absent when not set",
+                  "type": "string"
+                },
+                "session": {
+                  "description": "The noting session (RHIZA_SESSION); absent when not set",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the run was at; absent when it was at none",
+                  "type": "string"
+                },
+                "text": {
+                  "description": "The note",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "text"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "pick": {
             "description": "Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded",

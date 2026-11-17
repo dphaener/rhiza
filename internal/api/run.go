@@ -213,6 +213,7 @@ type RunInfo struct {
 	Sessions        []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
 	Totals          SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
 	Warnings        []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
+	Notes           []RunNote          `json:"notes,omitempty" desc:"The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none"`
 	Retries         []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
 	Accepts         []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
 	Questions       []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
@@ -3132,6 +3133,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		Amendments: []RunAmendment{}, Messages: []RunMessage{}, Sessions: []RunSession{},
 		Autonomy: runStageAutonomy(st.Autonomy),
 		Warnings: slices.Clone(st.Warnings),
+		Notes:    runNotes(st.Notes),
 	}
 	switch {
 	case st.Ended:
@@ -3659,6 +3661,12 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## Amendments\n\n")
 		for _, a := range r.Amendments {
 			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
+		}
+	}
+	if len(r.Notes) > 0 {
+		fmt.Fprintf(w, "\n## Notes\n\n")
+		for _, n := range r.Notes {
+			fmt.Fprintf(w, "- %s%s: %s\n", n.At, noteBy(n), n.Text)
 		}
 	}
 	if len(r.Messages) > 0 {

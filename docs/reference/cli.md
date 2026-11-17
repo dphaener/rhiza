@@ -98,6 +98,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza run log`](#rhiza-run-log)
 - [`rhiza run ls`](#rhiza-run-ls)
 - [`rhiza run milestone-check`](#rhiza-run-milestone-check)
+- [`rhiza run note`](#rhiza-run-note)
 - [`rhiza run open`](#rhiza-run-open)
 - [`rhiza run recommend`](#rhiza-run-recommend)
 - [`rhiza run request-changes`](#rhiza-run-request-changes)
@@ -1693,6 +1694,27 @@ Output (`--json` fields):
 - `change_sets` (array of string): The plan's change sets checked, by ID, checked against the milestone and policy rules
 - `run` (string): The run's full ID
 
+## rhiza run note
+
+Journal a one-line learning (at most 200 characters) on the run RHIZA_RUN names, or --run, with the noting session, role and leaf from RHIZA_SESSION, RHIZA_ROLE and RHIZA_LEAF when set; rhiza run status lists the run's notes oldest first.
+
+```
+rhiza run note <text> [--run <run>]
+```
+
+Appends to the log.
+
+Arguments and flags:
+
+- `<text>`: The note: one line of at most 200 characters (required)
+- `--run`: The run: a full ID or a unique prefix of 4+ characters; defaults to RHIZA_RUN's
+
+Output (`--json` fields):
+
+- `dry_run` (boolean): True if nothing was written
+- `note` (object): The note as journaled
+- `run` (string): The run's full ID
+
 ## rhiza run open
 
 Focus the Rex tab of a change set's live run; says so when it has no live run or its tab is gone.
@@ -1960,6 +1982,7 @@ Output (`--json` fields):
 - `leaves` (array of object): The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none
 - `messages` (array of object): The messages its sessions sent each other, in order
 - `milestone_number` (integer): The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none
+- `notes` (array of object): The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none
 - `pick` (string): Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded
 - `pr` (string): While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise
 - `pre_push` (object): The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran
