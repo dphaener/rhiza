@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MQB5X7GJE4ABS1RH3T8XSR",
+  "after": [
+    "01M7MQ0DMX8HVQZWQJSPKQ76WW"
+  ],
+  "at": "2026-11-17T12:23:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 0d2f9b2fe re-ran the Checks: block: go test -p 2 -trimpath -count=1 ./internal/api -run TestRunInfoAcceptsAndQuestions exit 0 (PASS); go test -p 2 -trimpath -count=1 ./cmd/rhiza -run TestScripts/describe-golden exit 0 (describe-golden PASS, golden carries the new session field and answered description in every RunQuestion schema); rhiza ship generate exit 0 (0 changed); rhiza render exit 0 (only this verifier's own actor rendered, reverted). Diff: RunQuestion gains Session string json session,omitempty, runInfo copies q.Session, Human prints ', not yet delivered' only when !Answered && Session != ''. Test covers the session-less passed Q5 printing '- review-q (Q5): Split? — decision use-z' with no 'not yet delivered' and no session key in its JSON, and the failure case Q4 (session S4, passed, undelivered) still printing ', not yet delivered' with session in its JSON. No engine delivery, journal entries or other status sections changed; no stubs or TODOs."
+        },
+        "handle": "run-status-sessionless-ruling-verified",
+        "id": "01M7MQCFT93A2NNENHJDY3FCYJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MQCFT93A2NNENHJAWXPVAD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MQCFT93A2NNENHJAWXPVAD",
+        "id": "01M7MQCFVG7VXY4VXHDX2NP2YQ",
+        "link": "01M7MQCFVG7VXY4VXHDX1D1D1N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MQCFXMRMZVX2XCHDEJTCHV",
+  "type": "ops",
+  "v": 1
+}

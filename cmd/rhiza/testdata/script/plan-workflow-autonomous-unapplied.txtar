@@ -1,0 +1,246 @@
+# An autonomous plan whose arbiter rulings are never applied: the failure
+# case of plan-workflow-autonomous-left.txtar. The same run (round 3 leaves
+# two findings as questions, the arbiter decides each with a Decision),
+# but the reviser writes nothing on the apply-rulings prompt. The rulings
+# check fails, the one apply-rulings visit changes nothing, the rulings
+# check fails again and the run ends failed before the gate: no gate step,
+# the draft change set not accepted, and run status names the unapplied
+# Decisions.
+#
+# The fake rex, claude and gh are plan-workflow-autonomous-left.txtar's,
+# with a reviser that never applies a ruling.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+env PATH=$WORK/bin:$PATH
+mkdir $HOME/.claude/projects/p
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+exec git add -A
+exec git commit -qm init
+exec git push -q -u origin main
+
+exec rhiza add intent ms --field milestone=1 --record
+exec rhiza add decision keep-flat --field 'statement=Exports keep memory flat' --field 'wording=Keep it flat' --field 'reasoning=Reports are large' --record
+exec git add -A
+exec git commit -qm 'Add milestone'
+exec git push -q origin main
+
+env REX_BLOCK=block:root
+env REX_SESSION=session:s1
+
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan exports" --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=[1-9]'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} failed$'
+stdout '^- check \(visit 3\): pass, then rulings: exit 0$'
+stdout '^- rulings \(visit 1\): fail, then apply-rulings: exit 1$'
+stdout '^- apply-rulings \(visit 1\): pass, then rulings, '
+stdout '^- rulings \(visit 2\): fail, '
+! stdout 'apply-rulings \(visit 2\)'
+! stdout '^- gate '
+! stdout 'open-pr'
+exec cat $WORK/prompts.log
+stdout -count=2 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
+stdout -count=1 '^/rhiza-plan-reviser Apply the arbiter.s rulings '
+! exists $WORK/gh.log
+
+# No gate entered: in the run's worktree, where the plan was written,
+# neither the intention change set nor its serving draft is accepted.
+cd $WORK/repo.plan-exports
+exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
+stdout '"state": "draft"'
+! stdout '"state": "accepted"'
+exec sh -c 'rhiza change show $(cat $WORK/cs) --json'
+stdout '"state": "draft"'
+! stdout '"state": "accepted"'
+
+# Run status names each unapplied Decision and the finding's node.
+exec sh -c 'rhiza run status $(sed -n "s/^Run \([0-9A-Z]*\) failed$/\1/p" $WORK/out)'
+stdout 'arbiter ruling\(s\) not applied'
+stdout 'decision settle-[0-9a-z]{26}, on the finding.s node export-csv'
+stdout 'decision settle-[0-9a-z]{26}, on the finding.s node keep-flat'
+fold-ok
+
+-- source.json --
+{"title":"Planning interview","summary":"An autonomous planner planned the exports milestone.","quotes":[]}
+-- record.json --
+{"writes":[
+  {"op":"add","kind":"intent","handle":"exports","fields":["statement=Users take their reports out of the product"],"parent":"ms"}
+]}
+-- leaf.json --
+{"writes":[
+  {"op":"add","kind":"capability","handle":"export-csv","fields":[
+    "statement=Users export any report as CSV", "files=internal/export/csv.go", "must_not=change other report formats", "acceptance=A test exports a 100k-row report with flat memory use; failure case: an unknown report is refused"]},
+  {"op":"link","from":"export-csv","type":"decided-by","to":"keep-flat"}
+]}
+-- findings.json --
+{"findings":[
+  {"node":"export-csv","kind":"missing-acceptance","reason":"No acceptance criteria"},
+  {"node":"keep-flat","kind":"contradiction","reason":"Says both"}
+]}
+-- verdict.json --
+{"verdicts":[
+  {"finding":"f1","verdict":"confirmed","reason":"It has none"},
+  {"finding":"f2","verdict":"confirmed","reason":"It clashes"}
+]}
+-- bin/rex --
+#!/bin/sh
+case "$1" in
+events)
+	exit 0
+	;;
+send | send-key)
+	echo "$*" >> "$WORK/typed.log"
+	exit 0
+	;;
+esac
+case "$1 $2" in
+"window close" | "block close")
+	exit 0
+	;;
+"block call")
+	echo '{"columns":200,"rows":50,"cell_width_px":8,"cell_height_px":16}'
+	exit 0
+	;;
+# The run's own block, in its window.
+"block inspect")
+	echo '{"block":{"window_id":"window:w0"}}'
+	exit 0
+	;;
+esac
+dir=
+started=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		started=1
+		break
+	fi
+	shift
+done
+# A call that starts no command waits for no agent.
+[ -n "$started" ] || exit 1
+i=0
+until [ -f "$WORK/ready" ]; do
+	i=$((i + 1))
+	if [ $i -gt 1600 ]; then
+		echo 'fake rex: the agent never got ready' >&2
+		exit 1
+	fi
+	sleep 0.025
+done
+rm -f "$WORK/ready"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+sid=
+for a; do last=$a; done
+while [ $# -gt 0 ]; do
+	if [ "$1" = --session-id ]; then
+		sid=$2
+	fi
+	shift
+done
+printf '%s\n' "$last" >> "$WORK/prompts.log"
+fail() {
+	echo "fake claude: $*" >> "$WORK/claude.err"
+	touch "$WORK/ready"
+	exit 1
+}
+case "$last" in
+/rhiza-planner*)
+	rec=$RHIZA_CHANGE
+	cp "$WORK/transcript.jsonl" "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl" 2>/dev/null
+	rhiza source add plan-interview "$WORK/source.json" --raw-session "$RHIZA_SESSION" --json >> "$WORK/agent.out" 2>&1
+	echo "$rec" > "$WORK/rec"
+	rhiza apply "$WORK/record.json" --json >> "$WORK/agent.out" || fail record
+	rhiza link "$rec" serves exports --change "$rec" >> "$WORK/agent.out" || fail rec-serves
+	rhiza change new 'Export reports' --json > "$WORK/new.out" || fail new
+	sed -n 's/.*"change_set": "\([0-9A-Z]*\)".*/\1/p' "$WORK/new.out" > "$WORK/cs"
+	rhiza link "$(cat "$WORK/cs")" serves exports --change "$rec" >> "$WORK/agent.out" || fail serves
+	rhiza link "$(cat "$WORK/cs")" serves ms --change "$(cat "$WORK/cs")" >> "$WORK/agent.out" || fail serves-ms
+	rhiza apply "$WORK/leaf.json" --change "$(cat "$WORK/cs")" --json >> "$WORK/agent.out" || fail leaf
+	;;
+*'rhiza guide arbiter'*)
+	q=$(printf '%s\n' "$last" | sed -n 's/^Decide question \([0-9A-Z]*\):.*/\1/p')
+	h=settle-$(printf '%s' "$q" | tr A-Z a-z)
+	rhiza change show "$RHIZA_CHANGE" --json > "$WORK/arb-cs.json" || fail arbiter change
+	kind=$(sed -n 's/^  "kind": "\([a-z]*\)".*/\1/p' "$WORK/arb-cs.json")
+	state=$(sed -n 's/^  "state": "\([a-z]*\)".*/\1/p' "$WORK/arb-cs.json")
+	if [ "$kind" = record ]; then
+		echo "record $RHIZA_CHANGE $state" >> "$WORK/arbiter.log"
+	else
+		echo "draft $RHIZA_CHANGE $state" >> "$WORK/arbiter.log"
+	fi
+	printf '{"writes":[{"op":"add","kind":"decision","handle":"%s","fields":["statement=Settle it","wording=(assumed, would have escalated)","reasoning=The plan says so"]},{"op":"link","from":"%s","type":"answers","to":"%s"}]}\n' "$h" "$h" "$q" > "$WORK/decision.json"
+	rhiza apply "$WORK/decision.json" --json >> "$WORK/agent.out" 2>> "$WORK/claude.err" || fail arbiter apply
+	;;
+/rhiza-plan-reviewer*)
+	rhiza run findings "$WORK/findings.json" --json >> "$WORK/agent.out" || fail findings
+	;;
+/rhiza-plan-critic*)
+	rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
+	;;
+/rhiza-plan-reviser\ Apply*)
+	# A reviser that applies no ruling.
+	;;
+/rhiza-plan-reviser*)
+	;;
+*)
+	fail "unexpected prompt: $last"
+	;;
+esac
+rhiza session done >> "$WORK/done.out" || fail done
+touch "$WORK/ready"
+exit 0
+-- transcript.jsonl --
+{"type": "user", "message": {"role": "user", "content": "Plan the exports"}}
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ ! -f "$WORK/pr.created" ]; then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ "$3" = 7 ]; then
+		printf '{"state":"MERGED","mergeCommit":{"oid":"%s"}}\n' "$(cat "$WORK/merged-head")"
+		exit 0
+	fi
+	head=$(git -C "$o" rev-parse --verify "refs/heads/$3")
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr merge")
+	# Squash-free: main on origin takes the branch as it was checked.
+	b=$(git -C "$o" for-each-ref --format='%(refname:short)' 'refs/heads/cs/*')
+	git -C "$o" rev-parse "refs/heads/$b" > "$WORK/merged-head"
+	git -C "$o" update-ref refs/heads/main "refs/heads/$b"
+	touch "$WORK/pr.merged"
+	;;
+"pr create")
+	while [ $# -gt 0 ]; do
+		if [ "$1" = --body-file ]; then
+			cp "$2" "$WORK/pr-body.md"
+		fi
+		shift
+	done
+	touch "$WORK/pr.created"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

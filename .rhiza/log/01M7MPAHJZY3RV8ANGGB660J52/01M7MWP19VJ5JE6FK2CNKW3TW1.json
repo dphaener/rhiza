@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MWF3TF8VPJKK8MHRM6A47X",
+  "after": [
+    "01M7MW73T3RRTF0DZZ2P0EEJS9"
+  ],
+  "at": "2026-11-17T13:55:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD 94911c803 at /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-fix-plan-run-arbiter-rulings/6f696e6c-9f58-4698-b518-01a1e9c78b82/scratchpad/bin/rhiza in two scratch autonomous plan runs (fake rex/claude/gh, own HOME/root): rulings visit 1 failed listing each unapplied ruling (question handle, decision handle, finding node incl. a link) with next rhiza run status; after the reviser linked decided-by, rulings visit 2 passed listing decided-by from each node. Run A 3 rulings, run B 2 (one leaf retired and split)."
+        },
+        "handle": "plan-review-check-rulings-qa-7",
+        "id": "01M7MWP0QY8MZMBW48MZ9TGVK8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MWP0QY8MZMBW48MXG2HTF7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MWP0QY8MZMBW48MXG2HTF7",
+        "id": "01M7MWP0SP4Y371YQMVXRPQFJ5",
+        "link": "01M7MWP0SP4Y371YQMVXNB8S0J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD 94911c803 at /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-fix-plan-run-arbiter-rulings/6f696e6c-9f58-4698-b518-01a1e9c78b82/scratchpad/bin/rhiza in two scratch autonomous plan runs (fake rex/claude/gh, own HOME/root): a reviser following the guide's 'Applying the arbiter's rulings' literally (run status --json questions with decision; question change else run's change set; rhiza show <decision> --change <it>; apply --change <cs> / --record for the node; link decided-by in <it>) succeeded for a serving-draft leaf, a link the serving draft created, a landed node, a landed link and a leaf the ruling retired and split; every command exited 0."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-7",
+        "id": "01M7MWP0V7J42AK0Q0193VX264",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MWP0V7J42AK0Q016GF6ZVD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MWP0V7J42AK0Q016GF6ZVD",
+        "id": "01M7MWP0WS2KQE34MA3ZDV6F7V",
+        "link": "01M7MWP0WS2KQE34MA3WNW0NV7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD 94911c803 at /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-fix-plan-run-arbiter-rulings/6f696e6c-9f58-4698-b518-01a1e9c78b82/scratchpad/bin/rhiza in two scratch autonomous plan runs (fake rex/claude/gh, own HOME/root): both runs went check (visit 3) pass -> rulings (visit 1) fail -> apply-rulings (visit 1) pass -> rulings (visit 2) pass -> gate pass; run B continued to merge and close-out and succeeded. go test ./cmd/rhiza -run TestScripts/(plan-workflow-autonomous-left|plan-workflow-autonomous-unapplied)$ passed."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-7",
+        "id": "01M7MWP0Z7YJT2AD0T4BVZTPHF",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MWP0Z7YJT2AD0T48T1HZYM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MWP0Z7YJT2AD0T48T1HZYM",
+        "id": "01M7MWP11GMP4XVJ8TNMPWSNR3",
+        "link": "01M7MWP11GMP4XVJ8TNK3MPB6N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD 94911c803 at /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-fix-plan-run-arbiter-rulings/6f696e6c-9f58-4698-b518-01a1e9c78b82/scratchpad/bin/rhiza in two scratch autonomous plan runs (fake rex/claude/gh, own HOME/root): questions on the serving-draft leaf and on the link the serving draft created went into the serving draft (status change = draft, arbiter started with RHIZA_CHANGE=draft); landed node keep-flat and landed link report-core->keep-flat questions stayed in the run's change set (no change field, arbiter RHIZA_CHANGE=run's change set)."
+        },
+        "handle": "review-question-in-node-change-set-qa-7",
+        "id": "01M7MWP1390SFGMMH17H6G0PDB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MWP1390SFGMMH17GA1JRVC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MWP1390SFGMMH17GA1JRVC",
+        "id": "01M7MWP14W1PYGM627Z51XNZ95",
+        "link": "01M7MWP14W1PYGM627Z4MRVRAR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch build of HEAD 94911c803 at /home/rhiza/tmp/claude-1000/-home-rhiza-code-rhiza-fix-plan-run-arbiter-rulings/6f696e6c-9f58-4698-b518-01a1e9c78b82/scratchpad/bin/rhiza in two scratch autonomous plan runs (fake rex/claude/gh, own HOME/root): rhiza run status printed each session-less passed question as '— decision settle-...' with no 'not yet delivered', and --json questions carried no session field (null) and change only for questions outside the run's change set."
+        },
+        "handle": "run-status-sessionless-ruling-qa-7",
+        "id": "01M7MWP16A322ZWAYRT84S42WK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MWP16A322ZWAYRT79W5NA5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MWP16A322ZWAYRT79W5NA5",
+        "id": "01M7MWP181G6MYF17BT1VAWNHT",
+        "link": "01M7MWP181G6MYF17BT0F8FH7D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MWP19VJ5JE6FK2CNKW3TW1",
+  "type": "ops",
+  "v": 1
+}

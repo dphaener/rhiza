@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MQRPAB99R0BG18TKWPMXGA",
+  "after": [
+    "01M7MQP28PERWRA0RXRAYK6J7K"
+  ],
+  "at": "2026-11-17T12:30:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4d8c1fa98 re-ran the Checks: block: go test -p 2 -trimpath -count=1 ./internal/guide -run 'TestPlanReviserText' (PASS, exit 0), go test -p 2 -trimpath -count=1 ./internal/guide (ok, exit 0), rhiza ship generate (exit 0, 0 files changed), rhiza render (exit 0, no tracked change beyond concurrent sessions' actor index lines). Read the diff: plan-reviser.md gains '### Applying the arbiter's rulings' under Must do naming rhiza run status --json, rhiza apply in the change set holding the node with --record for a landed record, decided-by from the finding's node / the link's from node / each replacing node (every new leaf of a split), never edit, retire or re-link the Decision, change nothing a ruling does not name; TestPlanReviserText asserts each phrase in that subsection and the six ## headings in order. Confirmed-findings text and other guide topics untouched; no stubs or TODOs."
+        },
+        "handle": "plan-reviser-applies-rulings-verified",
+        "id": "01M7MQT97AHP7KP0TARS23B8WW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MQT97AHP7KP0TARPAV1X9W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MQT97AHP7KP0TARPAV1X9W",
+        "id": "01M7MQT992FMMQ20302TXW83C2",
+        "link": "01M7MQT992FMMQ20302Q5XJC38",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MQT9ACK6D8KZSGVG399EVJ",
+  "type": "ops",
+  "v": 1
+}

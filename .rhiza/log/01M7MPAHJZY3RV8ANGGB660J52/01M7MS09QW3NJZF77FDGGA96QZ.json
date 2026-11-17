@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MRWPPMW1FJY9MGZ7V7KYR7",
+  "after": [
+    "01M7MR5TVDZ4KMYTEQ13REY2QS"
+  ],
+  "at": "2026-11-17T12:51:40Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 2c96751c5 (Leaf: plan-workflow-applies-rulings). Re-ran its Checks: go test -trimpath -p 2 ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview' exit 0 (plan-milestone covered by DeepEqual of steps with plan); go test ./cmd/rhiza -run TestScripts/plan-workflow-autonomous-left$ exit 0; TestScripts/plan-workflow-autonomous-unapplied$ exit 0; the combined (plan-workflow|plan-workflow-pr|plan-workflow-autonomous|plan-review-visit-round|plan-milestone-backlog|...-left|...-unapplied)$ run exit 0 with -count=1 (a first run under load failed plan-workflow-autonomous.txtar:68 on journal order, a tokens event after ended in the interview step, which is outside this diff; it passed 3/3 alone and in the full re-run); rhiza ship generate exit 0, 0 files changed; rhiza render exit 0. Diff: plan.toml and plan-milestone.toml route check on.pass to rulings (run rhiza run review-check --rulings, max_visits 2, on.pass gate, on.fail apply-rulings) and add apply-rulings (the exact reviser prompt, until true, until_when done, max_visits 1, on.pass rulings); review/critic/check/revise steps and caps and the post-gate ship steps are unchanged. The five scripts assert 'check (visit N): pass, then rulings' then 'rulings (visit 1): pass, then gate'. plan-workflow-autonomous-left asserts rulings visit 1 fail, apply-rulings visit 1, rulings visit 2 pass, gate, and its applied.log asserts both export-csv (in the serving draft) and keep-flat (in the run's change set) were applied, each shown decided-by a settle- Decision, so the leaf ruling is not narrowed away. Failure case plan-workflow-autonomous-unapplied.txtar: the run fails, no gate or open-pr step, rulings visit 2 fails with no second apply-rulings, both change sets stay draft, and run status names both unapplied Decisions (export-csv, keep-flat). No TODOs or stubs. Extra file cmd/rhiza/main_test.go adds only the processScripts entry the new script needs."
+        },
+        "handle": "plan-workflow-applies-rulings-verified",
+        "id": "01M7MS09N0Y7C07YSQ7NG3Q9T8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MS09N0Y7C07YSQ7JF1816P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MS09N0Y7C07YSQ7JF1816P",
+        "id": "01M7MS09PGGX35W225KBZ3BW9V",
+        "link": "01M7MS09PGGX35W225KAY4T2WM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MS09QW3NJZF77FDGGA96QZ",
+  "type": "ops",
+  "v": 1
+}

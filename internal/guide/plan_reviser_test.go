@@ -35,6 +35,22 @@ func TestPlanReviserText(t *testing.T) {
 			t.Errorf("plan-reviser Must do: no %q", w)
 		}
 	}
+	rulings := ""
+	if i := strings.Index(must, "### Applying the arbiter's rulings"); i >= 0 {
+		rulings = must[i:]
+	} else {
+		t.Errorf("plan-reviser Must do: no rulings section")
+	}
+	for _, w := range []string{"`rhiza run status --json`", "`decided-by` it there", "the finding's node, when it stays live", "the link's `from` node, when the finding targets a link", "each node that replaces it, when the ruling retires the finding's node", "every new leaf", "(`--record` for a landed record)", "The question's `change` (else the run's change set) is\nthe change set holding the question and its Decision", "`rhiza show <decision> --change <it>`", "`rhiza apply <file> --change <it> --json` (`--record` for a landed record)", "Never edit, retire or re-link the Decision", "change nothing a ruling does not name", "`rhiza run review-check --rulings`"} {
+		if !strings.Contains(rulings, w) {
+			t.Errorf("plan-reviser rulings section: no %q", w)
+		}
+	}
+	// A bare rhiza show <decision> fails from the run's change set when the
+	// Decision lives in a serving draft: the guide never points at it alone.
+	if strings.Contains(rulings, "`rhiza show <decision>`") {
+		t.Errorf("plan-reviser rulings section: points at a bare rhiza show <decision>")
+	}
 	if !strings.Contains(sectionOf(p.Body, "## Read first"), "`confirmed` and major") {
 		t.Errorf("plan-reviser Read first: no confirmed-major-only rule")
 	}

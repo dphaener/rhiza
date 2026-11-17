@@ -15,6 +15,7 @@ Over the same 30 runs, at most 3 need a person beyond the owner's own sign-offs 
 ### In
 
 - serves change set `01M79KHRHFQYBAW375MA5D7V70` (Measure 30 runs on the conductor default against today's Rhiza and afk: median start-to-merge with planning, runs needing a person, tokens per change)
+- serves change set `01M7MPAHJZY3RV8ANGGB660J52` (Fix Plan run arbiter rulings are never delivered: a plan run whose last review round leaves a confirmed major puts it to the arbiter, the arbiter answers with a decision handle (seen: parity-seed-bridge-in-model in run 01M7GG7GXSA97HESRNFEBFCZ4T, split-check-whatif-once in run 01M7GG7HSBSB356BVGGQGH8YHB), then the run merges and accepts the plan with the question marked 'decision ..., not yet delivered' and no Decision node or plan change in the model. The accepted plan still carries the confirmed major. Expected: the ruling is written (Decision + reviser applies it) before merge, or the run fails instead of accepting.)
 
 ## History
 

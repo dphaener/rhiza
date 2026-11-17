@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MSN8CR48AT5S8DVSMKFS19",
+  "after": [
+    "01M7MS3D6FK51Q3XSF9DX5TSKZ"
+  ],
+  "at": "2026-11-17T13:06:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built rhiza from 2c96751c5 to a scratch path and ran an autonomous plan run (fake claude/rex, real rhiza) whose round 3 left two review questions the arbiter passed. rhiza run status printed each as '— decision settle-…' with no 'not yet delivered', and run status --json questions carried no session field. go test ./internal/api -run TestRunInfoAcceptsAndQuestions and TestScripts/describe-golden pass."
+        },
+        "handle": "run-status-sessionless-ruling-qa-1",
+        "id": "01M7MSTQC3MTJAN2BPSGZH0KAY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MSTQC3MTJAN2BPSFMMGV7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MSTQC3MTJAN2BPSFMMGV7R",
+        "id": "01M7MSTQDBJ2TATVPZG3ZNAXS8",
+        "link": "01M7MSTQDBJ2TATVPZG1HTBG3F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: in the built binary, rhiza run review-check --rulings from the apply-rulings step exited 1 before the reviser linked anything, listing both questions with their Decision and the finding's node (export-csv, keep-flat); after the reviser linked each node decided-by its Decision it exited 0, listing both rulings with their decided-by node IDs, and --json gave a rulings array. Unset or unknown RHIZA_RUN and a finished run are refused with exit 2. go test ./internal/api -run TestRunReviewCheckRulings passes."
+        },
+        "handle": "plan-review-check-rulings-qa-1",
+        "id": "01M7MSTQEG74KCXAWZP19MN8ZC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MSTQEG74KCXAWZNXJ38SKY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MSTQEG74KCXAWZNXJ38SKY",
+        "id": "01M7MSTQFXKAFMCM41X9F3XGC6",
+        "link": "01M7MSTQFXKAFMCM41X699K9NC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: rhiza guide plan-reviser from the built binary prints 'Applying the arbiter's rulings' under Must do, before Command budget, naming rhiza run status --json, the three decided-by cases, --record, never editing the Decision, and review-check --rulings. go test ./internal/guide -run TestPlanReviserText passes."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-1",
+        "id": "01M7MSTQHMRV4574B0XFWAZDQC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MSTQHMRV4574B0XD753HRV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MSTQHMRV4574B0XD753HRV",
+        "id": "01M7MSTQMGPFZ8BCW1MC0Y94K7",
+        "link": "01M7MSTQMGPFZ8BCW1M9E49MWE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: in a hand-run autonomous plan run with the built binary, the arbiter for the round-3 question on export-csv (a leaf the serving draft created) started with RHIZA_CHANGE set to the serving draft, and the one on the landed Decision keep-flat started in the run's open change set. go test ./internal/run -run 'TestCommandAsked|TestArbitrate' and the run-review-check*, run-arbitrate-asked scripts pass."
+        },
+        "handle": "review-question-in-node-change-set-qa-1",
+        "id": "01M7MSTQP6ANVZV4647VEK7DKE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MSTQP6ANVZV4647S6VKMH8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MSTQP6ANVZV4647S6VKMH8",
+        "id": "01M7MSTQRMPRJB6ZX94NC66YWY",
+        "link": "01M7MSTQRMPRJB6ZX94MTXFBFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built binary, hand-run plan workflow: with a reviser that applies the rulings, check visit 3 passed to rulings, rulings visit 1 failed, apply-rulings visit 1 passed, rulings visit 2 passed, then gate. With a reviser that writes nothing, the run failed after rulings visit 2 (step apply-rulings over max_visits 1), with no gate step, and run status named both unapplied Decisions. go test ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview' and the plan-workflow* scripts pass."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-1",
+        "id": "01M7MSTQT9TRDWV649QV99H1V8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MSTQT9TRDWV649QQH1BTFP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MSTQT9TRDWV649QQH1BTFP",
+        "id": "01M7MSTQW2VHSJQ11R9CYD11KA",
+        "link": "01M7MSTQW2VHSJQ11R9BTAB1G7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MSTQY2Q5JMEB6VW0ATJGCE",
+  "type": "ops",
+  "v": 1
+}

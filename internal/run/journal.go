@@ -462,7 +462,9 @@ type Entry struct {
 	Actor   string    `json:"actor,omitempty"`
 	File    string    `json:"file,omitempty"`
 	// Change and LogEntry are an accepted or rejected entry's change set
-	// and the model log entry that moved it.
+	// and the model log entry that moved it. On a session-less asked entry
+	// Change is the change set the question was written into, when that is
+	// not the run's (the arbiter decides it there).
 	Change   string `json:"change,omitempty"`
 	LogEntry string `json:"log_entry,omitempty"`
 	// Question is an arbiter or arbitrated entry's question node ID.
@@ -661,7 +663,9 @@ func (r Round) Standing() []Finding {
 // session Session asked the owner Text, and the engine added question node
 // Question (handle Handle) to the run's change set for the arbiter.
 // Answered is the handle of the arbiter's Decision once the engine has
-// delivered it to the asking session (an answered entry), else "".
+// delivered it to the asking session (an answered entry), else "". Change
+// is the change set a session-less asked entry wrote its question into, ""
+// for the run's.
 type Asked struct {
 	Step     string
 	Session  string
@@ -670,6 +674,7 @@ type Asked struct {
 	Text     string
 	At       time.Time
 	Answered string
+	Change   string
 }
 
 // TokenCounts are the tokens a set of model calls used, by kind.
@@ -1812,6 +1817,7 @@ func (j Journal) State() State {
 		case TypeAsked:
 			st.Asked = append(st.Asked, Asked{
 				Step: e.Step, Session: e.Session, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At,
+				Change: e.Change,
 			})
 			// Only a session's question is its block's: a command step's
 			// asked entry has no session.

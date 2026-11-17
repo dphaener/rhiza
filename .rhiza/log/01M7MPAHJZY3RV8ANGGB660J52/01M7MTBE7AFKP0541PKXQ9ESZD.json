@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MT14QBAA8MH8CSWHVK00FS",
+  "after": [
+    "01M7MT0GNH862YNNQKM8XSDYYT"
+  ],
+  "at": "2026-11-17T13:15:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 3 at db1b1c925, scratch build (go build -trimpath, run by full path, outside PATH) driving autonomous plan runs by hand in scratch Rhiza roots with the plan-workflow-autonomous* fake rex/claude/gh: after round 3, rhiza run status showed both review questions as '— decision settle-…' with no 'not yet delivered' and their --json had no session field; a session's question (planner's, plan-workflow-autonomous fakes) carried session in --json, and with its answered journal entry removed printed '— decision assume-streaming, not yet delivered'."
+        },
+        "handle": "run-status-sessionless-ruling-qa-3",
+        "id": "01M7MTBDKV9F9DMKMK5YG0WMAP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTBDKV9F9DMKMK5WZY6D9R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTBDKV9F9DMKMK5WZY6D9R",
+        "id": "01M7MTBDNE856RC55DD8XZQZTC",
+        "link": "01M7MTBDNE856RC55DD8BQ6EXW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 3 at db1b1c925, scratch build (go build -trimpath, run by full path, outside PATH) driving autonomous plan runs by hand in scratch Rhiza roots with the plan-workflow-autonomous* fake rex/claude/gh: from the apply-rulings step --rulings exited 1 listing both questions (decision, finding's node export-csv/keep-flat); after linking only keep-flat decided-by it exited 1 listing only export-csv; after linking export-csv it exited 0 and --json listed both rulings with by IDs; after retiring export-csv (its only decided-by link) it exited 1 again; after adding export-csv-2 linked decided-by it exited 0. A clean review ran rulings visit 1 pass then gate. RHIZA_RUN unset, unknown or finished: refused, exit 2."
+        },
+        "handle": "plan-review-check-rulings-qa-3",
+        "id": "01M7MTBDPM606938HFYZC1ZKR8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTBDPM606938HFYYBV5H5H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTBDPM606938HFYYBV5H5H",
+        "id": "01M7MTBDQV5FV31176REE8VWW7",
+        "link": "01M7MTBDQV5FV31176RDZ4G83S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 3 at db1b1c925, scratch build (go build -trimpath, run by full path, outside PATH) driving autonomous plan runs by hand in scratch Rhiza roots with the plan-workflow-autonomous* fake rex/claude/gh: rhiza guide plan-reviser prints the 'Applying the arbiter's rulings' section (run status --json, decided-by from the finding's node / link from node / each replacing node, --record for a landed record, never edit the Decision); go test ./internal/guide -run TestPlanReviserText ok. One minor: run status --json does not name the question's change set as the guide says."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-3",
+        "id": "01M7MTBDSRZRH4GAB2W0VT3GEJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTBDSRZRH4GAB2W07CAWFZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTBDSRZRH4GAB2W07CAWFZ",
+        "id": "01M7MTBDWCGZTQBGR8BBXM0P1Y",
+        "link": "01M7MTBDWCGZTQBGR8B8186RR7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 3 at db1b1c925, scratch build (go build -trimpath, run by full path, outside PATH) driving autonomous plan runs by hand in scratch Rhiza roots with the plan-workflow-autonomous* fake rex/claude/gh: with the run's change set open, round 3's question on export-csv (a serving draft's leaf) went into the draft and its asked journal entry has change=<draft>; the one on landed keep-flat stayed in the run's change set with no change field; the fake arbiter logged RHIZA_CHANGE=<draft> and <run's change set> respectively and each Decision was written there."
+        },
+        "handle": "review-question-in-node-change-set-qa-3",
+        "id": "01M7MTBDXVDJ6QD3HA399Q40JH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTBDXVDJ6QD3HA389X58SY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTBDXVDJ6QD3HA389X58SY",
+        "id": "01M7MTBE1THYQ4SXEJJB2M90PR",
+        "link": "01M7MTBE1THYQ4SXEJJ8NCEJ6M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 3 at db1b1c925, scratch build (go build -trimpath, run by full path, outside PATH) driving autonomous plan runs by hand in scratch Rhiza roots with the plan-workflow-autonomous* fake rex/claude/gh: rhiza workflow describe plan and plan-milestone show check→rulings→gate with rulings on.fail apply-rulings and the apply-rulings prompt; a run whose reviser links each finding's node decided-by went rulings fail → apply-rulings → rulings pass → gate (both change sets accepted); one whose reviser writes nothing went rulings fail → apply-rulings → rulings fail and failed ('apply-rulings went over max_visits 1') with no gate step, both change sets still draft and the unapplied Decisions named. go test ./internal/workflow -run 'TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview' ok."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-3",
+        "id": "01M7MTBE39WNRTZABBF28DBYZT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MTBE39WNRTZABBF0X31M72",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MTBE39WNRTZABBF0X31M72",
+        "id": "01M7MTBE513YJNC3QTDWS711G6",
+        "link": "01M7MTBE513YJNC3QTDWCA4F33",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MTBE7AFKP0541PKXQ9ESZD",
+  "type": "ops",
+  "v": 1
+}
