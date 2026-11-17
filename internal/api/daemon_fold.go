@@ -161,6 +161,7 @@ func daemonStamp(ctx *Ctx) string {
 		if data, err := os.ReadFile(w.currentPath()); err == nil {
 			h.Write(data)
 		}
+		w.closeProjection()
 	}
 	return hex.EncodeToString(h.Sum(nil))
 }

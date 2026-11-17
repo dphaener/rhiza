@@ -172,6 +172,10 @@ type Ctx struct {
 	// openedProjection, when set, is told each time a projection opens its
 	// index; tests count the opens of one call with it.
 	openedProjection func()
+	// liveProjections, when set, keeps the projections open on this Ctx
+	// and its copies, each with the stack that opened it, from its index's
+	// open to its close. Tests fail when one is left open with it.
+	liveProjections *liveProjections
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
 	// commonDirs keeps gitCommonDir's answers by Root; copies of the Ctx

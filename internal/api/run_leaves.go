@@ -108,6 +108,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}

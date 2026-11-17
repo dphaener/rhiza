@@ -68,7 +68,9 @@ func leafCommitRunner(t *testing.T) (*stepRunner, func(...string) string) {
 	}
 	git("init", "-q")
 	git("commit", "-q", "--allow-empty", "-m", "base")
-	return &stepRunner{ctx: ctx, worktree: wt}, git
+	r := &stepRunner{ctx: ctx, worktree: wt}
+	t.Cleanup(r.closeModel)
+	return r, git
 }
 
 // A builder's leaf commit is the newest commit since its start HEAD whose
@@ -327,6 +329,7 @@ func evidenceCommitRunner(t *testing.T) (*stepRunner, func(...string) string, *C
 		t.Fatal(err)
 	}
 	r := &stepRunner{ctx: ctx, change: cs.String(), run: "R1", worktree: wt, sessions: sessions}
+	t.Cleanup(r.closeModel)
 	return r, git, ctx, run.Leaf{ID: leaf.String(), Handle: "leaf-a"}, ada
 }
 
@@ -678,6 +681,7 @@ func TestAddLeafQuestion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer ww.closeProjection()
 	m := ww.model(cs)
 	n, ok := m.Node(mustParseID(q.ID))
 	if !ok || n.Kind != "question" || n.Handle != q.Handle || fieldText(n.Fields["statement"]) != "Leaf leaf-a failed all 3 attempts of round 1. How?" {

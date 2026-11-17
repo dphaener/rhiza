@@ -275,9 +275,11 @@ func sessionWorkspace(ctx *Ctx, rec session.Record) (*workspace, id.ID, error) {
 	}
 	cs, err := id.Parse(rec.Change)
 	if err != nil {
+		ww.closeProjection()
 		return nil, id.ID{}, Errorf("session %s names change set %q: %v", rec.ID, rec.Change, err)
 	}
 	if _, ok := ww.changeSet(cs); !ok {
+		ww.closeProjection()
 		return nil, id.ID{}, NotFoundf("change set %s of session %s is not in the worktree's log at %s", cs, rec.ID, root).
 			WithNext("rhiza session show " + rec.ID)
 	}

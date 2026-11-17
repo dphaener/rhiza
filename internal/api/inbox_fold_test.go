@@ -79,6 +79,7 @@ func TestInboxReadsChangeSetsOnce(t *testing.T) {
 		return newInboxFold(&c)
 	}()
 	defer byIndex.close()
+	defer byLog.close()
 	f.logReads = 0
 	for _, cs := range append(sets, "01M6KV89S5MKWG2DHA762F8WTZ", "nope") {
 		si, oki := byIndex.stateOf(cs)

@@ -25,7 +25,37 @@ func testCtx(t testing.TB, root string) *Ctx {
 	t.Helper()
 	ctx := testCtxNoIndex(root)
 	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
+	guardProjections(t, ctx)
 	return ctx
+}
+
+// guardProjections fails t, once it and its cleanups registered after this
+// one are done, when a projection opened on ctx (or a copy of it) is still
+// open, or a throwaway index's folder is left in ctx's TMPDIR: a fresh
+// folder under t's own t.TempDir(), so no other test's land there.
+func guardProjections(t testing.TB, ctx *Ctx) {
+	t.Helper()
+	ctx.liveProjections = &liveProjections{}
+	tmp := t.TempDir()
+	inner := ctx.Getenv
+	ctx.Getenv = func(k string) string {
+		if k == "TMPDIR" {
+			return tmp
+		}
+		return inner(k)
+	}
+	t.Cleanup(func() {
+		for _, s := range ctx.liveProjections.stacks() {
+			t.Errorf("projection left open, opened at:\n%s", s)
+		}
+		left, err := filepath.Glob(filepath.Join(tmp, "rhiza-projection-*"))
+		if err != nil {
+			t.Error(err)
+		}
+		if len(left) > 0 {
+			t.Errorf("throwaway indexes left: %v", left)
+		}
+	})
 }
 
 // testCtxNoIndex is testCtx with no index (IndexPath empty), for code with

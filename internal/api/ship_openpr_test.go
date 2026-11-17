@@ -277,6 +277,7 @@ func TestShipOpenPRRefusesPlanWithoutRound(t *testing.T) {
 		t.Fatal(err)
 	}
 	cs := w.changeSets()[0].ID.String()
+	w.closeProjection()
 	store := run.NewStore(run.Dir(filepath.Join(ctx.Root, ".git")))
 	err = store.Create("R2", run.Entry{
 		Type: run.TypeStarted, Step: "interview", At: time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC),

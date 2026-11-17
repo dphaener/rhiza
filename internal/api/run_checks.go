@@ -55,6 +55,7 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
@@ -91,6 +92,7 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	session := run.ChangeSetFixSessionName(spec.Cycle, spec.Attempt)
 	req.Prompt = changeSetFixerPrompt(*role, spec, r.promptVars(t, spec.Step.Name, session))
 	if err := r.prepareSession(&req, spec.Step.Name, session); err != nil {

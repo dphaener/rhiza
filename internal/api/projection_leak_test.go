@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/session"
 )
 
 // throwawayProjections makes ctx open throwaway indexes (no index path,
@@ -99,5 +100,19 @@ func TestWorktreeWorkspaceClosesReplacedProjection(t *testing.T) {
 		t.Fatal("unknown change set opened")
 	}
 	w.closeProjection()
+	check()
+}
+
+func TestSessionWorkspaceMissClosesProjection(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "miss")
+	check := throwawayProjections(t, f.ctx)
+	// The worktree's log lacks the change set the record names, so the
+	// workspace opened for it is closed on the not_found return.
+	rec := session.Record{ID: "S1", Worktree: f.worktree, Change: newID(t, f.ctx).String()}
+	_, _, err := sessionWorkspace(f.ctx, rec)
+	if e := AsError(err); e == nil || e.Code != CodeNotFound {
+		t.Fatalf("err = %v, want not_found", err)
+	}
 	check()
 }

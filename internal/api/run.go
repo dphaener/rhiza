@@ -769,6 +769,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer t.close()
 	// A plan run on a record change set plans a milestone too; its
 	// plan-milestone workflow's agent steps are checked again.
 	newMilestone := milestone && reqMilestone == ""
@@ -2235,6 +2236,7 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	req.Prompt = step.RenderPrompt(r.promptVars(t, step.Name, run.AgentSessionName()))
 	if err := r.prepareSession(&req, step.Name, run.AgentSessionName()); err != nil {
 		return "", err
@@ -2614,6 +2616,7 @@ func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.Handback
 	v := workflow.PromptVars{Change: r.change, Run: r.run, Step: step.Name, Worktree: r.worktree}
 	if t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true); err == nil {
 		v = r.promptVars(t, step.Name, run.AgentSessionName())
+		t.close()
 	}
 	v.Brief, v.Slice, v.Handback = filepath.Join(rec.Brief, briefFile), filepath.Join(rec.Brief, sliceFile), filepath.Join(rec.Brief, handbackFile)
 	text := strings.TrimSpace(step.RenderHandback(v))

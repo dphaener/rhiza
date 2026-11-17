@@ -15,8 +15,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
@@ -41,6 +43,8 @@ type writeIndex struct {
 	tmp   string
 	stale bool
 	err   error
+	// closed is set by close, so a second close counts nothing.
+	closed bool
 	// models, when set (a driver's reads, see run_model_cache.go), keeps
 	// the model of each change set until the caller clears it.
 	models map[id.ID]Model
@@ -61,7 +65,9 @@ func openWriteIndex(ctx *Ctx) (*writeIndex, error) {
 	if ctx.IndexPath != "" {
 		x, err := index.Open(ctx.Root, ctx.IndexPath)
 		if err == nil {
-			return &writeIndex{ctx: ctx, x: x, path: ctx.IndexPath}, nil
+			ix := &writeIndex{ctx: ctx, x: x, path: ctx.IndexPath}
+			ctx.openedIndex(ix)
+			return ix, nil
 		}
 		why = fmt.Sprintf("index %s: %v", ctx.IndexPath, err)
 	}
@@ -76,16 +82,64 @@ func openWriteIndex(ctx *Ctx) (*writeIndex, error) {
 		os.RemoveAll(tmp)
 		return nil, Errorf("%s; throwaway index in %s: %v", why, dir, err)
 	}
-	return &writeIndex{ctx: ctx, x: x, path: path, tmp: tmp}, nil
+	ix := &writeIndex{ctx: ctx, x: x, path: path, tmp: tmp}
+	ctx.openedIndex(ix)
+	return ix, nil
+}
+
+// liveProjections is the projections open on a Ctx, each with the stack
+// that opened it (Ctx.liveProjections).
+type liveProjections struct {
+	mu   sync.Mutex
+	open map[*writeIndex]string
+}
+
+// openedIndex notes that ix opened, when ctx keeps its open projections.
+func (ctx *Ctx) openedIndex(ix *writeIndex) {
+	if ctx == nil || ctx.liveProjections == nil {
+		return
+	}
+	l := ctx.liveProjections
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.open == nil {
+		l.open = map[*writeIndex]string{}
+	}
+	l.open[ix] = string(debug.Stack())
+}
+
+// closedIndex notes that ix closed.
+func (ctx *Ctx) closedIndex(ix *writeIndex) {
+	if ctx == nil || ctx.liveProjections == nil {
+		return
+	}
+	l := ctx.liveProjections
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	delete(l.open, ix)
+}
+
+// stacks is the stack that opened each projection still open.
+func (l *liveProjections) stacks() []string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	var out []string
+	for _, s := range l.open {
+		out = append(out, s)
+	}
+	slices.Sort(out)
+	return out
 }
 
 // close releases the index and removes a throwaway index's folder.
 func (ix *writeIndex) close() {
-	if ix == nil {
+	if ix == nil || ix.closed {
 		return
 	}
+	ix.closed = true
 	if ix.x != nil {
 		ix.x.Close()
+		ix.ctx.closedIndex(ix)
 	}
 	if ix.tmp != "" {
 		os.RemoveAll(ix.tmp)

@@ -261,6 +261,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer t.close()
 	w, cs, title, repo, worktree, branch := t.w, t.cs, t.title, t.repo, t.worktree, t.branch
 	sid, err := newSessionID(ctx.IDs)
 	if err != nil {
@@ -436,6 +437,15 @@ func resolveChangeWorktreeIn(ctx *Ctx, ref, refusal string, landedOK bool) (chan
 		return t, err
 	}
 	return t, nil
+}
+
+// close closes the projection of t's main workspace. The resolve closes it
+// before returning, but a read through t.w opens it again, so a caller
+// that resolved t defers close.
+func (t changeWorktree) close() {
+	if t.w != nil {
+		t.w.closeProjection()
+	}
 }
 
 // open creates the worktree unless it is reused, opens its Rhiza
