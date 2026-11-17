@@ -19,7 +19,8 @@ rhiza slice --change "$RHIZA_CHANGE" --json
 rhiza run status --json
 ```
 
-Read the slice, then the code it touches. A change set may be part-way through: read
+Read the slice, then the code it touches. `rhiza guide conduct-roles` lists the roles you
+spawn and their flags. A change set may be part-way through: read
 what is done and carry on from there.
 
 ## Must do
