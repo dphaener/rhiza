@@ -675,3 +675,111 @@ func TestReviewCheckLeafContractChildInOtherChangeSet(t *testing.T) {
 		t.Fatalf("a parent whose child is in another plan change set: %v", err)
 	}
 }
+
+// run.review-check --rulings passes while every passed arbiter ruling on a
+// review question has a live node linking decided-by to its Decision, and
+// fails naming the question and the Decision otherwise. An open question
+// and a session's question are not looked at.
+func TestRunReviewCheckRulings(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "rulings")
+	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-a","fields":["statement=Does A"]}`)
+	q1 := mustWrite(t, f.ctx, "add", `{"kind":"question","handle":"review-r40-r1-f1","fields":["statement=How?"]}`).Nodes[0]
+	mustWrite(t, f.ctx, "add", `{"kind":"decision","handle":"use-z","fields":["statement=Use Z"]}`)
+	mustWrite(t, f.ctx, "link", `{"from":"use-z","type":"answers","to":"review-r40-r1-f1"}`)
+	q2 := mustWrite(t, f.ctx, "add", `{"kind":"question","handle":"review-r40-r1-f2","fields":["statement=Open?"]}`).Nodes[0]
+	q3 := mustWrite(t, f.ctx, "add", `{"kind":"question","handle":"asked-by-session","fields":["statement=Mine?"]}`).Nodes[0]
+
+	t0 := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R40", run.Entry{
+		Type: run.TypeStarted, Step: "rulings", At: t0,
+		Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it",
+			Definition: "name = \"plan\"\n[step.rulings]\nkind = \"command\"\nrun = \"true\"\n"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	app := func(e run.Entry) {
+		t.Helper()
+		e.At = t0
+		if err := store.Append("R40", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R40"
+		}
+		return ""
+	}
+	pass := func(what string, applied ...string) {
+		t.Helper()
+		resp, err := callOp(t, f.ctx, "run.review-check", `{"rulings":true}`)
+		if err != nil {
+			t.Fatalf("%s: %v", what, err)
+		}
+		r := resp.(RunReviewCheckResponse)
+		got := []string{}
+		for _, rl := range r.Rulings {
+			got = append(got, rl.Question)
+			if len(rl.By) == 0 {
+				t.Errorf("%s: ruling %s applied by no node", what, rl.Question)
+			}
+		}
+		if !r.Passed || strings.Join(got, ",") != strings.Join(applied, ",") {
+			t.Fatalf("%s: passed %v, applied %v, want %v", what, r.Passed, got, applied)
+		}
+	}
+	fail := func(what string, names ...string) {
+		t.Helper()
+		_, err := callOp(t, f.ctx, "run.review-check", `{"rulings":true}`)
+		e := AsError(err)
+		if e == nil {
+			t.Fatalf("%s: passed, want a failure", what)
+		}
+		if e.Next != "rhiza run status R40" {
+			t.Errorf("%s: next %q", what, e.Next)
+		}
+		for _, n := range names {
+			if !strings.Contains(e.Message, n) {
+				t.Errorf("%s: %q missing from %v", what, n, e.Message)
+			}
+		}
+	}
+
+	pass("no asked entry")
+
+	app(run.Entry{Type: run.TypeEntered, Step: "review", Visit: 3})
+	app(run.Entry{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{
+		{ID: "f1", Node: "leaf-a", Handle: "leaf-a", Kind: run.KindContradiction, Reason: "wrong"},
+		{ID: "f2", Node: "leaf-a", Handle: "leaf-a", Kind: run.KindOutsideIntent, Reason: "out"},
+	}})
+	app(run.Entry{Type: run.TypeAsked, Step: "check", Question: q1.String(), Handle: "review-r40-r1-f1"})
+	app(run.Entry{Type: run.TypeAsked, Step: "check", Question: q2.String(), Handle: "review-r40-r1-f2"})
+	pass("open (unarbitrated) review questions")
+
+	// A session's question with a passed, unapplied ruling is not counted.
+	app(run.Entry{Type: run.TypeAsked, Step: "plan", Session: "S1", Question: q3.String(), Handle: "asked-by-session"})
+	app(run.Entry{Type: run.TypeArbitrated, Step: "plan", Question: q3.String(), Outcome: workflow.OutcomePass, Decision: "use-z"})
+	pass("a session's question")
+
+	// The review question's ruling passes with only the answers link.
+	app(run.Entry{Type: run.TypeArbitrated, Step: "check", Question: q1.String(), Outcome: workflow.OutcomePass, Decision: "use-z"})
+	fail("a ruling with only its answers link", "review-r40-r1-f1", "use-z", "leaf-a")
+
+	mustWrite(t, f.ctx, "link", `{"from":"leaf-a","type":"decided-by","to":"use-z"}`)
+	pass("a capability linked decided-by the Decision", "review-r40-r1-f1")
+
+	mustWrite(t, f.ctx, "unlink", `{"ref":"leaf-a","type":"decided-by","to":"use-z"}`)
+	fail("the only decided-by link retired", "review-r40-r1-f1", "use-z")
+	mustWrite(t, f.ctx, "link", `{"from":"leaf-a","type":"decided-by","to":"use-z"}`)
+
+	// A Decision node in a landed record, linked by a record write.
+	recordWrite(t, f.ctx, "add", `{"kind":"decision","handle":"keep-flat","fields":["statement=Keep it flat"]}`)
+	recordWrite(t, f.ctx, "add", `{"kind":"decision","handle":"nest-one","fields":["statement=Nest one level"]}`)
+	app(run.Entry{Type: run.TypeArbitrated, Step: "check", Question: q2.String(), Outcome: workflow.OutcomePass, Decision: "nest-one"})
+	fail("the second ruling unapplied", "review-r40-r1-f2", "nest-one")
+	recordWrite(t, f.ctx, "link", `{"from":"keep-flat","type":"decided-by","to":"nest-one"}`)
+	pass("a landed Decision linked decided-by the ruling", "review-r40-r1-f1", "review-r40-r1-f2")
+}

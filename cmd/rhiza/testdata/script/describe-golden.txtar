@@ -17842,6 +17842,10 @@ cmp stdout describe.golden.json
           "fresh": {
             "description": "Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing",
             "type": "boolean"
+          },
+          "rulings": {
+            "description": "Only test that each review question of the run whose arbitration passed has its answering Decision applied, a live node linking decided-by to it: exit 0 if so or when there is none, non-zero listing each unapplied ruling; judges and writes nothing",
+            "type": "boolean"
           }
         },
         "required": [],
@@ -17980,6 +17984,40 @@ cmp stdout describe.golden.json
             "description": "The latest review round, from 1",
             "type": "integer"
           },
+          "rulings": {
+            "description": "With --rulings: the passed rulings found applied, in journal order; absent when there is none",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "by": {
+                  "description": "The live nodes that link decided-by to the Decision, by ID, in order",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "decision": {
+                  "description": "The arbiter's answering Decision, by handle",
+                  "type": "string"
+                },
+                "node": {
+                  "description": "The node of the finding the question came from: its handle, else its ID, else the link; absent when no round holds the finding",
+                  "type": "string"
+                },
+                "question": {
+                  "description": "The review question's handle",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "by",
+                "decision",
+                "question"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "run": {
             "description": "The run's full ID",
             "type": "string"
@@ -17993,7 +18031,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver",
+      "summary": "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; --rulings only tests that each review question whose arbitration passed has a live node linking decided-by to its Decision; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver",
       "write": true
     },
     {

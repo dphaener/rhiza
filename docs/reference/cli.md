@@ -1819,10 +1819,10 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run review-check
 
-Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver.
+Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; --rulings only tests that each review question whose arbitration passed has a live node linking decided-by to its Decision; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver.
 
 ```
-rhiza run review-check [--fresh] [--findings]
+rhiza run review-check [--fresh] [--findings] [--rulings]
 ```
 
 Appends to the log.
@@ -1831,6 +1831,7 @@ Arguments and flags:
 
 - `--fresh`: Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing
 - `--findings`: Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing
+- `--rulings`: Only test that each review question of the run whose arbitration passed has its answering Decision applied, a live node linking decided-by to it: exit 0 if so or when there is none, non-zero listing each unapplied ruling; judges and writes nothing
 
 Output (`--json` fields):
 
@@ -1839,6 +1840,7 @@ Output (`--json` fields):
 - `passed` (boolean): True: the review may go on to the gate
 - `questions` (array of object): From round 3, the question nodes left for the confirmed findings, in order
 - `round` (integer): The latest review round, from 1
+- `rulings` (array of object): With --rulings: the passed rulings found applied, in journal order; absent when there is none
 - `run` (string): The run's full ID
 
 ## rhiza run round-recorded

@@ -60,7 +60,7 @@ func init() {
 	})
 	register(Operation{
 		Name:     "run.review-check",
-		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver",
+		Summary:  "Check the latest review round of the run RHIZA_RUN names (refusing one journaled before the latest revise; --fresh makes only that test): pass with no confirmed major finding (a kind's severity: missing-acceptance, contradiction, outside-intent, uncovered-intent, oversized-leaf, no-failure-case major, the rest minor), fail with one before round 3, else leave each as a question and pass; --rulings only tests that each review question whose arbitration passed has a live node linking decided-by to its Decision; on a plan review it first fails, at every round, while a live leaf the plan creates or changes lacks statement, acceptance, files, must_not, or a failure case or failure_waiver",
 		Write:    true,
 		Request:  reflect.TypeFor[RunReviewCheckRequest](),
 		Response: reflect.TypeFor[RunReviewCheckResponse](),
@@ -983,6 +983,16 @@ const runReviewCheckNext = "rhiza describe run.review-check"
 type RunReviewCheckRequest struct {
 	Fresh    bool `json:"fresh,omitempty" flag:"fresh" desc:"Only test that the latest round postdates the latest revise visit (or the run has none): exit 0 if so, non-zero if not; judges and writes nothing"`
 	Findings bool `json:"findings,omitempty" flag:"findings" desc:"Only test that the latest round holds at least one finding: exit 0 if so, non-zero for a clean round, which needs no critic; judges and writes nothing"`
+	Rulings  bool `json:"rulings,omitempty" flag:"rulings" desc:"Only test that each review question of the run whose arbitration passed has its answering Decision applied, a live node linking decided-by to it: exit 0 if so or when there is none, non-zero listing each unapplied ruling; judges and writes nothing"`
+}
+
+// RunReviewRuling is an arbiter's passed ruling on a review question that
+// run.review-check --rulings found applied.
+type RunReviewRuling struct {
+	Question string   `json:"question" desc:"The review question's handle"`
+	Decision string   `json:"decision" desc:"The arbiter's answering Decision, by handle"`
+	Node     string   `json:"node,omitempty" desc:"The node of the finding the question came from: its handle, else its ID, else the link; absent when no round holds the finding"`
+	By       []string `json:"by" desc:"The live nodes that link decided-by to the Decision, by ID, in order"`
 }
 
 // RunReviewQuestion is a question node run.review-check left for a
@@ -1003,6 +1013,7 @@ type RunReviewCheckResponse struct {
 	Passed    bool                `json:"passed" desc:"True: the review may go on to the gate"`
 	Confirmed []RunFinding        `json:"confirmed" desc:"The round's major findings the critic confirmed (a confirmed minor is never fixed), in order"`
 	Questions []RunReviewQuestion `json:"questions,omitempty" desc:"From round 3, the question nodes left for the confirmed findings, in order"`
+	Rulings   []RunReviewRuling   `json:"rulings,omitempty" desc:"With --rulings: the passed rulings found applied, in journal order; absent when there is none"`
 	DryRun    bool                `json:"dry_run,omitempty" desc:"True if nothing was written or journalled"`
 }
 
@@ -1070,6 +1081,9 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	rr, err := openReviewRun(ctx, cmd, runReviewCheckNext)
 	if err != nil {
 		return nil, err
+	}
+	if req.(RunReviewCheckRequest).Rulings {
+		return reviewRulingsCheck(ctx, rr)
 	}
 	if step, ok, err := rr.checksDeclaringStep(); err != nil {
 		return nil, err
@@ -1230,6 +1244,96 @@ func runRunReviewCheck(ctx *Ctx, req any) (any, error) {
 	return resp, nil
 }
 
+// reviewRulingsCheck is run.review-check --rulings (decision
+// ruling-applied-means-decided-by). It looks only at the review questions
+// the check journalled (reviewQuestions: session-less asked entries, never
+// a session's) whose latest arbitration passed with a Decision; an open
+// question or a failed arbitration is not its business. Each such ruling
+// is applied when a live node links decided-by to its Decision: in the run
+// change set's view (the landed model, records included, and its own
+// ops), or in the view of a plan change set still in flight, where the
+// reviser may have changed the finding's node. It passes with every ruling
+// applied or none to check, else fails listing each unapplied one. It
+// judges and writes nothing.
+func reviewRulingsCheck(ctx *Ctx, rr reviewRun) (any, error) {
+	const cmd = "run review-check --rulings"
+	resp := RunReviewCheckResponse{Run: rr.id, Round: len(rr.state.Rounds), Passed: true, Confirmed: []RunFinding{}, Rulings: []RunReviewRuling{}, DryRun: ctx.DryRun}
+	var rulings []RunReviewRuling
+	for _, a := range reviewQuestions(rr.state) {
+		ar, ok := rr.state.Arbitration(a.Question)
+		if !ok || ar.Outcome != workflow.OutcomePass || ar.Decision == "" {
+			continue
+		}
+		rulings = append(rulings, RunReviewRuling{Question: a.Handle, Decision: ar.Decision, Node: reviewFindingNode(rr, a), By: []string{}})
+	}
+	if len(rulings) == 0 {
+		return resp, nil
+	}
+	w, err := openCtxWorkspace(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer w.closeProjection()
+	m := w.model(rr.change)
+	sets := w.changeSets()
+	plan, err := planChangeSets(sets, m, rr.change)
+	if err != nil {
+		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
+	}
+	views := []Model{m}
+	for _, c := range plan {
+		if c.ID != rr.change && planInFlight(c.State) {
+			views = append(views, w.model(c.ID))
+		}
+	}
+	var unapplied []string
+	for _, r := range rulings {
+		by := map[id.ID]bool{}
+		for _, v := range views {
+			dec, ok := v.HandleTaken(r.Decision)
+			if !ok {
+				continue
+			}
+			for _, l := range v.LinksTo(dec, op.LinkDecidedBy) {
+				if n, ok := v.Node(l.From); ok && !n.Retired {
+					by[l.From] = true
+				}
+			}
+		}
+		if len(by) == 0 {
+			line := "- question " + r.Question + ": decision " + r.Decision
+			if r.Node != "" {
+				line += ", on the finding's node " + r.Node
+			}
+			unapplied = append(unapplied, line)
+			continue
+		}
+		for _, n := range slices.SortedFunc(maps.Keys(by), id.Compare) {
+			r.By = append(r.By, n.String())
+		}
+		resp.Rulings = append(resp.Rulings, r)
+	}
+	if len(unapplied) > 0 {
+		return nil, Errorf("%s: run %s has %d arbiter ruling(s) not applied: no live node links decided-by to the Decision, so the plan still carries the finding; change the finding's node as the Decision says and link it decided-by the Decision:\n%s",
+			cmd, rr.id, len(unapplied), strings.Join(unapplied, "\n")).WithNext("rhiza run status " + rr.id)
+	}
+	return resp, nil
+}
+
+// reviewFindingNode is what the finding review question a came from is
+// about (findingTarget), found in the round and finding its handle names;
+// "" when no round of the run holds it.
+func reviewFindingNode(rr reviewRun, a run.Asked) string {
+	for _, rd := range rr.state.Rounds {
+		for _, f := range rd.Findings {
+			if _, ok := reviewAskedFor([]run.Asked{a}, reviewQuestionHandle(rr.id, rd.Number, f.ID)); ok {
+				return findingTarget(f.Handle, f.Node, f.Link, f.LinkType, f.LinkFrom, f.LinkTo)
+			}
+		}
+	}
+	return ""
+}
+
 // checksDeclaringStep is the run workflow's step that declares checks (a
 // checks step, or an agent step with checks), whatever step the run is in:
 // a conductor run's review-check reads that step's rounds from the gate
@@ -1355,6 +1459,18 @@ func mustParseID(s string) id.ID {
 
 // Human reports the check's outcome.
 func (r RunReviewCheckResponse) Human(w io.Writer) {
+	if r.Rulings != nil {
+		// --rulings: a non-nil Rulings, empty when there was none to check.
+		if len(r.Rulings) == 0 {
+			fmt.Fprintf(w, "Rulings of run %s passed: no arbiter ruling on a review question to apply\n", r.Run)
+			return
+		}
+		fmt.Fprintf(w, "Rulings of run %s passed: %d arbiter ruling(s) applied\n\n", r.Run, len(r.Rulings))
+		for _, q := range r.Rulings {
+			fmt.Fprintf(w, "- %s: decision %s, decided-by from %s\n", q.Question, q.Decision, strings.Join(q.By, ", "))
+		}
+		return
+	}
 	if len(r.Confirmed) == 0 {
 		fmt.Fprintf(w, "Review round %d of run %s passed: no confirmed finding\n", r.Round, r.Run)
 		return
