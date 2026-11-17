@@ -153,6 +153,8 @@ type reader struct {
 	// live caches the current handle of the nodes the shown texts refer to,
 	// "" for a retired or unknown one.
 	live map[id.ID]string
+	// planFolded is the Ctx's planFolded hook, nil when it has none.
+	planFolded func()
 }
 
 // openReader opens a reader for operation opName in the view named by s,
@@ -196,7 +198,7 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 	if x == nil {
 		return fail(p.failure())
 	}
-	r := &reader{w: w, x: x, view: v}
+	r := &reader{w: w, x: x, view: v, planFolded: ctx.planFolded}
 	if v.whatIf.IsZero() {
 		return r, nil
 	}

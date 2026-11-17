@@ -27,8 +27,9 @@ import (
 )
 
 // planReadCount and planFoldCount count the plan reads and the in-flight
-// change sets folded by them, process-wide; tests read them to see what a
-// daemon poll skipped.
+// change sets folded by them, process-wide; serial tests read them to see
+// what a poll skipped. A parallel test counts its own Ctx's with the
+// Ctx.planRead and Ctx.planFolded hooks instead.
 var planReadCount, planFoldCount, daemonPickCount atomic.Int64
 
 // daemonMove is one lifecycle move the events pass may run its command for.

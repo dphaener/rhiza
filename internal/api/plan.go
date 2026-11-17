@@ -764,6 +764,9 @@ func planGather(r *reader) (planInputs, error) {
 			// fold rule and change show/ls (and stored by the index at catch-up),
 			// not by plan reads.
 			planFoldCount.Add(1)
+			if r.planFolded != nil {
+				r.planFolded()
+			}
 			s, _ := changeset.FoldCanonical(c, es)
 			w.add(planStarts(c, s.Ops, nil))
 			mu.Lock()
@@ -1504,6 +1507,9 @@ func planNoteStatement(in planInputs, i id.ID, fs map[string]json.RawMessage) {
 // gathers the inputs and runs the core.
 func planRead(ctx *Ctx, opName, view string) (planResult, planInputs, string, error) {
 	planReadCount.Add(1)
+	if ctx.planRead != nil {
+		ctx.planRead()
+	}
 	r, err := openReader(ctx, opName, view, toBeView)
 	if err != nil {
 		return planResult{}, planInputs{}, "", err

@@ -165,6 +165,12 @@ type Ctx struct {
 	// logRead, when set, is told each disk read of the log; it cannot
 	// change what is read. Tests count the log reads of a call with it.
 	logRead func()
+	// planRead, when set, is told each plan read; planFolded, each
+	// in-flight change set a plan read's gather folds (it may be told from
+	// several goroutines at once). Neither changes what is read; tests
+	// count one Ctx's plan reads and folds with them.
+	planRead   func()
+	planFolded func()
 	// builtModel, when set, is told each change set whose model an index
 	// read builds (memo misses only); tests count folds per change set
 	// with it.

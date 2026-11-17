@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -27,6 +28,10 @@ type daemonFoldFix struct {
 	state    daemon.State
 	picked   []string
 	logReads int
+	// planReads and planFolds count this fixture's Ctx's plan reads and
+	// the in-flight change sets they folded (Ctx.planRead, planFolded), so
+	// a parallel test's reads do not show in them.
+	planReads, planFolds atomic.Int64
 	// pickFolds is folds() when the last detach ran: the folds the poll
 	// took before the start dropped the cache.
 	pickFolds int
@@ -148,6 +153,8 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 	f.events = filepath.Join(t.TempDir(), "events")
 	f.cmd = `printf '%s\n' "$RHIZA_EVENT" >> ` + f.events
 	ctx.logRead = func() { f.logReads++ }
+	ctx.planRead = func() { f.planReads.Add(1) }
+	ctx.planFolded = func() { f.planFolds.Add(1) }
 	return f
 }
 
@@ -215,8 +222,8 @@ func TestDaemonIdlePollSkipsFold(t *testing.T) {
 	f.unj[f.target] = daemonPending{at: f.clock}
 
 	f.poll(t) // the first poll folds and seeds the events
-	if f.folds() == 0 || planReadCount.Load() == 0 {
-		t.Fatalf("first poll: %d folds, %d plan reads; want some", f.folds(), planReadCount.Load())
+	if f.folds() == 0 || f.planReads.Load() == 0 {
+		t.Fatalf("first poll: %d folds, %d plan reads; want some", f.folds(), f.planReads.Load())
 	}
 	if f.logReads != 0 {
 		t.Errorf("first poll over the index read the log %d times", f.logReads)
@@ -227,15 +234,15 @@ func TestDaemonIdlePollSkipsFold(t *testing.T) {
 
 	f.logReads = 0
 	cached := f.folds()
-	reads0, folds0 := planReadCount.Load(), planFoldCount.Load()
+	reads0, folds0 := f.planReads.Load(), f.planFolds.Load()
 	f.poll(t)
 	if f.logReads != 0 || f.folds() != cached {
 		t.Errorf("idle poll read the log %d times and folded %d times", f.logReads, f.folds()-cached)
 	}
-	if n := planReadCount.Load() - reads0; n != 0 {
+	if n := f.planReads.Load() - reads0; n != 0 {
 		t.Errorf("idle poll ran planRead %d times", n)
 	}
-	if n := planFoldCount.Load() - folds0; n != 0 {
+	if n := f.planFolds.Load() - folds0; n != 0 {
 		t.Errorf("idle poll folded %d in-flight change sets", n)
 	}
 	if len(f.picked) != 0 {
@@ -267,10 +274,10 @@ func TestDaemonIdlePollSkipsFold(t *testing.T) {
 	}
 	f.logReads = 0
 	cached = f.folds()
-	reads0 = planReadCount.Load()
+	reads0 = f.planReads.Load()
 	f.poll(t)
-	if f.folds() == cached || planReadCount.Load() == reads0 {
-		t.Errorf("poll after a log entry: %d folds, %d plan reads; want both", f.folds()-cached, planReadCount.Load()-reads0)
+	if f.folds() == cached || f.planReads.Load() == reads0 {
+		t.Errorf("poll after a log entry: %d folds, %d plan reads; want both", f.folds()-cached, f.planReads.Load()-reads0)
 	}
 	if f.logReads != 0 {
 		t.Errorf("poll after a log entry read the log %d times", f.logReads)
