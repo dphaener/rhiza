@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MFCV3CFBBEFYMQFTA6VC71",
+  "after": [
+    "01M7MEQAB9Y00VPCMK8MSB7HK7"
+  ],
+  "at": "2026-11-17T10:16:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 19080e6f6: built rhiza to a scratch path and ran a scratch workflow (agent step build with until_when=done and a handback template, command step check failing once with on.fail=handback:build) under a fake rex and a fake live claude that reports Stop, runs rhiza session done, then blocks until rex send types the hand-back. Fixed binary: the run succeeded via 'rejoining session', the raw session record at the start of visit 2 had no done mark, and the final mark came from the second, fresh session done. Control with the merge-base binary (abd7d1a89): visit 2's record still held visit 1's done mark and the final mark was that stale one. Failure cases: rex send failing ('rex could not type', run failed) and a step with no handback template ('step build sets no handback template', no message written) both left visit 1's done mark in place. Scoped tests: go test ./internal/api -run 'TestHandbackDeliver|TestSessionDone|TestSessionMessage' ok; go test ./cmd/rhiza -run 'TestScripts/(run-handback|ship-change-one-ci)$' ok."
+        },
+        "handle": "handback-clears-live-done-mark-qa-2",
+        "id": "01M7MG3HBK0XQ99SVZAGA5XHPD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MG3HBK0XQ99SVZAE69JWAS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MG3HBK0XQ99SVZAE69JWAS",
+        "id": "01M7MG3HDBZDYJ48AVQGYKT46N",
+        "link": "01M7MG3HDBZDYJ48AVQECV4810",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MD744F3AQHKM0BZJ7E03FN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MD2K2BE981QPPF5HE8M551",
+  "for": "01M7MDFP8MZ6EC1WAP4B8VREEX",
+  "id": "01M7MG3HEHDREPTZ2HDRJ8ARCN",
+  "type": "ops",
+  "v": 1
+}
