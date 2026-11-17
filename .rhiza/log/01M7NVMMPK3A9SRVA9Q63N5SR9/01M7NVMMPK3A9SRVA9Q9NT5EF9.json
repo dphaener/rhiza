@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:56:59Z",
+  "body": {
+    "intent": "A failed run is retried, once by default, from the step its workflow names for that failure (default the failed step; a plan whose review-check refuses restarts at plan), with the failed step's output and findings in the next attempt's brief; once the retries are spent it goes to the inbox",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMMPK3A9SRVA9Q63N5SR9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMMPK3A9SRVA9Q9NT5EF9",
+  "type": "open",
+  "v": 1
+}

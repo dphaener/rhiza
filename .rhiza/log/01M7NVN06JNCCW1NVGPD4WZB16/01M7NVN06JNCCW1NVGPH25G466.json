@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:57:10Z",
+  "body": {
+    "intent": "A bring-your-own workflow (docs/examples/byo) runs end to end under the daemon in a test, with the spawn holds, stall and runaway detection, failure retry and intervention record applying to its steps as they do to the built-in workflows",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVN06JNCCW1NVGPH25G466",
+  "type": "open",
+  "v": 1
+}

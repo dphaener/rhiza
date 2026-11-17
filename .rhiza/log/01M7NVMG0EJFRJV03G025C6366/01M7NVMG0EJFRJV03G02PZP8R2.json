@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:56:54Z",
+  "body": {
+    "intent": "The daemon's stall detection covers every agent session of any workflow's run, including the children a conductor spawns: an idle child with no done mark (the fixer that held a run 9 hours on 2026-11-16) is nudged, then its step retried or failed with a reason, replacing the check-in alarms of the withdrawn draft 01M7M2FE1S and the orchestrator's runwatch",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMG0EJFRJV03G025C6366",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMG0EJFRJV03G02PZP8R2",
+  "type": "open",
+  "v": 1
+}
