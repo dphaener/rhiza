@@ -1,0 +1,15 @@
+{
+  "actor": "01M7KWD0F0FQPVJCC865C8B07G",
+  "after": [],
+  "at": "2026-11-17T04:56:41Z",
+  "body": {
+    "intent": "Record agent actor claude-code-f954a143 for session f954a143-68b6-4da3-9fa5-01a1e7dd44b0",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7KXTJ2ME361XVPK98WJBQFX",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KXTJ2ME361XVPK9AV802PE",
+  "type": "open",
+  "v": 1
+}

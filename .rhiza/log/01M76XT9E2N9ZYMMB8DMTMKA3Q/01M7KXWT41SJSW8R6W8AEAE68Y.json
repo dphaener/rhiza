@@ -1,0 +1,40 @@
+{
+  "actor": "01M7KXTJ2ME361XVPK93WB65V2",
+  "after": [
+    "01M7KXGGEK3HSXGVRK39ES30KJ"
+  ],
+  "at": "2026-11-17T04:57:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7eabdc606 re-ran the Checks: go test -trimpath ./internal/api -run 'TestLeafPrompt|TestRunSpawn' (TestLeafPromptNotes, TestRunSpawn/Notes, TestRunSpawnCheck/CheckRoleNoNotes pass), go test -trimpath ./internal/run -run TestRenderSpawnBrief and -run 'TestBrief|TestSession|TestHandback', rhiza ship generate and rhiza render (scratch build): all exit 0; go vet and gofmt clean. Diff read: withRunNotes appends run.NotesSection (oldest first, '- <note>' lines under 'Notes from earlier sessions of this run:') to builder and verifier leaf prompts only, read fresh from the journal; spawnNotes passes notes into RenderSpawnBrief only for builder/verifier children, after the caller's brief; no notes gives no heading; contract section and run note command unchanged; only the leaf's listed files changed."
+        },
+        "handle": "leaf-prompts-carry-run-notes-verified",
+        "id": "01M7KXWT1YDQFS74PY082BN024",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KXWT1YDQFS74PY04RW9WPB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KXWT1YDQFS74PY04RW9WPB",
+        "id": "01M7KXWT31Q7AP1GAFZYW11WH8",
+        "link": "01M7KXWT31Q7AP1GAFZV4P48TB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEHXWHCRXW0CQVV9CF2J",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M7KWD0F0FQPVJCC865C8B07G",
+  "id": "01M7KXWT41SJSW8R6W8AEAE68Y",
+  "type": "ops",
+  "v": 1
+}
