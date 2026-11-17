@@ -34,7 +34,7 @@ func (p leafContractProblem) line() string {
 }
 
 // leafContractProblems checks each live leaf (a live capability with no
-// live child capability) that a change set of plan creates or changes
+// live child capability in any plan change set's view, see hasPlanChild) that a change set of plan creates or changes
 // with an op: it must have a non-empty statement, acceptance, files and
 // must_not, and its acceptance must hold the words "failure case" (any
 // case) unless it has a failure_waiver. A node several plan change sets
@@ -60,7 +60,7 @@ func leafContractProblems(w *workspace, plan []changeset.ChangeSet) []leafContra
 	for _, n := range order {
 		m := w.model(view[n])
 		node, ok := m.Node(n)
-		if !ok || node.Kind != op.KindCapability || node.Retired || len(m.Children(op.KindCapability, n)) > 0 {
+		if !ok || node.Kind != op.KindCapability || node.Retired || hasPlanChild(w, plan, view, n) {
 			continue
 		}
 		var lacks []string
@@ -77,6 +77,27 @@ func leafContractProblems(w *workspace, plan []changeset.ChangeSet) []leafContra
 		}
 	}
 	return out
+}
+
+// hasPlanChild reports whether capability n has a live child capability
+// in any plan change set's view: a parent whose child another plan change
+// set adds is not a leaf. Each child is judged in the view of the last
+// plan change set that touches it (view), so a child a later one retires
+// or moves away does not count.
+func hasPlanChild(w *workspace, plan []changeset.ChangeSet, view map[id.ID]id.ID, n id.ID) bool {
+	for _, c := range plan {
+		m := w.model(c.ID)
+		for _, ch := range m.Children(op.KindCapability, n) {
+			cm := m
+			if v, ok := view[ch.ID]; ok {
+				cm = w.model(v)
+			}
+			if got, ok := cm.Node(ch.ID); ok && !got.Retired && got.Kind == op.KindCapability && got.Parent == n {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // leafField is node's string field f, trimmed; "" when it is absent,

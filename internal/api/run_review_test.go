@@ -632,3 +632,46 @@ func TestReviewCheckLeafContract(t *testing.T) {
 	app(run.Entry{Type: run.TypeFindings, Step: "conduct", Check: "plan", Cycle: 1, Findings: []run.Finding{}})
 	pass("a conductor run with a leaf lacking its contract")
 }
+
+// A parent capability created in one plan change set whose child
+// capability is added only in another (built on the first) is not a leaf:
+// review-check reads children across all the plan's change sets and
+// passes over the child's whole contract.
+func TestReviewCheckLeafContractChildInOtherChangeSet(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "leafcontractsplit")
+	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"intent","handle":"goal","fields":["statement=Ship the leaves"]}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"parent","fields":["statement=Holds the leaves"]}`)
+	b := newChange(t, f.ctx, `{"intent":"Plan B"}`)
+	mustWrite(t, f.ctx, "link", `{"from":"`+b.ChangeSet.String()+`","type":"depends-on","to":"`+a.ChangeSet.String()+`"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-b","parent":"parent","fields":["statement=Does B","acceptance=go test passes; failure case: a bad input is refused","files=internal/b.go","must_not=touch a"]}`)
+	mustWrite(t, f.ctx, "link", `{"from":"`+b.ChangeSet.String()+`","type":"serves","to":"goal"}`)
+
+	t0 := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R30", run.Entry{
+		Type: run.TypeStarted, Step: "review", At: t0,
+		Started: &run.Started{Workflow: "plan", Change: a.ChangeSet.String(), Title: "Plan it",
+			Definition: "name = \"plan\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range []run.Entry{
+		{Type: run.TypeEntered, Step: "review", Visit: 1, At: t0},
+		{Type: run.TypeFindings, Step: "review", Findings: []run.Finding{}, At: t0},
+	} {
+		if err := store.Append("R30", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return "R30"
+		}
+		return ""
+	}
+	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
+		t.Fatalf("a parent whose child is in another plan change set: %v", err)
+	}
+}
