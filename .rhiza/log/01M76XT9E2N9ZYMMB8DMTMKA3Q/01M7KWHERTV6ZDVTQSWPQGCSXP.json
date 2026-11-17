@@ -1,0 +1,183 @@
+{
+  "actor": "01M7KWD0F0FQPVJCC865C8B07G",
+  "after": [
+    "01M779C6W5WHZZ4HC8444H39WR"
+  ],
+  "at": "2026-11-17T04:34:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "summary": "Autonomous plan of change set 01M76XT9 by the conductor of run 01M7KWCM5HATP75QHM7FE9J8R0; no owner was present. Research found: leafPrompt (internal/api/run_leaves.go) tells a retry builder only to read findings from rhiza run status --json; LeafState.AttemptFindings (internal/run/journal.go) already holds a verifier's journaled findings per attempt; rhiza run spawn writes a child's brief.md as the contract section plus the caller's brief (run.RenderSpawnBrief); the run journal has no notes; the build-retry topic already says inspect the working tree and address every finding as written. The plan: the leaves step's retry prompt quotes the earlier attempt's findings verbatim; a rhiza run note command journals one-line learnings; leaf prompts and spawned builder and verifier briefs carry the run's notes; the builder, verifier, build-retry and conduct topics say to write notes, quote findings verbatim and update landed nodes a leaf changes or raise a question.",
+          "title": "Verbatim retry and run notes, planned by the conductor"
+        },
+        "handle": "verbatim-retry-plan",
+        "id": "01M7KWHE93J0DWFBZ47ECHT995",
+        "key": null,
+        "kind": "source",
+        "node": "01M7KWHE93J0DWFBZ47DPJ9Y1Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "A run's notes are journal entries written by `rhiza run note <text>`: one line, at most 200 characters, refused when empty or multi-line; they are shown by rhiza run status and carried, oldest first, in later leaves' builder and verifier prompts and in spawned builder and verifier briefs",
+          "wording": "the conductor's autonomous pick from the intent (assumed, would have escalated)"
+        },
+        "handle": "run-notes-journaled",
+        "id": "01M7KWHEA7FK1EG1A6RZX32XG2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "id": "01M7KWHEB16NHWRV1XQS1AMC0G",
+        "link": "01M7KWHEB16NHWRV1XQN1Q6E2Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHE93J0DWFBZ47DPJ9Y1Z",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "id": "01M7KWHEBZE11CM1JXG4HXQPBS",
+        "link": "01M7KWHEBZE11CM1JXG32FR8X2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M76XM73SV2HZ5FRGC8CMX965",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestLeafPrompt and go test -trimpath ./internal/run -run TestLeaves pass with tests that find a retry builder's prompt holding the previous attempt's two finding reasons byte for byte (one multi-line, one over 200 characters, neither trimmed nor joined), the inspect-the-working-tree line and the address-every-finding-as-written line; (failure case) an attempt that failed with no findings journaled (verifier ended with neither) gives a prompt quoting that attempt's failure detail and no empty findings list, and a first-attempt builder's prompt carries no findings section; rhiza show build-retries names the verbatim findings.",
+          "files": "internal/run/leaves.go, internal/run/leaves_test.go, internal/api/run_leaves.go, internal/api/run_leaves_test.go, build-retries (model node, via rhiza set)",
+          "must_not": "Change the fixer's findingLines shape or the checks step's fixer prompt; drop the rhiza run status --json pointer; change how a verifier journals findings",
+          "statement": "A leaves step's retry builder (attempt past 1 within its round) gets a prompt that quotes, verbatim and in full, each finding the previous attempt's verifier journaled on the leaf (or that attempt's failure detail when it journaled none), and tells it to inspect the working tree and the earlier attempts' commits before writing and to address every finding exactly as written, in one fix commit with the leaf's trailer; the landed build-retries node's statement and acceptance are updated to say so."
+        },
+        "handle": "retry-prompt-quotes-findings",
+        "id": "01M7KWHED131Y2GBPMA732E1H4",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7KWHED131Y2GBPMA3KT4XK4",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHED131Y2GBPMA3KT4XK4",
+        "id": "01M7KWHEE0PPZCN53G4B91PA7K",
+        "link": "01M7KWHEE0PPZCN53G47RHJF77",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHE93J0DWFBZ47DPJ9Y1Z",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run TestNote and go test -trimpath ./internal/api -run TestRunNote pass with tests that journal two notes and find them in run status's notes oldest first with their role and leaf; (failure case) an empty note, a note holding a newline and a 201-character note are each refused with exit 2 and nothing journaled, and a note outside a run with no --run names RHIZA_RUN; go test -trimpath ./cmd/rhiza -run TestScripts/run-note passes; go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after -update.",
+          "files": "internal/run/journal.go, internal/run/journal_test.go, internal/run/status.go, internal/api/run_note.go (new), internal/api/run_note_test.go (new), internal/api/run.go, cmd/rhiza/testdata/script/run-note.txtar (new), cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Write to the model or .rhiza/log; collide with or change rhiza note add; change any existing run status field",
+          "statement": "`rhiza run note <text>` (RHIZA_RUN's run, or --run) journals a one-line learning on the run with its session, role and leaf from RHIZA_SESSION, RHIZA_ROLE and RHIZA_LEAF when set; rhiza run status (human and --json) lists the run's notes oldest first; empty, multi-line or over-200-character text is refused with a usage error."
+        },
+        "handle": "run-note-command",
+        "id": "01M7KWHEF0XF0PZQ7KB91G6V4F",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "id": "01M7KWHEG5CED6HA9VZFPNFCCQ",
+        "link": "01M7KWHEG5CED6HA9VZFGMZKKW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestLeafPrompt|TestRunSpawn' and go test -trimpath ./internal/run -run TestRenderSpawnBrief pass with tests that journal two notes and find both, oldest first, in a later leaf's builder prompt, its verifier prompt and a spawned builder child's brief.md after the caller's brief; (failure case) a run with no notes gives prompts and briefs with no notes heading, and a spawned check-plan child's brief carries no notes.",
+          "files": "internal/api/run_leaves.go, internal/api/run_leaves_test.go, internal/api/run_spawn.go, internal/api/run_spawn_test.go, internal/run/brief.go, internal/run/brief_test.go",
+          "must_not": "Carry notes into check, critic or fixer prompts; change the contract section of brief.md; change the run note command",
+          "statement": "A leaves step's builder and verifier prompts, and the brief.md rhiza run spawn writes for a builder or verifier child, end with the run's notes so far, oldest first, one `- <note>` line each under a `Notes from earlier sessions of this run:` heading; with no notes they carry no such section."
+        },
+        "handle": "leaf-prompts-carry-run-notes",
+        "id": "01M7KWHEHXWHCRXW0CQZ61D8DK",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7KWHEHXWHCRXW0CQVV9CF2J",
+        "op": "node.create",
+        "parent": "01M5YX3AWPBAH862Q9ZEHM84NW"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHEHXWHCRXW0CQVV9CF2J",
+        "id": "01M7KWHEK3XF797QY567T44FR5",
+        "link": "01M7KWHEK3XF797QY566R1ZYZW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHEHXWHCRXW0CQVV9CF2J",
+        "id": "01M7KWHEMBS8QMXHT8B9MEPN1F",
+        "link": "01M7KWHEMBS8QMXHT8B5NZC29Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with tests that find rhiza run note in the builder and verifier topics, the update-landed-nodes-or-raise-a-question rule in the builder topic, the verbatim-findings line in build-retry, and the verbatim-findings retry brief in conduct; (failure case) a negative test asserts the verifier topic still carries no edit-code instruction and rhiza run note appears in no check or critic topic; every topic stays under the guide size cap; go test -trimpath ./internal/api -run TestGuideInstall passes.",
+          "files": "internal/guide/text/builder.md, internal/guide/text/verifier.md, internal/guide/text/build-retry.md, internal/guide/text/conduct.md, internal/guide/builder_test.go, internal/guide/verifier_test.go, internal/guide/build_retry_test.go, internal/guide/conduct_test.go, builder-topic, verifier-topic, build-retry-topic and conduct-skill (model nodes, via rhiza set)",
+          "must_not": "Name a Go, make or repo-specific command in the builder text; change other topics; change any code outside internal/guide",
+          "statement": "The builder and verifier topics tell their session to end with one `rhiza run note` line of a learning a later leaf can use (when it has one) before session done; the builder topic tells a builder whose leaf changes what a landed node says to update that node with rhiza set in the change set, or raise a question when it cannot; the build-retry topic says the findings are quoted verbatim in the prompt; the conduct topic says a builder retry's brief quotes the verifier's findings verbatim and tells it to inspect the working tree; the landed builder-topic, verifier-topic, build-retry-topic and conduct-skill nodes are updated to match."
+        },
+        "handle": "build-topics-notes-and-drift",
+        "id": "01M7KWHENJAYXZ8T9MQPMPXT0G",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M7KWHENJAYXZ8T9MQKCWP4MP",
+        "op": "node.create",
+        "parent": "01M5YX3HRZCS9HFYWGDSC5TGS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHENJAYXZ8T9MQKCWP4MP",
+        "id": "01M7KWHEPKCJSJ95QRB8F8SXSY",
+        "link": "01M7KWHEPKCJSJ95QRB6Z1NVBM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEA7FK1EG1A6RYTGG9MK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7KWHENJAYXZ8T9MQKCWP4MP",
+        "id": "01M7KWHEQXFAYZV96WZYAQE6Q6",
+        "link": "01M7KWHEQXFAYZV96WZWZ2RDJ2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7KWHEF0XF0PZQ7KB7CEMBXJ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M76XT9E2N9ZYMMB8DMTMKA3Q",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7KWHERTV6ZDVTQSWPQGCSXP",
+  "type": "ops",
+  "v": 1
+}
