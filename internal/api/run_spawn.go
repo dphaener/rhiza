@@ -168,7 +168,7 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 
 	req := SessionStartRequest{
 		Change: rr.state.Change, PermissionMode: rr.state.PermissionMode, Agent: rr.state.Agent, Step: step, Run: rr.id,
-		autonomous: rr.state.Autonomous, landedOK: true,
+		autonomous: rr.state.Autonomous || spawnInConductor(rr.state, step), landedOK: true,
 		role: role, leaf: resp.Leaf, model: strings.TrimSpace(r.Model), parent: parent,
 		check: resp.Check, cycle: resp.Cycle,
 	}
@@ -204,6 +204,19 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		return resp, Errorf("journal the end of child session %s in run %s: %v", sid, rr.id, err)
 	}
 	return resp, nil
+}
+
+// spawnInConductor reports whether step, the step a child is spawned in,
+// is a conductor step of the run's workflow (see workflow.Step.Conducts):
+// its children are recorded autonomous whatever the run's --autonomous.
+// A workflow that no longer parses, or a step it lacks, is no conductor.
+func spawnInConductor(st run.State, step string) bool {
+	def, err := st.ParseDefinition()
+	if err != nil {
+		return false
+	}
+	s, ok := def.Steps[step]
+	return ok && s.Conducts()
 }
 
 // spawnCheck is the review check a child works on and its cycle, which

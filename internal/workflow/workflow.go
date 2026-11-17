@@ -569,6 +569,12 @@ func (s Step) Check(name string) (Check, bool) {
 	return Check{}, false
 }
 
+// Conducts reports whether the step is a conductor step: an agent step
+// that declares review checks, such as ship-change's conduct. Its session
+// and the children it spawns put their questions to the arbiter whether or
+// not the run is autonomous.
+func (s Step) Conducts() bool { return s.Kind == KindAgent && len(s.Checks) > 0 }
+
 // Cap is how many times a run may enter the step.
 func (s Step) Cap() int {
 	if s.MaxVisits > 0 {

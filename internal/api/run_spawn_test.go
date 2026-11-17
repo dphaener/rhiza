@@ -66,10 +66,40 @@ func newSpawnFixture(t *testing.T) *spawnFixture {
 			return "", err
 		}
 		code := s.code
-		return "child-1", sessions.Write(session.Record{ID: "child-1", Run: "R1", Step: r.Step, Parent: r.parent,
+		return "child-1", sessions.Write(session.Record{ID: "child-1", Run: r.Run, Step: r.Step, Parent: r.parent, Autonomous: r.autonomous,
 			Status: session.Status{Exit: &session.Report{State: session.StateExited, Code: &code}}})
 	}}
 	return s
+}
+
+// conductorDef is a conductor workflow: its conduct step is an agent step
+// declaring checks plan, code and qa.
+const conductorDef = "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+	"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"
+
+// inRun starts run id, not autonomous, on workflow def in its step
+// conduct, and makes it the caller's run.
+func (s *spawnFixture) inRun(t *testing.T, id, def string) {
+	t.Helper()
+	if err := s.store.Create(id, run.Entry{
+		Type: run.TypeStarted, Step: "conduct", At: s.f.ctx.Now(),
+		Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", PermissionMode: "manual", Agent: "claude-code"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.store.Append(id, run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1, At: s.f.ctx.Now()}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := session.NewStore(session.Dir(s.f.common)).Update("parent-1", func(r *session.Record) { r.Run, r.Step = id, "conduct" }); err != nil {
+		t.Fatal(err)
+	}
+	get := s.f.ctx.Getenv
+	s.f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return id
+		}
+		return get(k)
+	}
 }
 
 func (s *spawnFixture) req() RunSpawnRequest {
@@ -245,6 +275,43 @@ func TestRunSpawn(t *testing.T) {
 		}
 	})
 
+	// In a run not started --autonomous, a child spawned in a conductor
+	// step (an agent step declaring checks) is recorded autonomous, so its
+	// question is denied to the arbiter and kept as the asked mark; a
+	// child spawned in a plain agent step is not, and its question stays
+	// the owner's.
+	for _, c := range []struct {
+		name, def  string
+		autonomous bool
+	}{
+		{"ConductorStepAutonomous", conductorDef, true},
+		{"PlainStepNotAutonomous", "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			s := newSpawnFixture(t)
+			s.inRun(t, "R2", c.def)
+			if _, err := s.sp.spawn(s.req()); err != nil {
+				t.Fatal(err)
+			}
+			if got := s.reqs[0].autonomous; got != c.autonomous {
+				t.Fatalf("start request autonomous %v, want %v", got, c.autonomous)
+			}
+			sessions := session.NewStore(session.Dir(s.f.common))
+			rec, err := sessions.Update("child-1", func(r *session.Record) { r.Agent, r.Status.Exit = askAgent, nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+			if rec.Autonomous != c.autonomous {
+				t.Fatalf("child record autonomous %v", rec.Autonomous)
+			}
+			if v, ok := envOf(rec, envAutonomous); ok != c.autonomous || (ok && v != "1") {
+				t.Errorf("RHIZA_AUTONOMOUS = %q, %v", v, ok)
+			}
+			_, out := askHook(t, s.f.ctx, "PreToolUse", `{"session_id":"child-1","ask":"Which store?"}`)
+			wantAsked(t, sessions, "child-1", out, c.autonomous)
+		})
+	}
+
 	t.Run("MaxRunsHoldsNothing", func(t *testing.T) {
 		s := newSpawnFixture(t)
 		if err := daemon.WriteState(s.f.common, daemon.State{MaxRuns: 1, Runs: []daemon.LiveRun{{}}}); err != nil {
@@ -268,24 +335,7 @@ func TestRunSpawnCheck(t *testing.T) {
 	t.Parallel()
 	conductor := func(t *testing.T) *spawnFixture {
 		s := newSpawnFixture(t)
-		def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
-			"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"
-		if err := s.store.Create("R2", run.Entry{
-			Type: run.TypeStarted, Step: "conduct", At: s.f.ctx.Now(),
-			Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", PermissionMode: "manual", Agent: "claude-code"},
-		}); err != nil {
-			t.Fatal(err)
-		}
-		if err := s.store.Append("R2", run.Entry{Type: run.TypeEntered, Step: "conduct", Visit: 1, At: s.f.ctx.Now()}); err != nil {
-			t.Fatal(err)
-		}
-		get := s.f.ctx.Getenv
-		s.f.ctx.Getenv = func(k string) string {
-			if k == envRun {
-				return "R2"
-			}
-			return get(k)
-		}
+		s.inRun(t, "R2", conductorDef)
 		return s
 	}
 	t.Run("CheckRole", func(t *testing.T) {

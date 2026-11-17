@@ -2226,10 +2226,11 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 
 // StartAgent starts the step's session as session.start does, on the
 // run's change set, on model, and returns its ID. An autonomous run's
-// session is recorded autonomous. Its tab is its own.
+// session, and a conductor step's in any run, is recorded autonomous, so
+// its questions go to the arbiter. Its tab is its own.
 func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (string, error) {
 	req := agentStepRequest(step, r.mode, r.agent)
-	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous, model
+	req.Change, req.Run, req.autonomous, req.model = r.change, r.run, r.autonomous || step.Conducts(), model
 	req.milestone = r.milestoneOf()
 	req.milestoneNumber = r.runState().MilestoneNumber
 	req.landedOK = true

@@ -11,6 +11,7 @@ import (
 	"github.com/dphaener/rhiza/internal/adapter"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // askAdapter is a fake agent whose hook payload is
@@ -241,5 +242,70 @@ func TestDeliverInSessionCheckout(t *testing.T) {
 	}
 	if _, err := os.Stat(f.messageFile("0001.md")); err == nil {
 		t.Error("answer written under the worktree")
+	}
+}
+
+// wantAsked checks what the hook did with a question from session sid that
+// printed out: denied with autonomousAskReason and kept as the asked mark
+// when denied, else nothing printed and no asked mark.
+func wantAsked(t *testing.T, st *session.Store, sid, out string, denied bool) {
+	t.Helper()
+	rec, err := st.Read(sid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !denied {
+		if out != "" || rec.Status.Asked != nil {
+			t.Errorf("a question outside an autonomous session: hook printed %q, asked %+v", out, rec.Status.Asked)
+		}
+		return
+	}
+	if want := `{"deny":"` + autonomousAskReason + `"}` + "\n"; out != want {
+		t.Errorf("hook printed %q\nwant %q", out, want)
+	}
+	if a := rec.Status.Asked; a == nil || a.Kind != session.KindQuestion || a.Detail != "Which store?" {
+		t.Errorf("asked %+v", a)
+	}
+}
+
+// TestStepRunnerConductorAutonomous: in a run not started --autonomous,
+// the session StartAgent starts for a conductor step (an agent step
+// declaring checks) is recorded autonomous with RHIZA_AUTONOMOUS=1, and its
+// question is denied to the arbiter and kept as the asked mark; a plain
+// agent step's session is not, and its question stays the owner's.
+func TestStepRunnerConductorAutonomous(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name       string
+		step       workflow.Step
+		autonomous bool
+	}{
+		{"Conductor", workflow.Step{Name: "conduct", Kind: workflow.KindAgent, Prompt: "go",
+			Checks: []workflow.Check{{Name: "plan"}, {Name: "code"}, {Name: "qa"}}}, true},
+		{"Plain", workflow.Step{Name: "plan", Kind: workflow.KindAgent, Prompt: "plan"}, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f, r := paneRunner(t)
+			if r.autonomous {
+				t.Fatal("the runner's run is autonomous")
+			}
+			sid, err := r.StartAgent(c.step, "", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			rec, err := r.sessions.Update(sid, func(rec *session.Record) { rec.Agent = askAgent })
+			if err != nil {
+				t.Fatal(err)
+			}
+			if rec.Autonomous != c.autonomous {
+				t.Fatalf("session record autonomous %v, want %v", rec.Autonomous, c.autonomous)
+			}
+			if v, ok := envOf(rec, envAutonomous); ok != c.autonomous || (ok && v != "1") {
+				t.Errorf("RHIZA_AUTONOMOUS = %q, %v", v, ok)
+			}
+			_, out := askHook(t, f.ctx, "PreToolUse", `{"session_id":"`+sid+`","ask":"Which store?"}`)
+			wantAsked(t, r.sessions, sid, out, c.autonomous)
+		})
 	}
 }

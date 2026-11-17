@@ -933,7 +933,7 @@ func (r *running) pollReviewFix(cr CheckRunner, step workflow.Step, a checkActio
 	if err != nil {
 		return false, result{}, false, err
 	}
-	if r.arbitrates(status.Blocked) {
+	if r.arbitrates(step.Name, status.Blocked) {
 		res, ended, err := r.ask(step, a.session, status.Blocked)
 		if err != nil || ended {
 			return false, res, ended, err
@@ -1079,7 +1079,7 @@ func (r *running) pollCheck(cr CheckRunner, step workflow.Step, a checkAction) (
 	if err != nil {
 		return false, result{}, false, err
 	}
-	if r.arbitrates(status.Blocked) {
+	if r.arbitrates(step.Name, status.Blocked) {
 		res, ended, err := r.ask(step, a.session, status.Blocked)
 		if err != nil || ended {
 			return false, res, ended, err
