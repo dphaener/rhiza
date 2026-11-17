@@ -1,0 +1,40 @@
+{
+  "actor": "01M7M480RB1AED9F34GGHQ8ZFK",
+  "after": [
+    "01M7M3WC67JCSKKAK1H4P3E2JJ"
+  ],
+  "at": "2026-11-17T06:50:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 53f29ac4f, session RHIZA_*/SHIP_*/REX_* unset, under a capped scope with -p 2 -trimpath: go test ./cmd/rhiza -run '^TestScriptEnvIsolated$' passes. With keepScriptEnv temporarily also keeping every os.Environ() name, it fails 'scriptEnv: leaked from the test process: RHIZA_CHANGE (in RHIZA_CHANGE=), ... REX_BLOCK (in REX_BLOCK=)', naming all eight leakVars (reverted; tree clean). -run 'TestScripts/^session-run$' passes. Edge cases: -count=2 passes twice; '^TestScriptEnvIsolated$|TestScripts/^session-run$' in one process passes both; run with the session's real RHIZA_*/REX_*/SHIP_* still set it passes and the logged script env holds none of them."
+        },
+        "handle": "scripts-env-isolated-guard-qa-1",
+        "id": "01M7M4A2FYT539TBWTAC72ZZKR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M4A2FYT539TBWTAATZQJ89",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M4A2FYT539TBWTAATZQJ89",
+        "id": "01M7M4A2N58VHNDJM24MZH2XHR",
+        "link": "01M7M4A2N58VHNDJM24HVZA04T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M3874NE4M6GA6XEVKK3RW2",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M2YWF4KEF5RV32ZS0C4XK7",
+  "for": "01M7M3JWNYAPYRAKHDP3CBG315",
+  "id": "01M7M4A2PAMP42RBQE7QGT2WBJ",
+  "type": "ops",
+  "v": 1
+}
