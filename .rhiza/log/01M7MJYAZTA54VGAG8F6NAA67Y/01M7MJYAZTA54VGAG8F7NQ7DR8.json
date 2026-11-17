@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MJNS95DSBNGSQ0BN54KEAF",
+  "after": [],
+  "at": "2026-11-17T11:05:45Z",
+  "body": {
+    "intent": "A message rhiza session message delivers names the sending session and the exact reply command (reply: rhiza session message <sender session> \"<text>\"), so a child messaged mid-task answers without looking anything up, and the conduct guide documents it",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7MJYAZTA54VGAG8F6NAA67Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MJYAZTA54VGAG8F7NQ7DR8",
+  "type": "open",
+  "v": 1
+}
