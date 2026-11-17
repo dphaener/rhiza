@@ -1707,7 +1707,7 @@ Appends to the log.
 Arguments and flags:
 
 - `<text>`: The note: one line of at most 200 characters (required)
-- `--run`: The run: a full ID or a unique prefix of 4+ characters; defaults to RHIZA_RUN's
+- `--run`: The run: a full ID or a unique prefix of 4+ characters; default RHIZA_RUN's run
 
 Output (`--json` fields):
 

@@ -13982,7 +13982,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "run": {
-            "description": "The run: a full ID or a unique prefix of 4+ characters; defaults to RHIZA_RUN's",
+            "description": "The run: a full ID or a unique prefix of 4+ characters; default RHIZA_RUN's run",
             "type": "string"
           },
           "text": {

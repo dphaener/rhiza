@@ -649,6 +649,17 @@ func (r *running) pollLeaf(lr LeafRunner, step workflow.Step, a leafAction) (jud
 			}
 		}
 		commit := ""
+		if a.role == workflow.RoleVerifier {
+			// The verifier's `rhiza run findings` appended to the journal
+			// without the run's lock: read it again on every verifier end,
+			// so a retry builder's spec quotes findings journalled by a
+			// verifier that then failed.
+			j, err := r.e.Store.Read(r.j.ID)
+			if err != nil {
+				return false, result{}, false, err
+			}
+			r.j = j
+		}
 		if a.role == workflow.RoleVerifier && outcome == workflow.OutcomePass {
 			if outcome, detail, commit, err = r.judgeVerifier(lr, step, a); err != nil {
 				return false, result{}, false, err

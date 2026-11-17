@@ -31,7 +31,7 @@ const runNoteNext = "rhiza describe run.note"
 // RunNoteRequest is the note and, outside a run, the run it goes on.
 type RunNoteRequest struct {
 	Text string `json:"text" arg:"0" desc:"The note: one line of at most 200 characters"`
-	Run  string `json:"run,omitempty" flag:"run" desc:"The run: a full ID or a unique prefix of 4+ characters; defaults to RHIZA_RUN's"`
+	Run  string `json:"run,omitempty" flag:"run" desc:"The run: a full ID or a unique prefix of 4+ characters; default RHIZA_RUN's run"`
 }
 
 // RunNoteResponse is the journaled note, or in a dry run the one that
