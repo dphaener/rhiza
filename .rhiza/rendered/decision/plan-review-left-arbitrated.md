@@ -25,6 +25,7 @@ the orchestrator's ruling as arbiter for the owner, in the plan-workflow plannin
 - decided-by [plan-review-arbitrated](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-review-arbitrated.md)
 - decided-by [plan-review-rounds](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-review-rounds.md)
 - decided-by [plan-gate](../capability/rhiza/workflows/built-in-workflows/plan-workflow/plan-gate.md)
+- supersedes [plan-rulings-applied-before-gate](plan-rulings-applied-before-gate.md)
 
 ## History
 

@@ -65,7 +65,7 @@ on.fail = "review"
 kind = "command"
 run = "rhiza run review-check"
 max_visits = 3
-on.pass = "gate"
+on.pass = "rulings"
 on.fail = "revise"
 
 [step.revise]
@@ -75,6 +75,28 @@ until = "true"
 until_when = "done"
 max_visits = 2
 on.pass = "review"
+
+# In an autonomous run, a confirmed major left after round 3 becomes a
+# question the arbiter decides with a Decision, and the arbiter writes
+# nothing else. The rulings check passes when every such ruling is
+# applied (a live node links decided-by to its Decision), or there is
+# none; else one apply-rulings visit of the reviser applies them and the
+# check runs again. A ruling still unapplied then ends the run failed
+# before the gate. No review round follows the rulings.
+[step.rulings]
+kind = "command"
+run = "rhiza run review-check --rulings"
+max_visits = 2
+on.pass = "gate"
+on.fail = "apply-rulings"
+
+[step.apply-rulings]
+kind = "agent"
+prompt = "/rhiza-plan-reviser Apply the arbiter's rulings on the plan of change set {change}: follow rhiza guide plan-reviser."
+until = "true"
+until_when = "done"
+max_visits = 1
+on.pass = "rulings"
 
 # The gate proposes the plan's draft change sets: the owner accepts them,
 # or, in an autonomous run, the gate does once the review passed.

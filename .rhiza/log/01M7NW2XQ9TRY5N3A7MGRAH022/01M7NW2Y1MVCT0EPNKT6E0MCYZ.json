@@ -1,0 +1,59 @@
+{
+  "actor": "01M7NW0K6KKNB2XQ31Z9JX2HQ3",
+  "after": [
+    "01M7NW2XQ9TRY5N3A7MHX73G5C"
+  ],
+  "at": "2026-11-17T23:04:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M7NVQ7ZQNEKVZEP012RZC8AD",
+        "handle": null,
+        "id": "01M7NW2WBP4JE4TMR077C0KBVE",
+        "node": "01M7NVQ7ZQNEKVZEP01124NGNM",
+        "op": "node.update",
+        "set": {
+          "statement": "When a run ends, whatever its outcome (merged, failed, abandoned), nothing its steps wrote to the temporary folder is left behind. Today the run's own {run_tmp} is already removed when it ends (internal/run/engine.go, and on abandon internal/api/run.go), but only what a workflow's [env] points there lands in it: the agents and commands of a workflow that sets no TMPDIR = \"{run_tmp}\" (this repo's workflows set only GOTMPDIR) write to the shared tmp, where nothing removes it. The daemon gives every process a run's steps start TMPDIR = {run_tmp} unless the workflow's [env] sets TMPDIR itself. The /tmp/rhiza-projection-* leak stays bug 01M7M3JZFW's. Measure: a test runs a workflow whose [env] names no {run_tmp} and whose step writes a file under $TMPDIR, ends the run each way, and finds nothing of it left under the tmp root."
+        },
+        "unset": []
+      },
+      {
+        "base": "01M7NVQ83YD8JE3TEPTQ4X2QA3",
+        "handle": null,
+        "id": "01M7NW2WCPWSG0D582C4ZJ6EM4",
+        "node": "01M7NVQ83YD8JE3TEPTPHSM25G",
+        "op": "node.update",
+        "set": {
+          "statement": "Every outside intervention in a run is journalled and counted: a session message from outside the run, a manual resume, retry or abandon, an approve of anything other than a step the workflow itself asks the owner to approve, and a hand commit on the run's branch. Approving a workflow's own signoff (or other owner) step is the workflow working as written, not an intervention, and is not counted. Measure: a test makes each kind of intervention and sees each in rhiza run status --json and in the daemon's count; a run with none counts zero, and a run whose only owner action is approving its workflow's signoff step also counts zero."
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M7NVN06JNCCW1NVGPD4WZB16",
+        "id": "01M7NW2X0RT6B41SDDDHFJ52QJ",
+        "link": "01M7NW2X0RT6B41SDDDHE7R2B7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVN06JNCCW1NVGPD4WZB16",
+        "id": "01M7NW2XPC7CFQGXXRFR0F9KA6",
+        "link": "01M7NW2XPC7CFQGXXRFPJC4DY8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NW2XQ9TRY5N3A7MGRAH022",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NW2Y1MVCT0EPNKT6E0MCYZ",
+  "type": "ops",
+  "v": 1
+}

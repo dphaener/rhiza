@@ -260,6 +260,7 @@ var processScripts = map[string]string{
 	"plan-workflow":                        "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"plan-workflow-autonomous":             "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"plan-workflow-autonomous-left":        "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
+	"plan-workflow-autonomous-unapplied":   "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"plan-workflow-ci-flake":               "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"plan-workflow-ci-flake-red":           "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"plan-workflow-ci-infra-timeout":       "a workflow step runs rhiza",

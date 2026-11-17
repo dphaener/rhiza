@@ -41,6 +41,23 @@ and `rhiza why <node> --change <cs> --json`, and the code and tests it names.
    only when one exists.
 4. Run `rhiza check` and fix what it finds.
 
+### Applying the arbiter's rulings
+
+If your prompt says to apply the arbiter's rulings, read the run's questions that carry a
+decision in `rhiza run status --json`. For each, change the node of the finding it answers as
+the Decision says, with `rhiza apply <file> --change <cs> --json` in the change set holding the
+node (`--record` for a landed record). The question's `change` (else the run's change set) is
+the change set holding the question and its Decision: read it with
+`rhiza show <decision> --change <it>`. Link a live node `decided-by` it there, with
+`rhiza apply <file> --change <it> --json` (`--record` for a landed record):
+- the finding's node, when it stays live;
+- the link's `from` node, when the finding targets a link;
+- each node that replaces it, when the ruling retires the finding's node (an oversized-leaf
+  split links every new leaf).
+
+Never edit, retire or re-link the Decision, and change nothing a ruling does not name.
+`rhiza run review-check --rulings` tests each ruling for that link.
+
 <!-- shared: command-budget nested -->
 
 ## Must not do

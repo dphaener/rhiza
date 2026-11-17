@@ -847,7 +847,7 @@ func (r *running) arbitrateAsked(step workflow.Step, res result) (result, error)
 		return res, nil
 	}
 	for _, asked := range undecidedAsks(r.j.Entries) {
-		v, err := r.arbitrate(step, asked.Question)
+		v, err := r.arbitrateIn(step, asked.Question, asked.Change)
 		if err != nil {
 			return result{}, err
 		}
@@ -872,7 +872,7 @@ func undecidedAsks(entries []Entry) []Asked {
 		switch e.Type {
 		case TypeAsked:
 			if e.Session == "" {
-				asks = append(asks, Asked{Step: e.Step, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At})
+				asks = append(asks, Asked{Step: e.Step, Question: e.Question, Handle: e.Handle, Text: e.Detail, At: e.At, Change: e.Change})
 			}
 		case TypeArbitrated:
 			verdict[e.Question] = e.Outcome
@@ -1411,14 +1411,25 @@ func (r *running) notify(st State, step, session string, blocked bool, b *Block)
 // one whose status cannot be read, is left open. Runner failures are an
 // error outcome; the error return is for journal failures. The arbitrated entry records the verdict.
 func (r *running) arbitrate(asking workflow.Step, question string) (result, error) {
+	return r.arbitrateIn(asking, question, "")
+}
+
+// arbitrateIn is arbitrate with the arbiter started in change set change
+// (its RHIZA_CHANGE), the run's change set when change is "": a
+// session-less asked entry names the change set its question was written
+// into (decision review-ruling-in-node-change-set).
+func (r *running) arbitrateIn(asking workflow.Step, question, change string) (result, error) {
 	arb := r.def.Arbiter()
 	st := r.j.State()
+	if change == "" {
+		change = st.Change
+	}
 	session := ""
 	if a, ok := st.OpenArbitration(question); ok && a.Session != "" {
 		session = a.Session
 		r.log("step %s: rejoining arbiter session %s on question %s", asking.Name, session, question)
 	} else {
-		s, err := r.e.Runner.StartArbiter(arb, question, r.stepEnv(arb.Name, st.Change))
+		s, err := r.e.Runner.StartArbiter(arb, question, r.stepEnv(arb.Name, change))
 		if err != nil {
 			return r.arbitrated(asking, question, errResult(err), "")
 		}

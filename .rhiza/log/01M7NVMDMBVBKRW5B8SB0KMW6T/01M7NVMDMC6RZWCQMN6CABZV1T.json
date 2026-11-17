@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:56:51Z",
+  "body": {
+    "intent": "The daemon's watchdog treats a runaway agent session of any workflow, one whose process tree's process count or resident memory grows past a host threshold read portably (ps, on Linux and macOS), like a stall: it nudges the session, then fails the step with the reading as its reason",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMDMC6RZWCQMN6CABZV1T",
+  "type": "open",
+  "v": 1
+}

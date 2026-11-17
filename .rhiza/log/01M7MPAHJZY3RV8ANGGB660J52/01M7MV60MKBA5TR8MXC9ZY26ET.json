@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MV1CRVT0GE047CZ2KQVQJ8",
+  "after": [
+    "01M7MTS4MWX152VBZAGG6W8E1C"
+  ],
+  "at": "2026-11-17T13:29:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 5, scratch binary go build -trimpath -o $TMPDIR/qa5/rhiza ./cmd/rhiza, scratch autonomous plan run (rhiza run start --workflow plan --autonomous, fake agents from plan-workflow-autonomous-unapplied.txtar with a reviser paused at apply-rulings): run round 3 left two arbitrated questions, one on serving-draft leaf export-csv and one on landed decision keep-flat. From the reviser's environment (RHIZA_CHANGE = the run's change set), following rhiza guide plan-reviser 'Applying the arbiter's rulings' literally: rhiza run status --json gave the serving-draft question change=<draft> and the other none; rhiza show <decision> --change <it> exit 0 for both (bare rhiza show exit 4, as the guide now avoids); rhiza apply set export-csv --change <draft> and keep-flat --record exit 0; decided-by links via rhiza apply --change <it> exit 0; rhiza run review-check --rulings passed 2 rulings applied; the run then went rulings visit 2 pass, gate, open-pr, merge, succeeded. Scoped tests: internal/api TestRunInfoAcceptsAndQuestions|TestRunReviewCheckRulings, internal/guide TestPlanReviserText, cmd/rhiza describe-golden, plan-workflow-autonomous-left, plan-workflow-autonomous-unapplied all ok."
+        },
+        "handle": "plan-review-check-rulings-qa-5",
+        "id": "01M7MV5ZZ4WX4XKQMTDRZB0Q51",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MV5ZZ4WX4XKQMTDNMGZ3W1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MV5ZZ4WX4XKQMTDNMGZ3W1",
+        "id": "01M7MV600VMW35N9NRBRBPG8HJ",
+        "link": "01M7MV600VMW35N9NRBQFGTPMF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 5, scratch binary go build -trimpath -o $TMPDIR/qa5/rhiza ./cmd/rhiza, scratch autonomous plan run (rhiza run start --workflow plan --autonomous, fake agents from plan-workflow-autonomous-unapplied.txtar with a reviser paused at apply-rulings): run round 3 left two arbitrated questions, one on serving-draft leaf export-csv and one on landed decision keep-flat. From the reviser's environment (RHIZA_CHANGE = the run's change set), following rhiza guide plan-reviser 'Applying the arbiter's rulings' literally: rhiza run status --json gave the serving-draft question change=<draft> and the other none; rhiza show <decision> --change <it> exit 0 for both (bare rhiza show exit 4, as the guide now avoids); rhiza apply set export-csv --change <draft> and keep-flat --record exit 0; decided-by links via rhiza apply --change <it> exit 0; rhiza run review-check --rulings passed 2 rulings applied; the run then went rulings visit 2 pass, gate, open-pr, merge, succeeded. Scoped tests: internal/api TestRunInfoAcceptsAndQuestions|TestRunReviewCheckRulings, internal/guide TestPlanReviserText, cmd/rhiza describe-golden, plan-workflow-autonomous-left, plan-workflow-autonomous-unapplied all ok."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-5",
+        "id": "01M7MV603GJ99RPAS1VAE5JQSG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MV603GJ99RPAS1V9VMVHQF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MV603GJ99RPAS1V9VMVHQF",
+        "id": "01M7MV60666RN2BDBWA697FMGF",
+        "link": "01M7MV60666RN2BDBWA3AHTC1Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 5, scratch binary go build -trimpath -o $TMPDIR/qa5/rhiza ./cmd/rhiza, scratch autonomous plan run (rhiza run start --workflow plan --autonomous, fake agents from plan-workflow-autonomous-unapplied.txtar with a reviser paused at apply-rulings): run round 3 left two arbitrated questions, one on serving-draft leaf export-csv and one on landed decision keep-flat. From the reviser's environment (RHIZA_CHANGE = the run's change set), following rhiza guide plan-reviser 'Applying the arbiter's rulings' literally: rhiza run status --json gave the serving-draft question change=<draft> and the other none; rhiza show <decision> --change <it> exit 0 for both (bare rhiza show exit 4, as the guide now avoids); rhiza apply set export-csv --change <draft> and keep-flat --record exit 0; decided-by links via rhiza apply --change <it> exit 0; rhiza run review-check --rulings passed 2 rulings applied; the run then went rulings visit 2 pass, gate, open-pr, merge, succeeded. Scoped tests: internal/api TestRunInfoAcceptsAndQuestions|TestRunReviewCheckRulings, internal/guide TestPlanReviserText, cmd/rhiza describe-golden, plan-workflow-autonomous-left, plan-workflow-autonomous-unapplied all ok."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-5",
+        "id": "01M7MV6087YWFVA7PKD0K1MP2F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MV6087YWFVA7PKCYZTTG1T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MV6087YWFVA7PKCYZTTG1T",
+        "id": "01M7MV60AFCW6AV2BG9X2STJ9E",
+        "link": "01M7MV60AFCW6AV2BG9SD5H3P8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 5, scratch binary go build -trimpath -o $TMPDIR/qa5/rhiza ./cmd/rhiza, scratch autonomous plan run (rhiza run start --workflow plan --autonomous, fake agents from plan-workflow-autonomous-unapplied.txtar with a reviser paused at apply-rulings): run round 3 left two arbitrated questions, one on serving-draft leaf export-csv and one on landed decision keep-flat. From the reviser's environment (RHIZA_CHANGE = the run's change set), following rhiza guide plan-reviser 'Applying the arbiter's rulings' literally: rhiza run status --json gave the serving-draft question change=<draft> and the other none; rhiza show <decision> --change <it> exit 0 for both (bare rhiza show exit 4, as the guide now avoids); rhiza apply set export-csv --change <draft> and keep-flat --record exit 0; decided-by links via rhiza apply --change <it> exit 0; rhiza run review-check --rulings passed 2 rulings applied; the run then went rulings visit 2 pass, gate, open-pr, merge, succeeded. Scoped tests: internal/api TestRunInfoAcceptsAndQuestions|TestRunReviewCheckRulings, internal/guide TestPlanReviserText, cmd/rhiza describe-golden, plan-workflow-autonomous-left, plan-workflow-autonomous-unapplied all ok."
+        },
+        "handle": "review-question-in-node-change-set-qa-5",
+        "id": "01M7MV60C3A2WGBG966VZ56JFN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MV60C3A2WGBG966TX8D6YS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MV60C3A2WGBG966TX8D6YS",
+        "id": "01M7MV60DW6RVGT9EWZGBX94EK",
+        "link": "01M7MV60DW6RVGT9EWZDRQS3Y3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 5, scratch binary go build -trimpath -o $TMPDIR/qa5/rhiza ./cmd/rhiza, scratch autonomous plan run (rhiza run start --workflow plan --autonomous, fake agents from plan-workflow-autonomous-unapplied.txtar with a reviser paused at apply-rulings): run round 3 left two arbitrated questions, one on serving-draft leaf export-csv and one on landed decision keep-flat. From the reviser's environment (RHIZA_CHANGE = the run's change set), following rhiza guide plan-reviser 'Applying the arbiter's rulings' literally: rhiza run status --json gave the serving-draft question change=<draft> and the other none; rhiza show <decision> --change <it> exit 0 for both (bare rhiza show exit 4, as the guide now avoids); rhiza apply set export-csv --change <draft> and keep-flat --record exit 0; decided-by links via rhiza apply --change <it> exit 0; rhiza run review-check --rulings passed 2 rulings applied; the run then went rulings visit 2 pass, gate, open-pr, merge, succeeded. Scoped tests: internal/api TestRunInfoAcceptsAndQuestions|TestRunReviewCheckRulings, internal/guide TestPlanReviserText, cmd/rhiza describe-golden, plan-workflow-autonomous-left, plan-workflow-autonomous-unapplied all ok."
+        },
+        "handle": "run-status-sessionless-ruling-qa-5",
+        "id": "01M7MV60FPAYF1AJ2H2A6JPF53",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MV60FPAYF1AJ2H28R7EFQQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MV60FPAYF1AJ2H28R7EFQQ",
+        "id": "01M7MV60HSQ1S10YNV2MWQVJ9S",
+        "link": "01M7MV60HSQ1S10YNV2HPRFJH3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MV60MKBA5TR8MXC9ZY26ET",
+  "type": "ops",
+  "v": 1
+}

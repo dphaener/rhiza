@@ -1,0 +1,30 @@
+{
+  "actor": "01M7MQ630EE0PH44Z04XNBVARX",
+  "after": [
+    "01M7MQZE3BJ42NQMW0XQ7V35NZ"
+  ],
+  "at": "2026-11-17T12:35:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "013bd336-c320-4bd6-b37b-01a1e9730922",
+          "statement": "Leaf plan-workflow-applies-rulings is blocked (question ruling-on-serving-draft-node-unappliable). In an autonomous plan run, the arbiter writes its Decision into the run's intention change set, but a finding on a leaf targets a node in the serving draft change set. Neither change set's view holds both nodes, so `rhiza apply` refuses the decided-by link either way (not_found). `rhiza run review-check --rulings` can then never pass for a leaf ruling, so every real plan run with a leaf ruling would end failed. How should this change set resolve it?"
+        },
+        "handle": "question-013bd336-1",
+        "id": "01M7MR2HXJGK247YZV35CMVKWZ",
+        "key": null,
+        "kind": "question",
+        "node": "01M7MR2HXJGK247YZV324525NC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7MR2HXQ7NZCQDFQ7DSN9KRQ",
+  "type": "ops",
+  "v": 1
+}

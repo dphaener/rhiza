@@ -1,0 +1,507 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [
+    "01M7NVKQMKBBYYTC7V66QTFHE9"
+  ],
+  "at": "2026-11-17T22:58:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "milestone": "40",
+          "statement": "The daemon runs any workflow, built-in or bring-your-own, from start to finish with no orchestrator beside it: it holds child session spawns while the box lacks room, detects stalled and runaway sessions and recovers them, cleans each run's tmp, retries failed runs from the right step with their findings, hands planners the notes queued with a request, wakes conductors when a child finishes, and records every outside intervention, so intervention stays the exception (2026-11-17: five fixes went from plan to merge under the daemon, #612-#621, but only with an orchestrator session sending machine rules, watching stalls, sweeping tmp, setting maxRuns and retrying failed runs by hand)."
+        },
+        "handle": "milestone-40",
+        "id": "01M7NVQ7VJTTKA2PX27113YVQJ",
+        "key": "zzzzzzzzi",
+        "kind": "intent",
+        "node": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "statement": "The daemon's load, memory and disk holds, plus a new free-tmp hold, gate every child session spawn of any workflow (rhiza run spawn included), not only run starts: a held spawn waits, and the run journal and the inbox name the reading and the limit. Measure: a test drives a spawn under a low-memory and a low-tmp reading and sees it held, then started once the reading recovers."
+        },
+        "handle": "m40-spawn-holds",
+        "id": "01M7NVQ7WKPYHQDNDYF9DN8R2X",
+        "key": "i",
+        "kind": "intent",
+        "node": "01M7NVQ7WKPYHQDNDYF5Q6ZT0K",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "The watchdog treats a runaway agent session of any workflow (its process tree's process count or resident memory past a host threshold, read portably through ps on Linux and macOS) like a stall: it nudges, then fails the step with the reading as its reason. Measure: a test with a fake process table over the threshold sees the nudge, then the step failed with that reason."
+        },
+        "handle": "m40-runaway",
+        "id": "01M7NVQ7XNNV3W6T3PPWQFQ66W",
+        "key": "r",
+        "kind": "intent",
+        "node": "01M7NVQ7XNNV3W6T3PPSZY6SVH",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "Stall detection covers every agent session of a run, the children a conductor spawns included: a child idle with no done mark is nudged, then its step retried or failed with a reason, whatever the workflow. Measure: a test replays the 2026-11-16 case (a conduct run's fixer idle with no session done while the conductor waits on spawn) and sees the nudge, then the retry."
+        },
+        "handle": "m40-stalls",
+        "id": "01M7NVQ7YR969RM0WAPTF0QYJB",
+        "key": "w",
+        "kind": "intent",
+        "node": "01M7NVQ7YR969RM0WAPQZN97HG",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "When a run ends, whatever its outcome (merged, failed, abandoned), its temporary folders are gone. Measure: a test ends a run each way and finds no folder of it left under the tmp root."
+        },
+        "handle": "m40-run-tmp",
+        "id": "01M7NVQ7ZQNEKVZEP012RZC8AD",
+        "key": "y",
+        "kind": "intent",
+        "node": "01M7NVQ7ZQNEKVZEP01124NGNM",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "A failed run is retried from the step its workflow names for the failure, with the failure's output and findings in the next attempt's brief, once by default, then goes to the inbox. Measure: a test fails a plan run at review-check and sees the retry start at plan with the refusal in the brief, and a second failure reach the inbox."
+        },
+        "handle": "m40-retry",
+        "id": "01M7NVQ80NN5H2ZPD51Q5T888V",
+        "key": "z",
+        "kind": "intent",
+        "node": "01M7NVQ80NN5H2ZPD51KSEEZHH",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "Notes queued with a request reach the planner: the brief of the plan run the request starts shows each note. Measure: a test queues a request with two notes and finds both in the plan run's brief."
+        },
+        "handle": "m40-request-notes",
+        "id": "01M7NVQ81NX1A137GQJ1WFN84G",
+        "key": "zi",
+        "kind": "intent",
+        "node": "01M7NVQ81NX1A137GQJ1VCQYA3",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "Every outside intervention in a run is journalled and counted: a session message from outside the run, a manual resume, retry, abandon or approve, and a hand commit on the run's branch. Measure: a test makes each kind of intervention and sees each in rhiza run status --json and in the daemon's count; a run with none counts zero."
+        },
+        "handle": "m40-interventions",
+        "id": "01M7NVQ83YD8JE3TEPTQ4X2QA3",
+        "key": "zr",
+        "kind": "intent",
+        "node": "01M7NVQ83YD8JE3TEPTPHSM25G",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "rhiza.daemon.maxRuns=auto starts another run only while the pre-start checks (load, memory, free tmp, disk) have room, and a number still pins the limit. Measure: a test with readings that have room starts a second run, and with a held reading starts none."
+        },
+        "handle": "m40-auto-runs",
+        "id": "01M7NVQ871787K9GVXZ66GHF00",
+        "key": "zw",
+        "kind": "intent",
+        "node": "01M7NVQ871787K9GVXZ4DVWK8Z",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "A conductor no longer blocks on spawn: spawn returns once the child starts, and the child's session done or blocked question wakes the conductor with a session message. Measure: change set 01M7M2FB5BNRSDSN7HFWQSC2WN is landed."
+        },
+        "handle": "m40-push-wakeup",
+        "id": "01M7NVQ89GPX52MA4CE738926Q",
+        "key": "zy",
+        "kind": "intent",
+        "node": "01M7NVQ89GPX52MA4CE6R0AQF7",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "A bring-your-own workflow (docs/examples/byo) runs end to end under the daemon in a test, and the spawn holds, stall and runaway detection, failure retry and intervention record apply to its steps. Measure: the change set's testscript passes in make test."
+        },
+        "handle": "m40-byo",
+        "id": "01M7NVQ8CJZTDAPMT4NE3DRZ68",
+        "key": "zz",
+        "kind": "intent",
+        "node": "01M7NVQ8CJZTDAPMT4NAC2QBP3",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "statement": "Intervention is the exception: 10 consecutive daemon runs on this repo (at least 2 bug, 2 feature and 1 bring-your-own) finish with zero interventions in their journals, with queued bugs 01M7KW701G (shallow checks) and 01M7M3JZFW (projection leak) fixed and the orchestrator's stopgaps retired (conductor-rules.md no longer sent, the rhiza-runwatch and rhiza-tmpsweep units stopped, planner-notes unused). Measure: the intervention count of @{01M7NVQ83YD8JE3TEPTPHSM25G} over the last 10 finished runs."
+        },
+        "handle": "m40-hands-off",
+        "id": "01M7NVQ8DPH7H40EB1HVHZSR3F",
+        "key": "zzi",
+        "kind": "intent",
+        "node": "01M7NVQ8DPH7H40EB1HR95HTFA",
+        "op": "node.create",
+        "parent": "01M7NVQ7VJTTKA2PX270W95ENA"
+      },
+      {
+        "fields": {
+          "question": "Host limits: how should the daemon enforce them for any workflow? (scopes plus test slots, session scopes only, or test slots only)",
+          "quote": "A systemd scope seems like overkill to me.",
+          "quote_where": "owner, 2026-11-17 orchestrator chat, answer to question 1",
+          "statement": "The daemon enforces no host limits through systemd scopes or cgroups (Linux-only, and Rhiza also runs on macOS) and keeps no host test-slot count (the daemon cannot tell which of a repo's commands are tests; a repo queues its own tests, as this repo's make test does with its machine-wide lock)"
+        },
+        "handle": "m40-no-systemd-scopes",
+        "id": "01M7NVQ8ER86FPA346X8D47SPF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8ER86FPA346X7PYA6W3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8ER86FPA346X7PYA6W3",
+        "id": "01M7NVQ8FSZZ6171728F1FAX4J",
+        "link": "01M7NVQ8FSZZ6171728CEE07JP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "The orchestrator's proposal: no scopes or test slots; extend the load, memory and disk holds to every spawn and to free tmp; treat a runaway session as a stall; keep the leak and the open-pr RSS as bugs. Does that make sense?",
+          "quote": "Yes that makes sense to me.",
+          "quote_where": "owner, 2026-11-17 orchestrator chat, relayed by the orchestrator",
+          "statement": "Host limits are the daemon's holds and watchdog, generic for any workflow: the load, memory and disk holds also gate every child session spawn and gain a free-tmp hold; the watchdog treats a runaway session (process count or memory of its process tree past a host threshold, read portably) like a stall, nudging and then failing the step with a reason. The /tmp projection leak (01M7M3JZFW) and the 2.2 GB RSS of rhiza ship open-pr stay bug fixes, not this milestone's limits"
+        },
+        "handle": "m40-host-limits-as-holds",
+        "id": "01M7NVQ8GQMKYJYJ8Z0PQEXN7G",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8GQMKYJYJ8Z0M3QH4J7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8GQMKYJYJ8Z0M3QH4J7",
+        "id": "01M7NVQ8HRYXQE89HEZCG1B3QV",
+        "link": "01M7NVQ8HRYXQE89HEZC7RXKC7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Failed runs (brief point 7): today the watchdog retries only failures its classifier calls transient, and a real failure goes to the inbox. How should the daemon retry a real failure?",
+          "statement": "A failed run restarts at the step its workflow names for the failure (default the failed step; a plan whose review-check refuses restarts at plan), with the failure's output and findings in the next attempt's brief; one retry by default, then the inbox",
+          "wording": "Right step + findings (Recommended), picked by the owner, relayed by the orchestrator"
+        },
+        "handle": "m40-retry-right-step",
+        "id": "01M7NVQ8JNZR7GA4RMQR5PKBNA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8JNZR7GA4RMQQ36Y7VH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8JNZR7GA4RMQQ36Y7VH",
+        "id": "01M7NVQ8KRKV1GTPEBEVAE6Q73",
+        "link": "01M7NVQ8KRKV1GTPEBERSYNFCS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Concurrency (brief point 6): should the daemon pick its own maxRuns from the host's cores and memory in this milestone?",
+          "statement": "rhiza.daemon.maxRuns takes auto: the daemon starts another run only while the pre-start checks (load, memory, free tmp, disk) have room; a number still pins the limit",
+          "wording": "Yes, auto setting (Recommended), picked by the owner, relayed by the orchestrator"
+        },
+        "handle": "m40-maxruns-auto",
+        "id": "01M7NVQ8MRHGXM379MRDBT2KYG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8MRHGXM379MRCXFR2EF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8MRHGXM379MRCXFR2EF",
+        "id": "01M7NVQ8NQCSGY95WP0ZEGCDRP",
+        "link": "01M7NVQ8NQCSGY95WP0YF3XRZV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "question": "Conductor wake-up drafts (brief point 9): 01M7M2FB5B (spawn returns at start; a child's session done wakes the conductor) and 01M7M2FE1S (check-in alarms on a conductor's children). What happens to them?",
+          "quote": "yes, push wake-up in, alarms folded into stall detection",
+          "quote_where": "owner, 2026-11-17 orchestrator chat, answer to question 4",
+          "statement": "The push wake-up draft 01M7M2FB5BNRSDSN7HFWQSC2WN serves milestone 40; the check-in alarms of 01M7M2FE1SMCJ681K15CBZ3R6D fold into the daemon's stall detection (the stall change set of this milestone) and that draft is withdrawn"
+        },
+        "handle": "m40-push-wakeup-alarms-folded",
+        "id": "01M7NVQ8PWWZJPD9VDD9PV8VAA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8PWWZJPD9VDD6PJGDXT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8PWWZJPD9VDD6PJGDXT",
+        "id": "01M7NVQ8QTC1JRR8R48TGX773B",
+        "link": "01M7NVQ8QTC1JRR8R48QERA0H9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "This milestone removes the orchestrator session that the web split's runs would otherwise need beside the daemon, so building it first lets the web split run hands-off.",
+          "statement": "Milestone 40 goes before the standalone rhiza web and internal/api split milestone",
+          "wording": "(assumed, would have escalated) the orchestrator's assumption, not asked of the owner"
+        },
+        "handle": "m40-before-web-split",
+        "id": "01M7NVQ8RT6WWDENG7DDX6M0QH",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8RT6WWDENG7DCYPQ0NC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8RT6WWDENG7DCYPQ0NC",
+        "id": "01M7NVQ8SRK5XCA852XAKJ389E",
+        "link": "01M7NVQ8SRK5XCA852X7VVTP4B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The owner's bar is 'intervention should be the exception' for any workflow. Ten runs across all three kinds is enough to show that without tying the milestone to weeks of traffic, and the intervention record makes it a count rather than a judgement. The shallow-check and tmp-leak bugs are named because they are the remaining interventions the orchestrator makes; they ship through plan-bug, not here.",
+          "statement": "Milestone 40's done measure is 10 consecutive daemon runs on this repo, at least 2 bug, 2 feature and 1 bring-your-own, with zero journalled interventions, the two queued bugs (01M7KW701G, 01M7M3JZFW) fixed and the orchestrator's stopgaps retired",
+          "wording": "(assumed, would have escalated) the planner's ruling, not asked of the owner"
+        },
+        "handle": "m40-hands-off-measure",
+        "id": "01M7NVQ8TSNDCRTCB1BAHE4E81",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8TSNDCRTCB1B6PXS2Q1",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8TSNDCRTCB1B6PXS2Q1",
+        "id": "01M7NVQ8VXMZ0ZVT82PADWD0QG",
+        "link": "01M7NVQ8VXMZ0ZVT82PA98AYHE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "Each change set touches a different part of the daemon (the hold poll, the watchdog, spawn, the run engine, request intake), each needs its own code research to write leaf contracts, and the record's done points already fix every acceptance target. Planning nine change sets' leaves here would make one plan review too large to read.",
+          "statement": "No change set of milestone 40 gets its leaves in this plan run: each is planned in its own plan run when it is proposed",
+          "wording": "(assumed, would have escalated) the planner's ruling, not asked of the owner"
+        },
+        "handle": "m40-leaves-per-change-set",
+        "id": "01M7NVQ8XC6XHD41K0E9FB8H27",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7NVQ8XC6XHD41K0E8XCV67R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8XC6XHD41K0E8XCV67R",
+        "id": "01M7NVQ8ZJWHGWDYHEJ6PS8RHS",
+        "link": "01M7NVQ8ZJWHGWDYHEJ3MGRKZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVKQKM6MQKPJJEMGQM9X8M",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ90KNHGTF31XMTYXJ8M8",
+        "link": "01M7NVQ90KNHGTF31XMS50W5WV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8ER86FPA346X7PYA6W3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ91JWP90ECG0HWMZMAD9",
+        "link": "01M7NVQ91JWP90ECG0HRN80ZXE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8GQMKYJYJ8Z0M3QH4J7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ93E8CKMP3XQWZ42VJXR",
+        "link": "01M7NVQ93E8CKMP3XQWWR5280B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8JNZR7GA4RMQQ36Y7VH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ94KPXHCXW1MSP2E2M5Q",
+        "link": "01M7NVQ94KPXHCXW1MSJVW9RYR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8MRHGXM379MRCXFR2EF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ95VY6SSKTBY4VMA468H",
+        "link": "01M7NVQ95VY6SSKTBY4SVJDZRY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8PWWZJPD9VDD6PJGDXT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ9712KFG6NF8ZT39P92J",
+        "link": "01M7NVQ9712KFG6NF8ZQPZTS1G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8RT6WWDENG7DCYPQ0NC",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ984H831V8D839PK0S21",
+        "link": "01M7NVQ984H831V8D8379P50FT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8TSNDCRTCB1B6PXS2Q1",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7VJTTKA2PX270W95ENA",
+        "id": "01M7NVQ99BQ96BKZDNQ38N7WTA",
+        "link": "01M7NVQ99BQ96BKZDNQ2Y3BM4S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8XC6XHD41K0E8XCV67R",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7WKPYHQDNDYF5Q6ZT0K",
+        "id": "01M7NVQ9AD319GFNM98WEYVT8Q",
+        "link": "01M7NVQ9AD319GFNM98TW3YRS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8GQMKYJYJ8Z0M3QH4J7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7XNNV3W6T3PPSZY6SVH",
+        "id": "01M7NVQ9BHTM6CG00M7AAC54D6",
+        "link": "01M7NVQ9BHTM6CG00M78SRG2S1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8GQMKYJYJ8Z0M3QH4J7",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ7YR969RM0WAPQZN97HG",
+        "id": "01M7NVQ9CP8QTQ694N3N0BVBX6",
+        "link": "01M7NVQ9CP8QTQ694N3HQ1XWWX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8PWWZJPD9VDD6PJGDXT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ80NN5H2ZPD51KSEEZHH",
+        "id": "01M7NVQ9DVP0Y6B02E0M3J9824",
+        "link": "01M7NVQ9DVP0Y6B02E0K6374E6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8JNZR7GA4RMQQ36Y7VH",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ871787K9GVXZ4DVWK8Z",
+        "id": "01M7NVQ9EVDSM3PPYJND32EMZG",
+        "link": "01M7NVQ9EVDSM3PPYJNC137NHF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8MRHGXM379MRCXFR2EF",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ89GPX52MA4CE6R0AQF7",
+        "id": "01M7NVQ9FX64TQ9SWXCHWV70MQ",
+        "link": "01M7NVQ9FX64TQ9SWXCFJMDPPA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8PWWZJPD9VDD6PJGDXT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7NVQ8DPH7H40EB1HR95HTFA",
+        "id": "01M7NVQ9H3940JV75SDTDCENRW",
+        "link": "01M7NVQ9H3940JV75SDSZCF9KJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8TSNDCRTCB1B6PXS2Q1",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7MXN3D49WSG4W8YEQEF4WFJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVQ9J7Q3YBBJAK6HBX5252",
+  "type": "ops",
+  "v": 1
+}

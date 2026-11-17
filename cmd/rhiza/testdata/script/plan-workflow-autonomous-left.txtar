@@ -2,13 +2,15 @@
 # The planner writes an intent under a landed milestone, then a leaf with
 # its whole contract into its serving draft, so review-check's leaf-contract
 # check passes. Every round the reviewer still finds the leaf's acceptance
-# wanting and the record's Decision contradictory, the critic confirms
-# both and the reviser does nothing. After round 3 the check leaves one
-# question in the draft (the leaf lives there) and one in a landed record
-# write (the Decision lives in the landed record). The arbiter answers
-# each where it lives: in the draft for the first, in a record change set
-# of its own, landed once its answer passes, for the second. The gate
-# accepts the draft with rule autonomous and the run succeeds.
+# wanting and the landed Decision contradictory, the critic confirms both
+# and the reviser does nothing. After round 3 the check leaves each as a
+# question in the change set holding its node: the leaf's in the serving
+# draft, the landed Decision's in the run's draft intention change set.
+# The arbiter answers each there with a Decision. The rulings check then
+# fails, the reviser's apply-rulings visit links each finding's node
+# decided-by its ruling where the question lives, the rulings check
+# passes, the gate accepts the draft with rule autonomous and the run
+# succeeds.
 #
 # The fake rex and claude are plan-workflow-autonomous.txtar's, without
 # the planner's question.
@@ -40,7 +42,10 @@ env REX_SESSION=session:s1
 exec sh -c 'rhiza run start --foreground --workflow plan --new "Plan exports" --permission-mode manual --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
 exec cat $WORK/out
 stdout '^Run [0-9A-Z]{26} succeeded$'
-stdout '^- check \(visit 3\): pass, then gate: exit 0$'
+stdout '^- check \(visit 3\): pass, then rulings: exit 0$'
+stdout '^- rulings \(visit 1\): fail, then apply-rulings: exit 1$'
+stdout '^- apply-rulings \(visit 1\): pass, then rulings, '
+stdout '^- rulings \(visit 2\): pass, then gate: exit 0$'
 stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 exec cat $WORK/err
 stdout -count=2 'step check: arbiter pass on question [0-9A-Z]{26}: answered by settle-'
@@ -54,17 +59,27 @@ exec sh -c 'grep "\"type\":\"arbitrated\"" .git/rhiza/runs/*.jsonl | grep -c "\"
 stdout '^2$'
 exec cat $WORK/prompts.log
 stdout -count=3 '^/rhiza-plan-reviewer '
-stdout -count=2 '^/rhiza-plan-reviser '
+stdout -count=3 '^/rhiza-plan-reviser '
+stdout -count=1 '^/rhiza-plan-reviser Apply the arbiter.s rulings '
 stdout -count=2 '^Decide question [0-9A-Z]{26}: follow rhiza guide arbiter\.$'
 
-# Each arbiter answered in the run's draft intention change set, where
-# the check left its question.
+# Each arbiter answered where the check left its question: the leaf's in
+# the serving draft, the landed Decision's in the run's draft change set.
 exec cat $WORK/arbiter.log
 stdout -count=2 '^draft '
 ! stdout 'record'
 ! stdout 'landed'
 exec sh -c 'grep -c "^draft $(cat $WORK/rec) draft$" $WORK/arbiter.log'
-stdout '^2$'
+stdout '^1$'
+exec sh -c 'grep -c "^draft $(cat $WORK/cs) draft$" $WORK/arbiter.log'
+stdout '^1$'
+
+# The apply-rulings visit linked each finding's node decided-by its
+# ruling, in the change set holding the question and the Decision.
+exec sh -c 'grep -c "^export-csv settle-[0-9a-z]* $(cat $WORK/cs)$" $WORK/applied.log'
+stdout '^1$'
+exec sh -c 'grep -c "^keep-flat settle-[0-9a-z]* $(cat $WORK/rec)$" $WORK/applied.log'
+stdout '^1$'
 
 cd $WORK/repo
 exec sh -c 'rhiza change show $(cat $WORK/rec) --json'
@@ -72,9 +87,14 @@ stdout '"kind": "intention"'
 stdout '"state": "accepted"'
 stdout '"rule": "autonomous"'
 
-# The answers are in the accepted draft's view.
+# Both answers are in the accepted intention change set's view, and each
+# finding's node links decided-by its ruling where it was applied.
 exec sh -c 'rhiza ls --kind decision --change $(cat $WORK/rec) --json'
 stdout -count=2 '"handle": "settle-'
+exec sh -c 'rhiza show export-csv --change $(cat $WORK/cs) --json'
+stdout '"handle": "settle-'
+exec sh -c 'rhiza show keep-flat --change $(cat $WORK/rec) --json'
+stdout '"handle": "settle-'
 fold-ok
 
 -- source.json --
@@ -200,6 +220,24 @@ case "$last" in
 	;;
 /rhiza-plan-critic*)
 	rhiza run verdict "$WORK/verdict.json" --json >> "$WORK/agent.out" || fail verdict
+	;;
+/rhiza-plan-reviser\ Apply*)
+	# Apply each ruling as the Decision says: link the finding's node
+	# decided-by it, in the change set holding the question and the
+	# arbiter's Decision: the serving draft for its leaf's question, else
+	# the run's change set (the landed record's Decision is in its view).
+	rhiza run review-check --rulings > "$WORK/rulings.out" 2>&1 && fail 'no ruling to apply'
+	sed -n "s/^- question [^:]*: decision \([^,]*\), on the finding's node \(.*\)$/\1 \2/p" "$WORK/rulings.out" > "$WORK/rulings.todo"
+	[ -s "$WORK/rulings.todo" ] || fail 'no unapplied ruling listed'
+	cs=$(cat "$WORK/cs")
+	while read -r d n; do
+		in=$RHIZA_CHANGE
+		rhiza show "$d" --change "$cs" --json > "$WORK/dec.json" 2>/dev/null &&
+			grep -q '^    "created": "'"$cs"'"' "$WORK/dec.json" && in=$cs
+		echo "$n $d $in" >> "$WORK/applied.log"
+		printf '{"writes":[{"op":"link","from":"%s","type":"decided-by","to":"%s"}]}\n' "$n" "$d" > "$WORK/apply.json"
+		rhiza apply "$WORK/apply.json" --change "$in" --json >> "$WORK/agent.out" 2>> "$WORK/claude.err" || fail "apply ruling $d on $n"
+	done < "$WORK/rulings.todo"
 	;;
 /rhiza-plan-reviser*)
 	;;

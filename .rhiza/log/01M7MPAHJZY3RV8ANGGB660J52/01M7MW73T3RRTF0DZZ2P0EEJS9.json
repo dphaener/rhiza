@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MVWJ38BFNKGMZ44BKS1WY3",
+  "after": [
+    "01M7MV60MKBA5TR8MXC9ZY26ET"
+  ],
+  "at": "2026-11-17T13:47:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 6 at 85cf15dd8, scratch build go build -trimpath -o $SCRATCH/rhiza ./cmd/rhiza run by full path. In the kept work dir of plan-workflow-autonomous-unapplied, rhiza run status <run> printed both session-less review questions as \"— decision settle-...\" with no \"not yet delivered\"; --json questions had no session field, the serving-draft question carried change=<draft>, the landed-node one none. Scoped tests all ok: internal/api TestRunReviewCheckRulings|TestReviewCheck|TestRunInfoAcceptsAndQuestions (incl. TestReviewCheckQuestionInNodeChangeSet), internal/run TestCommandAsked|TestArbitrate (incl. TestCommandAskedArbitratedInChange), internal/guide TestPlanReviserText, internal/workflow TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview, cmd/rhiza scripts describe-golden, plan-workflow, plan-workflow-pr, plan-workflow-autonomous, -left, -unapplied, plan-review-visit-round, plan-milestone-backlog, run-review-check, -landed, -handles, run-arbitrate-asked."
+        },
+        "handle": "run-status-sessionless-ruling-qa-6",
+        "id": "01M7MW73BX0ZXQQC4B8BDX3QBH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MW73BX0ZXQQC4B8AXSYCG2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MW73BX0ZXQQC4B8AXSYCG2",
+        "id": "01M7MW73D6SZ0T75TW5AW29B6X",
+        "link": "01M7MW73D6SZ0T75TW5A7GGEG8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 6 at 85cf15dd8, scratch build go build -trimpath -o $SCRATCH/rhiza ./cmd/rhiza run by full path. Scratch autonomous plan run (fake rex/claude/gh, real built rhiza) with an oversized-leaf finding on serving-draft leaf export-csv and a contradiction finding on a decided-by link: --rulings exited 1 listing both question, Decision and node (the link as \"link decided-by <id> from .. to ..\"); after the split (export-csv retired, two new leaves linked decided-by) it listed only the link ruling; RHIZA_RUN unset or a finished run refused exit 2 (also via rhiza api call run.review-check {rulings:true}). Scoped tests all ok: internal/api TestRunReviewCheckRulings|TestReviewCheck|TestRunInfoAcceptsAndQuestions (incl. TestReviewCheckQuestionInNodeChangeSet), internal/run TestCommandAsked|TestArbitrate (incl. TestCommandAskedArbitratedInChange), internal/guide TestPlanReviserText, internal/workflow TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview, cmd/rhiza scripts describe-golden, plan-workflow, plan-workflow-pr, plan-workflow-autonomous, -left, -unapplied, plan-review-visit-round, plan-milestone-backlog, run-review-check, -landed, -handles, run-arbitrate-asked."
+        },
+        "handle": "plan-review-check-rulings-qa-6",
+        "id": "01M7MW73EE94DFMD0ZPQTR7W79",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MW73EE94DFMD0ZPKVTWZJS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MW73EE94DFMD0ZPKVTWZJS",
+        "id": "01M7MW73FTYHEB73BWZPZNVKTA",
+        "link": "01M7MW73FTYHEB73BWZNBBFNNA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 6 at 85cf15dd8, scratch build go build -trimpath -o $SCRATCH/rhiza ./cmd/rhiza run by full path. Followed the guide section literally in a scratch reviser: for an oversized-leaf split in a serving draft, rhiza show <decision> --change <question change> exit 0, retire + two new leaves in the draft, decided-by links from each in the question change exit 0, --rulings then counted that ruling applied. The link-finding case could not be applied (see the review-question-in-node-change-set finding). Scoped tests all ok: internal/api TestRunReviewCheckRulings|TestReviewCheck|TestRunInfoAcceptsAndQuestions (incl. TestReviewCheckQuestionInNodeChangeSet), internal/run TestCommandAsked|TestArbitrate (incl. TestCommandAskedArbitratedInChange), internal/guide TestPlanReviserText, internal/workflow TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview, cmd/rhiza scripts describe-golden, plan-workflow, plan-workflow-pr, plan-workflow-autonomous, -left, -unapplied, plan-review-visit-round, plan-milestone-backlog, run-review-check, -landed, -handles, run-arbitrate-asked."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-6",
+        "id": "01M7MW73GZ62DSEJCN962MFJAC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MW73GZ62DSEJCN947A1DX4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MW73GZ62DSEJCN947A1DX4",
+        "id": "01M7MW73JB0WVYVB5XKDVRPQDT",
+        "link": "01M7MW73JB0WVYVB5XKAW0A5PZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL on link findings",
+          "statement": "QA cycle 6 at 85cf15dd8, scratch build go build -trimpath -o $SCRATCH/rhiza ./cmd/rhiza run by full path. Node findings: arbiter for the serving-draft leaf question started with RHIZA_CHANGE=<draft>, for the landed keep-flat question with the run change set; asked entry change set accordingly. Link findings: a confirmed round-3 finding on a decided-by link created in the serving draft put its question and Decision in the run change set (change absent), which cannot see the link from node export-pdf (rhiza apply link --change <run cs>: no node matches export-pdf, exit 4) while the draft cannot see the Decision (exit 4); the ruling is unappliable and the run failed at apply-rulings max_visits. Scoped tests all ok: internal/api TestRunReviewCheckRulings|TestReviewCheck|TestRunInfoAcceptsAndQuestions (incl. TestReviewCheckQuestionInNodeChangeSet), internal/run TestCommandAsked|TestArbitrate (incl. TestCommandAskedArbitratedInChange), internal/guide TestPlanReviserText, internal/workflow TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview, cmd/rhiza scripts describe-golden, plan-workflow, plan-workflow-pr, plan-workflow-autonomous, -left, -unapplied, plan-review-visit-round, plan-milestone-backlog, run-review-check, -landed, -handles, run-arbitrate-asked."
+        },
+        "handle": "review-question-in-node-change-set-qa-6",
+        "id": "01M7MW73MAFQBV3PQ7408HM7M5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MW73MAFQBV3PQ73YHRF7Y3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MW73MAFQBV3PQ73YHRF7Y3",
+        "id": "01M7MW73NS4P2NYHSG6FJT6MRM",
+        "link": "01M7MW73NS4P2NYHSG6DRKH792",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 6 at 85cf15dd8, scratch build go build -trimpath -o $SCRATCH/rhiza ./cmd/rhiza run by full path. Scratch autonomous plan run went check (visit 3) pass -> rulings (visit 1) fail -> apply-rulings (visit 1) -> rulings (visit 2) fail -> run failed, step apply-rulings went over max_visits 1, no gate, draft and record change sets still draft. Kept plan-workflow-autonomous-unapplied work dir: same shape, run status names both unapplied Decisions. Scoped tests all ok: internal/api TestRunReviewCheckRulings|TestReviewCheck|TestRunInfoAcceptsAndQuestions (incl. TestReviewCheckQuestionInNodeChangeSet), internal/run TestCommandAsked|TestArbitrate (incl. TestCommandAskedArbitratedInChange), internal/guide TestPlanReviserText, internal/workflow TestPlanBuiltin|TestBuiltinPlanMilestone|TestBuiltinPlanReview, cmd/rhiza scripts describe-golden, plan-workflow, plan-workflow-pr, plan-workflow-autonomous, -left, -unapplied, plan-review-visit-round, plan-milestone-backlog, run-review-check, -landed, -handles, run-arbitrate-asked."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-6",
+        "id": "01M7MW73QB6V29359T1E7HDN55",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MW73QB6V29359T1DMP3WTF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MW73QB6V29359T1DMP3WTF",
+        "id": "01M7MW73RS34H1DC0RFY8D9E2R",
+        "link": "01M7MW73RS34H1DC0RFVGZV0RR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MW73T3RRTF0DZZ2P0EEJS9",
+  "type": "ops",
+  "v": 1
+}

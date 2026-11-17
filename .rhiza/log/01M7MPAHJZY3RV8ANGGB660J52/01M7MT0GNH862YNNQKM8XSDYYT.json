@@ -1,0 +1,132 @@
+{
+  "actor": "01M7MSXXDNNPAH9D4R5DNSPZXB",
+  "after": [
+    "01M7MSTQY2Q5JMEB6VW0ATJGCE"
+  ],
+  "at": "2026-11-17T13:09:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 2 at db1b1c925, scratch build (go build -trimpath -o $SCRATCH/rhiza-x ./cmd/rhiza): rhiza-x guide plan-reviser prints the rulings section saying to link decided-by in the change set holding the question and its Decision, --record only for a landed record. Re-ran round 1's scenario in a hermetic scratch repo: landed record keep-flat, open change set with Decision settle-x; rhiza-x apply link keep-flat decided-by settle-x --record exits 4 (no node settle-x), the same link with the open change set exits 0 and rhiza-x why keep-flat lists settle-x as decided by; rhiza-x show settle-x names its change set (Created/View what-if). go test ./internal/guide -run TestPlanReviserText ok."
+        },
+        "handle": "plan-reviser-applies-rulings-qa-2",
+        "id": "01M7MT0G5RG3A1Y00BZVTW14R2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MT0G5RG3A1Y00BZTHY9WG7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MT0G5RG3A1Y00BZTHY9WG7",
+        "id": "01M7MT0G8ZC9T2DPRNXXM9HFB3",
+        "link": "01M7MT0G8ZC9T2DPRNXVKZ81S4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK73E4BCQACH2KH8XSYH2",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 2 at db1b1c925, scratch build (go build -trimpath -o $SCRATCH/rhiza-x ./cmd/rhiza): go test ./internal/api -run 'TestRunReviewCheckRulings|TestReviewCheck' ok; TestScripts/describe-golden ok; TestScripts/plan-workflow-autonomous-left (rulings applied, run accepts) and -unapplied (rulings check fails twice, run fails before the gate naming the Decisions) ok."
+        },
+        "handle": "plan-review-check-rulings-qa-2",
+        "id": "01M7MT0GADH5Q1NN463QWF79N8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MT0GADH5Q1NN463MVVFR7R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MT0GADH5Q1NN463MVVFR7R",
+        "id": "01M7MT0GDDS50870JBGWCEX06R",
+        "link": "01M7MT0GDDS50870JBGT1B1CK6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK6WHYWK078TGV14QZA33",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 2 at db1b1c925, scratch build (go build -trimpath -o $SCRATCH/rhiza-x ./cmd/rhiza): go test ./cmd/rhiza -run TestScripts/(plan-workflow-autonomous-left|plan-workflow-autonomous-unapplied|plan-workflow-autonomous) ok: rulings step and apply-rulings visit before the gate; with no applied ruling the run fails, no gate, change set stays draft."
+        },
+        "handle": "plan-workflow-applies-rulings-qa-2",
+        "id": "01M7MT0GEKX8HEXED1DMZDSM5M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MT0GEKX8HEXED1DM9RDQP2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MT0GEKX8HEXED1DM9RDQP2",
+        "id": "01M7MT0GFR6Q09EK2Y5F9NRY6E",
+        "link": "01M7MT0GFR6Q09EK2Y5D7WS25J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 2 at db1b1c925, scratch build (go build -trimpath -o $SCRATCH/rhiza-x ./cmd/rhiza): the plan-workflow-autonomous-left/-unapplied scripts pass, and by hand a Decision in the open change set links from a landed node in that same change set (apply exit 0)."
+        },
+        "handle": "review-question-in-node-change-set-qa-2",
+        "id": "01M7MT0GGSWSA4XJ9CPX84YE6Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MT0GGSWSA4XJ9CPWNCFAKM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MT0GGSWSA4XJ9CPWNCFAKM",
+        "id": "01M7MT0GJ001YEM2W0B186AN28",
+        "link": "01M7MT0GJ001YEM2W0B0V5QT4E",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MR5TM3RWMPVJ2AND27RQH4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA round 2 at db1b1c925, scratch build (go build -trimpath -o $SCRATCH/rhiza-x ./cmd/rhiza): TestScripts/plan-workflow-autonomous-unapplied passes: run status names each unapplied ruling 'arbiter ruling(s) not applied' with the Decision and finding's node."
+        },
+        "handle": "run-status-sessionless-ruling-qa-2",
+        "id": "01M7MT0GK4WZ8892A9NQXRMAWX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MT0GK4WZ8892A9NPVTEMJM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MT0GK4WZ8892A9NPVTEMJM",
+        "id": "01M7MT0GM91K0P2GR6YGT72D7A",
+        "link": "01M7MT0GM91K0P2GR6YF4ASME9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK782XNNC37XVT5G84EX9",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MT0GNH862YNNQKM8XSDYYT",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:56:49Z",
+  "body": {
+    "intent": "The daemon's pre-start checks (load, memory, disk) gate every child session spawn of any workflow, not only run starts, and a free-tmp check joins them: a held spawn waits rather than starting into an OOM, and its run journal and the inbox say which reading held it",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMAZ0PV2BP11NSR3H7QJZ",
+  "type": "open",
+  "v": 1
+}

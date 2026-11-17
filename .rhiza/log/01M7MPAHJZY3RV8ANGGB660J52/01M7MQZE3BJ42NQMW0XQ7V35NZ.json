@@ -1,0 +1,39 @@
+{
+  "actor": "01M7MQTQ2NVZ5PD5MVKEV059PV",
+  "after": [
+    "01M7MQT9ACK6D8KZSGVG399EVJ"
+  ],
+  "at": "2026-11-17T12:33:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "How is an arbiter ruling applied when the finding's node lives in a serving draft change set and the arbiter's Decision lives in the run's intention change set? Neither change set's view holds both nodes, so rhiza apply refuses the decided-by link in either (not_found, by handle and by ID), and review-check --rulings can never pass for such a ruling. plan-workflow-autonomous-left.txtar hits exactly this: finding f1 is on leaf export-csv in the serving draft, its question and the arbiter's Decision settle-... land in the intention change set; f2 on landed keep-flat applies fine. In real autonomous plan runs leaves live in serving drafts, so every leaf ruling would end the run failed. Options: (a) the arbiter writes its Decision in the change set holding the finding's node; (b) review-check leaves the question there; (c) --rulings accepts another witness; (d) narrow this leaf's script to rulings on nodes the run's change set sees. The workflow steps (plan.toml, plan-milestone.toml), the unit test and the five 'then rulings' script assertions are built and pass in the working tree, uncommitted."
+        },
+        "handle": "ruling-on-serving-draft-node-unappliable",
+        "id": "01M7MQZE172EGW6NDZ6VG6W5BW",
+        "key": null,
+        "kind": "question",
+        "node": "01M7MQZE172EGW6NDZ6R3Z2PFZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MQZE172EGW6NDZ6R3Z2PFZ",
+        "id": "01M7MQZE2B7W2C0VGBJCPMT37K",
+        "link": "01M7MQZE2B7W2C0VGBJ9N1HAP6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MPK702EK9NJWH7V1HVYV4B",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7MPAHJZY3RV8ANGGB660J52",
+  "for": "01M7MQ630EE0PH44Z04XNBVARX",
+  "id": "01M7MQZE3BJ42NQMW0XQ7V35NZ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M7MXNR8C5T9CX12MQEH5TFNA",
+  "after": [],
+  "at": "2026-11-17T22:56:56Z",
+  "body": {
+    "intent": "When a run ends, whatever its outcome, the daemon removes the run's temporary folders ({run_tmp} and what its sessions made under it), so tmp does not fill across runs and no sweep service is needed",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7NVMJ91KQ2VQ4TQZNSMB10F",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7NVMJ91KQ2VQ4TQZR4HG2GG",
+  "type": "open",
+  "v": 1
+}

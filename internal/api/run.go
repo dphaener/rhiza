@@ -452,10 +452,12 @@ type RunQuestion struct {
 	Question string `json:"question" desc:"The question node's ID"`
 	Handle   string `json:"handle" desc:"The question node's handle"`
 	Text     string `json:"text" desc:"What the session asked"`
+	Change   string `json:"change,omitempty" desc:"The change set the question and its Decision live in; absent when that is the run's change set"`
 	Step     string `json:"step" desc:"The agent step that asked"`
+	Session  string `json:"session,omitempty" desc:"The session that asked; absent for a question no session asked (a review question rhiza run review-check journalled)"`
 	Outcome  string `json:"outcome,omitempty" desc:"The arbiter's verdict: pass, fail or error; empty while it is open"`
 	Decision string `json:"decision,omitempty" desc:"The handle of the Decision that answers it, once the arbiter passed; empty otherwise"`
-	Answered bool   `json:"answered,omitempty" desc:"True once the answer was delivered to the asking session"`
+	Answered bool   `json:"answered,omitempty" desc:"True once the answer was delivered to the asking session; a question no session asked is never delivered"`
 	At       string `json:"at" desc:"When it was asked, RFC 3339 UTC"`
 }
 
@@ -3207,7 +3209,7 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 	}
 	for _, q := range st.Asked {
 		rq := RunQuestion{
-			Question: q.Question, Handle: q.Handle, Text: q.Text, Step: q.Step,
+			Question: q.Question, Handle: q.Handle, Text: q.Text, Change: q.Change, Step: q.Step, Session: q.Session,
 			Decision: q.Answered, Answered: q.Answered != "", At: rfc3339(q.At),
 		}
 		if a, ok := st.Arbitration(q.Question); ok {
@@ -3636,7 +3638,9 @@ func (r RunInfo) Human(w io.Writer) {
 			switch {
 			case q.Decision != "":
 				fmt.Fprintf(w, " — decision %s", q.Decision)
-				if !q.Answered {
+				// Only a session waits on delivery; a question no session
+				// asked has nothing to deliver.
+				if !q.Answered && q.Session != "" {
 					fmt.Fprintf(w, ", not yet delivered")
 				}
 			case q.Outcome != "":
