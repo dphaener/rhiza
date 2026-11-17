@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MKPHHSKEQNEQ700YQ922GS",
+  "after": [
+    "01M7MK98N7VB6X19679W8SQTSP"
+  ],
+  "at": "2026-11-17T11:19:36Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 97ee44c3b re-ran the Checks block: go test -trimpath ./internal/guide/... -run 'TestConductRoles|TestConduct|TestList' -v (TestConductRoles, TestConductReadsRoles, TestConductRolesCatchesDrift, TestConduct, TestListOrder, TestList PASS), go test ./internal/guide/... ok, go vet ./internal/guide ok, go test ./internal/api -run TestRunSpawnCheck PASS, go test ./cmd/rhiza -run TestScripts/guide ok. Diff read: conduct-roles.md lists the ten roles each as rhiza guide <role>, the --brief/--leaf/--check/--model flags, [[step.<name>.check]] conductor steps and the arbiter, RHIZA_CHECK/RHIZA_CYCLE, the refusal text matching run_spawn.go ('name one of its checks: plan, code, qa'), and ship-change's plan/code/qa vs the classic compliance/quality/model; conduct.md Read first names rhiza guide conduct-roles and stays under TopicCap; the test parses built-in ship-change via the workflow package and requires check-<name> per declared check, and TestConductRolesCatchesDrift covers the failure cases (unknown role check-scope, undeclared lint check, missing check-qa). No spawn, workflow or built-in workflow changes; no TODOs."
+        },
+        "handle": "conduct-roles-topic-verified",
+        "id": "01M7MKQQ5E00ZRZV9P87AR74FM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MKQQ5E00ZRZV9P85CM129R",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MKQQ5E00ZRZV9P85CM129R",
+        "id": "01M7MKQQ6H5WY2KED9PVKTER92",
+        "link": "01M7MKQQ6H5WY2KED9PT3V5YFB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKRW5GHYEGJPFV4GY7XT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MJN83Y6EF727C2T0AF3Y5D",
+  "for": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "id": "01M7MKQQ7SXD73H84H2KYDFFQQ",
+  "type": "ops",
+  "v": 1
+}

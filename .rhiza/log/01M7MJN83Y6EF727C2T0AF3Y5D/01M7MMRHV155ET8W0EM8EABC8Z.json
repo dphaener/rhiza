@@ -1,0 +1,86 @@
+{
+  "actor": "01M7MMN2VXKHZVEWNTP3G7F1YR",
+  "after": [
+    "01M7MMMG3PZK700H1MWCZ7NRN0"
+  ],
+  "at": "2026-11-17T11:37:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: built rhiza fresh to a scratch path (go build -trimpath) and ran it: rhiza guide conduct-roles prints the ten roles with --brief/--leaf/--check/--model, RHIZA_CHECK/RHIZA_CYCLE, [[step.<name>.check]], the arbiter and the refusal text 'name one of its checks: plan, code, qa', matching internal/api/run_spawn.go and rhiza run spawn --help; rhiza guide <role> resolves for all ten roles; rhiza guide conduct's Read first names conduct-roles; guide ls lists it at 708 tokens (40 texts); unknown topics (conduct-role, CONDUCT-ROLES) exit 4 with 'no guide text'. In a throwaway worktree, renaming ci-fix to ci-fixer and declaring a security check in ship-change each fail TestConductRoles naming the role/check. go test ./internal/guide, TestScripts/guide and internal/api TestRunSpawnCheck pass."
+        },
+        "handle": "conduct-roles-topic-qa-2",
+        "id": "01M7MMRHGH01HKVXRDV2QMG3KQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMRHGH01HKVXRDTZ7A9BGC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMRHGH01HKVXRDTZ7A9BGC",
+        "id": "01M7MMRHKKZ75PK4946PM6H08D",
+        "link": "01M7MMRHKKZ75PK4946MDVWFXT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKRW5GHYEGJPFV4GY7XT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: with a fresh scratch build, rhiza guide conduct-handback prints handback.md's parts and a route for gate (four commands), signoff, push, wait-ci (timeout, no role) and merge (ci-fix; rhiza ship rebase --no-push then conflict-fix), handback_cap 3 and main-ci/close-out/ship/deploy-check never handing back, all matching internal/workflow/builtin/ship-change.toml; conduct's Read first names it; 629 tokens. In a throwaway worktree: adding a gate command, giving main-ci on.timeout=handback:conduct, adding a main-ci route, and naming ci-fix under wait-ci each fail TestConductHandback naming the step, command or role; dropping it from conduct's Read first fails TestConductReadsHandback. go test ./internal/guide and TestScripts/guide pass."
+        },
+        "handle": "conduct-handback-topic-qa-2",
+        "id": "01M7MMRHMW3YFNJSPD9PZAVMGV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMRHMW3YFNJSPD9K8KMKDR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMRHMW3YFNJSPD9K8KMKDR",
+        "id": "01M7MMRHP6XYKSGXMEHA9D4EDP",
+        "link": "01M7MMRHP6XYKSGXMEH91JG0JG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXKVHQXE1B5MWRMZNM6RD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: with a fresh scratch build, rhiza guide workflow-keys lists every FileKeys, SharedKeys, kind (gate included) and role key in internal/workflow/spec.go with its default; rhiza guide workflows names the gate kind and workflow-keys (916 tokens). In a scratch repo, rhiza workflow new myflow writes start=build, agent step build, placeholder command step test failing on purpose with max_visits=3 and on.fail=handback:build; a second run refuses the existing file (exit 3); --from ship-change copies with name=forked. workflow check confirms the topic's claims: an unnamed file takes its base name and first step as start; handback_cap=0, RHIZA_X in [env], a step named done, a gate with no commands, handback to a command step and on.timeout on a gate are all refused. In a throwaway worktree, a new spec.go key and renaming gate in the topic fail TestWorkflowKeys naming the key/kind; dropping the pointer fails TestWorkflowsText."
+        },
+        "handle": "workflow-keys-topic-qa-2",
+        "id": "01M7MMRHR0WMBGH7T9HDN5XKFJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MMRHQZ6AFV31CE66KEBA6Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MMRHQZ6AFV31CE66KEBA6Q",
+        "id": "01M7MMRHS5ATJK0WD74GACZZX3",
+        "link": "01M7MMRHS5ATJK0WD74DVW3K8Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXM02SHB19P39VYGDNXSH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MJN83Y6EF727C2T0AF3Y5D",
+  "for": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "id": "01M7MMRHV155ET8W0EM8EABC8Z",
+  "type": "ops",
+  "v": 1
+}

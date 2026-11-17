@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MM3DS8QEE0HT9J74QHDFB6",
+  "after": [
+    "01M7MKXZTQAG02BK0DVYZ3QH7T"
+  ],
+  "at": "2026-11-17T11:26:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 7332316a9 re-ran every Checks: command, each exit 0: go test -p 2 -trimpath ./internal/guide -run 'TestWorkflowKeys|TestWorkflowsText|TestConduct|TestList' -v (TestWorkflowKeys, TestConductReadsWorkflowKeys, TestWorkflowKeysCatchesDrift, TestWorkflowsText, TestList, TestListOrder pass); go test ./internal/guide/...; go test ./cmd/rhiza -run TestScripts/guide (guide ls count 40, workflow-keys listed); rhiza ship generate; rhiza render. Read the diff: TestWorkflowKeys iterates workflow.FileKeys, SharedKeys, RoleKeys() and KindDocs() (keys, tables, outcomes) and checks TopicCap, the defaults, the conductor-step line and the rhiza workflow new phrases; the failure case is covered by TestWorkflowKeysCatchesDrift (added timezone/retries/effort/lint and a removed gate and stall are each reported by name). Workflows topic names gate and rhiza guide workflow-keys under TopicCap; conduct Read first names rhiza guide workflow-keys under TopicCap. Spot-checked the topic's defaults against internal/workflow/spec.go and the skeleton against internal/api/workflow_new.go: they match. Only guide text, its tests and guide.txtar changed; internal/workflow untouched; no TODOs."
+        },
+        "handle": "workflow-keys-topic-verified",
+        "id": "01M7MM4SK3890BB5FC68B981RR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MM4SK3890BB5FC673V4NYB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MM4SK3890BB5FC673V4NYB",
+        "id": "01M7MM4SMC65ERJG3419GAT7KC",
+        "link": "01M7MM4SMC65ERJG3418PXHR4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MJXM02SHB19P39VYGDNXSH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MJN83Y6EF727C2T0AF3Y5D",
+  "for": "01M7MKF7QC31VXR1Z0P20T8P1X",
+  "id": "01M7MM4SNDMKB80J6W0EQJ5AN3",
+  "type": "ops",
+  "v": 1
+}
