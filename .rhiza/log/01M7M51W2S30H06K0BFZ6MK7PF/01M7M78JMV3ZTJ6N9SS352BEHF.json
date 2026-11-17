@@ -1,0 +1,40 @@
+{
+  "actor": "01M7M6NSG3A43YF4NT58WCR58A",
+  "after": [
+    "01M7M5MZXKGC3ED1T9B8E15T1C"
+  ],
+  "at": "2026-11-17T07:41:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at faeaeef60, all under the capped scope: acceptance go test -p 2 -trimpath ./internal/api -run 'TestRunSpawn|TestSessionHook|TestStepRunnerConductorAutonomous' exit 0 (TestStepRunnerConductorAutonomous/Conductor+Plain and TestRunSpawn/ConductorStepAutonomous+PlainStepNotAutonomous ran and passed); go vet ./internal/api ./internal/workflow exit 0; go test ./internal/workflow/... exit 0; go test ./internal/api/... exit 0 (307s); rhiza ship generate and rhiza render exit 0 with no drift. Diff read: StartAgent ORs step.Conducts() into req.autonomous; runSpawn ORs spawnInConductor (def.Steps lookup of the spawn step, the same as reviewStep) into the child's request; workflow.Step.Conducts = agent step with checks. Tests assert the record's Autonomous, RHIZA_AUTONOMOUS=1 in the launch env, the hook's deny reply with autonomousAskReason and the asked mark, and for plain agent steps no autonomy, no output and no asked mark. State.Autonomous, daemonStart, signoff, gates, autonomousAskReason and the deny format are untouched. No TODOs. The one file outside the leaf's list is internal/workflow/workflow.go (+6 lines, the shared Conducts predicate the run notes ask for)."
+        },
+        "handle": "conductor-sessions-launch-autonomous-verified",
+        "id": "01M7M78JJH0DS8CJYWDK88R2V0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M78JJH0DS8CJYWDG18881J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M78JJH0DS8CJYWDG18881J",
+        "id": "01M7M78JKTM5175J8JBWGAA1BY",
+        "link": "01M7M78JKTM5175J8JBVSPPQYK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E1000DMWWQVN057JWBV5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M51W2S30H06K0BFZ6MK7PF",
+  "for": "01M7M5SJQP7WZB25T535ZWX4GN",
+  "id": "01M7M78JMV3ZTJ6N9SS352BEHF",
+  "type": "ops",
+  "v": 1
+}

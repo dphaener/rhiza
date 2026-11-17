@@ -1,0 +1,86 @@
+{
+  "actor": "01M7M8VNMPTM3D0YM0ESGV6QKZ",
+  "after": [
+    "01M7M82VB4WQJQ5KZZZN9MJ5NE"
+  ],
+  "at": "2026-11-17T08:17:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza (HEAD 289c5fa77) to a scratch path; ran it in a scratch Rhiza root with a fake claude (real hook path) and fake rex, runs not started --autonomous. Workflow conduct (agent step with [[check]] qa): the conductor session launched with RHIZA_AUTONOMOUS=1 and its PreToolUse AskUserQuestion got the deny reply with the arbiter reason; a builder child from rhiza run spawn in that step also had RHIZA_AUTONOMOUS=1 and was denied. Failure case: workflow plain (agent step, no checks): the session and its spawned child had no RHIZA_AUTONOMOUS, the hook printed nothing, and the step blocked on the owner. Scoped tests: go test ./internal/api -run 'TestRunSpawn|TestSessionHook|TestStepRunnerConductorAutonomous' ok."
+        },
+        "handle": "conductor-sessions-launch-autonomous-qa-1",
+        "id": "01M7M99R5ZBVY1SH50X71WZAB0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M99R5ZBVY1SH50X5MG6HBG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M99R5ZBVY1SH50X5MG6HBG",
+        "id": "01M7M99R72TQEC65AE48177HY1",
+        "link": "01M7M99R72TQEC65AE47SGZC5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E1000DMWWQVN057JWBV5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza (HEAD 289c5fa77) to a scratch path; ran it in a scratch Rhiza root with a fake claude (real hook path) and fake rex, runs not started --autonomous. Conduct step's own question: asked entry, question node, arbiter pass, answer typed into its tab, run succeeded, no advisor entry and no state=blocked notice; same through workflow outer whose workflow step includes conduct (step conduct/conduct). Failure case: arbiter wrote no Decision, so the run failed with the step's error naming the question ('arbiter failed on question question-...-1 (...)'). Regression: workflow plain blocked on the owner with a state=blocked notice and an advisor entry, no asked entry. Scoped tests: go test ./internal/run -run 'TestConductorQuestion|TestNormalRunQuestionNotArbitrated|TestAutonomousQuestionGoesToArbiter|TestAutonomousArbiterFailFailsRun' ok."
+        },
+        "handle": "conductor-question-arbitrated-qa-1",
+        "id": "01M7M99R89GT63EFGCGZRJDRK5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M99R89GT63EFGCGX140BFH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M99R89GT63EFGCGX140BFH",
+        "id": "01M7M99R9HW07ADQBFB33B2ESG",
+        "link": "01M7M99R9HW07ADQBFB0PQF47J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E0WTFG4BFTK6Z7J15C8H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built ./cmd/rhiza (HEAD 289c5fa77) to a scratch path; ran it in a scratch Rhiza root with a fake claude (real hook path) and fake rex, runs not started --autonomous. Conduct step whose conductor spawned a builder child that asked: asked entry keyed on the child session, arbiter pass, the answer sent to the child (messages/<child>/0001.md), answered and unblocked entries, then spawn-ended, and the step passed on the conductor's own outcome; no advisor and no blocked notice. A child asking two questions in turn got both arbitrated and answered (2 asked/arbiter/answered entries). Failure case: arbiter wrote no Decision on the child's question, so the step ended in error naming the question and the run failed. A child spawned in a plain step was not watched: no asked or arbiter entries. Scoped tests: go test ./internal/run -run TestSpawnedChildQuestion ok."
+        },
+        "handle": "spawned-child-question-arbitrated-qa-1",
+        "id": "01M7M99RAPBPGZKXFX9VXNHXGG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7M99RAPBPGZKXFX9RH0YD8G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7M99RAPBPGZKXFX9RH0YD8G",
+        "id": "01M7M99RD4X178RD013EXJH6EQ",
+        "link": "01M7M99RD4X178RD013DVHEVGV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7M5E14QHSACYM4E06M4E3BW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M51W2S30H06K0BFZ6MK7PF",
+  "for": "01M7M5SJQP7WZB25T535ZWX4GN",
+  "id": "01M7M99RFG4DCAFT7V96DKJEFR",
+  "type": "ops",
+  "v": 1
+}
