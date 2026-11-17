@@ -115,13 +115,16 @@ rhiza guide conduct-roles
 stdout '^# Conduct roles$'
 stdout '^- `check-qa` \(`rhiza guide check-qa`\)'
 stdout 'name one of its checks: plan, code, qa'
+rhiza guide workflow-keys
+stdout '^# Workflow keys$'
+stdout 'on.fail = "handback:build"'
 rhiza guide sources
 stdout '^# Sources$'
 stdout '^## Stored fields$'
 
 # guide ls lists all thirty-four texts with their kinds and sizes.
 rhiza guide ls
-stdout -count=39 '^- '
+stdout -count=40 '^- '
 stdout '^- rhiza +skill +[0-9]+ tokens  Work with the product model'
 stdout '^- scrub +skill +[0-9]+ tokens  '
 stdout '^- plan +skill +[0-9]+ tokens  Plan with the owner'
@@ -157,6 +160,7 @@ stdout '^- reopening +topic +[0-9]+ tokens  '
 stdout '^- review +topic +[0-9]+ tokens  Reviewing a built change set'
 stdout '^- sources +topic +[0-9]+ tokens  '
 stdout '^- verifier +topic +[0-9]+ tokens  '
+stdout '^- workflow-keys +topic +[0-9]+ tokens  Workflow keys'
 stdout '^- workflows +topic +[0-9]+ tokens  Writing a custom workflow'
 rhiza guide ls --json
 stdout '"texts": \['

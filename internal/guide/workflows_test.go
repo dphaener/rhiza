@@ -16,15 +16,20 @@ func TestWorkflowsText(t *testing.T) {
 	for _, k := range []string{
 		workflow.KindAgent, workflow.KindWait, workflow.KindCommand, workflow.KindArbiter,
 		workflow.KindLeaves, workflow.KindChecks, workflow.KindSignoff, workflow.KindWorkflow,
+		workflow.KindGate,
 	} {
 		if !strings.Contains(wf.Body, "\n- `"+k+"`") {
 			t.Errorf("workflows: names no step kind %q", k)
 		}
 	}
+	if n := Tokens(wf.Body); n > TopicCap {
+		t.Errorf("workflows costs %d tokens, cap %d", n, TopicCap)
+	}
 	checkPhrases(t, "workflows", map[string][]string{
-		"layers":   {"$XDG_CONFIG_HOME/rhiza/workflows/<name>.toml", ".rhiza/workflows/<name>.toml", "built-in"},
-		"targets":  {"`done` and `failed`", "max_visits"},
-		"includes": {"skip = [steps]", "<workflow>/<step>"},
+		"workflow keys": {"`rhiza guide workflow-keys`"},
+		"layers":        {"$XDG_CONFIG_HOME/rhiza/workflows/<name>.toml", ".rhiza/workflows/<name>.toml", "built-in"},
+		"targets":       {"`done` and `failed`", "max_visits"},
+		"includes":      {"skip = [steps]", "<workflow>/<step>"},
 		"dispatch": {
 			".rhiza/dispatch.toml", "[request]", "[ready]", "rhiza request --workflow",
 			"feature", "bug", "milestone", "ship-change", "workflow-unresolved",
