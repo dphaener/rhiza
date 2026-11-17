@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MH31R8RNAY8YM7M80EANCG",
+  "after": [
+    "01M7MGQNB0KT2P1101D83N8B2G"
+  ],
+  "at": "2026-11-17T10:33:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At ed7678fe4 re-ran the Checks: block: go test -trimpath ./internal/run -run 'TestChecksStep|TestCritic|TestNextCheckActions' -count=1 (ok), go test -trimpath ./internal/run/... (ok), gofmt -l internal/run (empty), go vet ./internal/run/ (ok), rhiza ship generate (exit 0). The five acceptance cases exist in internal/run/checks_test.go and pass (-v): TestChecksStepLostWithRoundsPass (all lost with empty rounds: each judged pass, no cycle 2 entry, no session started), TestCriticLostWithVerdictsPass (major finding starts alpha's critic; lost critic with verdict judged pass, check passed by 'critic dropped f1'), TestChecksStepLostNoRoundFails (no round: fail, cycle 2 runs alpha alone), TestCriticLostMissingVerdictFails (missing verdict on blocker: critic fail, 'critic failed'), TestChecksStepKnownFailWithRoundFails (non-lost exit 1 with round: fail). Existing TestChecksStep*/TestCritic* tests unchanged and pass. Diff touches only checks.go and checks_test.go (plus the actor record/render); lostWorkRecorded applies only when status.Done && Lost && !Environment and only for check/critic roles, requires the round (check) or a verdict on every serious finding (critic); AgentStatus, internal/api, cycle cap and later-cycle check selection are untouched. No stubs or TODOs."
+        },
+        "handle": "lost-check-judged-by-round-verified",
+        "id": "01M7MH41JDVR5FMKY5B0SW64Q6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MH41JDVR5FMKY5AX1A4H49",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MH41JDVR5FMKY5AX1A4H49",
+        "id": "01M7MH41KFR1S2GA9R33SBVMA3",
+        "link": "01M7MH41KFR1S2GA9R329J6YA6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MGM9EZ9H0G8F45S2S629HK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MGF8J9MA30XXQ8GTR4KXRW",
+  "for": "01M7MGXDJN2ST3K498QY6NKTWQ",
+  "id": "01M7MH41MFMPMS4H8FW05D0MCK",
+  "type": "ops",
+  "v": 1
+}

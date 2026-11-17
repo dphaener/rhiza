@@ -914,3 +914,181 @@ func TestCriticParallel(t *testing.T) {
 		t.Errorf("started %v, want %v", roles(r), want)
 	}
 }
+
+// lostCheck makes session's every poll report it found lost: ended
+// unseen, its exit code unknown, judged fail by its exit.
+func lostCheck(r *fakeRunner, session string) {
+	r.agentSeq[session] = []AgentStatus{{Done: true, Lost: true, Outcome: workflow.OutcomeFail, Detail: "lost: Rex block not found"}}
+}
+
+// resumeCycle1 journals a checks step resumed in cycle 1 of the three
+// checks: each check's session started, and a findings round recorded for
+// each check in rounds (by check), as `rhiza run findings --check` does.
+func resumeCycle1(t *testing.T, e *Engine, rounds map[string][]Finding) {
+	t.Helper()
+	ens := []Entry{
+		{Type: TypeEntered, Step: "review", Visit: 1},
+		{Type: TypeCheckCycle, Step: "review", Cycle: 1, Checks: threeChecks},
+	}
+	for _, c := range threeChecks {
+		ens = append(ens, Entry{Type: TypeCheckSession, Step: "review", Check: c, Role: workflow.RoleCheck, Cycle: 1, Session: checkSID(c, workflow.RoleCheck, 1)})
+		if f, ok := rounds[c]; ok {
+			ens = append(ens, Entry{Type: TypeFindings, Step: "review", Check: c, Cycle: 1, Findings: f})
+		}
+	}
+	for _, en := range ens {
+		en.At = at(1)
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// A resumed checks step whose check sessions all died unseen after each
+// recorded its (empty) round judges each by its round: every check passes
+// in cycle 1, with no cycle 2 and no session started.
+func TestChecksStepLostWithRoundsPass(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	resumeCycle1(t, e, map[string][]Finding{"alpha": nil, "beta": nil, "gamma": nil})
+	for _, c := range threeChecks {
+		lostCheck(r, checkSID(c, workflow.RoleCheck, 1))
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if len(r.checkSpecs) != 0 {
+		t.Errorf("started %v, want none", roles(r))
+	}
+	want := []string{
+		"check-cycle 1 alpha beta gamma",
+		"check-session alpha check 1", "check-session beta check 1", "check-session gamma check 1",
+		"check-judged alpha check 1 pass", "check-judged beta check 1 pass", "check-judged gamma check 1 pass",
+		"check alpha 1 passed", "check beta 1 passed", "check gamma 1 passed",
+	}
+	if got := checkEntries(t, e); !reflect.DeepEqual(got, want) {
+		t.Errorf("check entries =\n%v\nwant\n%v", got, want)
+	}
+	for _, name := range threeChecks {
+		c, _ := st.Check("review", name)
+		if j, ok := c.Judgement(workflow.RoleCheck, 1); !ok || j.Outcome != workflow.OutcomePass || !strings.Contains(j.Detail, "findings round recorded") {
+			t.Errorf("%s's judgement = %+v", name, j)
+		}
+	}
+}
+
+// A lost check session whose round holds a major finding gets its critic;
+// the critic, lost too after recording its verdict on the finding, is
+// judged pass and its verdict decides the check.
+func TestCriticLostWithVerdictsPass(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	resumeCycle1(t, e, map[string][]Finding{"alpha": {sev("f1", SeverityMajor)}, "beta": nil, "gamma": nil})
+	for _, c := range threeChecks {
+		lostCheck(r, checkSID(c, workflow.RoleCheck, 1))
+	}
+	crit := checkSID("alpha", workflow.RoleCritic, 1)
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "not a bug"}}
+	lostCheck(r, crit)
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	if want := []string{"alpha critic 1"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
+	}
+	c, _ := st.Check("review", "alpha")
+	if j, ok := c.Judgement(workflow.RoleCritic, 1); !ok || j.Outcome != workflow.OutcomePass || !strings.Contains(j.Detail, "verdicts recorded") {
+		t.Errorf("critic's judgement = %+v", j)
+	}
+	if o, _ := c.Outcome(1); o.Outcome != CheckPassed || o.Detail != "cycle 1: critic dropped f1" {
+		t.Errorf("alpha's outcome = %+v", o)
+	}
+}
+
+// A lost check session with no findings round for the cycle is judged
+// fail, and cycle 2 runs that check alone.
+func TestChecksStepLostNoRoundFails(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	resumeCycle1(t, e, map[string][]Finding{"beta": nil, "gamma": nil})
+	for _, c := range threeChecks {
+		lostCheck(r, checkSID(c, workflow.RoleCheck, 1))
+	}
+	passChecks(r, 2, "alpha")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := outcomes(st); !reflect.DeepEqual(got, []string{"review:pass"}) {
+		t.Fatalf("outcomes = %v", got)
+	}
+	a, _ := st.Check("review", "alpha")
+	if j, ok := a.Judgement(workflow.RoleCheck, 1); !ok || j.Outcome != workflow.OutcomeFail {
+		t.Errorf("alpha's cycle 1 judgement = %+v", j)
+	}
+	if o, _ := a.Outcome(1); o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 1: check failed: lost") {
+		t.Errorf("alpha's cycle 1 outcome = %+v", o)
+	}
+	if want := []string{"alpha check 2"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
+	}
+	if c, ok := st.LatestCycle("review"); !ok || c.Cycle != 2 || !reflect.DeepEqual(c.Checks, []string{"alpha"}) {
+		t.Errorf("latest cycle = %+v", c)
+	}
+}
+
+// A lost critic that recorded no verdict on a serious finding is judged
+// fail, and fails its check ("critic failed").
+func TestCriticLostMissingVerdictFails(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	resumeCycle1(t, e, map[string][]Finding{"alpha": {sev("f1", SeverityMajor), sev("f2", SeverityBlocker)}, "beta": nil, "gamma": nil})
+	for _, c := range threeChecks {
+		lostCheck(r, checkSID(c, workflow.RoleCheck, 1))
+	}
+	crit := checkSID("alpha", workflow.RoleCritic, 1)
+	r.verdicts[crit] = []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "not a bug"}}
+	lostCheck(r, crit)
+	passChecks(r, 2, "alpha")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, _ := st.Check("review", "alpha")
+	if j, ok := c.Judgement(workflow.RoleCritic, 1); !ok || j.Outcome != workflow.OutcomeFail {
+		t.Errorf("critic's judgement = %+v", j)
+	}
+	if o, _ := c.Outcome(1); o.Outcome != CheckFailed || !strings.HasPrefix(o.Detail, "cycle 1: critic failed: ") {
+		t.Errorf("alpha's cycle 1 outcome = %+v", o)
+	}
+}
+
+// A check session that exited with a known non-zero code, not lost, is
+// judged fail even with its round recorded.
+func TestChecksStepKnownFailWithRoundFails(t *testing.T) {
+	e, r, _, _ := setup(t, checksWF)
+	resumeCycle1(t, e, map[string][]Finding{"alpha": nil, "beta": nil, "gamma": nil})
+	for _, c := range []string{"beta", "gamma"} {
+		lostCheck(r, checkSID(c, workflow.RoleCheck, 1))
+	}
+	r.agentSeq[checkSID("alpha", workflow.RoleCheck, 1)] = []AgentStatus{{Done: true, Outcome: workflow.OutcomeFail, Detail: "exit 1"}}
+	passChecks(r, 2, "alpha")
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, _ := st.Check("review", "alpha")
+	if j, ok := a.Judgement(workflow.RoleCheck, 1); !ok || j.Outcome != workflow.OutcomeFail || j.Detail != "exit 1" {
+		t.Errorf("alpha's cycle 1 judgement = %+v", j)
+	}
+	if o, _ := a.Outcome(1); o.Outcome != CheckFailed || o.Detail != "cycle 1: check failed: exit 1" {
+		t.Errorf("alpha's cycle 1 outcome = %+v", o)
+	}
+	if want := []string{"alpha check 2"}; !reflect.DeepEqual(roles(r), want) {
+		t.Errorf("started %v, want %v", roles(r), want)
+	}
+}

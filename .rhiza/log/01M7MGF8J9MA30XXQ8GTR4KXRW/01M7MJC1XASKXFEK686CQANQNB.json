@@ -1,0 +1,40 @@
+{
+  "actor": "01M7MHT64JVWCB8VD01X1KGT70",
+  "after": [
+    "01M7MH41MFMPMS4H8FW05D0MCK"
+  ],
+  "at": "2026-11-17T10:55:46Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at ed7678fe4 with a fresh go build -trimpath ./cmd/rhiza in scratch (outside PATH), in hermetic scratch repos with a three-check review workflow, a fake rex that runs the tab command and answers block inspect 'not found', and a fake claude that records its round or verdicts then kill -9s its rhiza session run wrapper (a crash: no exit recorded); each run killed, then rhiza run resume --foreground. (1) All three checks recorded empty rounds then died: resume judged each 'pass (lost: Rex block not found; findings round recorded)', run succeeded in cycle 1, no new session started. (2) alpha died before recording a round: alpha judged fail (lost), cycle 2 ran alpha alone; beta and gamma passed on their rounds. (3) alpha's round held a major and a blocker: resume started alpha's critic; the critic recorded dropped verdicts on both then died; second resume judged the critic 'pass (lost; verdicts recorded)' and alpha passed on its verdicts. (4) Same with the critic recording a verdict on the major only: critic judged fail, check detail 'cycle 1: critic failed: lost: Rex block not found', cycle 2 ran alpha. (5) No crash, alpha exits 1 after recording its round: judged 'fail (exit 1)', cycle 2 ran alpha. go test -p 2 -trimpath ./internal/run/... ok; cmd/rhiza scripts review-checks-step, run-resume-lost-session, run-resume-lost-fixer, review-findings exit 0."
+        },
+        "handle": "lost-check-judged-by-round-qa-1",
+        "id": "01M7MJC1V454WRR3E5JYWKFNJB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7MJC1V454WRR3E5JXD07WZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7MJC1V454WRR3E5JXD07WZY",
+        "id": "01M7MJC1WA1BCKPSN9TM3HZ442",
+        "link": "01M7MJC1WA1BCKPSN9TG8HZRNC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MGM9EZ9H0G8F45S2S629HK",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MGF8J9MA30XXQ8GTR4KXRW",
+  "for": "01M7MGXDJN2ST3K498QY6NKTWQ",
+  "id": "01M7MJC1XASKXFEK686CQANQNB",
+  "type": "ops",
+  "v": 1
+}
