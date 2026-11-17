@@ -117,9 +117,9 @@ func status(ctx *Ctx) (StatusResponse, error) {
 	if err != nil {
 		return StatusResponse{}, err
 	}
-	w.readLog = ctx.readLog
-	// With an index, the change sets are the projection's stored rows, so
-	// the log is not read; without one they are folded from the log.
+	w.logRead = ctx.logRead
+	// The change sets are the projection's stored rows, so the log is not
+	// read; without an index path the projection is a throwaway index.
 	w.useProjection(ctx)
 	defer w.closeProjection()
 	cs, err := w.effectiveChangeSet(ctx)
@@ -181,19 +181,11 @@ func status(ctx *Ctx) (StatusResponse, error) {
 }
 
 // statusSets is every change set's ID, state, kind and intent: the
-// projection's stored rows when w has an index (no fold is decoded and the
-// log is not read), else folded from the log.
+// projection's stored rows, so no fold is decoded and the log is not read.
 func statusSets(w *workspace) ([]index.ChangeSetInfo, error) {
-	if p := w.projection(); p != nil {
-		infos := p.changeSetInfos(w.pending)
-		return infos, p.failure()
-	}
-	sets, _ := changeset.FoldLog(w.log())
-	infos := make([]index.ChangeSetInfo, 0, len(sets))
-	for _, c := range sets {
-		infos = append(infos, index.ChangeSetInfo{ID: c.ID, State: c.State, Kind: c.Open.Kind, Intent: c.Open.Intent})
-	}
-	return infos, nil
+	p := w.projection()
+	infos := p.changeSetInfos(w.pending)
+	return infos, p.failure()
 }
 
 // MarshalJSON encodes a silent response as {} and any other as its fields.

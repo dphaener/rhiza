@@ -166,7 +166,7 @@ func TestTruncate(t *testing.T) {
 
 // TestStatusIndexedReadsNoLog: with an index, status and its hook count
 // the change sets from the projection, reading the log zero times, and
-// give the counts and change set status gives over the log.
+// give the counts and change set status gives over a throwaway index.
 func TestStatusIndexedReadsNoLog(t *testing.T) {
 	t.Parallel()
 	ctx, _, accepted := readLog(t)
@@ -182,12 +182,12 @@ func TestStatusIndexedReadsNoLog(t *testing.T) {
 			t.Errorf("status %s over the index read the log %d times, want 0", req, *reads)
 		}
 		folded := *ctx
-		// The log side: no index on purpose, to compare against the indexed status.
+		// No index path on purpose: the call builds a throwaway index.
 		folded.IndexPath = ""
 		logReads := countingCtx(&folded)
 		logged := statusOf(t, &folded, req)
-		if *logReads != 1 {
-			t.Errorf("status %s over the log read it %d times, want 1", req, *logReads)
+		if *logReads != 0 {
+			t.Errorf("status %s over a throwaway index read the log %d times, want 0", req, *logReads)
 		}
 		if indexed.Attention != logged.Attention || !reflect.DeepEqual(indexed.ChangeSet, logged.ChangeSet) {
 			t.Errorf("status %s over the index = %+v %+v, over the log %+v %+v",
@@ -202,8 +202,8 @@ func TestStatusIndexedReadsNoLog(t *testing.T) {
 	}
 }
 
-// TestStatusHookBadIndexSilent: an index that cannot be opened makes the
-// hook silent with exit 0.
+// TestStatusHookBadIndexSilent: an index that cannot be opened, with no
+// temporary folder for a throwaway one, makes the hook silent with exit 0.
 func TestStatusHookBadIndexSilent(t *testing.T) {
 	t.Parallel()
 	ctx := readCtx(t)
@@ -213,6 +213,8 @@ func TestStatusHookBadIndexSilent(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx.IndexPath = filepath.Join(ctx.IndexPath, "index.db")
+	// The temporary folder is a regular file too.
+	withTempDir(ctx, filepath.Dir(ctx.IndexPath))
 	if _, err := callOp(t, ctx, "status", `{}`); err == nil {
 		t.Error("status over a broken index: no error")
 	}

@@ -33,13 +33,17 @@ func arbiterFixture(t *testing.T) (*sessionFixture, *stepRunner, *Ctx) {
 		// within pollDebounce of a write misses it.
 		debounce: -1,
 	}
+	t.Cleanup(r.closeModel)
 	t0, err := resolveChangeWorktree(f.ctx, r.change, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := t0.open(f.ctx); err != nil {
+	defer t0.close()
+	ww, err := t0.open(f.ctx)
+	if err != nil {
 		t.Fatal(err)
 	}
+	ww.closeProjection()
 	wctx := testCtx(t, f.worktree)
 	wctx.IDs = id.NewGenerator(wctx.Now, rand.New(rand.NewSource(77)))
 	return f, r, wctx

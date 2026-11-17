@@ -1,0 +1,132 @@
+{
+  "actor": "01M7KG41HDDRXMVCMCY8JBFBJJ",
+  "after": [
+    "01M7KB21R3TKTJSAKHWW88DAR0"
+  ],
+  "at": "2026-11-17T01:10:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch binary built from 96a0eabf3 (go build -trimpath -o $TMPDIR/rhiza-qa2), run in a scratch clone with TMPDIR set to an empty folder, once with no index path (XDG_CACHE_HOME=relative) and once with a read-only cache folder. status --json and inbox --json answer (status counts 14 accepted/40 draft/1 proposed in both modes; inbox items []) and leave 0 rhiza-projection-* folders; during inbox two throwaway folders exist and both are gone at exit. On ~/code/rhiza after one warming run: status 0.06 s, inbox 0.67 s (base build at merge-base 9064447e1: 0.65 s), check 13.45 s and then 9.56 s (base 11.18 s), load about 4 on 4 cores. No regression against base; inbox and check are still over milestone 39's 200 ms/5 s targets, which these leaves do not claim."
+        },
+        "handle": "folds-from-projection-qa-2",
+        "id": "01M7KGW1EG2Z5AQMJ9FFZJ66D9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KGW1EG2Z5AQMJ9FEZ57ACC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KGW1EG2Z5AQMJ9FEZ57ACC",
+        "id": "01M7KGW1FYQP91PCC6MNCRQTXA",
+        "link": "01M7KGW1FYQP91PCC6MMC3SHZH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7HCGH8X1A8C8JPV1YB2X6QH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch binary built from 96a0eabf3 (go build -trimpath -o $TMPDIR/rhiza-qa2), run in a scratch clone with TMPDIR set to an empty folder, once with no index path (XDG_CACHE_HOME=relative) and once with a read-only cache folder. Every read below runs through the projection with no fold fallback. go test -trimpath -count=1 -p 2 ./internal/api -run '^(TestPropertyProjectionParity|TestProjection.*)$' passes (8.6 s). Error paths all answer cleanly with 0 leftovers: change show of an unknown ID gives not_found (next rhiza change ls), session show and run status of a missing ID give not_found, and slice --change unknown gives not_found."
+        },
+        "handle": "interim-model-deleted-qa-2",
+        "id": "01M7KGW1HGBBSGXMMVYKECG5YZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KGW1HGBBSGXMMVYHBGWZYN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KGW1HGBBSGXMMVYHBGWZYN",
+        "id": "01M7KGW1K0BNQNCB773RZ9ER0D",
+        "link": "01M7KGW1K0BNQNCB773Q7NCSHJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTBT1GB2DR05VA9EGCSV",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch binary built from 96a0eabf3 (go build -trimpath -o $TMPDIR/rhiza-qa2), run in a scratch clone with TMPDIR set to an empty folder, once with no index path (XDG_CACHE_HOME=relative) and once with a read-only cache folder. With no index path and with a read-only cache: inbox (gate read), session ls, run status (no runs: not_found, next rhiza run start) and ship check --model-conflict --change 01M7GFTK (detail 'no model conflict is recorded'; without --change: usage error) answer and leave 0 rhiza-projection-* folders in TMPDIR."
+        },
+        "handle": "other-roots-own-projection-qa-2",
+        "id": "01M7KGW1MJZDF2TF7MQQGYWMER",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KGW1MJZDF2TF7MQMAJFF11",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KGW1MJZDF2TF7MQMAJFF11",
+        "id": "01M7KGW1QP5GYVR3AS745YP5RX",
+        "link": "01M7KGW1QP5GYVR3AS716XFKS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT8RBC63C71V0CQB20XZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch binary built from 96a0eabf3 (go build -trimpath -o $TMPDIR/rhiza-qa2), run in a scratch clone with TMPDIR set to an empty folder, once with no index path (XDG_CACHE_HOME=relative) and once with a read-only cache folder. status, change show, show --change, inbox, slice, session and run status and ship check --model-conflict, in both modes, leave 0 rhiza-projection-* folders afterwards, error paths included. Failure: with TMPDIR chmod 555, status exits 1 with 'no index path; throwaway index in <TMPDIR>: mkdir ... permission denied', naming both."
+        },
+        "handle": "throwaway-index-fallback-qa-2",
+        "id": "01M7KGW1TGTKRCP3Z7MN66V1XZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KGW1TGTKRCP3Z7MKDD0A9G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KGW1TGTKRCP3Z7MKDD0A9G",
+        "id": "01M7KGW1WNNPG2S1S52XX75YJC",
+        "link": "01M7KGW1WNNPG2S1S52TY5MSK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZTA52SPV1ZK9DP14MXXK",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Scratch binary built from 96a0eabf3 (go build -trimpath -o $TMPDIR/rhiza-qa2), run in a scratch clone with TMPDIR set to an empty folder, once with no index path (XDG_CACHE_HOME=relative) and once with a read-only cache folder. With no index path: apply --dry-run of an add, an add and a link from the second add to the first resolves the link through the pending overlay (rc 0, 2 nodes, 1 link). The real apply writes it and show qa-probe-a --change shows the 'verified by' link. apply of a missing file gives a usage error. show of an unknown handle gives not_found (next rhiza ls). All leave 0 leftovers."
+        },
+        "handle": "writes-from-projection-qa-2",
+        "id": "01M7KGW1Y6MFYC9YV0B07RRS7G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7KGW1Y6MFYC9YV0AZM5WR4F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7KGW1Y6MFYC9YV0AZM5WR4F",
+        "id": "01M7KGW1ZX86ES2GH0XRWHCKFS",
+        "link": "01M7KGW1ZX86ES2GH0XNA51FYS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7GFZT6S9W93CH78BEGC7VCQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7GFTKCAK0GY3PPDRTPVYF56",
+  "for": "01M7K2B3DPAJPNW65X0MAM7J0H",
+  "id": "01M7KGW21R8S579H6N9XJS71PD",
+  "type": "ops",
+  "v": 1
+}

@@ -1,15 +1,18 @@
 package api
 
 // This file holds the projection: the one interface the model is read
-// through when a call has an index (ctx.IndexPath set). It answers the
+// through. It answers the
 // change sets with their states and folds, a change set's entries, the
 // stored problems, the stored as-is model and the model of a view (the current change set's while
 // it is in flight, else as-is), each with the dry run's pending entries
 // laid over it. Its one implementation is the index with the pending
-// entries overlaid (writeIndex, write_indexed.go). With ctx.IndexPath empty
-// there is no projection and each read keeps its log path.
+// entries overlaid (writeIndex, write_indexed.go): the index at
+// ctx.IndexPath, or a throwaway one for the call when that path is empty or
+// its index cannot be opened (openWriteIndex).
 
 import (
+	"errors"
+
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
@@ -60,20 +63,26 @@ type projection interface {
 
 // projectionSlot is a workspace's projection, opened on first use. Copies
 // of a workspace (a dry-run copy in apply) share it, so the index is
-// opened at most once per call and closed once.
+// opened at most once per call and closed once. A read after close opens
+// it again.
 type projectionSlot struct {
 	open func() (projection, error)
 	p    projection
 }
 
-// get opens the projection on the first call and returns it after. An
-// index that cannot be opened gives a projection that answers nothing and
-// fails with the open's error.
+// errProjectionClosed fails the reads of a projection handed in open
+// (setProjection) once its owner has closed it.
+var errProjectionClosed = errors.New("the projection is closed")
+
+// get opens the projection when it is not open and returns it. An index
+// that cannot be opened gives a projection that answers nothing and fails
+// with the open's error.
 func (s *projectionSlot) get() projection {
-	if s.p == nil && s.open != nil {
-		open := s.open
-		s.open = nil
-		p, err := open()
+	if s.p == nil {
+		if s.open == nil {
+			return failedProjection{err: errProjectionClosed}
+		}
+		p, err := s.open()
 		if err != nil {
 			p = failedProjection{err: err}
 		}
@@ -86,9 +95,6 @@ func (s *projectionSlot) close() {
 	if s != nil && s.p != nil {
 		s.p.close()
 		s.p = nil
-	}
-	if s != nil {
-		s.open = nil
 	}
 }
 
@@ -106,14 +112,10 @@ func openProjection(ctx *Ctx, memo bool) (projection, error) {
 	return ix, nil
 }
 
-// useProjection gives w a projection over ctx's index, opened when a read
-// first asks for it; with ctx.IndexPath empty it gives none. The caller
-// closes it with closeProjection.
+// useProjection gives w a projection over ctx's index (a throwaway one
+// when ctx has none), opened when a read first asks for it. openCtxWorkspace
+// gives every workspace one; the caller closes it with closeProjection.
 func (w *workspace) useProjection(ctx *Ctx) {
-	if ctx.IndexPath == "" {
-		w.proj = nil
-		return
-	}
 	w.proj = &projectionSlot{open: func() (projection, error) { return openProjection(ctx, false) }}
 }
 
@@ -122,11 +124,12 @@ func (w *workspace) setProjection(p projection) {
 	w.proj = &projectionSlot{p: p}
 }
 
-// projection is w's projection, opened on first use; nil when w reads the
-// log.
+// projection is w's projection, opened on first use. A workspace opened
+// without a Ctx (openWorkspace) reads its root through a throwaway index,
+// removed when the caller closes it with closeProjection.
 func (w *workspace) projection() projection {
 	if w.proj == nil {
-		return nil
+		w.useProjection(&Ctx{Root: w.root, Now: w.now, IDs: w.ids})
 	}
 	return w.proj.get()
 }

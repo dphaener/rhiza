@@ -31,7 +31,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/store"
 )
 
 // Operation is one named call. Request and Response are struct types; Run
@@ -163,9 +162,15 @@ type Ctx struct {
 	Verdict func(output string) FailureVerdict
 	// IDs makes new IDs.
 	IDs *id.Generator
-	// readLog, when set, replaces the store's log read; tests count folds
-	// with it.
-	readLog func() store.Log
+	// logRead, when set, is told each disk read of the log; it cannot
+	// change what is read. Tests count the log reads of a call with it.
+	logRead func()
+	// planRead, when set, is told each plan read; planFolded, each
+	// in-flight change set a plan read's gather folds (it may be told from
+	// several goroutines at once). Neither changes what is read; tests
+	// count one Ctx's plan reads and folds with them.
+	planRead   func()
+	planFolded func()
 	// builtModel, when set, is told each change set whose model an index
 	// read builds (memo misses only); tests count folds per change set
 	// with it.
@@ -173,6 +178,10 @@ type Ctx struct {
 	// openedProjection, when set, is told each time a projection opens its
 	// index; tests count the opens of one call with it.
 	openedProjection func()
+	// liveProjections, when set, keeps the projections open on this Ctx
+	// and its copies, each with the stack that opened it, from its index's
+	// open to its close. Tests fail when one is left open with it.
+	liveProjections *liveProjections
 	// daemonFold is the daemon's fold cache; the first poll creates it.
 	daemonFold *daemonFoldCache
 	// commonDirs keeps gitCommonDir's answers by Root; copies of the Ctx

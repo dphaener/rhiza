@@ -17,7 +17,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/store"
 )
 
@@ -78,15 +77,11 @@ func runRepair(ctx *Ctx, _ any) (any, error) {
 	if len(ds) == 0 {
 		return resp, nil
 	}
-	var x *index.Index
-	defer func() {
-		if x != nil {
-			x.Close()
-		}
-	}()
+	pj := &projectionSlot{open: func() (projection, error) { return openProjection(ctx, false) }}
+	defer pj.close()
 	for _, d := range ds {
 		e := RepairedEntry{Path: d.Path, Reason: d.Reason}
-		data, from, why := originalBytes(ctx, d, &x)
+		data, from, why := originalBytes(ctx, d, pj)
 		if why != "" {
 			e.Why = why
 			resp.Lost = append(resp.Lost, e)
@@ -127,9 +122,9 @@ func restoredVerb(dry bool) string {
 // is tracked there, else the index's, either only when they are canonical and
 // name the file's own change set and ID (an entry can be committed already
 // damaged); a file that is not an entry, such as repo.json, takes HEAD's
-// unchecked. why says why there are none. The index is opened on first need
-// into x.
-func originalBytes(ctx *Ctx, d damaged, x **index.Index) (data []byte, from, why string) {
+// unchecked. why says why there are none. The projection's index is opened
+// on first need through pj.
+func originalBytes(ctx *Ctx, d damaged, pj *projectionSlot) (data []byte, from, why string) {
 	cs, eid, ok := entryPathIDs(d.Path)
 	headDamaged := false
 	if inWorkTree(ctx.Git) {
@@ -143,7 +138,7 @@ func originalBytes(ctx *Ctx, d damaged, x **index.Index) (data []byte, from, why
 	if !ok {
 		return nil, "", "not a log/<change set>/<entry>.json path"
 	}
-	data, why = indexBytes(ctx, cs, eid, x)
+	data, why = indexBytes(cs, eid, pj)
 	if why != "" {
 		head := "not tracked at HEAD"
 		if headDamaged {
@@ -155,16 +150,15 @@ func originalBytes(ctx *Ctx, d damaged, x **index.Index) (data []byte, from, why
 }
 
 // indexBytes reads the canonical bytes of entry eid in change set cs from the
-// persistent index, opened on first need into x. why says why there are none.
-func indexBytes(ctx *Ctx, cs, eid id.ID, x **index.Index) (data []byte, why string) {
-	if *x == nil {
-		xi, err := index.Open(ctx.Root, ctx.IndexPath)
-		if err != nil {
-			return nil, "the index cannot be opened: " + err.Error()
-		}
-		*x = xi
+// projection's index, opened on first need through pj. why says why there
+// are none.
+func indexBytes(cs, eid id.ID, pj *projectionSlot) (data []byte, why string) {
+	p := pj.get()
+	x := p.store()
+	if x == nil {
+		return nil, "the index cannot be opened: " + p.failure().Error()
 	}
-	raw, found, err := (*x).StoredEntry(cs, eid)
+	raw, found, err := x.StoredEntry(cs, eid)
 	if err != nil {
 		return nil, "the index cannot be read: " + err.Error()
 	}

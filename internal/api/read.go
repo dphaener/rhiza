@@ -35,7 +35,6 @@ import (
 	"cmp"
 	"encoding/json"
 	"errors"
-	"slices"
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/canon"
@@ -144,6 +143,9 @@ func parseViewWith(resolve func(string) (id.ID, error), opName, s string) (view,
 // Errors: an unknown ref not_found with next "rhiza ls", an ambiguous one
 // usage.
 type reader struct {
+	// w is the workspace whose projection's index x is; Close closes the
+	// projection (and removes a throwaway index).
+	w    *workspace
 	x    *index.Index
 	view view
 	// ov is the what-if overlay on the as-is rows, nil for a stored view.
@@ -151,13 +153,15 @@ type reader struct {
 	// live caches the current handle of the nodes the shown texts refer to,
 	// "" for a retired or unknown one.
 	live map[id.ID]string
+	// planFolded is the Ctx's planFolded hook, nil when it has none.
+	planFolded func()
 }
 
 // openReader opens a reader for operation opName in the view named by s,
 // or by rule (defaultView, or the operation's own) when s is empty. A
 // what-if of a change set not in the log is not_found, of one not in
-// flight a conflict, both with next "rhiza change ls". An empty
-// ctx.IndexPath is an error.
+// flight a conflict, both with next "rhiza change ls". The index is the
+// projection's (openWriteIndex): a throwaway one when ctx has none.
 func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
@@ -166,75 +170,35 @@ func openReader(ctx *Ctx, opName, s string, rule viewRule) (*reader, error) {
 	return openReaderIn(ctx, w, opName, s, rule)
 }
 
-// openReaderIn is openReader over the open workspace w, whose pending
-// entries a no-view read sees.
+// openReaderIn is openReader over the open workspace w: its projection
+// resolves the view's change set, with w's pending entries laid over it,
+// and its open index answers the read. The reader's Close closes w's
+// projection.
 func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*reader, error) {
-	var err error
-	// The index answers a what-if ref without reading the log; it is opened
-	// once, and only when the view needs it or the read goes on.
-	var x *index.Index
-	open := func() (*index.Index, error) {
-		if x != nil {
-			return x, nil
-		}
-		if ctx.IndexPath == "" {
-			return nil, Errorf("no index path")
-		}
-		xi, err := index.Open(ctx.Root, ctx.IndexPath)
-		if err != nil {
-			return nil, Errorf("%s", err.Error())
-		}
-		x = xi
-		return x, nil
-	}
-	closeX := func() {
-		if x != nil {
-			x.Close()
-			x = nil
-		}
-	}
-	resolve := w.resolveChangeSet
-	if len(w.pending) == 0 && ctx.IndexPath != "" {
-		resolve = func(ref string) (id.ID, error) {
-			xi, err := open()
-			if err != nil {
-				return id.ID{}, err
-			}
-			infos, err := xi.ChangeSets()
-			if err != nil {
-				return id.ID{}, Errorf("%s", err.Error())
-			}
-			sets := make([]id.ID, len(infos))
-			for i, c := range infos {
-				sets[i] = c.ID
-			}
-			return matchChangeSet(sets, ref)
-		}
-	}
-	v, err := parseViewWith(resolve, opName, s)
-	if err != nil {
-		closeX()
+	p := w.projection()
+	fail := func(err error) (*reader, error) {
+		w.closeProjection()
 		return nil, err
 	}
+	v, err := parseViewWith(w.resolveChangeSet, opName, s)
+	if err == nil {
+		err = p.failure()
+	}
+	if err != nil {
+		return fail(err)
+	}
 	if v == (view{}) {
-		var cs id.ID
-		var state changeset.State
-		if len(w.pending) == 0 && ctx.IndexPath != "" {
-			cs, state, err = indexedChangeSet(ctx, w, open)
-		} else {
-			cs, state, err = foldedChangeSet(ctx, w)
-		}
+		cs, state, err := projectedChangeSet(ctx, w)
 		if err != nil {
-			closeX()
-			return nil, err
+			return fail(err)
 		}
 		v = rule(cs, state)
 	}
-	x, err = open()
-	if err != nil {
-		return nil, err
+	x := p.store()
+	if x == nil {
+		return fail(p.failure())
 	}
-	r := &reader{x: x, view: v}
+	r := &reader{w: w, x: x, view: v, planFolded: ctx.planFolded}
 	if v.whatIf.IsZero() {
 		return r, nil
 	}
@@ -243,67 +207,32 @@ func openReaderIn(ctx *Ctx, w *workspace, opName, s string, rule viewRule) (*rea
 		err = whatIfViewError(v.whatIf, ps)
 	}
 	if err != nil {
-		x.Close()
-		return nil, AsError(err)
+		return fail(AsError(err))
 	}
 	r.ov = ov
 	return r, nil
 }
 
-// foldedChangeSet is the effective change set and its state, folded from
-// the log: the path a workspace with pending writes takes.
-func foldedChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.State, error) {
-	cs, err := w.effectiveChangeSet(ctx)
-	if err != nil {
-		return id.ID{}, "", err
-	}
-	if cs.IsZero() {
-		return cs, "", nil
-	}
-	c, ok := w.changeSet(cs)
-	if !ok {
-		return id.ID{}, "", nil
-	}
-	return cs, c.State, nil
-}
-
-// indexedChangeSet is foldedChangeSet over the index's change set table: it
-// folds nothing, and answers the same change set and state when nothing is
-// pending.
-func indexedChangeSet(ctx *Ctx, w *workspace, open func() (*index.Index, error)) (id.ID, changeset.State, error) {
-	ref := strings.TrimSpace(ctx.ChangeRef)
-	if !ctx.ChangeSet.IsZero() && ref != "" {
-		return id.ID{}, "", Usagef("set either ChangeSet or ChangeRef, not both")
-	}
-	cs := ctx.ChangeSet
-	if cs.IsZero() && ref == "" {
+// projectedChangeSet is the effective change set and its state, from the
+// projection's change sets with w's pending entries laid over them: it
+// folds no stored change set.
+func projectedChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.State, error) {
+	p := w.projection()
+	current := id.ID{}
+	if ctx.ChangeSet.IsZero() && strings.TrimSpace(ctx.ChangeRef) == "" {
 		cur, err := w.current()
 		if err != nil || cur.IsZero() {
 			return id.ID{}, "", err
 		}
-		cs = cur
+		current = cur
 	}
-	xi, err := open()
-	if err != nil {
+	infos := p.changeSetInfos(w.pending)
+	if err := p.failure(); err != nil {
 		return id.ID{}, "", err
 	}
-	infos, err := xi.ChangeSets()
-	if err != nil {
-		return id.ID{}, "", Errorf("%s", err.Error())
-	}
-	switch {
-	case !ctx.ChangeSet.IsZero():
-		if !slices.ContainsFunc(infos, func(c index.ChangeSetInfo) bool { return c.ID == cs }) {
-			return id.ID{}, "", NotFoundf("no change set %s", cs).WithNext(changeLsNext)
-		}
-	case ref != "":
-		sets := make([]id.ID, len(infos))
-		for i, c := range infos {
-			sets[i] = c.ID
-		}
-		if cs, err = matchChangeSet(sets, ref); err != nil {
-			return id.ID{}, "", err
-		}
+	cs, err := indexedEffective(ctx, current, infos)
+	if err != nil || cs.IsZero() {
+		return id.ID{}, "", err
 	}
 	for _, c := range infos {
 		if c.ID == cs {
@@ -333,9 +262,10 @@ func whatIfViewError(cs id.ID, ps []gmodel.Problem) error {
 	return nil
 }
 
-// Close closes the index.
+// Close closes the index and removes a throwaway one.
 func (r *reader) Close() error {
-	return r.x.Close()
+	r.w.closeProjection()
+	return nil
 }
 
 // View is the resolved view's name, such as "to-be" or "what-if:<ID>".

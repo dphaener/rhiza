@@ -2,17 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"slices"
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
-	"github.com/dphaener/rhiza/internal/store"
 )
 
 // This file holds the parity cases the harness found on the index's write
@@ -45,34 +41,12 @@ func (b *logBuilder) changeSetAs(cs id.ID, kind changeset.Kind, bodies ...change
 // it, caught up.
 func indexOf(t *testing.T, b *logBuilder) projection {
 	t.Helper()
-	root := t.TempDir()
-	gdir := filepath.Join(root, store.Dir)
-	for _, e := range b.entries {
-		data, err := entry.Encode(e)
-		if err != nil {
-			t.Fatal(err)
-		}
-		p := filepath.Join(gdir, store.LogDir, e.ChangeSet.String(), e.ID.String()+".json")
-		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, data, 0o644); err != nil {
-			t.Fatal(err)
-		}
-	}
-	ctx := &Ctx{Root: root, IndexPath: filepath.Join(root, "index.db")}
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
-	if err != nil {
-		t.Fatalf("index.Open: %v", err)
-	}
-	ix := &writeIndex{ctx: ctx, x: x}
-	t.Cleanup(ix.close)
-	return ix
+	return logProjection(t, b.entries)
 }
 
 // indexAgrees fails t on any disagreement between the index's write model
-// and the strict engine on the write view of cs, every node and link the
-// log's ops name queried by ID.
+// and the strict engine on the write view of cs, Pending included, every
+// node and link the log's ops name queried by ID.
 func indexAgrees(t *testing.T, b *logBuilder, cs id.ID) {
 	t.Helper()
 	p := parityOf(t, b)
@@ -111,7 +85,7 @@ func indexAgrees(t *testing.T, b *logBuilder, cs id.ID) {
 		}
 	}
 	strict, _, _ := strictView(p, cs)
-	for _, d := range compareViews(viewName(cs), sideIndex, got, sideStrict, strict, false) {
+	for _, d := range compareViews(viewName(cs), sideIndex, got, sideStrict, strict, true) {
 		t.Errorf("%s\nlog:\n%s", d, p)
 	}
 }

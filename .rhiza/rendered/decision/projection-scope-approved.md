@@ -35,6 +35,7 @@ Milestone 39 holds four change sets, in this order: a parity harness with intern
 - decided-by [render-from-projection](../capability/rhiza/views/fast-reads/render-from-projection.md)
 - decided-by [change-reads-from-projection](../capability/rhiza/views/fast-reads/change-reads-from-projection.md)
 - decided-by [daemon-fold-from-projection](../capability/rhiza/views/fast-reads/daemon-fold-from-projection.md)
+- decided-by [other-roots-own-projection](../capability/rhiza/views/fast-reads/other-roots-own-projection.md)
 - decided-by [cli-no-process-globals](../capability/rhiza/integrity/self-check/cli-no-process-globals.md)
 - decided-by [cli-child-env](../capability/rhiza/integrity/self-check/cli-child-env.md)
 - decided-by [run-clock-from-ctx](../capability/rhiza/integrity/self-check/run-clock-from-ctx.md)

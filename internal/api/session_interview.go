@@ -132,6 +132,7 @@ func captureInterview(ctx *Ctx, rec session.Record) (SessionInterviewResponse, e
 	if err != nil {
 		return resp, err
 	}
+	defer ww.closeProjection()
 	c, _ := ww.changeSet(cs)
 	// A landed change set takes no more ops: the Decisions go into a record
 	// write over the landed view, where its Source is too. A milestone
@@ -264,7 +265,7 @@ func sessionWorkspace(ctx *Ctx, rec session.Record) (*workspace, id.ID, error) {
 		return nil, id.ID{}, Errorf("%v", err)
 	}
 	root := filepath.Join(rec.Worktree, strings.TrimSpace(prefix))
-	ww, err := openWorkspace(root, ctx.Now, ctx.IDs, ctx.DryRun)
+	ww, err := openRootWorkspace(ctx, root, ctx.DryRun)
 	if err != nil {
 		if e := AsError(err); e != nil && e.Code == CodeNotFound {
 			return nil, id.ID{}, NotFoundf("session %s's worktree has no Rhiza repository at %s", rec.ID, root).
@@ -274,9 +275,11 @@ func sessionWorkspace(ctx *Ctx, rec session.Record) (*workspace, id.ID, error) {
 	}
 	cs, err := id.Parse(rec.Change)
 	if err != nil {
+		ww.closeProjection()
 		return nil, id.ID{}, Errorf("session %s names change set %q: %v", rec.ID, rec.Change, err)
 	}
 	if _, ok := ww.changeSet(cs); !ok {
+		ww.closeProjection()
 		return nil, id.ID{}, NotFoundf("change set %s of session %s is not in the worktree's log at %s", cs, rec.ID, root).
 			WithNext("rhiza session show " + rec.ID)
 	}
@@ -382,6 +385,7 @@ func sessionForActor(ctx *Ctx, m Model, ref string) (id.ID, error) {
 	if werr != nil {
 		return id.ID{}, err
 	}
+	defer w.closeProjection()
 	return liveActor(w.model(id.ID{}), ref)
 }
 

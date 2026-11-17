@@ -100,6 +100,7 @@ func runChangeNew(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	kind := changeset.Kind(r.Kind)
 	if kind == "" {
 		kind = changeset.KindIntention
@@ -215,6 +216,7 @@ func runChangeWorkflow(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	cs, err := w.effectiveChangeSet(ctx)
 	if err != nil {
 		return nil, err
@@ -296,6 +298,7 @@ func runChangeUse(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	if r.None {
 		if err := w.clearCurrent(); err != nil {
 			return nil, err
@@ -388,79 +391,15 @@ type DecisionInfo struct {
 }
 
 // runChangeShow folds the change set named by the request, else the one
-// effectiveChangeSet chooses from ctx.
+// effectiveChangeSet chooses from ctx, read through the projection.
 func runChangeShow(ctx *Ctx, req any) (any, error) {
 	r := req.(ChangeShowRequest)
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(w.pending) == 0 && ctx.IndexPath != "" {
-		return runChangeShowIndexed(ctx, w, r)
-	}
-	current, err := w.current()
-	if err != nil {
-		return nil, err
-	}
-	var cs id.ID
-	if ref := strings.TrimSpace(r.Ref); ref != "" {
-		cs, err = w.resolveChangeSet(ref)
-	} else {
-		cs, err = w.effectiveChangeSet(ctx)
-	}
-	if err != nil {
-		return nil, err
-	}
-	if cs.IsZero() {
-		return nil, Usagef("no change set: name one or make one current").WithNext(changeLsNext)
-	}
-	es := entriesOf(w.log(), cs)
-	if len(es) == 0 {
-		return nil, NotFoundf("no change set %s", cs).WithNext(changeLsNext)
-	}
-	c, problems := changeset.Fold(cs, es)
-	m := w.model(cs)
-	serves := []id.ID{}
-	for _, l := range m.LinksFrom(cs, op.LinkServes) {
-		serves = append(serves, l.To)
-	}
-	resp := ChangeShowResponse{
-		ID:           cs,
-		Kind:         c.Open.Kind,
-		RequestKind:  openRequestKind(c.Open),
-		Workflow:     c.Open.Workflow,
-		Intent:       c.Open.Intent,
-		Title:        c.Open.DisplayTitle(),
-		Sources:      orEmpty(c.Open.Sources),
-		Ref:          c.Open.Ref,
-		Serves:       serves,
-		State:        c.State,
-		Current:      cs == current,
-		Ops:          []json.RawMessage{},
-		Leaves:       changeLeaves(m, c.Ops),
-		SupersededBy: c.SupersededBy,
-		Heads:        orEmpty(c.Heads),
-		Applied:      orEmpty(c.Applied),
-		History:      []LifecycleEvent{},
-		Problems:     foldProblems(problems),
-		Changes:      buildChangeDiff(cs, changeset.BuildDiff(w.changeSets(), cs), modelHandleOf(m)),
-		Notes:        changeNotes(w, cs, current),
-	}
-	for _, m := range c.Lifecycle {
-		resp.History = append(resp.History, LifecycleEvent{Type: m.Type, Entry: m.Entry,
-			At: m.At.UTC().Format(lineageAtLayout), Actor: m.Actor})
-	}
-	for _, o := range c.Ops {
-		raw, err := op.Encode(showOp(m, o))
-		if err != nil {
-			return nil, Errorf("change set %s: op %s: %v", cs, o.ID, err)
-		}
-		resp.Ops = append(resp.Ops, raw)
-	}
-	if d := c.Decided; d != nil {
-		resp.Decided = &DecisionInfo{Type: d.Type, Entry: d.Entry, Actor: d.Actor, For: d.For, Rule: d.Rule, Reason: d.Reason}
-	}
-	return resp, nil
+	defer w.closeProjection()
+	return runChangeShowIndexed(ctx, w, r)
 }
 
 // Human shows the change set as a heading, a field list, its operations,
@@ -656,15 +595,13 @@ type ChangeSetSummary struct {
 }
 
 // runChangeLs lists every change set with the log and fold problems,
-// listed beside the change sets, never hidden. With an index they are the
-// projection's folded change sets and stored problems, and the log is not
-// read; without one the whole log is folded.
+// listed beside the change sets, never hidden. They are the projection's
+// folded change sets and stored problems: the log is not read.
 func runChangeLs(ctx *Ctx, _ any) (any, error) {
 	w, err := openCtxWorkspace(ctx)
 	if err != nil {
 		return nil, err
 	}
-	w.useProjection(ctx)
 	defer w.closeProjection()
 	current, err := w.current()
 	if err != nil {
@@ -685,20 +622,16 @@ func runChangeLs(ctx *Ctx, _ any) (any, error) {
 }
 
 // changeLsSets is every change set, folded, with the log problems then the
-// fold problems rendered: from the projection's stored folds and problems
-// when w has an index, else from folding the log.
+// fold problems rendered, from the projection's stored folds and problems
+// with w's pending change sets folded again.
 func changeLsSets(w *workspace) ([]changeset.ChangeSet, []string, error) {
-	if p := w.projection(); p != nil {
-		sets := p.changeSets(w.pending)
-		stored := p.problems()
-		if err := p.failure(); err != nil {
-			return nil, nil, err
-		}
-		return sets, storedLogFoldProblems(stored), nil
+	p := w.projection()
+	sets := p.changeSets(w.pending)
+	stored := p.problems()
+	if err := p.failure(); err != nil {
+		return nil, nil, err
 	}
-	l := w.log()
-	sets, problems := changeset.FoldLog(l)
-	return sets, append(logProblems(l.Problems), foldProblems(problems)...), nil
+	return sets, storedLogFoldProblems(stored), nil
 }
 
 // storedLogFoldProblems renders the index's stored log and fold problems as

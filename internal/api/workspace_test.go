@@ -430,8 +430,9 @@ func resolveRefs(w *workspace, actorRef, forRef string, git func(string) (string
 	return w.resolveActor(id.ID{}, &Ctx{ActorRef: actorRef, ForRef: forRef, GitConfig: git})
 }
 
-// logOnceWorkspace opens a workspace over ctx's log (no index) whose disk
-// reads are counted through Ctx.readLog.
+// logOnceWorkspace opens a workspace over ctx's root with no index path (a
+// throwaway index) whose disk reads of the log are counted through
+// Ctx.logRead.
 func logOnceWorkspace(t *testing.T, ctx *Ctx, dryRun bool) (*workspace, *int) {
 	t.Helper()
 	ctx.IndexPath = ""
@@ -442,7 +443,19 @@ func logOnceWorkspace(t *testing.T, ctx *Ctx, dryRun bool) (*workspace, *int) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(w.closeProjection)
 	return w, reads
+}
+
+// childHandles is the handles of every capability under parent in m, depth
+// first: what two models are compared by.
+func childHandles(m Model, parent id.ID) []string {
+	var out []string
+	for _, n := range m.Children(op.KindCapability, parent) {
+		out = append(out, n.Handle)
+		out = append(out, childHandles(m, n.ID)...)
+	}
+	return out
 }
 
 func TestWorkspaceLogReadsDiskOnce(t *testing.T) {
@@ -450,9 +463,11 @@ func TestWorkspaceLogReadsDiskOnce(t *testing.T) {
 	ctx, landed, accepted := readLog(t)
 	w, reads := logOnceWorkspace(t, ctx, false)
 	fresh := ctxWorkspace(t, ctx)
+	defer fresh.closeProjection()
 	for i := range 3 {
-		if got, want := w.model(accepted), fresh.model(accepted); !reflect.DeepEqual(got, want) {
-			t.Fatalf("call %d: model differs from a fresh read", i)
+		got, want := childHandles(w.model(accepted), id.ID{}), childHandles(fresh.model(accepted), id.ID{})
+		if !slices.Equal(got, want) || len(got) == 0 {
+			t.Fatalf("call %d: model %v differs from a fresh read's %v", i, got, want)
 		}
 		if got, want := w.changeSets(), fresh.changeSets(); !reflect.DeepEqual(got, want) || len(got) == 0 {
 			t.Fatalf("call %d: %d change sets, differ from a fresh read: %v", i, len(got), !reflect.DeepEqual(got, want))
@@ -461,15 +476,20 @@ func TestWorkspaceLogReadsDiskOnce(t *testing.T) {
 			t.Fatalf("call %d: entries of the landed set differ from a fresh read", i)
 		}
 	}
-	if *reads != 1 {
-		t.Errorf("disk reads = %d, want 1", *reads)
+	// The model, change sets and entries come from the projection: the
+	// log is never read from disk.
+	if *reads != 0 {
+		t.Errorf("disk reads = %d, want 0", *reads)
 	}
-	// A caller changing its copy leaves the kept read as it was.
+	// A caller changing its copy of the log leaves the kept read as it was.
 	l := w.log()
 	l.Entries[0] = entry.Entry{}
 	l.Entries = l.Entries[:0]
 	if got := w.log(); len(got.Entries) == 0 || got.Entries[0].ID.IsZero() {
 		t.Error("changing a returned log changed the kept read")
+	}
+	if *reads != 1 {
+		t.Errorf("disk reads after two log calls = %d, want 1", *reads)
 	}
 }
 
@@ -486,7 +506,8 @@ func TestWorkspaceLogDryRunChains(t *testing.T) {
 			t.Fatal(err)
 		}
 		opened = append(opened, cs)
-		// Each later read sees every earlier pending entry.
+		// Each later read sees every earlier pending entry, laid over the
+		// projection.
 		if got := len(w.changeSets()); got != n+i+1 {
 			t.Fatalf("after %d dry writes: %d change sets, want %d", i+1, got, n+i+1)
 		}
@@ -502,8 +523,8 @@ func TestWorkspaceLogDryRunChains(t *testing.T) {
 			t.Fatal("the landed set's entries are gone")
 		}
 	}
-	if *reads != 1 {
-		t.Errorf("disk reads = %d, want 1", *reads)
+	if *reads != 0 {
+		t.Errorf("disk reads = %d, want 0", *reads)
 	}
 	if after := logFiles(t, ctx.Root); !slices.Equal(before, after) {
 		t.Errorf("a dry run wrote to the log: %d files, then %d", len(before), len(after))
@@ -515,11 +536,12 @@ func TestWorkspaceLogWriteDropsRead(t *testing.T) {
 	ctx, _, _ := readLog(t)
 	w, reads := logOnceWorkspace(t, ctx, false)
 	n := len(w.changeSets())
-	first := w.log().Entries[0]
+	first := w.entriesOfSet(w.changeSets()[0].ID)[0]
 	cs, e, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Written"}, first.Actor, first.For)
 	if err != nil {
 		t.Fatal(err)
 	}
+	// The projection catches up with the entry written.
 	if got := len(w.changeSets()); got != n+1 {
 		t.Fatalf("after a write: %d change sets, want %d", got, n+1)
 	}
@@ -527,13 +549,9 @@ func TestWorkspaceLogWriteDropsRead(t *testing.T) {
 	if len(es) != 1 || es[0].ID != e.ID {
 		t.Fatalf("entries of the written set = %v, want its open entry %s", es, e.ID)
 	}
-	if *reads != 2 {
-		t.Errorf("disk reads = %d, want 2 (one before the write, one after)", *reads)
-	}
-	// The read after the write is kept again.
 	w.model(cs)
-	if *reads != 2 {
-		t.Errorf("disk reads after another read = %d, want 2", *reads)
+	if *reads != 0 {
+		t.Errorf("disk reads = %d, want 0", *reads)
 	}
 }
 

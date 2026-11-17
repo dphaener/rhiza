@@ -30,6 +30,7 @@ func TestAddReviewQuestion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer ww.closeProjection()
 	m := ww.model(cs)
 	n, ok := m.Node(mustParseID(q.ID))
 	if !ok || n.Kind != "question" || fieldText(n.Fields["statement"]) != "Review check alpha still fails after 3 cycles. How?" {
@@ -58,6 +59,7 @@ func TestAddReviewQuestion(t *testing.T) {
 	if ww, err = r.worktreeWorkspace(false); err != nil {
 		t.Fatal(err)
 	}
+	defer ww.closeProjection()
 	if c, _ := ww.changeSet(cs); questionCreatedIn(c, q2.Handle) {
 		t.Errorf("the question went into the landed change set")
 	}

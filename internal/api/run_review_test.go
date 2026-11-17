@@ -8,7 +8,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
-	"github.com/dphaener/rhiza/internal/store"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
 
@@ -79,7 +78,7 @@ func TestReviewAskedFor(t *testing.T) {
 	}
 	st := run.State{ID: "01M6VY7E0AAAAAAAAAAAAAAAAA", Asked: []run.Asked{{Handle: base + "-2", Question: "01M6W7QGXS2VNCJ3KMFRMW78XE"}},
 		Rounds: []run.Round{{Number: 3, Findings: []run.Finding{{ID: "f1", Node: "n"}}, Verdicts: []run.Verdict{{Finding: "f1", Verdict: run.Confirmed}}}}}
-	m := newModel(store.Log{}, id.ID{})
+	m := projectionModel(t, nil, id.ID{})
 	open, err := gateReview(nil, m, reviewRun{id: st.ID, state: st})
 	if err != nil {
 		t.Fatalf("gateReview with the -2 question: %v", err)
@@ -286,7 +285,7 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 	if _, err := callOp(t, f.ctx, "run.review-check", `{}`); err != nil {
 		t.Fatalf("review-check with a downgrade and a confirmed minor: %v", err)
 	}
-	m := newModel(store.Log{}, id.ID{})
+	m := projectionModel(t, nil, id.ID{})
 	if _, err := gateReview(nil, m, reviewRun{id: "R12", state: st.State()}); err != nil {
 		t.Fatalf("gate with no confirmed major: %v", err)
 	}

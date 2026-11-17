@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -160,7 +159,9 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	}
 	c := *ctx
 	dir := st.Worktree
-	c.Root, c.IndexPath = dir, ""
+	// The worktree's own index answers the gate's reads and the answer's
+	// write, as in inboxGateRead, so the full disk log is never decoded.
+	c.Root, c.IndexPath = dir, rootIndexPath(ctx, dir)
 	c.Git = func(args ...string) (string, error) {
 		out, err := ctx.Exec("git", append([]string{"-C", dir}, args...), dir, nil)
 		return string(out), err
@@ -169,18 +170,12 @@ func gateAnswerCtx(ctx *Ctx, ref, q string) (*Ctx, error) {
 	if err != nil {
 		return nil, err
 	}
-	// The worktree's own index answers the gate's reads and the answer's
-	// write, as in inboxGateRead, so the full disk log is never decoded.
-	// Without a usable index both read the log, as before.
-	if p, err := index.DefaultPath(dir, ctx.Getenv); err == nil {
-		c.IndexPath = p
-		if pj, err := openProjection(&c, true); err == nil {
-			w.setProjection(pj)
-			defer w.closeProjection()
-		} else {
-			c.IndexPath = ""
-		}
+	pj, err := openProjection(&c, true)
+	if err != nil {
+		return nil, err
 	}
+	w.setProjection(pj)
+	defer w.closeProjection()
 	own, err := id.Parse(st.Change)
 	if err != nil {
 		return nil, Errorf("run %s: change set %q: %v", j.ID, st.Change, err)

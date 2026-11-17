@@ -261,6 +261,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer t.close()
 	w, cs, title, repo, worktree, branch := t.w, t.cs, t.title, t.repo, t.worktree, t.branch
 	sid, err := newSessionID(ctx.IDs)
 	if err != nil {
@@ -332,6 +333,7 @@ func runSessionStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer ww.closeProjection()
 	var actorCS id.ID
 	if rec.Actor, actorCS, err = recordAgentActor(ww, a.Name(), sid, cs, launcher, forID); err != nil {
 		return nil, err
@@ -399,6 +401,7 @@ func resolveChangeWorktreeIn(ctx *Ctx, ref, refusal string, landedOK bool) (chan
 	if err != nil {
 		return t, err
 	}
+	defer w.closeProjection()
 	var cs id.ID
 	if ref = strings.TrimSpace(ref); ref != "" {
 		cs, err = w.resolveChangeSet(ref)
@@ -436,6 +439,15 @@ func resolveChangeWorktreeIn(ctx *Ctx, ref, refusal string, landedOK bool) (chan
 	return t, nil
 }
 
+// close closes the projection of t's main workspace. The resolve closes it
+// before returning, but a read through t.w opens it again, so a caller
+// that resolved t defers close.
+func (t changeWorktree) close() {
+	if t.w != nil {
+		t.w.closeProjection()
+	}
+}
+
 // open creates the worktree unless it is reused, opens its Rhiza
 // repository with the change set in its log, and makes the change set
 // current there.
@@ -450,6 +462,7 @@ func (t changeWorktree) open(ctx *Ctx) (*workspace, error) {
 		return nil, err
 	}
 	if err := ww.setCurrent(t.cs); err != nil {
+		ww.closeProjection()
 		return nil, err
 	}
 	return ww, nil
@@ -712,7 +725,7 @@ func addWorktree(ctx *Ctx, prefix, path, branch string) error {
 // file a later merge brings.
 func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspace, error) {
 	open := func() (*workspace, error) {
-		ww, err := openWorkspace(root, ctx.Now, ctx.IDs, false)
+		ww, err := openRootWorkspace(ctx, root, false)
 		if err != nil {
 			if e := AsError(err); e != nil && e.Code == CodeNotFound {
 				return nil, Conflictf("the worktree has no Rhiza repository at %s", root).WithNext("git worktree list")
@@ -729,6 +742,7 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 	// Even when the worktree has the change set, the main clone may hold
 	// entries it lacks (an accept made there and never pushed).
 	if _, serr := os.Stat(filepath.Join(w.root, store.Dir, store.LogDir, cs.String())); serr == nil || !had {
+		ww.closeProjection()
 		if err := copyChangeSetLog(w.root, root, cs); err != nil {
 			return nil, err
 		}
@@ -737,6 +751,7 @@ func worktreeWorkspace(ctx *Ctx, w *workspace, root string, cs id.ID) (*workspac
 		}
 	}
 	if _, ok := ww.changeSet(cs); !ok {
+		ww.closeProjection()
 		return nil, Errorf("change set %s is not in the worktree's log at %s after copying it", cs, root)
 	}
 	return ww, nil

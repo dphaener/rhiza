@@ -157,26 +157,94 @@ func TestProjectionOpensOnce(t *testing.T) {
 	}
 }
 
-// TestProjectionNilWithoutIndex: with ctx.IndexPath empty the workspace's
-// projection is nil, nothing opens an index and an op answers from the log.
-func TestProjectionNilWithoutIndex(t *testing.T) {
-	t.Parallel()
-	ctx, _ := indexedLog(t)
-	ctx.IndexPath = ""
+// withTempDir makes ctx's temporary folder ($TMPDIR) dir.
+func withTempDir(ctx *Ctx, dir string) {
+	prev := ctx.Getenv
+	ctx.Getenv = func(k string) string {
+		if k == "TMPDIR" {
+			return dir
+		}
+		if prev != nil {
+			return prev(k)
+		}
+		return ""
+	}
+}
+
+// projectionAnswers is a status, a show and a dry-run add on ctx, as JSON.
+func projectionAnswers(t *testing.T, ctx *Ctx) []string {
+	t.Helper()
+	var out []string
+	for _, c := range []struct{ op, req string }{{"status", `{}`}, {"show", `{"ref":"ssd"}`}} {
+		resp, err := callOp(t, ctx, c.op, c.req)
+		if err != nil {
+			t.Fatalf("%s: %v", c.op, err)
+		}
+		b, err := json.Marshal(resp)
+		if err != nil {
+			t.Fatal(err)
+		}
+		out = append(out, string(b))
+	}
+	add, err := dryAdd(t, ctx)
+	if err != nil {
+		t.Fatalf("add: %v", err)
+	}
+	return append(out, add)
+}
+
+// emptyDir fails the test unless dir holds nothing.
+func emptyDir(t *testing.T, dir string) {
+	t.Helper()
+	left, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range left {
+		t.Errorf("left behind in the temporary folder: %s", e.Name())
+	}
+}
+
+// throwawayMatches checks that a status, a show and an add on ctx (whose
+// index path the caller has made empty or unusable) open a throwaway
+// index, answer what they answer over want's index and leave nothing in
+// the temporary folder.
+func throwawayMatches(t *testing.T, ctx *Ctx, want []string) {
+	t.Helper()
+	tmp := t.TempDir()
+	withTempDir(ctx, tmp)
 	opens := 0
 	ctx.openedProjection = func() { opens++ }
 	w := dryRunWorkspace(t, ctx)
-	if p := w.projection(); p != nil {
-		t.Fatalf("projection = %T, want nil", p)
+	if p := w.projection(); p == nil {
+		t.Fatal("no projection")
+	} else if err := p.failure(); err != nil {
+		t.Fatalf("throwaway projection failed: %v", err)
 	}
-	reads := countingCtx(ctx)
-	mustWrite(t, ctx, "add", `{"kind":"capability","handle":"zap","parent":"store"}`)
-	if opens != 0 {
-		t.Errorf("opened an index %d times", opens)
+	w.closeProjection()
+	emptyDir(t, tmp)
+	got := projectionAnswers(t, ctx)
+	if opens < 2 {
+		t.Errorf("opened a projection %d times, want the add's too", opens)
 	}
-	if *reads == 0 {
-		t.Error("the write did not read the log")
+	for i, op := range []string{"status", "show", "add"} {
+		if got[i] != want[i] {
+			t.Errorf("%s over a throwaway index = %s, want %s", op, got[i], want[i])
+		}
 	}
+	emptyDir(t, tmp)
+}
+
+// TestProjectionThrowawayWithoutIndex: with ctx.IndexPath empty the
+// workspace's projection is a throwaway index in the temporary folder: a
+// status, a show and an add answer what they answer with an index, and the
+// folder is removed when the projection closes.
+func TestProjectionThrowawayWithoutIndex(t *testing.T) {
+	t.Parallel()
+	ctx, _ := indexedLog(t)
+	want := projectionAnswers(t, ctx)
+	ctx.IndexPath = ""
+	throwawayMatches(t, ctx, want)
 }
 
 // dryAdd is a dry-run add on ctx with seeded IDs, as JSON.
@@ -220,29 +288,53 @@ func TestProjectionIndexNotADatabase(t *testing.T) {
 	indexStamp(t, ctx)
 }
 
-// TestProjectionIndexCannotOpen: an index that cannot be opened fails the
-// call with the open's error; it does not fold the log instead.
+// TestProjectionIndexCannotOpen: an index that cannot be created (its
+// folder is read-only) gives the call a throwaway index that answers what
+// the index answers.
 func TestProjectionIndexCannotOpen(t *testing.T) {
 	t.Parallel()
+	if os.Getuid() == 0 {
+		t.Skip("root writes into a read-only folder")
+	}
 	ctx, _ := indexedLog(t)
-	blocker := filepath.Join(t.TempDir(), "file")
-	if err := os.WriteFile(blocker, nil, 0o644); err != nil {
+	want := projectionAnswers(t, ctx)
+	ro := t.TempDir()
+	if err := os.Chmod(ro, 0o555); err != nil {
 		t.Fatal(err)
 	}
-	ctx.IndexPath = filepath.Join(blocker, "index.db")
-	_, want := index.Open(ctx.Root, ctx.IndexPath)
-	if want == nil {
-		t.Fatal("index.Open under a file succeeded")
+	t.Cleanup(func() { os.Chmod(ro, 0o755) })
+	ctx.IndexPath = filepath.Join(ro, "index.db")
+	if _, err := index.Open(ctx.Root, ctx.IndexPath); err == nil {
+		t.Fatal("index.Open in a read-only folder succeeded")
 	}
-	reads := countingCtx(ctx)
+	throwawayMatches(t, ctx, want)
+}
+
+// TestProjectionNoTempDir: when neither the index nor a temporary folder
+// can be created, the call fails with an error naming the index path and
+// the temporary folder.
+func TestProjectionNoTempDir(t *testing.T) {
+	t.Parallel()
+	if os.Getuid() == 0 {
+		t.Skip("root writes into a read-only folder")
+	}
+	ctx, _ := indexedLog(t)
+	ro, tmp := t.TempDir(), t.TempDir()
+	for _, d := range []string{ro, tmp} {
+		if err := os.Chmod(d, 0o555); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { os.Chmod(d, 0o755) })
+	}
+	ctx.IndexPath = filepath.Join(ro, "index.db")
+	withTempDir(ctx, tmp)
 	_, err := dryAdd(t, ctx)
 	if err == nil {
-		t.Fatal("add over an index that cannot open succeeded")
+		t.Fatal("add with no index and no temporary folder succeeded")
 	}
-	if err.Error() != want.Error() {
-		t.Errorf("error = %q, want the open's %q", err, want)
-	}
-	if *reads != 0 {
-		t.Errorf("read the log %d times instead of failing", *reads)
+	for _, s := range []string{ctx.IndexPath, tmp} {
+		if !strings.Contains(err.Error(), s) {
+			t.Errorf("error %q does not name %s", err, s)
+		}
 	}
 }

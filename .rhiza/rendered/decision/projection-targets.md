@@ -30,6 +30,7 @@ Milestone 39's own targets are rhiza status and rhiza inbox within 200 ms warm a
 - decided-by [read-entries-parallel](../capability/rhiza/integrity/check/read-entries-parallel.md)
 - decided-by [status-from-projection](../capability/rhiza/views/fast-reads/status-from-projection.md)
 - decided-by [inbox-from-projection](../capability/rhiza/views/fast-reads/inbox-from-projection.md)
+- decided-by [interim-model-deleted](../capability/rhiza/views/fast-reads/interim-model-deleted.md)
 
 ## History
 

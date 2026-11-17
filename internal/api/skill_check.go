@@ -658,10 +658,11 @@ func (s *scratch) verifierEvidence(common string, st run.State, sid string) (boo
 	if err != nil {
 		return false, "", err
 	}
-	w, err := openWorkspace(st.Worktree, s.ctx.Now, nil, true)
+	w, err := openRootWorkspace(s.ctx, st.Worktree, true)
 	if err != nil {
 		return false, "", err
 	}
+	defer w.closeProjection()
 	m := w.model(cs)
 	actor, err := liveActor(m, rec.Actor)
 	if err != nil {

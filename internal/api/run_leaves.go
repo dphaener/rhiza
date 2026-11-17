@@ -40,6 +40,7 @@ func (r *stepRunner) Leaves(ref string) ([]run.Leaf, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer w.closeProjection()
 		return r.leavesOf(w, cs)
 	}
 	v, err := r.readModel("leaves:"+cs.String(), cs, func(w *workspace) (any, error) {
@@ -107,6 +108,7 @@ func (r *stepRunner) StartLeaf(spec run.LeafSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
@@ -260,6 +262,7 @@ func (r *stepRunner) AddLeafQuestion(leaf run.Leaf, text string) (run.Question, 
 	if err != nil {
 		return run.Question{}, err
 	}
+	defer ww.closeProjection()
 	c, ok := ww.changeSet(cs)
 	if !ok {
 		return run.Question{}, NotFoundf("change set %s is not in the log", cs)
@@ -580,6 +583,7 @@ func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, erro
 	if err != nil {
 		return "", err
 	}
+	defer w.closeProjection()
 	m := w.model(cs)
 	actor, err := liveActor(m, rec.Actor)
 	if err != nil {

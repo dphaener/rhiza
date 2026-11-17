@@ -55,6 +55,7 @@ func (r *stepRunner) StartCheck(spec run.CheckSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	if spec.Dir != "" {
 		req.dir, req.root = spec.Dir, filepath.Join(t.worktree, t.prefix)
 	}
@@ -91,6 +92,7 @@ func (r *stepRunner) StartFix(spec run.FixSpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	session := run.ChangeSetFixSessionName(spec.Cycle, spec.Attempt)
 	req.Prompt = changeSetFixerPrompt(*role, spec, r.promptVars(t, spec.Step.Name, session))
 	if err := r.prepareSession(&req, spec.Step.Name, session); err != nil {
@@ -154,6 +156,7 @@ func (r *stepRunner) CommitCheckWrites(session string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer w.closeProjection()
 	m := w.model(cs)
 	actor, err := liveActor(m, rec.Actor)
 	if err != nil {
@@ -228,6 +231,7 @@ func (r *stepRunner) AddReviewQuestion(text string) (run.Question, error) {
 	if err != nil {
 		return run.Question{}, err
 	}
+	defer ww.closeProjection()
 	c, ok := ww.changeSet(cs)
 	if !ok {
 		return run.Question{}, NotFoundf("change set %s is not in the log", cs)

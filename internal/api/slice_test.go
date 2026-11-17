@@ -277,9 +277,9 @@ func TestSliceResolveInModel(t *testing.T) {
 	}
 }
 
-// TestSliceProjectionOpensOnce: with ctx.IndexPath set, each slice opens
-// the index once, through the workspace's projection, and answers what
-// slice answers over the default path's index (ctx.IndexPath empty).
+// TestSliceProjectionOpensOnce: each slice opens the index once, through
+// the workspace's projection, with ctx.IndexPath set or empty (a throwaway
+// index), and both answer the same.
 //
 // Serial: it calls t.Setenv (HOME, XDG_CACHE_HOME, in sliceCtx) so the
 // index and run temp folders move, process-wide state.
@@ -295,7 +295,7 @@ func TestSliceProjectionOpensOnce(t *testing.T) {
 	def.IndexPath = ""
 	opens := 0
 	ctx.openedProjection = func() { opens++ }
-	def.openedProjection = func() { t.Error("the empty-IndexPath slice opened a projection") }
+	def.openedProjection = func() { opens++ }
 	for _, req := range []string{`{"ref":"index"}`, `{}`, `{"ref":"log","view":"as-is"}`,
 		`{"ref":"store","view":"to-be"}`, `{"ref":"log","budget":60}`} {
 		opens = 0
@@ -306,14 +306,18 @@ func TestSliceProjectionOpensOnce(t *testing.T) {
 		if opens != 1 {
 			t.Errorf("%s: opened the index %d times, want 1", req, opens)
 		}
+		opens = 0
 		want, err := callSlice(t, &def, req)
 		if err != nil {
-			t.Fatalf("%s over the default index: %v", req, err)
+			t.Fatalf("%s over the throwaway index: %v", req, err)
+		}
+		if opens != 1 {
+			t.Errorf("%s with no IndexPath: opened the index %d times, want 1", req, opens)
 		}
 		gotJSON, _ := canon.Marshal(got)
 		wantJSON, _ := canon.Marshal(want)
 		if !bytes.Equal(gotJSON, wantJSON) || !bytes.Equal(got.markdown, want.markdown) {
-			t.Errorf("%s: through the projection\n%s\nover the default index\n%s", req, gotJSON, wantJSON)
+			t.Errorf("%s: through the projection\n%s\nover the throwaway index\n%s", req, gotJSON, wantJSON)
 		}
 	}
 	// An error answers as before.
@@ -323,7 +327,25 @@ func TestSliceProjectionOpensOnce(t *testing.T) {
 		_, a := callSlice(t, c.proj, `{"ref":"nope"}`)
 		_, b := callSlice(t, c.def, `{"ref":"nope"}`)
 		if a == nil || b == nil || a.Error() != b.Error() || ExitCode(a) != ExitCode(b) {
-			t.Errorf("change ref %q: through the projection %v, over the default index %v", c.proj.ChangeRef, a, b)
+			t.Errorf("change ref %q: through the projection %v, over the throwaway index %v", c.proj.ChangeRef, a, b)
 		}
 	}
+}
+
+// openIndex opens the index of the worktree at root, caught up with its
+// log, under the user cache dir getenv places. No repository is not_found
+// with next "rhiza init". The caller closes it.
+func openIndex(root string, getenv func(string) string) (*index.Index, error) {
+	if _, err := openStore(root); err != nil {
+		return nil, err
+	}
+	p, err := index.DefaultPath(root, getenv)
+	if err != nil {
+		return nil, Errorf("%v", err)
+	}
+	x, err := index.Open(root, p)
+	if err != nil {
+		return nil, Errorf("%v", err)
+	}
+	return x, nil
 }

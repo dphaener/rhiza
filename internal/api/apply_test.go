@@ -360,3 +360,51 @@ func TestApplySchemaMatchesDecoder(t *testing.T) {
 		}
 	}
 }
+
+// TestApplyDryRunResolvesPending: in a dry-run apply, each item's entry is
+// only pending, so a later item that names a node an earlier one adds
+// resolves it through the projection's pending overlay: the call opens the
+// projection once, never reads the log from disk and writes nothing.
+func TestApplyDryRunResolvesPending(t *testing.T) {
+	t.Parallel()
+	ctx, _ := writeCtx(t)
+	if ctx.IndexPath == "" {
+		t.Fatal("writeCtx has no IndexPath")
+	}
+	before := len(logFiles(t, ctx.Root))
+	dry := *ctx
+	dry.DryRun = true
+	reads := countingCtx(&dry)
+	opens := 0
+	dry.openedProjection = func() { opens++ }
+	r, err := applyFile(t, &dry, `{"writes":[
+	  {"op":"add","kind":"capability","handle":"pending-node"},
+	  {"op":"set","ref":"pending-node","fields":["statement=Named by the second write"]},
+	  {"op":"add","kind":"decision","handle":"pending-decision"},
+	  {"op":"link","from":"pending-node","type":"decided-by","to":"pending-decision"}]}`)
+	if err != nil {
+		t.Fatalf("dry-run apply: %v", err)
+	}
+	if len(r.Nodes) != 2 || len(r.Links) != 1 {
+		t.Errorf("response = %+v, want 2 nodes and 1 link", r)
+	}
+	if opens != 1 || *reads != 0 {
+		t.Errorf("opened the projection %d times and read the log %d times, want 1 and 0", opens, *reads)
+	}
+	if n := len(logFiles(t, ctx.Root)); n != before {
+		t.Errorf("a dry run wrote %d files", n-before)
+	}
+	// The node is not in the model after the dry run.
+	if _, err := callOp(t, ctx, "show", `{"ref":"pending-node"}`); err == nil {
+		t.Error("the dry run's node is in the model")
+	}
+	// The same file without the dry run writes what the dry run built.
+	if _, err := applyFile(t, ctx, `{"writes":[
+	  {"op":"add","kind":"capability","handle":"pending-node"},
+	  {"op":"set","ref":"pending-node","fields":["statement=Named by the second write"]}]}`); err != nil {
+		t.Fatal(err)
+	}
+	if n := nodeAt(t, ctx, "pending-node"); string(n.Fields["statement"]) != `"Named by the second write"` {
+		t.Errorf("pending-node = %+v", n)
+	}
+}

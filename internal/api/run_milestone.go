@@ -55,6 +55,7 @@ func runRunMilestoneCheck(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer w.closeProjection()
 	plan, err := planChangeSets(w.changeSets(), w.model(rr.change), rr.change)
 	if err != nil {
 		return nil, Errorf("%s: %v", cmd, err).WithNext("rhiza run status " + rr.id)
@@ -175,8 +176,9 @@ func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer w.closeProjection()
 	top := 0
-	m := newModel(w.diskLog(), id.ID{})
+	m := w.model(id.ID{})
 	var walk func(parent id.ID)
 	walk = func(parent id.ID) {
 		for _, n := range m.Children(op.KindIntent, parent) {
@@ -191,6 +193,9 @@ func reserveMilestoneNumber(ctx *Ctx, rs *run.Store) (int, error) {
 		}
 	}
 	walk(id.ID{})
+	if err := w.projectionFailure(); err != nil {
+		return 0, err
+	}
 	js, err := rs.List()
 	if err != nil {
 		return 0, Errorf("read the run journals: %v", err)

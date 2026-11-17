@@ -12,8 +12,13 @@ import (
 	"cmp"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/entry"
@@ -28,10 +33,18 @@ import (
 // stale; the next read opens it again, which catches it up with the entry
 // written.
 type writeIndex struct {
-	ctx   *Ctx
-	x     *index.Index
+	ctx *Ctx
+	x   *index.Index
+	// path is the index file x was opened from: ctx.IndexPath, or the
+	// throwaway index in tmp.
+	path string
+	// tmp is the temporary folder of a throwaway index, removed by close;
+	// empty when the index is ctx.IndexPath's.
+	tmp   string
 	stale bool
 	err   error
+	// closed is set by close, so a second close counts nothing.
+	closed bool
 	// models, when set (a driver's reads, see run_model_cache.go), keeps
 	// the model of each change set until the caller clears it.
 	models map[id.ID]Model
@@ -40,21 +53,97 @@ type writeIndex struct {
 	relevant map[id.ID][]id.ID
 }
 
-// openWriteIndex opens the index of ctx's repository for a write.
+// openWriteIndex opens the index of ctx's repository for a write. When
+// ctx.IndexPath is empty, or the index there cannot be opened or created,
+// it builds a throwaway index in a temporary folder for this call (as
+// commitOnHead's temporary git index), removed when the index closes.
 func openWriteIndex(ctx *Ctx) (*writeIndex, error) {
 	if ctx.openedProjection != nil {
 		ctx.openedProjection()
 	}
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
-	if err != nil {
-		return nil, Errorf("%s", err.Error())
+	why := "no index path"
+	if ctx.IndexPath != "" {
+		x, err := index.Open(ctx.Root, ctx.IndexPath)
+		if err == nil {
+			ix := &writeIndex{ctx: ctx, x: x, path: ctx.IndexPath}
+			ctx.openedIndex(ix)
+			return ix, nil
+		}
+		why = fmt.Sprintf("index %s: %v", ctx.IndexPath, err)
 	}
-	return &writeIndex{ctx: ctx, x: x}, nil
+	dir := tempDir(ctx)
+	tmp, err := os.MkdirTemp(dir, "rhiza-projection-")
+	if err != nil {
+		return nil, Errorf("%s; throwaway index in %s: %v", why, dir, err)
+	}
+	path := filepath.Join(tmp, "index.db")
+	x, err := index.Open(ctx.Root, path)
+	if err != nil {
+		os.RemoveAll(tmp)
+		return nil, Errorf("%s; throwaway index in %s: %v", why, dir, err)
+	}
+	ix := &writeIndex{ctx: ctx, x: x, path: path, tmp: tmp}
+	ctx.openedIndex(ix)
+	return ix, nil
 }
 
+// liveProjections is the projections open on a Ctx, each with the stack
+// that opened it (Ctx.liveProjections).
+type liveProjections struct {
+	mu   sync.Mutex
+	open map[*writeIndex]string
+}
+
+// openedIndex notes that ix opened, when ctx keeps its open projections.
+func (ctx *Ctx) openedIndex(ix *writeIndex) {
+	if ctx == nil || ctx.liveProjections == nil {
+		return
+	}
+	l := ctx.liveProjections
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.open == nil {
+		l.open = map[*writeIndex]string{}
+	}
+	l.open[ix] = string(debug.Stack())
+}
+
+// closedIndex notes that ix closed.
+func (ctx *Ctx) closedIndex(ix *writeIndex) {
+	if ctx == nil || ctx.liveProjections == nil {
+		return
+	}
+	l := ctx.liveProjections
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	delete(l.open, ix)
+}
+
+// stacks is the stack that opened each projection still open.
+func (l *liveProjections) stacks() []string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	var out []string
+	for _, s := range l.open {
+		out = append(out, s)
+	}
+	slices.Sort(out)
+	return out
+}
+
+// close releases the index and removes a throwaway index's folder.
 func (ix *writeIndex) close() {
-	if ix != nil && ix.x != nil {
+	if ix == nil || ix.closed {
+		return
+	}
+	ix.closed = true
+	if ix.x != nil {
 		ix.x.Close()
+		ix.ctx.closedIndex(ix)
+	}
+	if ix.tmp != "" {
+		os.RemoveAll(ix.tmp)
+		ix.tmp = ""
 	}
 }
 
@@ -98,7 +187,7 @@ func (ix *writeIndex) store() *index.Index { return ix.index() }
 func (ix *writeIndex) index() *index.Index {
 	if ix.stale {
 		ix.x.Close()
-		x, err := index.Open(ix.ctx.Root, ix.ctx.IndexPath)
+		x, err := index.Open(ix.ctx.Root, ix.path)
 		if err != nil {
 			ix.fail(err)
 			return ix.x
@@ -188,14 +277,16 @@ func (ix *writeIndex) changeSetInfos(pending []entry.Entry) []index.ChangeSetInf
 	return out
 }
 
-// model is the write view of change set current (zero for none), as
-// newModel builds it: the strict engine's, taken from the index. When
-// current is in flight it is the strict what-if of current (the stored
-// as-is rows, then current and its in-flight dependencies in their apply
-// order, an op the strict engine skips left out), with current folded from
-// its stored entries and the dry run's pending ones; else it is as-is.
-// Version and Conflict follow the strict rule from the view's histories
-// and problems, as newModel's do.
+// model is the write view of change set current (zero for none): the
+// strict engine's, taken from the index. When current is in flight it is
+// the strict what-if of current (the stored as-is rows, then current and
+// its in-flight dependencies in their apply order, an op the strict engine
+// skips left out), with current folded from its stored entries and the dry
+// run's pending ones; else it is as-is.
+// Version is the last op in the target's strict history that is not
+// current's own, Conflict is set when the view holds an unrepaired
+// model.ErrConflict problem on the target from an op not of current, and
+// Pending lists current's ops on each target the view holds.
 func (ix *writeIndex) model(pending []entry.Entry, current id.ID) Model {
 	if ix.models != nil && len(pending) == 0 {
 		if m, ok := ix.models[current]; ok {
@@ -251,9 +342,9 @@ func (ix *writeIndex) buildModel(pending []entry.Entry, current id.ID) Model {
 }
 
 // conflicts returns the targets ps holds an unrepaired model.ErrConflict
-// problem on from an op not of change set current (zero for none), as
-// modelBase.conflicts does. A stored conflict that is not a stale base
-// names only its op, whose target is read from its change set.
+// problem on from an op not of change set current (zero for none). A
+// stored conflict that is not a stale base names only its op, whose target
+// is read from its change set.
 func (ix *writeIndex) conflicts(ps []gmodel.Problem, current id.ID) map[id.ID]bool {
 	out := map[id.ID]bool{}
 	var rest []gmodel.Problem
@@ -466,11 +557,20 @@ func (m *writeModel) DependsOn(n id.ID) []id.ID {
 	return slices.Compact(out)
 }
 
+// Children is the live nodes of kind under parent, by key. A kind outside
+// the tree (an actor, a source) has no parent: its nodes are the zero
+// parent's children, which the index lists by kind, not by parent.
 func (m *writeModel) Children(kind op.Kind, parent id.ID) []Node {
 	if !m.ok() {
 		return nil
 	}
-	ns, err := m.ov.Children(parent)
+	var ns []gmodel.Node
+	var err error
+	if op.HasParent(kind) {
+		ns, err = m.ov.Children(parent)
+	} else if parent.IsZero() {
+		ns, err = m.rootsOf(kind)
+	}
 	m.ix.fail(err)
 	var out []Node
 	for _, n := range ns {
@@ -480,6 +580,25 @@ func (m *writeModel) Children(kind op.Kind, parent id.ID) []Node {
 	}
 	slices.SortStableFunc(out, func(a, b Node) int { return cmp.Compare(a.Key, b.Key) })
 	return out
+}
+
+// rootsOf is every live node of kind, a kind outside the tree, read a page
+// at a time.
+func (m *writeModel) rootsOf(kind op.Kind) ([]gmodel.Node, error) {
+	const page = 1000
+	q := index.ListQuery{Kinds: []op.Kind{kind}, HasParent: true, Limit: page}
+	var out []gmodel.Node
+	for {
+		ns, err := m.ov.List(q)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ns...)
+		if len(ns) < page {
+			return out, nil
+		}
+		q.After = ns[len(ns)-1].ID
+	}
 }
 
 func (m *writeModel) HandleTaken(h string) (id.ID, bool) {

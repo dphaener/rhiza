@@ -59,6 +59,7 @@ func runOverlaps(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer ws.closeProjection()
 	var drafts []id.ID
 	if !ctx.ChangeSet.IsZero() || strings.TrimSpace(ctx.ChangeRef) != "" {
 		cs, err := ws.effectiveChangeSet(ctx)

@@ -10,7 +10,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/canon"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/slice"
@@ -83,19 +82,12 @@ func (r *stepRunner) fillSession(dir string) error {
 			if _, serr := os.Stat(r.worktree); rerr != nil || serr != nil {
 				continue
 			}
-			cc.Root = root
+			// The worktree's own index: the caller's is its own
+			// checkout's.
+			cc.Root, cc.IndexPath = root, rootIndexPath(r.ctx, root)
 			cc.Git = func(args ...string) (string, error) {
 				out, err := r.ctx.Exec("git", append([]string{"-C", root}, args...), root, nil)
 				return string(out), err
-			}
-			// The worktree's own index, as slice opens it with no
-			// IndexPath: the caller's is its own checkout's.
-			if cc.IndexPath != "" {
-				if p, perr := index.DefaultPath(root, r.ctx.Getenv); perr == nil {
-					cc.IndexPath = p
-				} else {
-					cc.IndexPath = ""
-				}
 			}
 		}
 		resp, serr := runSlice(&cc, SliceRequest{})
@@ -141,10 +133,11 @@ func (r *stepRunner) briefInput(c *Ctx, cs id.ID, sl SliceResponse) (run.BriefIn
 	if sl.Change != nil {
 		in.Intent = sl.Change.Intent
 	}
-	w, err := openWorkspace(c.Root, c.Now, c.IDs, true)
+	w, err := openRootWorkspace(c, c.Root, true)
 	if err != nil {
 		return in, err
 	}
+	defer w.closeProjection()
 	ch, ok := w.changeSet(cs)
 	if !ok {
 		return in, fmt.Errorf("change set %s is not in the log", cs)

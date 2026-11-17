@@ -6,8 +6,10 @@ package api
 // verifier's Evidence) must cost nothing while the log has not changed: the
 // runner keeps the run worktree's index open, catches it up with a stat of
 // the log's folders, and keeps each answer until the index's stamp moves.
-// Without an index (ctx.IndexPath empty) the answers are read from the log,
-// as before.
+// The index is the worktree's own (rootIndexPath): ctx.IndexPath for the
+// caller's root, else the worktree's default index path; without one it is
+// a throwaway index, built when the runner opens it and removed when it
+// closes.
 
 import (
 	"path/filepath"
@@ -64,8 +66,8 @@ func (r *stepRunner) worktreeRoot() (string, error) {
 func (r *stepRunner) closeModel() {
 	r.modelMu.Lock()
 	defer r.modelMu.Unlock()
-	if r.rm != nil && r.rm.x != nil {
-		r.rm.x.Close()
+	if r.rm != nil {
+		r.rm.ix.close()
 	}
 	r.rm = nil
 }
@@ -73,8 +75,7 @@ func (r *stepRunner) closeModel() {
 // readModel returns the answer for key over the run worktree's model:
 // the one kept at the index's stamp, else compute's, which is given a
 // read-only workspace over the index. Nothing is computed, decoded or
-// folded while the log is as it was. An error is not kept. With no index
-// to read, compute runs over the log every time.
+// folded while the log is as it was. An error is not kept.
 func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) (any, error)) (any, error) {
 	root, err := r.worktreeRoot()
 	if err != nil {
@@ -84,10 +85,7 @@ func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) 
 	if err != nil {
 		return nil, err
 	}
-	w.readLog = r.ctx.readLog
-	if r.ctx.IndexPath == "" {
-		return compute(w)
-	}
+	w.logRead = r.ctx.logRead
 	r.modelMu.Lock()
 	defer r.modelMu.Unlock()
 	rm, err := r.catchUpModel(root)
@@ -103,7 +101,7 @@ func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) 
 		return nil, err
 	}
 	if ferr := rm.ix.failure(); ferr != nil {
-		rm.x.Close()
+		rm.ix.close()
 		r.rm = nil
 		return nil, ferr
 	}
@@ -118,28 +116,24 @@ func (r *stepRunner) readModel(key string, cs id.ID, compute func(w *workspace) 
 func (r *stepRunner) catchUpModel(root string) (*runModel, error) {
 	rm := r.rm
 	if rm != nil && rm.root != root {
-		rm.x.Close()
+		rm.ix.close()
 		rm = nil
 	}
 	if rm == nil {
-		path := r.ctx.IndexPath
+		c := *r.ctx
 		if r.ctx.Root != root {
-			p, err := index.DefaultPath(root, r.ctx.Getenv)
-			if err != nil {
-				return nil, Errorf("%s", err.Error())
-			}
-			path = p
+			c.Root, c.IndexPath = root, rootIndexPath(r.ctx, root)
 		}
-		x, err := index.Open(root, path)
+		ix, err := openWriteIndex(&c)
 		if err != nil {
-			return nil, Errorf("%s", err.Error())
+			return nil, err
 		}
-		rm = &runModel{root: root, x: x, vals: map[string]kept{}, sigs: map[id.ID]string{}}
-		rm.ix = &writeIndex{ctx: r.ctx, x: x, models: map[id.ID]Model{}, relevant: map[id.ID][]id.ID{}}
+		ix.models, ix.relevant = map[id.ID]Model{}, map[id.ID][]id.ID{}
+		rm = &runModel{root: root, x: ix.x, ix: ix, vals: map[string]kept{}, sigs: map[id.ID]string{}}
 		r.rm = rm
 	} else if r.refreshDue(rm) {
 		if err := rm.x.Refresh(); err != nil {
-			rm.x.Close()
+			rm.ix.close()
 			r.rm = nil
 			return nil, Errorf("%s", err.Error())
 		}

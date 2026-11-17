@@ -769,6 +769,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer t.close()
 	// A plan run on a record change set plans a milestone too; its
 	// plan-milestone workflow's agent steps are checked again.
 	newMilestone := milestone && reqMilestone == ""
@@ -829,9 +830,11 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if !r.Foreground {
 		return queueRunStart(rs, t, def, r, started)
 	}
-	if _, err := t.open(ctx); err != nil {
+	ww, err := t.open(ctx)
+	if err != nil {
 		return nil, err
 	}
+	ww.closeProjection()
 	claimStartLog(ctx, t.common, rid)
 	if newMilestone {
 		// The number is drawn and journaled under one lock, so two starts
@@ -1000,6 +1003,7 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 	if err != nil {
 		return t, err
 	}
+	defer w.closeProjection()
 	current, err := w.current()
 	if err != nil {
 		return t, err
@@ -1011,11 +1015,11 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 	// The open entry is built in a dry workspace first: the real draw of the
 	// change set ID, with nothing written yet, gives the slug the run's branch
 	// and worktree take.
-	dw, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, true)
+	dw, err := openRootWorkspace(ctx, ctx.Root, true)
 	if err != nil {
 		return t, err
 	}
-	dw.readLog = ctx.readLog
+	defer dw.closeProjection()
 	cs, e, err := dw.openChangeSet(open, actor, forID)
 	if err != nil {
 		return t, err
@@ -1052,10 +1056,11 @@ func newPlanChange(ctx *Ctx, r RunStartRequest, def *workflow.Definition, reqKin
 		}
 		t.reuse = true
 	}
-	ww, err := openWorkspace(filepath.Join(t.worktree, t.prefix), ctx.Now, ctx.IDs, false)
+	ww, err := openRootWorkspace(ctx, filepath.Join(t.worktree, t.prefix), false)
 	if err != nil {
 		return t, err
 	}
+	defer ww.closeProjection()
 	if err := ww.writeEntry(e); err != nil {
 		return t, err
 	}
@@ -1407,6 +1412,7 @@ func runChangeSlug(ctx *Ctx, st run.State) (string, bool) {
 	if err != nil {
 		return "", false
 	}
+	defer w.closeProjection()
 	return session.ChangeSetSlug(w.changeSets(), cs), true
 }
 
@@ -1524,6 +1530,7 @@ func spawnedStatements(ctx *Ctx, st run.State, spawned []RunSpawned) {
 	if err != nil {
 		return
 	}
+	defer w.closeProjection()
 	m := w.model(cs)
 	for i := range spawned {
 		if spawned[i].Leaf == "" {
@@ -1561,6 +1568,7 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 	if len(st.Gated) > 0 {
 		if w, err := openCtxWorkspace(ctx); err == nil {
 			info.Waiting = runWaiting(st.Gated, w.changeSets())
+			w.closeProjection()
 		}
 	}
 	spawnedStatements(ctx, st, info.Spawned)
@@ -1595,6 +1603,7 @@ func latestRun(ctx *Ctx, rs *run.Store) (run.Journal, error) {
 	if err != nil {
 		return run.Journal{}, err
 	}
+	defer w.closeProjection()
 	cs, err := w.effectiveChangeSet(ctx)
 	if err != nil {
 		return run.Journal{}, err
@@ -2227,6 +2236,7 @@ func (r *stepRunner) StartAgent(step workflow.Step, model string, _ []string) (s
 	if err != nil {
 		return "", err
 	}
+	defer t.close()
 	req.Prompt = step.RenderPrompt(r.promptVars(t, step.Name, run.AgentSessionName()))
 	if err := r.prepareSession(&req, step.Name, run.AgentSessionName()); err != nil {
 		return "", err
@@ -2341,7 +2351,7 @@ func (r *stepRunner) worktreeWorkspace(write bool) (*workspace, error) {
 	if err != nil {
 		return nil, err
 	}
-	return openWorkspace(filepath.Join(r.worktree, strings.TrimSpace(prefix)), r.ctx.Now, r.ctx.IDs, !write || r.ctx.DryRun)
+	return openRootWorkspace(r.ctx, filepath.Join(r.worktree, strings.TrimSpace(prefix)), !write || r.ctx.DryRun)
 }
 
 // questionHome is the change set whose ops create node q, in the run's
@@ -2376,6 +2386,7 @@ func (r *stepRunner) arbiterWrites(question string) (string, bool, error) {
 	if err != nil {
 		return "", false, err
 	}
+	defer ww.closeProjection()
 	home, ok := questionHome(ww, q)
 	switch {
 	case !ok || home.ID.String() == r.change:
@@ -2412,6 +2423,7 @@ func (r *stepRunner) settleArbiterRecord(ref string, ok bool) string {
 	if err != nil {
 		return err.Error()
 	}
+	defer ww.closeProjection()
 	if c, found := ww.changeSet(cs); !found || c.State.Terminal() {
 		return ""
 	}
@@ -2500,6 +2512,7 @@ func (r *stepRunner) AddQuestion(sid, text string) (run.Question, error) {
 	if err != nil {
 		return run.Question{}, err
 	}
+	defer ww.closeProjection()
 	c, _ := ww.changeSet(cs)
 	if c.State.Terminal() {
 		return run.Question{}, Conflictf("change set %s is %s; no question can be added to it", cs, c.State).
@@ -2603,6 +2616,7 @@ func (r *stepRunner) Handback(step workflow.Step, sid string, cause run.Handback
 	v := workflow.PromptVars{Change: r.change, Run: r.run, Step: step.Name, Worktree: r.worktree}
 	if t, err := resolveChangeWorktreeIn(r.ctx, r.change, "no agent can work on it", true); err == nil {
 		v = r.promptVars(t, step.Name, run.AgentSessionName())
+		t.close()
 	}
 	v.Brief, v.Slice, v.Handback = filepath.Join(rec.Brief, briefFile), filepath.Join(rec.Brief, sliceFile), filepath.Join(rec.Brief, handbackFile)
 	text := strings.TrimSpace(step.RenderHandback(v))
@@ -3829,6 +3843,7 @@ func startWorkflowOfRef(ctx *Ctx, ref, explicit string) (string, string, bool, e
 	if err != nil {
 		return "", "", false, nil
 	}
+	defer w.closeProjection()
 	var cs id.ID
 	if ref = strings.TrimSpace(ref); ref != "" {
 		cs, err = w.resolveChangeSet(ref)

@@ -187,7 +187,6 @@ func runWriteOn(ctx *Ctx, opName, intent string, build func(w *workspace, cs id.
 	if err != nil {
 		return nil, err
 	}
-	w.useProjection(ctx)
 	defer w.closeProjection()
 	var cs id.ID
 	if !ctx.Record {

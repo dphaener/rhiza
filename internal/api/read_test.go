@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -15,7 +14,6 @@ import (
 	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
-	"github.com/dphaener/rhiza/internal/store"
 )
 
 // readCtx is initCtx with an index path in a temp folder.
@@ -294,14 +292,17 @@ func TestReadOpenErrors(t *testing.T) {
 	}
 	t.Run("no index path", func(t *testing.T) {
 		c := *ctx
-		// No index on purpose: the what-if needs one and says so.
+		// No index path on purpose: the reader builds a throwaway index,
+		// removed when it closes.
 		c.IndexPath = ""
-		_, err := openReader(&c, "show", "", defaultView)
-		wantExit(t, err, 1)
-		if err.Error() != "no index path" {
-			t.Errorf("err = %v", err)
+		tmp := t.TempDir()
+		withTempDir(&c, tmp)
+		r, err := openReader(&c, "show", "", defaultView)
+		if err != nil {
+			t.Fatalf("openReader with no index path: %v", err)
 		}
-		t.Logf("empty IndexPath: %v", err)
+		r.Close()
+		emptyDir(t, tmp)
 	})
 	t.Run("no repository", func(t *testing.T) {
 		c := testCtx(t, t.TempDir())
@@ -489,10 +490,7 @@ func TestReadHelpers(t *testing.T) {
 // countingCtx counts the log folds a read through ctx costs.
 func countingCtx(ctx *Ctx) *int {
 	n := new(int)
-	ctx.readLog = func() store.Log {
-		*n++
-		return store.ReadLog(os.DirFS(filepath.Join(ctx.Root, store.Dir)))
-	}
+	ctx.logRead = func() { *n++ }
 	return n
 }
 
@@ -513,7 +511,6 @@ func TestDefaultViewFoldsNothing(t *testing.T) {
 	for _, c := range cases {
 		for _, byRef := range []bool{false, true} {
 			rc := *ctx
-			rc.readLog = ctx.readLog
 			if byRef {
 				rc.ChangeRef = c.cs.String()
 			} else {
@@ -548,11 +545,17 @@ func TestDefaultViewFoldsNothing(t *testing.T) {
 	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
 		t.Error("ChangeSet and ChangeRef together: no error")
 	}
+	// A change set the log does not hold is not_found, by ref or by ID.
 	bad = *ctx
 	bad.ChangeRef = "ZZZZZZZZ"
-	if _, err := openReader(&bad, "show", "", defaultView); err == nil {
-		t.Error("unknown ChangeRef: no error")
-	}
+	_, err := openReader(&bad, "show", "", defaultView)
+	wantExit(t, err, 4)
+	wantNext(t, err, changeLsNext)
+	bad = *ctx
+	bad.ChangeSet = ctxWorkspace(t, ctx).mustID(t)
+	_, err = openReader(&bad, "show", "", defaultView)
+	wantExit(t, err, 4)
+	wantNext(t, err, changeLsNext)
 }
 
 func TestDefaultViewSeesPending(t *testing.T) {
@@ -561,15 +564,13 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	folds := countingCtx(ctx)
 	w := ctxWorkspace(t, ctx)
 	w.dryRun = true
-	w.readLog = ctx.readLog
+	w.logRead = ctx.logRead
 	pend, _, err := w.openChangeSet(changeset.Open{Kind: changeset.KindIntention, Intent: "Pending"}, id.ID{}, id.ID{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	rc := *ctx
 	rc.ChangeSet = pend
-	// The dry write's disk read is kept; drop it so the count shows the
-	// reader goes through the log, not the index.
 	w.disk = nil
 	*folds = 0
 	var gotCS id.ID
@@ -585,7 +586,9 @@ func TestDefaultViewSeesPending(t *testing.T) {
 	if gotCS != pend || gotState != changeset.StateDraft {
 		t.Errorf("rule saw %v in %q, want %v in draft", gotCS, gotState, pend)
 	}
-	if *folds == 0 {
-		t.Error("a workspace with pending writes folded nothing")
+	// The pending change set is laid over the projection: the log is
+	// not read.
+	if *folds != 0 {
+		t.Errorf("a workspace with pending writes read the log %d times", *folds)
 	}
 }

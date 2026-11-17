@@ -22,7 +22,6 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	gmodel "github.com/dphaener/rhiza/internal/model"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -557,10 +556,9 @@ func changeStateOf(ctx *Ctx) func(change string) (string, bool) {
 // inboxFold is one read of the change sets, shared by every lookup of one
 // inbox call: a change set's state and title, and the overlaps. Reading the
 // log decodes every entry, so a log read per lookup made rhiza inbox cost
-// seconds. With an index (ctx.IndexPath) the workspace's projection answers:
-// the states come from its change set rows and a change set is folded from
-// its own entries only when a lookup needs it; without one the log is read
-// and folded once. Either way nothing is read until the first lookup. close
+// seconds. The workspace's projection answers instead: the states come from
+// its change set rows and a change set is folded from its own entries only
+// when a lookup needs it. Nothing is read until the first lookup. close
 // releases the projection.
 type inboxFold struct {
 	ctx  *Ctx
@@ -568,12 +566,10 @@ type inboxFold struct {
 	err  error
 	// ws is the workspace read, nil until the first lookup.
 	ws *workspace
-	// p is ws's projection, nil when the log was read instead.
+	// p is ws's projection, nil until the first lookup and after close.
 	p      projection
 	states map[id.ID]changeset.State
 	sets   map[id.ID]changeset.ChangeSet
-	// list is every change set folded, from the log; nil with a projection.
-	list []changeset.ChangeSet
 }
 
 // newInboxFold returns the fold of ctx's change sets; nothing is read
@@ -603,21 +599,14 @@ func (f *inboxFold) load() error {
 	}
 	f.ws = ws
 	ws.useProjection(f.ctx)
-	if p := ws.projection(); p != nil {
-		infos := p.changeSetInfos(ws.pending)
-		if err := p.failure(); err != nil {
-			f.err = Errorf("%s", err.Error())
-			return f.err
-		}
-		f.p = p
-		for _, c := range infos {
-			f.states[c.ID] = c.State
-		}
-		return nil
+	p := ws.projection()
+	infos := p.changeSetInfos(ws.pending)
+	if err := p.failure(); err != nil {
+		f.err = Errorf("%s", err.Error())
+		return f.err
 	}
-	f.list, _ = changeset.FoldLog(ws.log())
-	for _, c := range f.list {
-		f.sets[c.ID] = c
+	f.p = p
+	for _, c := range infos {
 		f.states[c.ID] = c.State
 	}
 	return nil
@@ -675,19 +664,15 @@ func (f *inboxFold) titleOf(change string) string {
 
 // overlaps is one overlap item per overlap between in-flight change sets
 // (model.Overlaps), with no run. It began to wait when the later of the
-// two change sets was opened, which its ID dates. With a projection only
-// the in-flight change sets are folded, and targets are named from its
-// as-is view, as the landed model names them.
+// two change sets was opened, which its ID dates. Only the in-flight change
+// sets are folded, and targets are named from the projection's as-is view,
+// as the landed model names them.
 func (f *inboxFold) overlaps() ([]InboxItem, error) {
 	if err := f.load(); err != nil {
 		return nil, err
 	}
 	if f.p == nil {
-		ovs := gmodel.Overlaps(f.list)
-		if len(ovs) == 0 {
-			return []InboxItem{}, nil
-		}
-		return overlapItems(ovs, newModelSets(f.list, id.ID{})), nil
+		return nil, Errorf("%s", errProjectionClosed.Error())
 	}
 	// In ID order, as the log's fold lists them.
 	var flight []changeset.ChangeSet
@@ -1411,21 +1396,19 @@ func inboxGateQuestions(ctx *Ctx, st run.State) []InboxGateQuestion {
 // handle); nil when the worktree does not read.
 func inboxGateRead(ctx *Ctx, st run.State, handles []string) ([]InboxGateQuestion, []string) {
 	c := *ctx
-	c.Root, c.IndexPath = st.Worktree, ""
+	// The worktree's own index answers the reads, so the full disk log is
+	// never decoded; the memo folds each change set's model once.
+	c.Root, c.IndexPath = st.Worktree, rootIndexPath(ctx, st.Worktree)
 	w, err := openCtxWorkspace(&c)
 	if err != nil {
 		return nil, nil
 	}
-	// The worktree's own index answers the reads, so the full disk log is
-	// never decoded; the memo folds each change set's model once. Without
-	// a usable index the log is read, as before.
-	if p, err := index.DefaultPath(st.Worktree, ctx.Getenv); err == nil {
-		c.IndexPath = p
-		if pj, err := openProjection(&c, true); err == nil {
-			w.setProjection(pj)
-			defer w.closeProjection()
-		}
+	pj, err := openProjection(&c, true)
+	if err != nil {
+		return nil, nil
 	}
+	w.setProjection(pj)
+	defer w.closeProjection()
 	own, err := id.Parse(st.Change)
 	if err != nil {
 		return nil, nil

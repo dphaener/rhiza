@@ -31,7 +31,6 @@ import (
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/id"
-	"github.com/dphaener/rhiza/internal/index"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
@@ -353,18 +352,8 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 	if err != nil {
 		return t, err
 	}
-	var cs id.ID
-	var c changeset.ChangeSet
-	var sets []changeset.ChangeSet
-	if len(w.pending) == 0 && ctx.IndexPath != "" {
-		cs, c, sets, err = indexedShipChangeSet(ctx, w)
-	} else {
-		cs, err = w.effectiveChangeSet(ctx)
-		if err == nil && !cs.IsZero() {
-			c, _ = w.changeSet(cs)
-			sets = w.changeSets()
-		}
-	}
+	defer w.closeProjection()
+	cs, c, sets, err := indexedShipChangeSet(ctx, w)
 	if err != nil {
 		return t, err
 	}
@@ -392,14 +381,14 @@ func findShipTarget(ctx *Ctx) (shipTarget, error) {
 }
 
 // indexedShipChangeSet is the effective change set and its fold, from the
-// index's stored change sets: the log is not read. sets are the folded
+// projection's stored change sets: the log is not read. sets are the folded
 // change sets up to it, which name its unique slug.
 func indexedShipChangeSet(ctx *Ctx, w *workspace) (id.ID, changeset.ChangeSet, []changeset.ChangeSet, error) {
-	x, err := index.Open(ctx.Root, ctx.IndexPath)
-	if err != nil {
-		return id.ID{}, changeset.ChangeSet{}, nil, Errorf("%s", err.Error())
+	p := w.projection()
+	x := p.store()
+	if x == nil {
+		return id.ID{}, changeset.ChangeSet{}, nil, p.failure()
 	}
-	defer x.Close()
 	current, err := w.current()
 	if err != nil {
 		return id.ID{}, changeset.ChangeSet{}, nil, err
@@ -1223,6 +1212,7 @@ func runShipModelConflict(ctx *Ctx) (any, error) {
 	}
 	v := &ShipModelConflictView{Node: mc.Node, Op: mc.Op, Aspects: mc.Aspects, Head: mc.Head, ChangeSetID: t.cs.String(), OtherChangeSet: mc.ChangeSet}
 	if w, err := openCtxWorkspace(ctx); err == nil {
+		defer w.closeProjection()
 		if c, ok := w.changeSet(t.cs); ok {
 			v.Intent = c.Open.Intent
 		}
