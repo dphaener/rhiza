@@ -1,0 +1,80 @@
+# The daemon starts and resumes nothing new while the filesystem of its temp
+# directory has less free space than rhiza.daemon.minTmpFree (default 2G, 0
+# off): the ready change set is skipped as tmp-low, naming the free space and
+# the minimum; the daemon state carries the hold, the queue-wait journal
+# records it and the inbox lists one tmp-low item. The free space comes from
+# RHIZA_TEST_TMP_FREE_BYTES, honoured only alongside RHIZA_TEST_NOW, so no
+# script reads the host's temp space.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
+rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+rhiza change new Built --title Built
+rhiza add capability built-leaf
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
+
+# The setting: listed with its default, a bad size refused and not written.
+rhiza daemon settings
+stdout 'rhiza.daemon.minTmpFree = 2G \(default, (machine|project)\)'
+! rhiza daemon set rhiza.daemon.minTmpFree banana
+stderr 'not a size'
+rhiza daemon settings
+stdout 'rhiza.daemon.minTmpFree = 2G \(default'
+! rhiza daemon --once --min-tmp-free banana
+stderr '--min-tmp-free'
+
+# 1 GiB free in the temp directory, under 2 GiB: nothing starts.
+env RHIZA_TEST_TMP_FREE_BYTES=1073741824
+rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+! exists $WORK/detach.log
+stderr -count=1 'holding new runs: tmp-low: 1.0 GiB free in the temp directory, under the minimum of 2.0 GiB'
+rhiza daemon status --json
+stdout '"reason": "tmp-low"'
+stdout '1.0 GiB free in the temp directory, under the minimum of 2.0 GiB'
+rhiza daemon status
+stdout 'Built: temp space is low \(1.0 GiB free in the temp directory, under the minimum of 2.0 GiB'
+exec sh -c 'cat .git/rhiza/daemon.state.json'
+stdout '"tmp_low":\{"since":"[0-9T:Z-]+","free":1073741824,"min":2147483648\}'
+exec sh -c 'cat .git/rhiza/queue.wait.jsonl'
+stdout '"reason":"tmp-low"'
+rhiza inbox --json
+stdout -count=1 '"kind": "tmp-low"'
+stdout '1.0 GiB free in the temp directory, under the minimum of 2.0 GiB: the daemon holds new starts and resumes'
+rhiza inbox
+stdout -count=1 '^[0-9a-f]+ tmp-low$'
+
+# A minimum of 0 never holds.
+rhiza daemon set rhiza.daemon.minTmpFree 0
+rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+stderr 'released the tmp-low hold on new runs'
+rhiza inbox --json
+! stdout 'tmp-low'
+exec rm $WORK/detach.log
+exec sh -c 'cat .git/rhiza/daemon.state.json'
+! stdout 'tmp_low'
+
+# At the minimum the change set starts.
+rhiza daemon set rhiza.daemon.minTmpFree 2G
+env RHIZA_TEST_TMP_FREE_BYTES=2147483648
+rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+! stderr 'holding new runs'
+rhiza inbox --json
+! stdout 'tmp-low'
+
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

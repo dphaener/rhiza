@@ -478,7 +478,7 @@ Output (`--json` fields):
 Run the daemon in the foreground: one per repository, held by a lock in the git common dir.
 
 ```
-rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--max-load <max-load>] [--min-memory <min-memory>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
+rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--max-load <max-load>] [--min-memory <min-memory>] [--min-tmp-free <min-tmp-free>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
 ```
 
 Arguments and flags:
@@ -489,6 +489,7 @@ Arguments and flags:
 - `--min-free`: Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off
 - `--max-load`: Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off
 - `--min-memory`: Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off
+- `--min-tmp-free`: Start and resume nothing while the filesystem of the daemon's temp directory (TMPDIR when set) has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off
 - `--permission-mode`: Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts
 - `--event-command`: Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried
 - `--notify-command`: Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried
@@ -524,7 +525,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, minTmpFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 

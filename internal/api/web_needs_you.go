@@ -14,7 +14,7 @@ const needsYouStuckAfter = 20 * time.Minute
 // needsYouKinds are the inbox kinds a project's needs-you count holds: open
 // questions, change sets waiting for the owner's sign-off and failed runs.
 // Stuck runs are added from the journals. The daemon's machine-wide holds
-// (disk-low, usage-reserve, load-high, memory-low) belong to no project and
+// (disk-low, tmp-low, usage-reserve, load-high, memory-low) belong to no project and
 // are in no count (decision needs-you-count-excludes-machine-holds).
 var needsYouKinds = map[string]bool{
 	InboxQuestion: true, InboxOpen: true, InboxSignoff: true, InboxFailed: true,

@@ -10,6 +10,10 @@ import (
 // resumes nothing: 10 GiB.
 const DefaultMinFree uint64 = 10 << 30
 
+// DefaultMinTmpFree is the free space on the daemon's temp directory's
+// filesystem under which it starts and resumes nothing: 2 GiB.
+const DefaultMinTmpFree uint64 = 2 << 30
+
 // ParseSize reads a byte count: plain bytes, or a number with a unit
 // (K, M, G, T, optionally followed by iB or B; all powers of 1024).
 func ParseSize(s string) (uint64, error) {

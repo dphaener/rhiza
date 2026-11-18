@@ -1747,6 +1747,10 @@ cmp stdout describe.golden.json
             "description": "Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off",
             "type": "string"
           },
+          "min_tmp_free": {
+            "description": "Start and resume nothing while the filesystem of the daemon's temp directory (TMPDIR when set) has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off",
+            "type": "string"
+          },
           "notify_command": {
             "description": "Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried",
             "type": "string"
@@ -1843,7 +1847,7 @@ cmp stdout describe.golden.json
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
+            "description": "The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, minTmpFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff",
             "type": "string"
           },
           "project": {
@@ -2278,14 +2282,14 @@ cmp stdout describe.golden.json
                         "type": "string"
                       },
                       "detail": {
-                        "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
+                        "description": "The readiness reasons, when the reason is not-ready; the free space and the minimum, when disk-low or tmp-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                         "items": {
                           "type": "string"
                         },
                         "type": "array"
                       },
                       "reason": {
-                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
+                        "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, tmp-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
                         "type": "string"
                       },
                       "request": {
@@ -2429,14 +2433,14 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
+                  "description": "The readiness reasons, when the reason is not-ready; the free space and the minimum, when disk-low or tmp-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty",
                   "items": {
                     "type": "string"
                   },
                   "type": "array"
                 },
                 "reason": {
-                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
+                  "description": "Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, tmp-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved",
                   "type": "string"
                 },
                 "request": {
@@ -3259,7 +3263,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, tmp-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
                   "type": "string"
                 },
                 "next": {

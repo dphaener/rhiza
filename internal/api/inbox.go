@@ -82,6 +82,7 @@ const (
 	InboxPermission   = "permission"
 	InboxAPIError     = "api-error"
 	InboxDiskLow      = "disk-low"
+	InboxTmpLow       = "tmp-low"
 	InboxUsageReserve = "usage-reserve"
 	InboxLoadHigh     = "load-high"
 	InboxMemoryLow    = "memory-low"
@@ -102,7 +103,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, tmp-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -193,8 +194,8 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
-		if it.Kind == InboxDiskLow {
-			fmt.Fprintf(w, "%s disk-low\n", it.ID)
+		if it.Kind == InboxDiskLow || it.Kind == InboxTmpLow {
+			fmt.Fprintf(w, "%s %s\n", it.ID, it.Kind)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
@@ -788,7 +789,7 @@ func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merge
 // inboxMachineWide says an item is the daemon's, the same in every
 // project: it is listed once, with no project.
 func inboxMachineWide(kind string) bool {
-	return kind == InboxDiskLow || kind == InboxUsageReserve || kind == InboxLoadHigh || kind == InboxMemoryLow
+	return kind == InboxDiskLow || kind == InboxTmpLow || kind == InboxUsageReserve || kind == InboxLoadHigh || kind == InboxMemoryLow
 }
 
 // mergeInbox is the items of every scope, tagged with their project and
@@ -1040,7 +1041,9 @@ func overlapItemsNamed(ovs []gmodel.Overlap, name func(id.ID) (string, string)) 
 }
 
 // inboxDiskLow is one disk-low item while the daemon's last poll found free
-// space under its minimum, and none once a later poll found enough. It began to wait at the first poll that found it low.
+// space under its minimum, and none once a later poll found enough; and so
+// one tmp-low item for the free space of its temp directory. Each began to
+// wait at the first poll that found it low.
 func inboxDiskLow(ctx *Ctx) []InboxItem {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -1050,7 +1053,7 @@ func inboxDiskLow(ctx *Ctx) []InboxItem {
 	if !ok {
 		return nil
 	}
-	return diskLowItems(st.DiskLow)
+	return append(diskLowItems(st.DiskLow), tmpLowItems(st.TmpLow)...)
 }
 
 // diskLowItems is one disk-low item for low, none when low is nil.
@@ -1063,6 +1066,19 @@ func diskLowItems(low *daemon.DiskLow) []InboxItem {
 	return []InboxItem{{
 		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxDiskLow, At: at,
 		Detail: fmt.Sprintf("%s free, under the minimum of %s: the daemon holds new starts and resumes", daemon.FormatSize(low.Free), daemon.FormatSize(low.Min)),
+	}}
+}
+
+// tmpLowItems is one tmp-low item for low, none when low is nil.
+func tmpLowItems(low *daemon.DiskLow) []InboxItem {
+	if low == nil {
+		return nil
+	}
+	at := low.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{InboxTmpLow, at}, "\x00")))
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxTmpLow, At: at,
+		Detail: tmpLowDetail(low) + ": the daemon holds new starts and resumes",
 	}}
 }
 
@@ -1292,6 +1308,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	}
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
+	if item.Kind == InboxTmpLow {
+		return nil, Usagef("item %s is the daemon's low temp space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
 	}
 	if item.Kind == InboxLoadHigh || item.Kind == InboxMemoryLow {
 		return nil, Usagef("item %s is the daemon's %s hold on new runs: it has no tab to open", item.ID, item.Kind).WithNext("rhiza daemon status")
