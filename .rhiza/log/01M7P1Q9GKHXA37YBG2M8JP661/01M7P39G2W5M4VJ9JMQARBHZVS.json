@@ -1,0 +1,83 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7P2XAP0N1QBDFFCYEQKC3H7"
+  ],
+  "at": "2026-11-18T01:10:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (uncovered-intent on inbox-blockers-cheaper): The intent's inbox clause (m39-reads-fast, 200 ms from 645 ms) is not covered by the plan's leaves. The plan's own research profile (m39-test-time-research) puts 37% of a rhiza inbox in run.(*Store).List and 24% in inboxUncoveredProposals, and this leaf names 6.7% for inboxBlockers. That totals 67.7%, so even if all three costs dropped to zero, 32.3% of the base CPU would remain. This leaf's acceptance requires the median at most 31% of the base binary's, and it cannot pass. The cache still stats journals and the uncovered proposals still build their overlays, so the real cuts are smaller than those shares. No leaf serves the rest of the inbox's cost (the remaining ~32%: index open and catch-up, the to-be reader, the other inbox lookups). The critic confirmed it: The research source m39-test-time-research puts 37% of a warm rhiza inbox in run.(*Store).List and 24% in inboxUncoveredProposals, and inbox-blockers-cheaper's statement adds 6.7% for inboxBlockers: 67.7% in all. Even if all three fell to zero, 32.3% would remain, above the 31% (200/645) the acceptance requires, and the real cuts are smaller (the cache still stats journals, uncovered sets still build overlays). No other leaf in the slice (the check-*, whatif-*, api-tests-*, scripts-* and cold-* leaves) targets the rest of inbox's cost. The acceptance cannot pass and the 200 ms clause is not covered: major stands. How should it be settled?"
+        },
+        "handle": "review-01m7p1q92j9vweq6vgt4vd8pg3-r3-f1",
+        "id": "01M7P39FSX9T4EQV9KQFFVZZNP",
+        "key": null,
+        "kind": "question",
+        "node": "01M7P39FSX9T4EQV9KQDSKECAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P39FSX9T4EQV9KQDSKECAK",
+        "id": "01M7P39FV63SXBN61PCQGTY5FW",
+        "link": "01M7P39FV63SXBN61PCKWVREQN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (missing-acceptance on inbox-run-list-cached): The acceptance's new test cannot fail before the change. It lists twice over one store and asserts the second call parses only the journal appended between them. internal/run/store.go already has an in-process journalCache, keyed by path, size and mtime, that does exactly this, and TestStoreCachesUnchangedJournals in internal/run/store_cache_test.go already asserts it. The leaf's real change is a cache kept in the user cache folder that outlives the process, which is what makes a second rhiza inbox call cheaper. Nothing in the acceptance checks that: no fresh Store or cleared in-process cache reads the on-disk cache, and no test runs under a test-set user cache dir. The critic confirmed it: internal/run/store.go:263-267 already has a process-wide journalCache keyed by path, size and mtime, used by Store.List (store.go:248-259), and TestStoreCachesUnchangedJournals (internal/run/store_cache_test.go:11) already asserts that an unchanged journal is parsed once and an appended one again. The acceptance's new test (List twice over one store, the second parses only the appended journal) therefore passes before the change. Nothing in the acceptance checks the leaf's real change, a cache in the user cache folder that a fresh process or cleared in-process cache reads. An acceptance that cannot fail before the change: major stands. How should it be settled?"
+        },
+        "handle": "review-01m7p1q92j9vweq6vgt4vd8pg3-r3-f2",
+        "id": "01M7P39FWBFB39T4FEQVT7TB3E",
+        "key": null,
+        "kind": "question",
+        "node": "01M7P39FWBFB39T4FEQT61HS6F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P39FWBFB39T4FEQT61HS6F",
+        "id": "01M7P39FXEAS1EC42Q961ZGDNG",
+        "link": "01M7P39FXEAS1EC42Q95Z6YYXB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f3 (missing-acceptance on cold-run-ship-scripts-cut): m39-cold is the wall time of a cold make test (240 s), but this acceptance checks a CPU proportion instead: user+sys of internal/api, cmd/rhiza and internal/index at most 240/400 of the base's. In the base cold log, wall time does not follow CPU: 400 s wall for 963 CPU-s on 4 cores, and cmd/rhiza alone took 254 s wall, more than the whole 240 s target. The leaf's statement says the suite's critical path shortens, yet nothing measures cmd/rhiza's own wall time or make test's wall time. The CPU ratio can pass while the cold suite still misses 240 s. The critic confirmed it: The research source gives the cold make test as 400 s wall with cmd/rhiza alone at 254 s wall and notes that package times overlap under contention, so wall time does not follow CPU. cold-run-ship-scripts-cut's acceptance compares only user+sys CPU of the three packages to 240/400 of the base's and merely reports wall times; nothing checks cmd/rhiza's wall time or make test's wall against m39-cold's 240 s. The CPU ratio can pass while the cold suite still misses its wall-time target, so the acceptance does not measure the target the statement claims: major stands. How should it be settled?"
+        },
+        "handle": "review-01m7p1q92j9vweq6vgt4vd8pg3-r3-f3",
+        "id": "01M7P39FYE2F2ZH7JD8ZXR45TS",
+        "key": null,
+        "kind": "question",
+        "node": "01M7P39FYE2F2ZH7JD8XJVHSRV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P39FYE2F2ZH7JD8XJVHSRV",
+        "id": "01M7P39FZD969P16DSNP6RNXQQ",
+        "link": "01M7P39FZD969P16DSNJJSKB1P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P39G2W5M4VJ9JMQARBHZVS",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,41 @@
+{
+  "actor": "01M7P39JVE89P8M9VK52CZQVHA",
+  "after": [
+    "01M7P39G2W5M4VJ9JMQARBHZVS"
+  ],
+  "at": "2026-11-18T01:11:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding's arithmetic holds: m39-test-time-research puts 37% of a warm inbox in run.(*Store).List and 24% in inboxUncoveredProposals, and inbox-blockers-cheaper names 6.7% for inboxBlockers, so even if all three fell to zero 32.3% would remain, above the 31% its acceptance asks; no leaf can pass a bar its own cuts cannot reach. The intent says never lower a target, so relaxing the proportion is out, and it says profile before changing anything, which m39-time-profile-first applies per leaf. The remaining cost is not yet profiled in detail (the research names only the top three), so the leaf that serves it profiles after the three cuts have landed, when what is left is what it measures, and the combined 200/645 check belongs on that last leaf, where every inbox cut is in. This covers the uncovered intent clause with the least change to the existing leaves.",
+          "statement": "The inbox clause of m39-reads-fast (200 ms, from 645 ms) gets a fourth inbox leaf that cuts the rest of a warm rhiza inbox's cost: the ~32% the three leaves leave (index open and catch-up, the to-be reader, the other inbox lookups), starting from a fresh RHIZA_CPUPROFILE of rhiza inbox taken once inbox-run-list-cached, inbox-proposals-overlay-once and inbox-blockers-cheaper have landed, and cutting the top costs it names in internal/api, internal/index or internal/model. That leaf depends on the three and carries the combined acceptance (median user+sys CPU of a warm rhiza inbox at most 200/645 of the base binary's at 5d2596d, measured as inbox-blockers-cheaper now states it). inbox-blockers-cheaper keeps only its own share: its acceptance checks inboxBlockers', planGather's and planCore's pprof -top -cum share falling and its failure case, and drops the 31% proportion. The 200 ms target is not lowered.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "m39-inbox-rest-leaf",
+        "id": "01M7P3AWHGFS1PZTAZ87SWMEFC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P3AWHGFS1PZTAZ84R3TH5W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P3AWHGFS1PZTAZ84R3TH5W",
+        "id": "01M7P3AWJQE9QH3PAYJSYG2377",
+        "link": "01M7P3AWJQE9QH3PAYJPFC1JFE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P39FSX9T4EQV9KQDSKECAK",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P3AWM5T2SN2DQ2X68EKVFC",
+  "type": "ops",
+  "v": 1
+}

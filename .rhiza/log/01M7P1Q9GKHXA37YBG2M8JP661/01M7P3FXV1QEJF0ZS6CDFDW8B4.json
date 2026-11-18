@@ -1,0 +1,157 @@
+{
+  "actor": "01M7P3E6FY79K88YMC81NGF1PA",
+  "after": [
+    "01M7P3DVRH8H8Z8PYX9S1VHZV0"
+  ],
+  "at": "2026-11-18T01:14:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/run passes, with a new test in internal/run/store_test.go that can only pass with the on-disk cache: with t.Setenv(\"XDG_CACHE_HOME\", t.TempDir()) and t.Setenv(\"HOME\", t.TempDir()) so no test reads the host's user cache, List once over a store, append to one journal, then clear the process-wide journalCache and List again over a fresh Store; journalReads counts only the appended journal, the result equals an uncached List, and the cache file lies under the test-set cache dir, not the repository or .rhiza. Checks: block gives RHIZA_CPUPROFILE=$TMPDIR/inbox.prof $TMPDIR/rhiza-x inbox in the main checkout (one warm call first) before and after, with go tool pprof -top -cum showing run.(*Store).List's share fall, and /usr/bin/time -f '%e s' of the warm call both times. go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox' passes. Failure case, same setup (test-set XDG_CACHE_HOME and HOME, process-wide journalCache cleared, fresh Store): a cache file that is corrupt or from another format version is ignored and every journal is parsed (journalReads equals the journal count), with List equal to an uncached List (tested in internal/run/store_test.go)",
+          "files": "internal/run/store.go, internal/run/store_test.go, internal/api/inbox.go only where it calls rs.List",
+          "must_not": "Change the run journal's file format or what List returns; write the cache under the repository or .rhiza; read the host's real user cache in a test; serve a changed journal from the cache",
+          "statement": "rhiza inbox reads the run journals that changed since its last call and reuses, from a cache in the user cache folder keyed by each journal's path, size and modification time, what it parsed of the rest, so run.Store.List's share of an inbox call falls to the journals that changed"
+        },
+        "handle": "inbox-run-list-cached",
+        "id": "01M7P20XBYDN7HR4ZRGBQVFYSV",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Plan' passes. Checks: block gives RHIZA_CPUPROFILE of a warm $TMPDIR/rhiza-x inbox, built at the parent commit and at the commit, with the pprof -top -cum lines of inboxBlockers, planGather and planCore, their share falling. Failure case: the parent commit's and the commit's binaries' rhiza inbox --json, run back to back in the main checkout, print the same bytes, and a new test in internal/api lists a proposed change set's blocking question as before with the same text while a draft set's blocker stays unlisted; the existing inbox and plan tests keep passing unchanged",
+          "files": "internal/api/inbox.go, internal/api/plan.go, internal/api/inbox_test.go, internal/api/plan_test.go",
+          "must_not": "Change which items rhiza inbox lists, their text or the --json shape; change what rhiza plan reports; change the run journal or log file format; lower the 200 ms target or any budget test threshold",
+          "statement": "rhiza inbox's blocker items cost less: inboxBlockers' planGather and planCore over the to-be view (changeset.(*Analysis).graph and Closure: 6.7% of a warm RHIZA_CPUPROFILE of rhiza inbox in the main checkout on 2026-11-18) are cut in internal/api, so their share of a warm rhiza inbox falls"
+        },
+        "handle": "inbox-blockers-cheaper",
+        "id": "01M7P2X9G4SDMT389QMT8V95W8",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza passes; go test -list '.*' ./cmd/rhiza and the count of cmd/rhiza/testdata/script/*.txtar are unchanged. Checks: block gives, before and after, /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 -cpuprofile $TMPDIR/ship.prof ./cmd/rhiza -run 'TestScripts/run-ship' with the go tool pprof -top -cum lines of the cost cut, the after run's user+sys CPU below the before's; and /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 ./internal/api ./cmd/rhiza ./internal/index run once at the commit and once in a git worktree at the change set's base 5d2596d under $TMPDIR, back to back: the commit's wall time at most 60% (240 s / 400 s) of the base's, cmd/rhiza's own package time (its go test ok line) at most 60% of the base's, and the commit's user+sys CPU at most 60% of the base's as a further check, both runs' wall, CPU and per-package times in the Checks: block. The full cold make test against m39-cold's 240 s is the milestone's own measurement, taken after the change set lands, not by the run. Failure case: a scratch copy of one run-ship script with its expected output changed still fails under the changed harness (named in the Checks: block, not committed), so the cut skips no assertion",
+          "files": "cmd/rhiza/main_test.go, cmd/rhiza/testdata/script/run-ship-*.txtar only where the cut moves a script's setup",
+          "must_not": "Add a script to processScripts; delete, skip or merge a script or a line of one; change non-test code outside cmd/rhiza/main_test.go; touch the network, Rex, agents or gh; regenerate cmd/rhiza/testdata/script-timings.tsv by hand; lower the 240 s target or any budget test threshold",
+          "statement": "The cold suite's critical path shortens: cmd/rhiza's run-ship scripts (run-ship-ci-fix, run-ship-conflict-fix, run-ship-conflict-fix-more, run-ship-change-rebase, run-ship-model-conflict, run-ship-land-conflict and run-ship-change, about 95 s of the 864 script-seconds in cmd/rhiza/testdata/script-timings.tsv) stop paying for the top cost a go test -cpuprofile of them names outside the commands they check after scripts-top-cost-cut, cut in cmd/rhiza's test harness; and once api-tests-copy-prebuilt-index and scripts-top-cost-cut have landed with it, a cold run of the three slowest packages is within m39-cold's 240 s target in proportion: its wall time, and cmd/rhiza's own package time, at most 240/400 of the base's"
+        },
+        "handle": "cold-run-ship-scripts-cut",
+        "id": "01M7P2X9HGS6ACMZCBMKYDJRP2",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox' passes, plus go test -trimpath -count=1 for each of internal/index and internal/model the cut touches. Checks: block gives RHIZA_CPUPROFILE of a warm $TMPDIR/rhiza-x inbox built at the parent commit (the three inbox leaves landed) and at the commit, with the pprof -top -cum lines of each cost cut, their share falling; and $TMPDIR/rhiza-base, built at the change set's base 5d2596d (a git worktree under $TMPDIR), and $TMPDIR/rhiza-x, built at the commit, run alternately five times each back to back in the main checkout after one warm call of each, each run's user+sys CPU taken from /usr/bin/time -f '%e s %U user %S sys' for rhiza inbox, the median of $TMPDIR/rhiza-x's at most 31% (200 ms / 645 ms) of the median of $TMPDIR/rhiza-base's. Failure case: the parent commit's and the commit's binaries' rhiza inbox --json, run back to back in the main checkout, print the same bytes, and after a new log entry (rhiza note add in a scratch copy of the checkout) both binaries list the same items, so the cut serves no stale index or view; the existing inbox tests keep passing unchanged",
+          "files": "internal/api/inbox.go, internal/api/inbox_test.go, and internal/index or internal/model files only where the fresh profile puts a top cost, with their _test.go",
+          "must_not": "Change which items rhiza inbox lists, their text or the --json shape; change the log, index or run journal file format; lower the 200 ms target or any budget test threshold",
+          "statement": "A warm rhiza inbox's remaining cost is cut once inbox-run-list-cached, inbox-proposals-overlay-once and inbox-blockers-cheaper have landed: the ~32% those three leave (index open and catch-up, the to-be reader, the other inbox lookups), taken from a fresh RHIZA_CPUPROFILE of rhiza inbox at that point, its top costs cut in internal/api, internal/index or internal/model, so a warm rhiza inbox's CPU is within m39-reads-fast's 200 ms target in proportion: at most 200/645 of the base binary's"
+        },
+        "handle": "inbox-rest-cut",
+        "id": "01M7P3FX70P6S111HSJP5W4QPQ",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7P3FX70P6S111HSJMKA3B88",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7P3FX70P6S111HSJMKA3B88",
+        "id": "01M7P3FX8RT8JCWMKRNJQZ396Z",
+        "link": "01M7P3FX8RT8JCWMKRNJMYYZDM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P3FX70P6S111HSJMKA3B88",
+        "id": "01M7P3FXA9G85R4DG7HF5EWDWT",
+        "link": "01M7P3FXA9G85R4DG7HCDJZ3WH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P3FX70P6S111HSJMKA3B88",
+        "id": "01M7P3FXD414TX62CGSE6D2DFH",
+        "link": "01M7P3FXD414TX62CGSBS3PZEN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P3FX70P6S111HSJMKA3B88",
+        "id": "01M7P3FXF6K3QYGM440MG0ZM6M",
+        "link": "01M7P3FXF6K3QYGM440KJZS5SK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P3FX70P6S111HSJMKA3B88",
+        "id": "01M7P3FXH1PGW8BNX84H3G4T4Q",
+        "link": "01M7P3FXH1PGW8BNX84E020FKY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3AWHGFS1PZTAZ84R3TH5W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "id": "01M7P3FXJKSG6SEJM4XZ6V804G",
+        "link": "01M7P3FXJKSG6SEJM4XX17JKZ4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3AWHGFS1PZTAZ84R3TH5W",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "id": "01M7P3FXNY87D9DTDYG0QT805Z",
+        "link": "01M7P3FXNY87D9DTDYFYDAFYSB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3C9XKMZ1Q12RWKKD1F8Z5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "id": "01M7P3FXS9KX66VT7XR3PX072M",
+        "link": "01M7P3FXS9KX66VT7XR1KT1K60",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3DVMNDXBE0BQRDTMW7ZRF",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P3FXV1QEJF0ZS6CDFDW8B4",
+  "type": "ops",
+  "v": 1
+}

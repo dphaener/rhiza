@@ -1,0 +1,33 @@
+{
+  "actor": "01M7P1QZV2KHRENAZQAMMAXMFW",
+  "after": [
+    "01M7P1Q9GKHXA37YBG2QXA7WHW"
+  ],
+  "at": "2026-11-18T00:46:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "b49edda65aa41dfbe38cd04abc9b59077943a884c964b73be2c7854bba341ff4",
+          "session": "f4b48d65-d95a-4af9-a617-01a1ec1bfb86",
+          "summary": "Autonomous plan run (RHIZA_AUTONOMOUS=1, no owner interview) for change set 01M7P1Q9, which carries milestone 39's missed targets: cold make test 400 s wall (target 240 s), rhiza inbox 645 ms (target 200 ms), rhiza check 8.4 s (target 5 s). Research pass, 2026-11-18 on the shared VM (load about 3.6, so absolute times run high): the cold log (perf-data/m39/cold.log at 5d2596d) has internal/api 318 s, cmd/rhiza 254 s, internal/index 113 s, internal/slice 33 s, internal/web 30 s; package times in one make test overlap, so a package's wall time includes contention from the others. internal/api's testCtx (init_test.go) gives every test a fresh index under t.TempDir() since api-tests-on-index (#599), and snapshot copies (fixture_test.go copyTo) carry no index, so every test catches an index up from nothing. A RHIZA_CPUPROFILE of rhiza inbox in the main checkout (1.05 s under load) puts 37% in run.(*Store).List, which reads and parses every run journal on each call (journalCache lives only in the process), and 24% in inboxUncoveredProposals through writeIndex.buildModel and index.WhatIfOverlayOver. A profile of rhiza check (12.3 s under load) puts 30% in checker.model, mostly model.WhatIfFrom for each of the ~64 in-flight change sets, of which Seed.builder's copyNode/copyFields of every node is 20%; 15% in checker.inFlightLinks, which runs badLinks over every link of every what-if view and keeps only the links the set itself created; 11% in store.readEntries. Plan: one leaf per cost, each starting from a profile in its Checks: block, no target lowered and no test, check or budget loosened.",
+          "title": "Milestone 39 test-time plan: research pass (autonomous)"
+        },
+        "handle": "m39-test-time-research",
+        "id": "01M7P1XZWPBEW388FYBHSC1T10",
+        "key": null,
+        "kind": "source",
+        "node": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P1XZXMZ6E0KY4Q7C04CZAT",
+  "type": "ops",
+  "v": 1
+}

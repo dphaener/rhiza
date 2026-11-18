@@ -1,0 +1,41 @@
+{
+  "actor": "01M7P3B98AZT9Q3D69KEDSX6DW",
+  "after": [
+    "01M7P3AWM5T2SN2DQ2X68EKVFC"
+  ],
+  "at": "2026-11-18T01:12:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding holds: internal/run/store.go:248-267 already keeps a process-wide journalCache keyed by path, size and mtime, and TestStoreCachesUnchangedJournals (internal/run/store_cache_test.go:11) already asserts an unchanged journal is parsed once, so the acceptance's test passes before the change. The leaf's statement is a cache in the user cache folder that outlives the process, which is what makes a second rhiza inbox call cheaper; a test only proves that if the in-process cache is out of the way (cleared, fresh Store) so the parse saving can only come from the disk. Its must_not already forbids reading the host's real user cache in a test and writing under the repository or .rhiza, so the test sets XDG_CACHE_HOME (as internal/api tests like inbox_gate_budget_test.go already do) and checks where the file lands. Tightening the acceptance keeps the leaf's scope and intent; dropping or rescoping the leaf would lose the milestone's inbox 200 ms target work.",
+          "statement": "Fix inbox-run-list-cached's acceptance so its new test can only pass with the on-disk cache: in internal/run/store_test.go, with t.Setenv(\"XDG_CACHE_HOME\", t.TempDir()) (and HOME) so no test reads the host's user cache, List once over a store, append to one journal, then clear the process-wide journalCache and List again over a fresh Store; journalReads must count only the appended journal, the result must equal an uncached List, and the cache file must lie under the test-set cache dir, not the repository or .rhiza. The failure case keeps the same setup: a corrupt cache file, or one from another format version, is ignored and every journal is parsed (journalReads equals the journal count), with List equal to an uncached List. The rest of the acceptance (the pprof and /usr/bin/time Checks: block, the internal/api Inbox tests) stays as written.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "m39-inbox-cache-acceptance-on-disk",
+        "id": "01M7P3C9XKMZ1Q12RWKMRXBBSC",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P3C9XKMZ1Q12RWKKD1F8Z5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P3C9XKMZ1Q12RWKKD1F8Z5",
+        "id": "01M7P3C9ZAH096VJB9P7RGS2SX",
+        "link": "01M7P3C9ZAH096VJB9P512Y62Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P39FWBFB39T4FEQT61HS6F",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P3CA169B9PH5VP66AV9ED6",
+  "type": "ops",
+  "v": 1
+}
