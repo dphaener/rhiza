@@ -11,6 +11,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/index"
 )
 
 // A snapshot is a common starting repository (the model many tests rebuild
@@ -21,10 +23,18 @@ import (
 // a failed build fails every test that asks for it with the build's error.
 //
 // A build lays its files out under dir and returns the Ctx that its writes
-// went through: the copy's Ctx is testCtx over the same folder in the copy
-// (an index under the test's own t.TempDir()), with its ID generator
-// advanced past the IDs the build drew, so a test on a copy draws exactly
-// the IDs it would have drawn after building afresh.
+// went through: the copy's Ctx is testCtx over the same folder in the copy,
+// with its ID generator advanced past the IDs the build drew, so a test on
+// a copy draws exactly the IDs it would have drawn after building afresh.
+//
+// The template carries an index too: once the build is done, an index file
+// beside the template folder (never inside it, so it is not copied as part
+// of the tree) is caught up with the template's log and closed. Each copy
+// gets its own copy of that file, under the test's own t.TempDir(), as its
+// IndexPath, so a test catches up only what it writes after the copy,
+// never the whole log from an empty file, and no two tests share an index.
+// The index's freshness check lets a copied file serve a copied tree: the
+// stats differ (new inodes and change times), the listing does not.
 // A build must write no absolute path into the files (the copy lives
 // elsewhere); a git repository is copied whole, .git included.
 type snapshot struct {
@@ -34,6 +44,7 @@ type snapshot struct {
 	once   sync.Once
 	builds atomic.Int32
 	dir    string // the template folder
+	index  string // the template's caught-up index file, beside dir
 	rel    string // the build Ctx's Root, relative to dir
 	draws  int    // IDs the build drew from its Ctx's generator
 	err    error
@@ -101,7 +112,30 @@ func (s *snapshot) make() error {
 	if err := noAbsolutePaths(dir); err != nil {
 		return err
 	}
-	s.dir, s.rel, s.draws = dir, rel, draws
+	idx := dir + ".index.db"
+	if err := catchUpIndex(ctx.Root, idx); err != nil {
+		return err
+	}
+	s.dir, s.rel, s.draws, s.index = dir, rel, draws, idx
+	return nil
+}
+
+// catchUpIndex catches the index file at path up with the log of the
+// repository at root and closes it, leaving one self-contained file (no
+// write-ahead log beside it) to copy.
+func catchUpIndex(root, path string) error {
+	x, err := index.Open(root, path)
+	if err != nil {
+		return err
+	}
+	if err := x.Close(); err != nil {
+		return err
+	}
+	for _, side := range []string{"-wal", "-journal"} {
+		if _, err := os.Stat(path + side); !errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("index %s left %s behind after closing (%v)", path, side, err)
+		}
+	}
 	return nil
 }
 
@@ -145,16 +179,23 @@ func noAbsolutePaths(dir string) error {
 }
 
 // copyTo copies the template into dst (an empty or missing folder) and
-// returns the Ctx over the copy.
-func (s *snapshot) copyTo(dst string) (*Ctx, error) {
+// returns the Ctx over the copy. When indexPath is set (a file outside dst
+// that no other Ctx uses), the template's index is copied there and is the
+// Ctx's IndexPath; when it is empty the Ctx has no index.
+func (s *snapshot) copyTo(dst, indexPath string) (*Ctx, error) {
 	if err := s.template(); err != nil {
 		return nil, err
 	}
 	if err := copyTree(s.dir, dst); err != nil {
 		return nil, fmt.Errorf("snapshot %s: copy: %w", s.name, err)
 	}
-	// No index here: copyTo has no test to put one under; copy adds it.
 	ctx := testCtxNoIndex(filepath.Join(dst, s.rel))
+	if indexPath != "" {
+		if err := copyFile(s.index, indexPath); err != nil {
+			return nil, fmt.Errorf("snapshot %s: copy the index: %w", s.name, err)
+		}
+		ctx.IndexPath = indexPath
+	}
 	for range s.draws {
 		if _, err := ctx.IDs.New(); err != nil {
 			return nil, err
@@ -163,17 +204,38 @@ func (s *snapshot) copyTo(dst string) (*Ctx, error) {
 	return ctx, nil
 }
 
-// copy gives t its own copy of the snapshot in a new t.TempDir() and
-// returns the Ctx over it, failing t with the build's error when the build
-// failed.
-func (s *snapshot) copy(t *testing.T) (string, *Ctx) {
+// copyFile copies the regular file src to dst, which must not exist.
+func copyFile(src, dst string) error {
+	b, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(b); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
+}
+
+// copy gives t its own copy of the snapshot in a new t.TempDir(), with its
+// own copy of the template's index in another, and returns the Ctx over
+// it, guarded as testCtx's is, failing t with the build's error when the
+// build failed.
+func (s *snapshot) copy(t testing.TB) (string, *Ctx) {
 	t.Helper()
 	dst := t.TempDir()
-	ctx, err := s.copyTo(dst)
+	ctx, err := s.copyTo(dst, filepath.Join(t.TempDir(), "index.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
+	guardProjections(t, ctx)
 	return dst, ctx
 }
 
@@ -385,7 +447,7 @@ func TestSnapshotFixtureBuildsOnce(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ctxs[i], errs[i] = s.copyTo(filepath.Join(base, fmt.Sprint(i)))
+			ctxs[i], errs[i] = s.copyTo(filepath.Join(base, fmt.Sprint(i)), "")
 		}()
 	}
 	wg.Wait()
@@ -425,7 +487,7 @@ func TestSnapshotFixtureBuildError(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, errs[i] = s.copyTo(filepath.Join(base, fmt.Sprint(i)))
+			_, errs[i] = s.copyTo(filepath.Join(base, fmt.Sprint(i)), "")
 		}()
 	}
 	wg.Wait()
@@ -441,7 +503,7 @@ func TestSnapshotFixtureBuildError(t *testing.T) {
 		t.Errorf("the failing build ran %d times, want once", got)
 	}
 	// A later caller still gets the build's error.
-	if _, err := s.copyTo(filepath.Join(base, "late")); !errors.Is(err, boom) {
+	if _, err := s.copyTo(filepath.Join(base, "late"), ""); !errors.Is(err, boom) {
 		t.Errorf("late caller: err = %v, want %q", err, boom)
 	}
 }
@@ -469,5 +531,77 @@ func TestSnapshotFixtureBuildUnderSetenvServesLaterCopies(t *testing.T) {
 	mustFoldClean(t, ctxWorkspace(t, ctx))
 	if got := s.builds.Load(); got != 1 {
 		t.Errorf("built %d times, want once", got)
+	}
+}
+
+// TestSnapshotFixtureCopyCatchesUpFromCopiedIndex shows a copy's index is
+// the template's, caught up: opened before any write it reads no entry
+// file, and after an apply on the copy it reads only the entry the apply
+// wrote (no rebuild from empty), which it then serves back. The template's
+// own index file is untouched by it, so no copy writes the template's.
+func TestSnapshotFixtureCopyCatchesUpFromCopiedIndex(t *testing.T) {
+	t.Parallel()
+	if err := initSnapshot.template(); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(initSnapshot.index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, ctx := initSnapshot.copy(t)
+	if ctx.IndexPath == "" || ctx.IndexPath == initSnapshot.index {
+		t.Fatalf("copy's IndexPath = %q, want its own copy of %s", ctx.IndexPath, initSnapshot.index)
+	}
+	open := func() *index.Index {
+		t.Helper()
+		x, err := index.Open(ctx.Root, ctx.IndexPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { x.Close() })
+		return x
+	}
+	if c := open().LastCatchUp(); !c.Fresh || c.Rebuilt || c.Read != 0 {
+		t.Fatalf("copy's index before any write: %+v, want fresh with no entry read", c)
+	}
+
+	cs := newChange(t, ctx, `{"intent":"Shape"}`).ChangeSet
+	x := open()
+	if c := x.LastCatchUp(); c.Rebuilt || c.Read != 1 {
+		t.Fatalf("copy's index after change.new: %+v, want the one new entry read, no rebuild", c)
+	}
+	es, err := x.Entries(cs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := applyFile(t, ctx, treeWrites); err != nil {
+		t.Fatal(err)
+	}
+	x = open()
+	if c := x.LastCatchUp(); c.Rebuilt || c.Read != 1 {
+		t.Errorf("copy's index after the apply: %+v, want the apply's one entry read, no rebuild", c)
+	}
+	after, err := x.Entries(cs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after) != len(es)+1 {
+		t.Fatalf("copy's index serves %d entries of %s after the apply, want %d", len(after), cs, len(es)+1)
+	}
+	if got := nodeAt(t, ctx, "store"); got.Handle != "store" {
+		t.Errorf("the applied node reads back as %+v", got)
+	}
+
+	now, err := os.Stat(initSnapshot.index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if now.Size() != before.Size() || !now.ModTime().Equal(before.ModTime()) {
+		t.Errorf("the template's index changed: size %d -> %d, modified %s -> %s", before.Size(), now.Size(), before.ModTime(), now.ModTime())
+	}
+	for _, side := range []string{"-wal", "-shm"} {
+		if _, err := os.Stat(initSnapshot.index + side); !errors.Is(err, fs.ErrNotExist) {
+			t.Errorf("the template's index has a %s file: %v", side, err)
+		}
 	}
 }

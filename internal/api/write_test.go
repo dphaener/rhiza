@@ -884,11 +884,12 @@ func linkEndHandle(prefix string, e check.End) string {
 // Each link type runs in its own parallel subtest. A link the table allows
 // is tried in its own fresh copy of linkEndpoints, so no link reads the ones
 // before it; the links it refuses share one copy per type, since a refused
-// link writes nothing (and one wrongly allowed fails the test anyway).
+// link writes nothing (and one wrongly allowed fails the test anyway). Each
+// copy has its own copy of the template's index beside it.
 func TestLinkEndpointKinds(t *testing.T) {
 	t.Parallel()
 	scratch := t.TempDir()
-	probe, err := linkEndpoints.copyTo(filepath.Join(scratch, "probe"))
+	probe, err := linkEndpoints.copyTo(filepath.Join(scratch, "probe"), filepath.Join(scratch, "probe.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -912,7 +913,7 @@ func TestLinkEndpointKinds(t *testing.T) {
 			t.Run(string(lt), func(t *testing.T) {
 				t.Parallel()
 				typeDir := filepath.Join(scratch, strconv.Itoa(i))
-				refused, err := linkEndpoints.copyTo(filepath.Join(typeDir, "refused"))
+				refused, err := linkEndpoints.copyTo(filepath.Join(typeDir, "refused"), filepath.Join(typeDir, "refused.db"))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -932,14 +933,16 @@ func TestLinkEndpointKinds(t *testing.T) {
 						if allowed {
 							n++
 							dir = filepath.Join(typeDir, strconv.Itoa(n))
-							if ctx, err = linkEndpoints.copyTo(dir); err != nil {
+							if ctx, err = linkEndpoints.copyTo(dir, dir+".db"); err != nil {
 								t.Fatal(err)
 							}
 						}
 						_, err = callOp(t, ctx, "link", string(req))
 						if dir != "" {
-							if rmErr := os.RemoveAll(dir); rmErr != nil {
-								t.Fatal(rmErr)
+							for _, p := range []string{dir, dir + ".db", dir + ".db-wal", dir + ".db-shm"} {
+								if rmErr := os.RemoveAll(p); rmErr != nil {
+									t.Fatal(rmErr)
+								}
 							}
 						}
 						checked.Add(1)
