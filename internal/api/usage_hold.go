@@ -325,7 +325,8 @@ func governorHold(ctx *Ctx, common string) *usageHold {
 	return &usageHold{Kind: kind, Reset: h.ResetAt}
 }
 
-// spawnHoldDetail is why a spawn waits now, in words naming the reading and
+// spawnHoldDetail is why a spawn, or a workflow step's fresh agent session
+// (stepRunner.StartHold), waits now, in words naming the reading and
 // the limit: any pre-start check the daemon's last saved state holds new
 // starts for (its usage hold, its load-high or memory-low machine hold, its
 // disk-low or tmp-low hold), or a limit hit's usage hold, as the inbox reads

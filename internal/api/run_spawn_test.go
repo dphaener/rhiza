@@ -13,6 +13,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // spawnFixture is run R1 in a step "build" with a calling session, and a
@@ -739,5 +740,32 @@ func TestRunSpawnWake(t *testing.T) {
 				t.Errorf("pending %q", parent.Pending)
 			}
 		})
+	}
+}
+
+// A workflow step's fresh session waits on the hold rhiza run spawn waits
+// on: with a tmp-low hold saved, the stepRunner's StartHold gives the very
+// detail the spawn journals; with none saved it gives none.
+func TestRunSpawnStepHoldSameDetail(t *testing.T) {
+	t.Parallel()
+	s := newSpawnFixture(t)
+	write := func(st daemon.State) {
+		if err := daemon.WriteState(s.f.common, st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(daemon.State{TmpLow: &daemon.DiskLow{Since: s.f.ctx.Now(), Free: 1 << 20, Min: 2 << 30}})
+	sr := &stepRunner{ctx: s.f.ctx}
+	got := sr.StartHold(workflow.Step{Name: "build", Kind: "agent"})
+	s.onSleep = func() { write(daemon.State{}) }
+	if _, err := s.sp.spawn(s.req()); err != nil {
+		t.Fatal(err)
+	}
+	holds := s.state(t).SpawnHolds
+	if len(holds) != 1 || got == "" || got != holds[0].Detail || !strings.HasPrefix(got, "tmp-low: ") {
+		t.Fatalf("step hold %q, spawn holds %+v", got, holds)
+	}
+	if got := sr.StartHold(workflow.Step{Name: "build", Kind: "agent"}); got != "" {
+		t.Errorf("with no hold saved, step hold %q", got)
 	}
 }

@@ -2302,6 +2302,20 @@ func (r *stepRunner) sh(cmd string, env []string, out io.Writer) (int, error) {
 	return code, nil
 }
 
+// StartHold is why the step's fresh agent session waits now: the hold
+// rhiza run spawn waits on (spawnHoldDetail), read from the daemon's last
+// saved state, so every pre-start limit keeps one meaning. It is "" when
+// none is on, or when the git common dir cannot be found.
+var _ run.StartHolder = (*stepRunner)(nil)
+
+func (r *stepRunner) StartHold(workflow.Step) string {
+	common, err := gitCommonDir(r.ctx)
+	if err != nil {
+		return ""
+	}
+	return spawnHoldDetail(r.ctx, common)
+}
+
 // StartAgent starts the step's session as session.start does, on the
 // run's change set, on model, and returns its ID. An autonomous run's
 // session, and a conductor step's in any run, is recorded autonomous, so

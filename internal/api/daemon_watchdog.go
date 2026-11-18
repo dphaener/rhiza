@@ -85,12 +85,16 @@ func (d watchdogDeps) charge(m *daemon.WatchdogRun, action string) {
 // (stallSessions: its open spawned children counted, a parent waiting on
 // one not, so the parent's progress is its child's). ok is false when the
 // step is not stalled-able: one of those sessions waits on an answer, said
-// it is done, paused at its usage limit or is gone.
+// it is done, paused at its usage limit or is gone, or the step's fresh
+// session waits on a pre-start hold (run.State.StepHeld).
 func watchdogProgress(j run.Journal, st run.State, d watchdogDeps) (at time.Time, sids []string, ok bool) {
 	if n := len(j.Entries); n > 0 {
 		at = j.Entries[n-1].At
 	}
 	if len(st.Blocks) > 0 {
+		return at, nil, false
+	}
+	if _, held := st.StepHeld(st.Current); held {
 		return at, nil, false
 	}
 	for _, sid := range stallSessions(st) {

@@ -791,3 +791,44 @@ func TestWatchdogTransientClassifierError(t *testing.T) {
 		}
 	}
 }
+
+// A step whose fresh session waits on a pre-start hold has no session yet;
+// however long the hold lasts the watchdog neither nudges, stops nor
+// charges it. Once the session entry releases the hold, the step is
+// stall-able again.
+func TestWatchdogStepHoldNotStalled(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	pol := WatchdogPolicy{Enabled: true, AgentNudge: 20 * time.Minute, AgentRetry: 40 * time.Minute, CommandLimit: 30 * time.Minute, WaitLimit: 90 * time.Minute, RetryBudget: 1, AutonomousOnly: true}
+	var sent, stopped []string
+	d := watchdogDeps{
+		sessions: session.NewStore(t.TempDir()),
+		step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
+		send:     func(sid, _ string) error { sent = append(sent, sid); return nil },
+		stop:     func(st run.State, _ []string) error { stopped = append(stopped, st.ID); return nil },
+		classify: fakeClassify,
+		resume:   func(string) error { return nil },
+		log:      func(string, ...any) {},
+	}
+	j := run.Journal{ID: "H", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
+		{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+		{Type: run.TypeSpawnHeld, At: t0, Step: "build", Detail: "machine hold: memory-low: 512.0 MiB available, under the minimum of 1.0 GiB"},
+	}}
+	mem, holds, err := watchdogStalled(pol, []run.Journal{j}, t0.Add(5*time.Hour), nil, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sent)+len(stopped)+len(holds) != 0 || len(mem) != 1 || mem[0].Spent != 0 {
+		t.Fatalf("held step: sent %v stopped %v holds %+v mem %+v", sent, stopped, holds, mem)
+	}
+	// The session entry releases the hold: a silent step with no live
+	// session counts again.
+	j.Entries = append(j.Entries, run.Entry{Type: run.TypeSession, At: t0, Step: "build", Session: "gone"})
+	if _, _, err := watchdogStalled(pol, []run.Journal{j}, t0.Add(5*time.Hour), nil, d); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(stopped, ",") != "H" {
+		t.Fatalf("released step: stopped %v", stopped)
+	}
+}

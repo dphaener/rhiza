@@ -3162,3 +3162,145 @@ func TestSpawnedChildQuestionArbitrated(t *testing.T) {
 		})
 	}
 }
+
+// holdRunner is the fake runner with a pre-start hold (StartHolder): one
+// detail per StartHold call, "" past the end.
+type holdRunner struct {
+	*fakeRunner
+	details    []string
+	holdCalls  int
+	heldStarts int // StartAgent calls made while a hold was on
+	on         bool
+}
+
+func (h *holdRunner) StartHold(workflow.Step) string {
+	n := h.holdCalls
+	h.holdCalls++
+	h.on = n < len(h.details) && h.details[n] != ""
+	if !h.on {
+		return ""
+	}
+	return h.details[n]
+}
+
+func (h *holdRunner) StartAgent(step workflow.Step, model string, env []string) (string, error) {
+	if h.on {
+		h.heldStarts++
+	}
+	return h.fakeRunner.StartAgent(step, model, env)
+}
+
+const memoryLowDetail = "machine hold: memory-low: 1.2 GB available, under the minimum of 2 GB"
+
+// A step's fresh session waits while the Runner holds new starts: one
+// spawn-held entry for the step with no parent, no StartAgent while held,
+// then the session started and the hold released by its session entry.
+func TestAgentStepHoldWaitsThenStarts(t *testing.T) {
+	e, f, c, _ := setup(t, agentWF)
+	e.Now = c.Now
+	f.outcome["S-build"] = workflow.OutcomePass
+	h := &holdRunner{fakeRunner: f, details: []string{memoryLowDetail, memoryLowDetail}}
+	e.Runner = h
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || f.starts["build"] != 1 || h.heldStarts != 0 || h.holdCalls != 3 {
+		t.Fatalf("result %q starts %v held starts %d hold calls %d", st.Result, f.starts, h.heldStarts, h.holdCalls)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var held, session []Entry
+	for _, en := range j.Entries {
+		switch en.Type {
+		case TypeSpawnHeld:
+			held = append(held, en)
+		case TypeSession:
+			session = append(session, en)
+		}
+	}
+	if len(held) != 1 || held[0].Step != "build" || held[0].Parent != "" || held[0].Detail != memoryLowDetail {
+		t.Fatalf("spawn-held entries = %+v", held)
+	}
+	if len(session) != 1 || !session[0].At.After(held[0].At) {
+		t.Fatalf("session entries %+v after held %+v", session, held)
+	}
+	fs := j.State()
+	if len(fs.SpawnHolds) != 1 || fs.SpawnHolds[0].Held() || !fs.SpawnHolds[0].Until.Equal(session[0].At) {
+		t.Fatalf("spawn holds = %+v", fs.SpawnHolds)
+	}
+	if _, ok := fs.StepHeld("build"); ok {
+		t.Error("the step still reads held after its session entry")
+	}
+	if want := []time.Duration{2 * time.Second, 2 * time.Second}; !reflect.DeepEqual(c.sleeps[:2], want) {
+		t.Errorf("sleeps = %v", c.sleeps)
+	}
+}
+
+// While a step waits on its hold, run state shows the step held; a resumed
+// wait journals no second spawn-held entry.
+func TestAgentStepHoldResumedWaitsOnce(t *testing.T) {
+	e, f, _, _ := setup(t, agentWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSpawnHeld, At: at(1), Step: "build", Detail: memoryLowDetail},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h, ok := j.State().StepHeld("build"); !ok || h.Detail != memoryLowDetail {
+		t.Fatalf("StepHeld = %+v, %v", h, ok)
+	}
+	f.outcome["S-build"] = workflow.OutcomePass
+	h := &holdRunner{fakeRunner: f, details: []string{memoryLowDetail}}
+	e.Runner = h
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	if j, err = e.Store.Read(runID); err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for _, en := range j.Entries {
+		if en.Type == TypeSpawnHeld {
+			n++
+		}
+	}
+	if n != 1 || f.starts["build"] != 1 {
+		t.Fatalf("spawn-held entries %d, starts %v", n, f.starts)
+	}
+	if _, ok := j.State().StepHeld("build"); ok {
+		t.Error("the resumed hold was not released by the session entry")
+	}
+}
+
+// A step rejoining its journaled session asks no hold and journals no
+// spawn-held entry.
+func TestAgentStepHoldNotOnRejoin(t *testing.T) {
+	e, f, _, _ := setup(t, agentWF)
+	for _, en := range []Entry{
+		{Type: TypeEntered, At: at(1), Step: "build", Visit: 1},
+		{Type: TypeSession, At: at(1), Step: "build", Session: "S-earlier"},
+	} {
+		if err := e.Store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.outcome["S-earlier"] = workflow.OutcomePass
+	h := &holdRunner{fakeRunner: f, details: []string{memoryLowDetail}}
+	e.Runner = h
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded || h.holdCalls != 0 || f.starts["build"] != 0 || len(st.SpawnHolds) != 0 {
+		t.Fatalf("result %q hold calls %d starts %v holds %+v", st.Result, h.holdCalls, f.starts, st.SpawnHolds)
+	}
+}
