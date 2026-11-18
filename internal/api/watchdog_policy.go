@@ -23,15 +23,16 @@ const (
 
 // Shipped defaults of the watchdog policy.
 const (
-	DefaultAgentNudge   = 20 * time.Minute
-	DefaultAgentRetry   = 40 * time.Minute
-	DefaultCommandLimit = 30 * time.Minute
-	DefaultWaitLimit    = 90 * time.Minute
-	DefaultRetryBudget  = 2
-	DefaultCIReruns     = 1
-	DefaultPollBehind   = 3
-	DefaultRunawayProcs = 400
-	DefaultRunawayGrace = 5 * time.Minute
+	DefaultAgentNudge    = 20 * time.Minute
+	DefaultAgentRetry    = 40 * time.Minute
+	DefaultCommandLimit  = 30 * time.Minute
+	DefaultWaitLimit     = 90 * time.Minute
+	DefaultRetryBudget   = 2
+	DefaultFailedRetries = 1
+	DefaultCIReruns      = 1
+	DefaultPollBehind    = 3
+	DefaultRunawayProcs  = 400
+	DefaultRunawayGrace  = 5 * time.Minute
 )
 
 // DefaultRunawayMemory is the shipped runawayMemory: 8G of summed resident
@@ -68,6 +69,7 @@ var watchdogNames = []struct {
 	{"commandLimit", "30m", validateDeployTimeout, false, "duration", "How long a command step may run before the watchdog stops it"},
 	{"waitLimit", "90m", validateDeployTimeout, false, "duration", "How long a wait step may wait before the watchdog gives up on it"},
 	{"retryBudget", strconv.Itoa(DefaultRetryBudget), validateWholeFrom(0), false, "whole number", "How many times the watchdog retries a stalled step before it gives up"},
+	{"failedRetries", strconv.Itoa(DefaultFailedRetries), validateWholeFrom(0), false, "whole number", "How many times the watchdog retries a run that failed for a real reason, or one it cannot judge, before it leaves the run to the inbox; 0 turns it off"},
 	{"ciReruns", strconv.Itoa(DefaultCIReruns), validateWholeFrom(0), false, "whole number", "How many times the watchdog reruns a failed CI check"},
 	{"pollBehind", strconv.Itoa(DefaultPollBehind), validateWholeFrom(1), true, "whole number", "How many daemon polls a run may fall behind before the watchdog acts"},
 	{"fileBugs", "true", validateChoice("true", "false"), false, "boolean", "File a bug when the watchdog gives up on a step"},
@@ -96,6 +98,7 @@ type WatchdogPolicy struct {
 	CommandLimit   time.Duration
 	WaitLimit      time.Duration
 	RetryBudget    int
+	FailedRetries  int
 	CIReruns       int
 	PollBehind     int
 	FileBugs       bool
@@ -135,6 +138,7 @@ func watchdogPolicyOf(rows []Setting) WatchdogPolicy {
 		CommandLimit:   dur("commandLimit"),
 		WaitLimit:      dur("waitLimit"),
 		RetryBudget:    num("retryBudget"),
+		FailedRetries:  num("failedRetries"),
 		CIReruns:       num("ciReruns"),
 		PollBehind:     num("pollBehind"),
 		FileBugs:       get("fileBugs") == "true",

@@ -3008,3 +3008,80 @@ func TestBuiltinShipChange(t *testing.T) {
 		t.Errorf("handback_cap = %d; want 3", def.HandbackCap)
 	}
 }
+
+// A step's retry_from names the step a failed run restarts at; it must be
+// another step of the same workflow, never the step itself, the arbiter or
+// a missing one, and a workflow or arbiter step cannot set it.
+func TestRetryFrom(t *testing.T) {
+	src := "[step.plan]\nkind = \"agent\"\nprompt = \"p\"\non.pass = \"build\"\n" +
+		"[step.build]\nkind = \"command\"\nrun = \"true\"\nretry_from = \"plan\"\n"
+	d, err := Parse("test", []byte(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := d.Steps["build"].RetryFrom; got != "plan" {
+		t.Errorf("build retry_from = %q, want plan", got)
+	}
+	if got := d.Steps["plan"].RetryFrom; got != "" {
+		t.Errorf("plan retry_from = %q, want empty", got)
+	}
+
+	tests := []struct {
+		name, src, want string
+	}{
+		{"itself", "[step.a]\nkind = \"command\"\nrun = \"true\"\nretry_from = \"a\"\n",
+			`step "a": retry_from names the step itself`},
+		{"no such step", "[step.a]\nkind = \"command\"\nrun = \"true\"\nretry_from = \"nope\"\n",
+			`step "a": retry_from names "nope", which is not a step of this workflow`},
+		{"done", "[step.a]\nkind = \"command\"\nrun = \"true\"\nretry_from = \"done\"\n",
+			`step "a": retry_from names "done", which is not a step of this workflow`},
+		{"arbiter", "[step.a]\nkind = \"command\"\nrun = \"true\"\nretry_from = \"ask\"\n[step.ask]\nkind = \"arbiter\"\n",
+			`step "a": retry_from names "ask", an arbiter step`},
+		{"on arbiter", "[step.a]\nkind = \"command\"\nrun = \"true\"\n[step.ask]\nkind = \"arbiter\"\nretry_from = \"a\"\n",
+			`step "ask": an arbiter step cannot have retry_from`},
+		{"on workflow", "[step.a]\nkind = \"command\"\nrun = \"true\"\n[step.w]\nkind = \"workflow\"\nworkflow = \"x\"\nretry_from = \"a\"\n",
+			`step "w": a workflow step cannot have retry_from`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse("test", []byte(tt.src))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("error %v, want one containing %q", err, tt.want)
+			}
+			_, problems := Validate("test", []byte(tt.src), nil)
+			if len(problems) == 0 || !strings.Contains(problems[0].Message, tt.want) {
+				t.Errorf("validate problems %v, want one containing %q", problems, tt.want)
+			}
+		})
+	}
+}
+
+// The built-in plan and plan-milestone retry a run that failed in their
+// review loop from the interview; no other step names a retry_from.
+func TestBuiltinPlanReviewLoopRetriesFromInterview(t *testing.T) {
+	loop := []string{"review", "has-findings", "critic", "fresh", "check", "revise", "rulings", "apply-rulings"}
+	for _, name := range []string{"plan", "plan-milestone"} {
+		src, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no built-in %s", name)
+		}
+		d, err := Parse(name, src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for step, s := range d.Steps {
+			want := ""
+			if slices.Contains(loop, step) {
+				want = "interview"
+			}
+			if s.RetryFrom != want {
+				t.Errorf("%s: step %s retry_from = %q, want %q", name, step, s.RetryFrom, want)
+			}
+		}
+		for _, step := range loop {
+			if _, ok := d.Steps[step]; !ok {
+				t.Errorf("%s: no review-loop step %s", name, step)
+			}
+		}
+	}
+}

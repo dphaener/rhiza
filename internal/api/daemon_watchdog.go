@@ -22,6 +22,7 @@ import (
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/proctree"
+	"github.com/dphaener/rhiza/internal/rootcfg"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -79,11 +80,16 @@ type watchdogDeps struct {
 
 // charge spends one retry of m's budget and journals the recovery tried.
 func (d watchdogDeps) charge(m *daemon.WatchdogRun, action string) {
+	m.Spent++
+	d.attempt(m, action)
+}
+
+// attempt journals a recovery tried on m's run, charged to no budget.
+func (d watchdogDeps) attempt(m *daemon.WatchdogRun, action string) {
 	var at time.Time
 	if d.now != nil {
 		at = d.now()
 	}
-	m.Spent++
 	m.Attempts = append(m.Attempts, daemon.WatchdogAttempt{At: at, Action: action})
 }
 
@@ -467,7 +473,7 @@ func watchdogPRIdle(pol WatchdogPolicy, mem []daemon.WatchdogRun, j run.Journal,
 		return false
 	}
 	m := mem[i]
-	if st.Result == run.Failed && len(m.Attempts) > 0 && m.Spent >= pol.RetryBudget {
+	if st.Result == run.Failed && len(m.Attempts) > 0 && m.Spent > 0 && m.Spent >= pol.RetryBudget {
 		return true
 	}
 	last := j.Entries[len(j.Entries)-1].At
@@ -496,7 +502,7 @@ func markPRGone(mem []daemon.WatchdogRun, j run.Journal) []daemon.WatchdogRun {
 // attempt's, so its inbox item stays the same across polls.
 func watchdogBudgetHolds(pol WatchdogPolicy, all []run.Journal, mem []daemon.WatchdogRun, holds []daemon.WatchdogHold) []daemon.WatchdogHold {
 	for _, m := range mem {
-		if len(m.Attempts) == 0 || m.Spent < pol.RetryBudget {
+		if len(m.Attempts) == 0 || m.Spent == 0 || m.Spent < pol.RetryBudget {
 			continue
 		}
 		i := slices.IndexFunc(all, func(j run.Journal) bool { return j.ID == m.Run })
@@ -526,11 +532,11 @@ func watchdogBudgetHolds(pol WatchdogPolicy, all []run.Journal, mem []daemon.Wat
 	return holds
 }
 
-// classifyOnce asks d's classifier about the failed step of j, remembered in
-// m: a real verdict, or none, is logged and marked Judged at the journal's
-// last entry, and while the journal still ends there the classifier is not
-// asked again. It reports the verdict and whether it is transient.
-func classifyOnce(m *daemon.WatchdogRun, j run.Journal, st run.State, step string, d watchdogDeps) (FailureVerdict, bool) {
+// classifyOnce asks d's classifier about the failed step of j, unless m
+// marks the failure Judged at the journal's last entry: one the watchdog
+// left to the inbox is not asked about again while the journal still ends
+// there. ok is false for such a failure.
+func classifyOnce(m *daemon.WatchdogRun, j run.Journal, st run.State, step string, d watchdogDeps) (v FailureVerdict, ok bool) {
 	if len(j.Entries) == 0 {
 		return FailureVerdict{}, false
 	}
@@ -538,24 +544,54 @@ func classifyOnce(m *daemon.WatchdogRun, j run.Journal, st run.State, step strin
 	if !m.Judged.IsZero() && m.Judged.Equal(last) {
 		return FailureVerdict{}, false
 	}
-	v := FailureVerdict{Reason: "no failure classifier"}
+	v = FailureVerdict{Reason: "no failure classifier"}
 	if d.classify != nil {
 		v = d.classify(failedDetail(st, step))
 	}
-	if v.Transient {
-		return v, true
+	return v, true
+}
+
+// classifyTransientOnce is classifyOnce for a pass that retries transient
+// failures only: a real verdict, or none, is logged and marked Judged at
+// the journal's last entry, and ok is false for it.
+func classifyTransientOnce(m *daemon.WatchdogRun, j run.Journal, st run.State, step string, d watchdogDeps) (FailureVerdict, bool) {
+	v, ok := classifyOnce(m, j, st, step, d)
+	if !ok || v.Transient {
+		return v, ok
 	}
-	m.Judged = last
+	m.Judged = j.Entries[len(j.Entries)-1].At
 	d.log("watchdog: run %s step %s failure classified real, left to the inbox: %s", j.ID, step, v.Reason)
 	return v, false
 }
 
-// watchdogTransient resumes with --retry each failed run of journals whose
-// failing step's output the classifier calls transient, within the run's
-// budget. A real failure, or one the classifier cannot judge, is left to the
-// inbox, each verdict and reason logged, as is an attended run when the policy
-// is autonomous-only. A run with a live process is never touched. It returns
-// the memory after, and the first error.
+// failedRetryDue reports whether the watchdog under pol will still retry
+// j's failure with failedRetries, m being its memory of the run: the run
+// failed and is not abandoned, the watchdog watches it, a retry is left,
+// and the watchdog has not left this failure to the inbox (m.Judged at the
+// journal's last entry). A transient failure within retryBudget is retried
+// by that budget instead; this says nothing of it.
+func failedRetryDue(pol WatchdogPolicy, m daemon.WatchdogRun, j run.Journal, st run.State) bool {
+	if !pol.Enabled || m.FailedRetries >= pol.FailedRetries {
+		return false
+	}
+	if !st.Ended || st.Result != run.Failed || st.Abandoned() || !st.Autonomous && pol.AutonomousOnly {
+		return false
+	}
+	if n := len(j.Entries); n == 0 || m.Judged.Equal(j.Entries[n-1].At) {
+		return false
+	}
+	return true
+}
+
+// watchdogTransient resumes with --retry each failed run of journals: one
+// whose failing step's output the classifier calls transient within the
+// run's retryBudget, one it calls real, or cannot judge, within
+// failedRetries (each charged as an attempt in FailedRetries). A failure
+// neither budget covers is left to the inbox, each verdict and reason
+// logged, as is an attended run when the policy is autonomous-only. A run
+// with a live process is never touched, and a real failure whose resume
+// errors is left to the inbox. It returns the memory after, and
+// the first error.
 func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, error) {
 	var first error
 	for _, j := range journals {
@@ -575,17 +611,39 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 			mem = append(mem, daemon.WatchdogRun{Run: j.ID})
 			i = len(mem) - 1
 		}
-		if mem[i].Spent >= pol.RetryBudget || d.queued != nil && d.queued(j.ID) {
+		if mem[i].Spent >= pol.RetryBudget && mem[i].FailedRetries >= pol.FailedRetries || d.queued != nil && d.queued(j.ID) {
 			continue
 		}
 		v, ok := classifyOnce(&mem[i], j, st, step, d)
 		if !ok {
 			continue
 		}
+		transient := v.Transient && mem[i].Spent < pol.RetryBudget
+		if !transient && (v.Transient || mem[i].FailedRetries >= pol.FailedRetries) {
+			mem[i].Judged = j.Entries[len(j.Entries)-1].At
+			if v.Transient {
+				d.log("watchdog: run %s step %s failed on a transient error (%s) with the retry budget of %d spent, left to the inbox", j.ID, step, v.Reason, pol.RetryBudget)
+			} else {
+				d.log("watchdog: run %s step %s failure classified real, left to the inbox: %s", j.ID, step, v.Reason)
+			}
+			continue
+		}
 		if err := d.resume(j.ID); err != nil {
 			if first == nil {
 				first = fmt.Errorf("resume run %s: %w", j.ID, err)
 			}
+			// A real failure the watchdog cannot resume is left to the
+			// inbox, or failedRetryDue would hide it every poll.
+			if !transient {
+				mem[i].Judged = j.Entries[len(j.Entries)-1].At
+				d.log("watchdog: run %s step %s failure classified real (%s), its resume failed (%v), left to the inbox", j.ID, step, v.Reason, err)
+			}
+			continue
+		}
+		if !transient {
+			mem[i].FailedRetries++
+			d.attempt(&mem[i], fmt.Sprintf("step %s failed (%s): resumed with --retry", step, v.Reason))
+			d.log("watchdog: run %s step %s failure classified real (%s): resumed with --retry (failed retry %d of %d)", j.ID, step, v.Reason, mem[i].FailedRetries, pol.FailedRetries)
 			continue
 		}
 		d.charge(&mem[i], fmt.Sprintf("step %s failed on a transient error (%s): resumed with --retry", step, v.Reason))
@@ -632,6 +690,59 @@ func inboxWatchdog(ctx *Ctx) []InboxItem {
 		return nil
 	}
 	return watchdogHoldItems(st.WatchdogHolds)
+}
+
+// failedRetryItems drops from items each failed run the watchdog will
+// still retry with failedRetries (failedRetryDue) while up says a daemon
+// works the project, and names, on a failed run's item, the retries it
+// already tried. mem is the watchdog's memory of runs.
+func failedRetryItems(items []InboxItem, runs []run.Journal, pol WatchdogPolicy, mem []daemon.WatchdogRun, up bool) []InboxItem {
+	out := items[:0:0]
+	for _, it := range items {
+		if it.Kind != InboxFailed {
+			out = append(out, it)
+			continue
+		}
+		mi := slices.IndexFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == it.Run })
+		ri := slices.IndexFunc(runs, func(j run.Journal) bool { return j.ID == it.Run })
+		var m daemon.WatchdogRun
+		if mi >= 0 {
+			m = mem[mi]
+		}
+		if up && ri >= 0 && failedRetryDue(pol, m, runs[ri], runs[ri].State()) {
+			continue
+		}
+		if m.FailedRetries > 0 {
+			var tried []string
+			for _, a := range m.Attempts {
+				tried = append(tried, fmt.Sprintf("%s at %s", a.Action, a.At.UTC().Format(time.RFC3339)))
+			}
+			it.Detail = strings.TrimRight(it.Detail, "\n") + fmt.Sprintf("\nthe watchdog retried it %d of %d times (failedRetries) and leaves it to you; it tried: %s", m.FailedRetries, pol.FailedRetries, strings.Join(tried, "; "))
+		}
+		out = append(out, it)
+	}
+	return out
+}
+
+// inboxFailedRetries is failedRetryItems for the project ctx works in, from
+// the daemon's saved state and the project's watchdog policy; items stay
+// as they are when no daemon ever worked it.
+func inboxFailedRetries(ctx *Ctx, common string, items []InboxItem, runs []run.Journal) []InboxItem {
+	st, ok := daemon.ReadState(common)
+	if !ok {
+		return items
+	}
+	pol, err := WatchdogPolicyOf(ctx)
+	if err != nil {
+		pol = defaultWatchdogPolicy()
+	}
+	_, up := daemon.Running(common)
+	if !up {
+		if root, ok := rootcfg.Find(ctx.Wd); ok {
+			_, up = daemon.RunningRoot(root)
+		}
+	}
+	return failedRetryItems(items, runs, pol, st.Watchdog, up)
 }
 
 // watchdogPR is a run's PR as the CI rerun sees it: Attempts is the attempt

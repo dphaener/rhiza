@@ -3304,3 +3304,186 @@ func TestAgentStepHoldNotOnRejoin(t *testing.T) {
 		t.Fatalf("result %q hold calls %d starts %v holds %+v", st.Result, h.holdCalls, f.starts, st.SpawnHolds)
 	}
 }
+
+// retryFromWF fails at check once its cap is reached; check names prep,
+// whose max_visits of 1 a retry must count afresh, as where to restart.
+const retryFromWF = `
+name = "wf"
+[step.prep]
+kind = "command"
+run = "prep"
+max_visits = 1
+on.pass = "work"
+
+[step.work]
+kind = "command"
+run = "work"
+max_visits = 5
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "check"
+max_visits = 2
+retry_from = "prep"
+on.fail = "work"
+`
+
+// A run that fails at a step with retry_from is retried from the step it
+// names: the retried entry names that step and the failed one, and the
+// restart step is entered anew, its max_visits counted from the retry.
+func TestRetryRestartsAtRetryFrom(t *testing.T) {
+	e, r, _, _ := setup(t, retryFromWF)
+	r.codes["check"] = []int{1, 1, 0}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed || st.FinishedStep != "check" {
+		t.Fatalf("first run: %v, %q at %q (%s)", err, st.Result, st.FinishedStep, st.Detail)
+	}
+	if want := `step "check" went over max_visits 2`; st.Detail != want {
+		t.Fatalf("detail = %q, want %q", st.Detail, want)
+	}
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Result != Succeeded {
+		t.Fatalf("result after retry = %q (%s)", st.Result, st.Detail)
+	}
+	if len(st.Retries) != 1 || st.Retries[0].Step != "prep" || st.Retries[0].Failed != "check" {
+		t.Fatalf("retries = %+v, want one at prep after check failed", st.Retries)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var after []string
+	retried := false
+	for _, en := range j.Entries {
+		if en.Type == TypeRetried {
+			retried = true
+			if en.Step != "prep" || en.Failed != "check" {
+				t.Errorf("retried entry step %q failed %q, want prep and check", en.Step, en.Failed)
+			}
+			continue
+		}
+		if retried && en.Type == TypeEntered {
+			after = append(after, fmt.Sprintf("%s:%d", en.Step, en.Visit))
+		}
+	}
+	if want := []string{"prep:2", "work:4", "check:3"}; !reflect.DeepEqual(after, want) {
+		t.Errorf("entered after the retry = %v, want %v", after, want)
+	}
+	if r.commands["prep"] != 2 || st.CapVisits("prep") != 1 || st.CapVisits("check") != 1 {
+		t.Errorf("prep ran %d times, cap visits prep %d check %d", r.commands["prep"], st.CapVisits("prep"), st.CapVisits("check"))
+	}
+}
+
+// planBugWF is plan-bug's shape: a workflow step including the built-in
+// plan.
+const planBugWF = `
+name = "plan-bug"
+[step.plan]
+kind = "workflow"
+workflow = "plan"
+on.pass = "done"
+`
+
+// A plan-bug-shaped run that fails at plan/check over its cap is retried
+// from plan/interview, the retry_from of the built-in plan's review loop.
+func TestRetryPlanBugCheckRestartsAtInterview(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	resolve := func(name string) ([]byte, error) {
+		src, ok := workflow.Builtin(name)
+		if !ok {
+			return nil, fmt.Errorf("no built-in %q", name)
+		}
+		return src, nil
+	}
+	def, err := workflow.ParseWith("plan-bug", []byte(planBugWF), resolve)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := def.Steps["plan/check"].RetryFrom; got != "plan/interview" {
+		t.Fatalf("plan/check retry_from = %q, want plan/interview", got)
+	}
+	store := newStore(t)
+	s := Started{Workflow: "plan-bug", Definition: planBugWF, Includes: def.Includes, Change: "CS1", Title: "Plan a bug"}
+	if err := Start(store, runID, s, t0, def); err != nil {
+		t.Fatal(err)
+	}
+	// The journal reaches plan/check a fourth time: its cap is 3.
+	visit := map[string]int{}
+	var entries []Entry
+	pass := func(step, next string) {
+		visit[step]++
+		entries = append(entries,
+			Entry{Type: TypeEntered, At: at(1), Step: step, Visit: visit[step]},
+			Entry{Type: TypeEnded, At: at(1), Step: step, Visit: visit[step], Outcome: "pass", Next: next})
+	}
+	fail := func(step, next string) {
+		visit[step]++
+		entries = append(entries,
+			Entry{Type: TypeEntered, At: at(1), Step: step, Visit: visit[step]},
+			Entry{Type: TypeEnded, At: at(1), Step: step, Visit: visit[step], Outcome: "fail", Next: next})
+	}
+	pass("plan/interview", "plan/milestone-check")
+	pass("plan/milestone-check", "plan/review")
+	for range 3 {
+		pass("plan/review", "plan/has-findings")
+		fail("plan/has-findings", "plan/fresh")
+		pass("plan/fresh", "plan/check")
+		fail("plan/check", "plan/revise")
+		pass("plan/revise", "plan/review")
+	}
+	// The journal is made up past the caps of review and revise: only
+	// check's is judged, as the run enters it a fourth time.
+	pass("plan/review", "plan/has-findings")
+	fail("plan/has-findings", "plan/fresh")
+	pass("plan/fresh", "plan/check")
+	for _, en := range entries {
+		if err := store.Append(runID, en); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r := newFakeRunner()
+	r.store = store
+	c := &fakeClock{now: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)}
+	e := &Engine{Store: store, Runner: r, Clock: c, Now: func() time.Time { return at(1) }}
+	st, err := e.Run(runID)
+	if err != nil || st.Result != Failed || st.FinishedStep != "plan/check" {
+		t.Fatalf("first run: %v, %q at %q (%s)", err, st.Result, st.FinishedStep, st.Detail)
+	}
+	if want := `step "plan/check" went over max_visits 3`; st.Detail != want {
+		t.Fatalf("detail = %q, want %q", st.Detail, want)
+	}
+	// Stop the retried run right after the interview: milestone-check fails.
+	r.codes["plan/milestone-check"] = []int{1}
+	st, err = e.Retry(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(st.Retries) != 1 || st.Retries[0].Step != "plan/interview" || st.Retries[0].Failed != "plan/check" {
+		t.Fatalf("retries = %+v, want one at plan/interview after plan/check failed", st.Retries)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var next string
+	for i, en := range j.Entries {
+		if en.Type == TypeRetried {
+			for _, later := range j.Entries[i+1:] {
+				if later.Type == TypeEntered {
+					next = fmt.Sprintf("%s:%d", later.Step, later.Visit)
+					break
+				}
+			}
+		}
+	}
+	if next != "plan/interview:2" {
+		t.Errorf("first step entered after the retry = %q, want plan/interview:2", next)
+	}
+	if r.starts["plan/interview"] != 1 {
+		t.Errorf("interview sessions started = %d, want 1", r.starts["plan/interview"])
+	}
+}

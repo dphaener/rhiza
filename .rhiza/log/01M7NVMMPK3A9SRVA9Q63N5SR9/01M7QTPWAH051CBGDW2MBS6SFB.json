@@ -1,0 +1,109 @@
+{
+  "actor": "01M7QTF7PKQ6HAR7WFR30H6ZM8",
+  "after": [
+    "01M7QS90M9FA6TA1A2QFJNRX44"
+  ],
+  "at": "2026-11-18T17:19:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: rhiza workflow describe shows retry_from (prefixed plan/interview when plan is included by a workflow step; built-in plan and plan-milestone review-loop steps show retry_from -> interview); rhiza workflow check refuses a retry_from naming no step, done/failed, or itself, naming step and key"
+        },
+        "handle": "workflow-retry-from-key-qa-1",
+        "id": "01M7QTPW01DTJGYFZ5F6BC2E2Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QTPW01DTJGYFZ5F34726Z0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QTPW01DTJGYFZ5F34726Z0",
+        "id": "01M7QTPW1423PAT4TSW0NWZXEC",
+        "link": "01M7QTPW1423PAT4TSVZYH37QR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DPFS4RYM9NQ682371XB",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: a run failing at a step with retry_from = prep was retried by rhiza run resume --retry at prep (dry run named prep), the retried journal entry recorded failed: check, prep's max_visits = 1 counted afresh, and the run succeeded"
+        },
+        "handle": "retry-restarts-at-named-step-qa-1",
+        "id": "01M7QTPW21KMQBFH17JTE4XQB2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QTPW21KMQBFH17JRZESSJR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QTPW21KMQBFH17JRZESSJR",
+        "id": "01M7QTPW35N1W7KC1W8R1X830N",
+        "link": "01M7QTPW35N1W7KC1W8MYFEFJY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build and fake rex/claude: after a retry restarting an agent step, its visit-2 brief.md held a Previous attempt section (failed step, outcome, failing command, output tail, latest round's findings); the pre-retry and never-retried briefs had none. Plan review findings show without a severity (minor finding)"
+        },
+        "handle": "retry-brief-carries-failure-qa-1",
+        "id": "01M7QTPW477KJXHMG6NMYEPT1N",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QTPW477KJXHMG6NH1M6VYB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QTPW477KJXHMG6NH1M6VYB",
+        "id": "01M7QTPW595Z2QE83BQ1W0CG7G",
+        "link": "01M7QTPW595Z2QE83BQ0NKW394",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: rhiza daemon settings lists rhiza.daemon.watchdog.failedRetries and rhiza.project.watchdog.failedRetries (default 1); daemon set accepts 0 and 3 and refuses -1, abc, 1.5 and empty; inbox keeps a failed run while no daemon runs; go test ./internal/api -run 'Watchdog|Inbox' and TestScripts/watchdog-policy pass"
+        },
+        "handle": "watchdog-retries-real-failure-qa-1",
+        "id": "01M7QTPW6BX2PYCDC9KC2F5AT7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QTPW6BX2PYCDC9KB0V6YDY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QTPW6BX2PYCDC9KB0V6YDY",
+        "id": "01M7QTPW8BP4JBXCDXJM0VEES7",
+        "link": "01M7QTPW8BP4JBXCDXJGP4NA5V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DY3RPXE969S13KP6WWJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMMPK3A9SRVA9Q63N5SR9",
+  "for": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "id": "01M7QTPWAH051CBGDW2MBS6SFB",
+  "type": "ops",
+  "v": 1
+}

@@ -3,6 +3,7 @@ package run
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -174,5 +175,138 @@ func TestRenderSpawnBrief(t *testing.T) {
 	}
 	if NotesSection(nil) != "" {
 		t.Errorf("NotesSection(nil) = %q", NotesSection(nil))
+	}
+}
+
+// todayBrief is brief.md as RenderBrief wrote it before a brief could
+// carry a previous attempt, for briefInput with leaf a's files and a
+// pre-push check.
+const todayBrief = "# Brief\n\n## Change set\n\n- Title: Every agent session a run\n- ID: 01ABC\n- Intent: files\n\n## Leaves\n\n### a\n\ndoes a\n\nAcceptance: go test a\nFiles: internal/a.go\n\n### b\n\ndoes b\n\nAcceptance: go test b\n\n## Decisions\n\n- d1\n\n## Constraints\n\n- c1\n- c2\n\n## Check commands\n\n- rhiza.ship.prePushCheck: make self-check\n- rhiza.ship.localGate: make gate\n\n## Contract\n\nBuild or check only what your role's prompt names, to the leaves' acceptance above.\nRun only the tests your change touches, record what you ran, never rewrite history,\nand end with `rhiza session done` as its own command.\nFull contract: rhiza guide contract\n"
+
+// A brief with a previous attempt carries a Previous attempt section after
+// the change set: the failed step, outcome, failing command, output tail
+// and the round's findings with check, severity and text; (failure case)
+// one without it renders byte for byte as before.
+func TestBriefPreviousAttempt(t *testing.T) {
+	in := briefInput()
+	in.Leaves[0].Files = "internal/a.go"
+	in.PrePushCheck = "make self-check"
+	if got := RenderBrief(in); got != todayBrief {
+		t.Fatalf("a brief with no previous attempt changed:\n%q", got)
+	}
+	in.Previous = &PreviousAttempt{
+		Cause: HandbackCause{Step: "check", Outcome: "fail", Commands: []FailedCommand{{Command: "rhiza run review-check"}},
+			Output: "refused: 1 major finding open"},
+		Findings: []AttemptFinding{{Check: "plan review", Severity: "major", Text: "leaf x has no acceptance"},
+			{Check: "code", Text: "unused import"}},
+	}
+	got := RenderBrief(in)
+	want := "- Intent: files\n\n## Previous attempt\n\nThe run failed and was retried; this is how the attempt before this one ended.\n\n" +
+		"- Failed step: check\n- Outcome: fail\n- Failing command: `rhiza run review-check`\n\n" +
+		"### Output tail\n\n```\nrefused: 1 major finding open\n```\n\n" +
+		"### Findings of the latest round\n\n- plan review, major: leaf x has no acceptance\n- code: unused import\n\n## Leaves\n"
+	if !strings.Contains(got, want) {
+		t.Errorf("brief lacks the previous attempt %q:\n%s", want, got)
+	}
+	if strings.Replace(got, want, "- Intent: files\n\n## Leaves\n", 1) != todayBrief {
+		t.Errorf("the section changed the rest of the brief:\n%s", got)
+	}
+	in.Previous = &PreviousAttempt{Cause: HandbackCause{Step: "ship", Outcome: "failed", Cause: `step "ship" went over max_visits 2`}}
+	got = RenderBrief(in)
+	if want := "- Failed step: ship\n- Outcome: failed\n\n### Cause\n\nstep \"ship\" went over max_visits 2\n\n### Findings of the latest round\n\nnone\n"; !strings.Contains(got, want) {
+		t.Errorf("brief lacks %q:\n%s", want, got)
+	}
+}
+
+// retryBriefWF fails at check, a review-check-shaped command step, and
+// retries from review.
+const retryBriefWF = `
+name = "wf"
+[step.review]
+kind = "command"
+run = "review"
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "rhiza run review-check"
+retry_from = "review"
+`
+
+// A run retried after failing at a command step has a previous attempt:
+// the step, its outcome, the command and its output tail, and the
+// findings of the latest plan review round before the retry, not an
+// earlier one's or one recorded after the retry; (failure case) a run
+// never retried has none.
+func TestJournalPreviousAttempt(t *testing.T) {
+	e, r, _, _ := setup(t, retryBriefWF)
+	r.codes["check"] = []int{1, 0}
+	r.details["check"] = "review-check: refused\n1 major finding open"
+	findings := func(reason string) {
+		if err := e.Store.Append(runID, Entry{Type: TypeFindings, At: at(1), Findings: []Finding{{ID: "f1", Severity: "major", Reason: reason}}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	findings("an older round")
+	r.onCommand = func(step string) {
+		if step == "check" && r.commands["check"] == 1 {
+			findings("leaf x has no acceptance")
+		}
+	}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	j, err := e.Store.Read(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p := j.PreviousAttempt(); p != nil {
+		t.Fatalf("a run never retried has a previous attempt: %+v", p)
+	}
+	r.onCommand = func(step string) {
+		if step == "check" {
+			findings("after the retry")
+		}
+	}
+	if st, err := e.Retry(runID); err != nil || st.Result != Succeeded {
+		t.Fatalf("retry: %v, %+v", err, st)
+	}
+	if j, err = e.Store.Read(runID); err != nil {
+		t.Fatal(err)
+	}
+	want := &PreviousAttempt{
+		Cause: HandbackCause{Step: "check", Outcome: "fail", Commands: []FailedCommand{{Command: "rhiza run review-check"}},
+			Output: "review-check: refused\n1 major finding open"},
+		Findings: []AttemptFinding{{Check: PlanReviewCheck, Severity: "major", Text: "leaf x has no acceptance"}},
+	}
+	if got := j.PreviousAttempt(); !reflect.DeepEqual(got, want) {
+		t.Errorf("previous attempt = %+v\nwant %+v", got, want)
+	}
+}
+
+// A review check's round brings the latest round of every check of its
+// step in that cycle, each finding under its check's name; a leaf's
+// findings are no round. A retried entry naming no failed step falls back
+// to the finished entry's step, and a step that never ended (it went over
+// its max_visits) gives "failed" and the finished entry's detail.
+func TestJournalPreviousAttemptCheckRounds(t *testing.T) {
+	def := "name = \"wf\"\n[step.review]\nkind = \"agent\"\nprompt = \"p\"\non.pass = \"ship\"\n[step.ship]\nkind = \"command\"\nrun = \"ship\"\n"
+	fs := func(sev, reason string) []Finding { return []Finding{{ID: reason, Severity: sev, Reason: reason}} }
+	j := Journal{ID: runID, Entries: []Entry{
+		{Type: TypeStarted, At: at(0), Started: &Started{Workflow: "wf", Definition: def, Change: "CS1"}},
+		{Type: TypeFindings, At: at(1), Step: "review", Check: "plan", Cycle: 1, Findings: fs("major", "cycle one")},
+		{Type: TypeFindings, At: at(2), Step: "review", Check: "code", Cycle: 2, Findings: fs("minor", "code two")},
+		{Type: TypeFindings, At: at(3), Step: "review", Check: "plan", Cycle: 2, Findings: fs("blocker", "plan two")},
+		{Type: TypeFindings, At: at(4), Step: "review", Leaf: "L1", Attempt: 1, Findings: fs("major", "a leaf's")},
+		{Type: TypeFinished, At: at(5), Step: "ship", End: Failed, Detail: `step "ship" went over max_visits 2`},
+		{Type: TypeRetried, At: at(6), Step: "ship", Detail: `step "ship" went over max_visits 2`},
+	}}
+	want := &PreviousAttempt{
+		Cause: HandbackCause{Step: "ship", Outcome: Failed, Commands: []FailedCommand{{Command: "ship"}},
+			Cause: `step "ship" went over max_visits 2`},
+		Findings: []AttemptFinding{{Check: "plan", Severity: "blocker", Text: "plan two"}, {Check: "code", Severity: "minor", Text: "code two"}},
+	}
+	if got := j.PreviousAttempt(); !reflect.DeepEqual(got, want) {
+		t.Errorf("previous attempt = %+v\nwant %+v", got, want)
 	}
 }

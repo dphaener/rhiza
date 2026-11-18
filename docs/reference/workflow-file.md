@@ -21,6 +21,7 @@ A workflow is a TOML file of named steps. Each step ends with an outcome, and it
 - `on.<outcome>`: The step to go to for an outcome, or done or failed to end the run, or handback:<agent step> to hand the run back to an agent step of the workflow with the cause; the run may hand back handback_cap times, then the next red parks it stopped and an inbox item names the step and the cause
 - `max_visits`: How often a run may enter the step; 0 or unset means once
 - `stall`: How long the watchdog lets the step go without progress before it acts, such as "20m"; unset takes the watchdog's default for the kind
+- `retry_from`: The step of this workflow a failed run restarts at when it fails at this step, by any retry (rhiza run resume --retry, rhiza run start on a failed change set, the daemon's); another step, never the step itself or the arbiter, written like an on.<outcome> target (<workflow step>/<step> for a step of an included workflow) and prefixed like one when the workflow is included; unset restarts at the failed step. A workflow or arbiter step cannot set it
 
 A kind refuses the keys that are not listed in its section.
 

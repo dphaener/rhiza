@@ -24,7 +24,8 @@ on.pass = "review"
 
 # Each review round: a fresh reviewer told only the change set's ID, a
 # critic who confirms or drops its findings, then review-check. A failed
-# check goes to the reviser and back to a fresh review.
+# check goes to the reviser and back to a fresh review. A run that fails
+# at any step of the loop (a cap reached) is retried from the interview.
 [step.review]
 kind = "agent"
 prompt = "/rhiza-plan-reviewer Review the plan of change set {change}: follow rhiza guide plan-reviewer."
@@ -32,6 +33,7 @@ prompt = "/rhiza-plan-reviewer Review the plan of change set {change}: follow rh
 # review-check would judge the previous round again.
 until = "rhiza run round-recorded"
 until_when = "done"
+retry_from = "interview"
 max_visits = 3
 on.pass = "has-findings"
 
@@ -40,6 +42,7 @@ on.pass = "has-findings"
 [step.has-findings]
 kind = "command"
 run = "rhiza run review-check --findings"
+retry_from = "interview"
 max_visits = 3
 on.pass = "critic"
 on.fail = "fresh"
@@ -49,6 +52,7 @@ kind = "agent"
 prompt = "/rhiza-plan-critic Judge the latest review round of the plan of change set {change}: follow rhiza guide plan-critic."
 until = "true"
 until_when = "done"
+retry_from = "interview"
 max_visits = 3
 on.pass = "fresh"
 
@@ -57,6 +61,7 @@ on.pass = "fresh"
 [step.fresh]
 kind = "command"
 run = "rhiza run review-check --fresh"
+retry_from = "interview"
 max_visits = 3
 on.pass = "check"
 on.fail = "review"
@@ -64,6 +69,7 @@ on.fail = "review"
 [step.check]
 kind = "command"
 run = "rhiza run review-check"
+retry_from = "interview"
 max_visits = 3
 on.pass = "rulings"
 on.fail = "revise"
@@ -73,6 +79,7 @@ kind = "agent"
 prompt = "/rhiza-plan-reviser Fix the confirmed findings of the latest review round of the plan of change set {change}: follow rhiza guide plan-reviser."
 until = "true"
 until_when = "done"
+retry_from = "interview"
 max_visits = 2
 on.pass = "review"
 
@@ -86,6 +93,7 @@ on.pass = "review"
 [step.rulings]
 kind = "command"
 run = "rhiza run review-check --rulings"
+retry_from = "interview"
 max_visits = 2
 on.pass = "gate"
 on.fail = "apply-rulings"
@@ -95,6 +103,7 @@ kind = "agent"
 prompt = "/rhiza-plan-reviser Apply the arbiter's rulings on the plan of change set {change}: follow rhiza guide plan-reviser."
 until = "true"
 until_when = "done"
+retry_from = "interview"
 max_visits = 1
 on.pass = "rulings"
 

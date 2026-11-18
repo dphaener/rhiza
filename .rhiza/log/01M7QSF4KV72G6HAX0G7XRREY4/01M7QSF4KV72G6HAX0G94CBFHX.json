@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "after": [],
+  "at": "2026-11-18T16:57:30Z",
+  "body": {
+    "intent": "Record agent actor claude-code-e45c245c for session e45c245c-5f07-40cc-a012-01a1ef978f6f",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7QSF4KV72G6HAX0G7XRREY4",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QSF4KV72G6HAX0G94CBFHX",
+  "type": "open",
+  "v": 1
+}

@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "after": [],
+  "at": "2026-11-18T16:52:25Z",
+  "body": {
+    "intent": "Record agent actor claude-code-240ba28d for session 240ba28d-436c-483c-a5be-01a1ef92e715",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7QS5TSHAMPY4XJ4APB6R2J2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QS5TSHAMPY4XJ4ASSNJD46",
+  "type": "open",
+  "v": 1
+}

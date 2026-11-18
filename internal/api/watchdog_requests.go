@@ -66,7 +66,7 @@ func watchdogRequests(pol WatchdogPolicy, reqs []daemon.Request, journals []run.
 			continue
 		}
 		if step != "" {
-			v, ok := classifyOnce(&mem[i], journals[ji], st, step, d)
+			v, ok := classifyTransientOnce(&mem[i], journals[ji], st, step, d)
 			if !ok {
 				continue
 			}

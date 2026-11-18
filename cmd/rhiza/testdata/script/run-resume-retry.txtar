@@ -67,6 +67,25 @@ stderr 'run 01M5PWGJC82P7YGZTWYFFZ0VJG is finished: it succeeded'
 exec sh -c 'wc -l < $WORK/count'
 stdout '^ *1$'
 
+# A step with retry_from restarts the retry at the step it names: here
+# check names prep, so the retry runs prep again before check.
+exec rhiza change new 'Retry from a named step' --title 'Run retry from' --json
+cp ../restart.toml .rhiza/workflows/restart.toml
+! exec rhiza run start --foreground --workflow restart
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN failed$'
+stdout '^- check \(visit 1\): fail, then end: exit 1$'
+exec rhiza run resume --foreground 01M5PWGKBGYFZMTH8Y8AF1G8GN --retry --dry-run
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN would be retried at step prep$'
+exec sh -c 'echo > $WORK/ready'
+exec rhiza run resume --foreground 01M5PWGKBGYFZMTH8Y8AF1G8GN --retry
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN succeeded$'
+exec rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- prep \(visit 2, retried\): pass, then check: exit 0$'
+stdout '^- check \(visit 2\): pass, then end: exit 0$'
+stdout 'retried at prep, after: step "check" ended with outcome "fail"$'
+exec sh -c 'wc -l < $WORK/prepped'
+stdout '^ *2$'
+
 fold-ok
 
 -- flaky.toml --
@@ -80,5 +99,20 @@ on.pass = "two"
 [step.two]
 kind = "command"
 run = "test -f ../input"
+on.pass = "done"
+on.fail = "failed"
+
+-- restart.toml --
+name = "restart"
+
+[step.prep]
+kind = "command"
+run = "echo prep >> ../prepped"
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "test -f ../ready"
+retry_from = "prep"
 on.pass = "done"
 on.fail = "failed"

@@ -13,6 +13,7 @@ stdout 'rhiza.daemon.watchdog.agentRetry = 40m \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.commandLimit = 30m \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.waitLimit = 90m \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.retryBudget = 2 \(default, machine\)'
+stdout 'rhiza.daemon.watchdog.failedRetries = 1 \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.ciReruns = 1 \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.pollBehind = 3 \(default, machine\)'
 stdout 'rhiza.daemon.watchdog.fileBugs = true \(default, machine\)'
@@ -25,15 +26,20 @@ stdout 'rhiza.project.watchdog.runawayMemory = 8G \(default, project\)'
 stdout 'rhiza.project.watchdog.runawayGrace = 5m \(default, project\)'
 stdout 'rhiza.project.watchdog.retryBudget = 2 \(default, project\)'
 stdout 'rhiza.project.watchdog.enabled = true \(default, project\)'
+stdout 'rhiza.project.watchdog.failedRetries = 1 \(default, project\)'
 ! stdout 'rhiza.project.watchdog.pollBehind'
 
 rhiza daemon set rhiza.daemon.watchdog.retryBudget 4
 rhiza daemon set rhiza.project.watchdog.retryBudget 1
 rhiza daemon set rhiza.daemon.watchdog.runawayMemory 12G
+rhiza daemon set rhiza.daemon.watchdog.failedRetries 2
+rhiza daemon set rhiza.project.watchdog.failedRetries 0
 rhiza daemon settings
 stdout 'rhiza.daemon.watchdog.retryBudget = 4 \(rhiza.toml, machine\)'
 stdout 'rhiza.project.watchdog.retryBudget = 1 \(git config, project\)'
 stdout 'rhiza.daemon.watchdog.runawayMemory = 12G \(rhiza.toml, machine\)'
+stdout 'rhiza.daemon.watchdog.failedRetries = 2 \(rhiza.toml, machine\)'
+stdout 'rhiza.project.watchdog.failedRetries = 0 \(git config, project\)'
 exec git config --get rhiza.project.watchdog.retryBudget
 stdout '^1$'
 
@@ -45,6 +51,8 @@ stderr 'rhiza.project.watchdog.fileBugs'
 stderr 'rhiza.daemon.watchdog.runawayMemory'
 ! rhiza daemon set -- rhiza.project.watchdog.runawayProcs -1
 stderr 'rhiza.project.watchdog.runawayProcs'
+! rhiza daemon set -- rhiza.daemon.watchdog.failedRetries -1
+stderr 'rhiza.daemon.watchdog.failedRetries'
 ! rhiza daemon set rhiza.project.watchdog.pollBehind 2
 stderr 'unknown setting'
 

@@ -238,6 +238,10 @@ type WatchdogRun struct {
 	// Attempts journals each recovery charged to the budget, oldest first,
 	// so a restarted daemon still knows what was tried.
 	Attempts []WatchdogAttempt `json:"attempts,omitempty"`
+	// FailedRetries are the retries of a failure the classifier called
+	// real, or could not judge, charged against the watchdog's
+	// failedRetries apart from Spent; each is also one of Attempts.
+	FailedRetries int `json:"failed_retries,omitempty"`
 	// CIHead is the PR head whose failed CI jobs the watchdog reran, and
 	// CIResumed that the run was resumed once they passed: a head is
 	// rerun once.

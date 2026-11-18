@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -185,7 +186,7 @@ func TestSessionBriefDecisions(t *testing.T) {
 	}
 	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
 	dir := filepath.Join(t.TempDir(), "session")
-	if err := r.fillSession(dir); err != nil {
+	if err := r.fillSession(dir, nil); err != nil {
 		t.Fatal(err)
 	}
 	js, err := os.ReadFile(filepath.Join(dir, "slice.json"))
@@ -223,7 +224,7 @@ func TestSessionBriefOwnDecisionsConstraints(t *testing.T) {
 	}
 	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
 	dir := filepath.Join(t.TempDir(), "session")
-	if err := r.fillSession(dir); err != nil {
+	if err := r.fillSession(dir, nil); err != nil {
 		t.Fatal(err)
 	}
 	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
@@ -257,7 +258,7 @@ func TestSessionBriefLeafContract(t *testing.T) {
 	}
 	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
 	dir := filepath.Join(t.TempDir(), "session")
-	if err := r.fillSession(dir); err != nil {
+	if err := r.fillSession(dir, nil); err != nil {
 		t.Fatal(err)
 	}
 	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
@@ -269,5 +270,109 @@ func TestSessionBriefLeafContract(t *testing.T) {
 	}
 	if strings.Contains(string(md), "Failure waiver:") {
 		t.Errorf("brief.md lists a failure waiver the leaf lacks:\n%s", md)
+	}
+}
+
+// retryBriefWorkflow's agent step is followed by a review-check-shaped
+// command step that, failing, retries the run from the agent step.
+const retryBriefWorkflow = `
+[step.review]
+kind = "agent"
+prompt = "review {change}"
+on.pass = "check"
+
+[step.check]
+kind = "command"
+run = "rhiza run review-check"
+retry_from = "review"
+`
+
+// A run fails at a review-check-shaped command step after a findings
+// round; retried, it restarts the agent step, whose new session's brief.md
+// holds the refusal's output and the round's findings under Previous
+// attempt. (failure case) The session started before the retry, in a run
+// not yet retried, gets no such section.
+func TestRunRetryBriefPreviousAttempt(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "x")
+	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
+	writeWorkflow(t, f.ctx.Root, "w", retryBriefWorkflow)
+	const refusal = "review-check: refused, 1 major finding is open"
+	checkCode := 1
+	f.ctx.Stderr = io.Discard
+	f.ctx.Start = func(p Program) (Process, error) {
+		if len(p.Args) == 2 && strings.TrimPrefix(p.Args[1], "exec 2>&1\n") == "rhiza run review-check" && checkCode != 0 {
+			return &fakeProcess{out: strings.NewReader(refusal + "\n"), code: checkCode}, nil
+		}
+		return &fakeProcess{out: strings.NewReader("")}, nil
+	}
+	runs := run.NewStore(run.Dir(f.common))
+	sessions := session.NewStore(session.Dir(f.common))
+	tabs := 0
+	// Every agent session exits 0 as its tab opens; the first records a
+	// findings round as a plan reviewer would.
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		f.rex.run(name, args, dir, env)
+		if len(args) > 1 && args[0] == "block" && args[1] == "close" {
+			return nil, nil
+		}
+		if tabs++; tabs == 1 {
+			list, err := runs.List()
+			if err != nil || len(list) != 1 {
+				t.Fatalf("runs %v, %v", list, err)
+			}
+			if err := runs.Append(list[0].ID, run.Entry{Type: run.TypeFindings, At: f.ctx.Now(),
+				Findings: []run.Finding{{ID: "f1", Kind: "acceptance", Severity: "major", Reason: "leaf alpha has no acceptance"}}}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		code := 0
+		if _, err := sessions.Update(args[len(args)-1], func(r *session.Record) {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code}
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return []byte(rexWindowJSON), nil
+	}
+	f.ctx.repoSession = true
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"w","permission_mode":"manual"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := resp.(RunResponse).Run
+	if info.State != run.Failed {
+		t.Fatalf("first attempt = %+v", info)
+	}
+	brief := func(visit int) string {
+		t.Helper()
+		b, err := os.ReadFile(filepath.Join(run.SessionDir(f.common, info.ID, "review", visit, run.AgentSessionName()), briefFile))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	if b := brief(1); strings.Contains(b, "Previous attempt") {
+		t.Errorf("the session started before the retry has a previous attempt:\n%s", b)
+	}
+	checkCode = 0
+	resp, err = callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+info.ID+`","retry":true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(RunResponse); r.Run.State != run.Succeeded || r.Retry != "review" {
+		t.Fatalf("retried run = %+v", r)
+	}
+	b := brief(2)
+	for _, w := range []string{
+		"## Previous attempt\n", "- Failed step: check\n- Outcome: fail\n- Failing command: `rhiza run review-check`\n",
+		"### Output tail\n\n```\n" + refusal + "\n```\n",
+		"### Findings of the latest round\n\n- plan review, major: leaf alpha has no acceptance\n",
+	} {
+		if !strings.Contains(b, w) {
+			t.Errorf("the restarted step's brief.md lacks %q:\n%s", w, b)
+		}
+	}
+	if b := brief(1); strings.Contains(b, "Previous attempt") {
+		t.Errorf("the retry rewrote the earlier session's brief.md:\n%s", b)
 	}
 }

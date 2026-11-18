@@ -1,0 +1,253 @@
+{
+  "actor": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "after": [
+    "01M7QQ7762QG55CESNK18TA8ZT"
+  ],
+  "at": "2026-11-18T16:18:53Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent says the workflow names the step; a per-step key keeps the default (the failed step) for every step that sets nothing, and one rule for every retry path keeps a manual retry and the daemon's the same",
+          "statement": "A workflow names the step a failed run restarts at with a step key retry_from naming another step of the same workflow (prefixed like on.* targets when the workflow is included by a workflow step); a step without it restarts at itself (after the existing walk back to the wait that feeds a failed check). Every retry honours it: rhiza run resume --retry, rhiza run start on a failed change set and the daemon's",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "retry-from-step-key",
+        "id": "01M7QQ8DFNW9VMVDF26DXH8H3B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QQ8DFNW9VMVDF26CX2B16H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DFNW9VMVDF26CX2B16H",
+        "id": "01M7QQ8DGJMFRHS83NZDPCT3X5",
+        "link": "01M7QQ8DGJMFRHS83NZD67BMY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ77593WP7HYTQ9VQRFHYW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent's 'a plan whose review-check refuses restarts at plan': the run fails at whichever review-loop step reaches its cap, so each of them must name the interview",
+          "statement": "The built-in plan and plan-milestone workflows set retry_from = \"interview\" on every step of their review loop (review, has-findings, critic, fresh, check, revise, rulings, apply-rulings), so a plan whose review-check refuses is retried from its interview, which is the plan step of a workflow that includes it (plan-bug's plan/interview)",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "plan-review-retries-at-interview",
+        "id": "01M7QQ8DHFZM683VRPQ3NH8GA5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QQ8DHFZM683VRPQ000RVAD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DHFZM683VRPQ000RVAD",
+        "id": "01M7QQ8DJ56ATB4P5YD6Q6GP8C",
+        "link": "01M7QQ8DJ56ATB4P5YD57BT1MZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ77593WP7HYTQ9VQRFHYW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The owner picked 'Right step + findings': the next attempt must see why the last one failed; brief.md is the file every step session already reads",
+          "statement": "Every agent step session started after a run's last retried entry gets a Previous attempt section in brief.md: the failed step, its outcome, its cause or output tail (as a hand-back reads them, run.CauseOf) and the findings of the latest round recorded before the retry, each with check, severity and text; the retried entry journals the failed step so the brief can name it. Spawned children's briefs are their caller's and are not changed",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "retry-brief-previous-attempt",
+        "id": "01M7QQ8DJSEWGBF0WGFKNCN4E4",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QQ8DJSEWGBF0WGFGHCHG05",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DJSEWGBF0WGFGHCHG05",
+        "id": "01M7QQ8DKJP61X5RTAQB6ACZYY",
+        "link": "01M7QQ8DKJP61X5RTAQ83JHVED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ77593WP7HYTQ9VQRFHYW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent's 'once by default, then the inbox'; a watchdog setting beside retryBudget follows how every other watchdog limit is set per machine and project",
+          "statement": "The watchdog retries a failed run whose failure the classifier calls real (or cannot judge) with rhiza run resume --retry, up to a new watchdog setting failedRetries (rhiza.daemon.watchdog.failedRetries and rhiza.project.watchdog.failedRetries, default 1, 0 turns it off), under the same enabled and autonomousOnly rules as its other passes; transient failures keep their own retryBudget. Each retry is journalled as a watchdog attempt; once failedRetries are spent the run stays failed and goes to the inbox, its item naming the retries tried, and the inbox lists no failed run while a retry is still due",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "daemon-failed-retries-setting",
+        "id": "01M7QQ8DMFKFPBPC5ZQ4SNZE15",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QQ8DMFKFPBPC5ZQ4GJRXCQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DMFKFPBPC5ZQ4GJRXCQ",
+        "id": "01M7QQ8DNCKS8JNQQS56K08DWA",
+        "link": "01M7QQ8DNCKS8JNQQS54VSQH4H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ77593WP7HYTQ9VQRFHYW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/workflow parse a step with retry_from and an included workflow whose retry_from comes out prefixed (plan/interview); (failure case) retry_from naming no step of the workflow, or itself, is refused at parse with the step and key named; rhiza workflow describe shows the key (a cmd/rhiza testscript or the describe test); internal/guide/text/workflow-keys.md and docs/reference/workflow-file.md document it. Run: go test -trimpath -p 2 ./internal/workflow/... and the touched testscript",
+          "files": "internal/workflow/workflow.go, internal/workflow/include.go, internal/workflow/workflow_test.go, internal/workflow/include_test.go, internal/api/workflow*.go (describe only), internal/guide/text/workflow-keys.md, docs/reference/workflow-file.md, cmd/rhiza/testdata/script/workflow-describe*.txtar",
+          "must_not": "Change how a run retries (the engine leaf does); change any built-in workflow file; change other step keys",
+          "statement": "A workflow step may set retry_from, the step of the same workflow a failed run restarts at when it fails at this step; it parses, is prefixed like on.* targets when its workflow is included by a workflow step, is validated, shown by rhiza workflow describe and documented"
+        },
+        "handle": "workflow-retry-from-key",
+        "id": "01M7QQ8DPFS4RYM9NQ692XX848",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7QQ8DPFS4RYM9NQ682371XB",
+        "op": "node.create",
+        "parent": "01M5Z8XQV4XPRTXNA7KE1AKET4"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DPFS4RYM9NQ682371XB",
+        "id": "01M7QQ8DQAVHPRKA7030AW0T31",
+        "link": "01M7QQ8DQAVHPRKA702Z4Z92EP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DFNW9VMVDF26CX2B16H",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/run fail a run at a step with retry_from and see the retried entry name the restart step and the failed step and the next visit enter the restart step with its max_visits counted afresh; a test fails a plan-bug-shaped run (a workflow step including plan) at plan/check over its cap and sees the retry enter plan/interview; (failure case) a step without retry_from still restarts at itself and a failed check fed by a wait still re-waits (RetryStep's existing tests pass unchanged); a test in internal/workflow asserts every review-loop step of the built-in plan and plan-milestone sets retry_from = interview. Run: go test -trimpath -p 2 ./internal/run/... ./internal/workflow/... and cmd/rhiza TestScripts/run-resume-retry",
+          "files": "internal/run/engine.go, internal/run/journal.go, internal/run/engine_test.go, internal/run/journal_test.go, internal/workflow/builtin/plan.toml, internal/workflow/builtin/plan-milestone.toml, internal/workflow/workflow_test.go, cmd/rhiza/testdata/script/run-resume-retry.txtar",
+          "must_not": "Change the brief (the brief leaf does) or the watchdog; change any review-loop step's on.* routing or max_visits; change ship-change",
+          "statement": "Retrying a failed run (run.Engine.Retry, so rhiza run resume --retry, rhiza run start on a failed change set and the daemon) restarts it at the failed step's retry_from when set, else where it does today; the retried entry also journals the failed step; the built-in plan and plan-milestone workflows set retry_from = \"interview\" on their review-loop steps"
+        },
+        "handle": "retry-restarts-at-named-step",
+        "id": "01M7QQ8DR1NT9E6KAPQWJ56S0J",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "op": "node.create",
+        "parent": "01M5X3GCT3DRQ1XEGAZ630X0KS"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "id": "01M7QQ8DRTXPHNMRFB0QYSMTBD",
+        "link": "01M7QQ8DRTXPHNMRFB0PZ5KQQD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DFNW9VMVDF26CX2B16H",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "id": "01M7QQ8DSW7SBEK8VF8X2GQ39M",
+        "link": "01M7QQ8DSW7SBEK8VF8VP7WBC3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DHFZM683VRPQ000RVAD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "id": "01M7QQ8DTJMEKAFDJW7B84QG7F",
+        "link": "01M7QQ8DTJMEKAFDJW7AFTY8HJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DPFS4RYM9NQ682371XB",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/run render a brief with a previous attempt (step, outcome, output tail, findings with check, severity and text) and one without it unchanged byte for byte; a test in internal/api (scoped with -run) retries a run failed at a review-check-shaped command step after a findings round and sees the restarted agent step's brief.md hold the refusal's output and the round's findings; (failure case) a run never retried, and a session started before the retry, get no such section. Run: go test -trimpath -p 2 ./internal/run/... and go test -trimpath -p 2 ./internal/api -run <the new tests>",
+          "files": "internal/run/brief.go, internal/run/brief_test.go, internal/run/journal.go, internal/api/run_brief.go, internal/api/run_brief_test.go, internal/guide/text/contract.md",
+          "must_not": "Change handback.md or a spawned child's brief; write anything into .rhiza/log; change where a retry restarts",
+          "statement": "Every agent step session started after a run's last retried entry finds a Previous attempt section in its brief.md: the failed step, outcome, cause or output tail and the findings of the latest round recorded before the retry"
+        },
+        "handle": "retry-brief-carries-failure",
+        "id": "01M7QQ8DVDM757QQGNGWR69CJH",
+        "key": "r",
+        "kind": "capability",
+        "node": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "op": "node.create",
+        "parent": "01M5X3GCT3DRQ1XEGAZ630X0KS"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "id": "01M7QQ8DW7F9HSFCDEK344NFAA",
+        "link": "01M7QQ8DW7F9HSFCDEK16GWJVY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DJSEWGBF0WGFGHCHG05",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "id": "01M7QQ8DX7ERDM20JMV11FPGJJ",
+        "link": "01M7QQ8DX7ERDM20JMTXNSXP0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DR1NT9E6KAPQSF5614F",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Tests in internal/api (scoped with -run) give the watchdog a failed autonomous run classified real and see one resume with --retry and an attempt charged, then a second failure of the same run left unretried and listed in rhiza inbox with the retry named; failedRetries 0 retries nothing; the inbox leaves out a failed run with a retry due; a transient failure still uses retryBudget; a test of the measure fails a plan run at review-check, sees the daemon's retry restart at interview with the refusal in the brief, and a second failure reach the inbox; (failure case) an attended run under autonomousOnly, a live or abandoned run and a disabled watchdog are never retried; the setting is listed by rhiza daemon settings (watchdog-policy testscript) and documented. Run: go test -trimpath -p 2 ./internal/api -run 'Watchdog|Inbox' and cmd/rhiza TestScripts/watchdog-policy",
+          "files": "internal/api/daemon_watchdog.go, internal/api/watchdog_policy.go, internal/api/inbox.go, internal/api/daemon_watchdog_test.go, internal/api/inbox_test.go, internal/daemon/state.go, cmd/rhiza/testdata/script/watchdog-policy.txtar, docs/reference/config.md, docs/runs-and-daemon.md",
+          "must_not": "Change the failure classifier or its prompt; change the stalled-step or CI passes' budgets; retry an abandoned, live or attended (under autonomousOnly) run",
+          "statement": "The daemon's watchdog retries a failed run whose failure is real or unjudged with rhiza run resume --retry up to failedRetries (default 1), journalling each as a watchdog attempt; once they are spent the run goes to the inbox with the retries tried, and no failed run is in the inbox while a retry is still due"
+        },
+        "handle": "watchdog-retries-real-failure",
+        "id": "01M7QQ8DY3RPXE969S148VM4MB",
+        "key": "zzzzw",
+        "kind": "capability",
+        "node": "01M7QQ8DY3RPXE969S13KP6WWJ",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DY3RPXE969S13KP6WWJ",
+        "id": "01M7QQ8DYYDXGMN57S32ZFCB9D",
+        "link": "01M7QQ8DYYDXGMN57S31JEPX3F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DMFKFPBPC5ZQ4GJRXCQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QQ8DY3RPXE969S13KP6WWJ",
+        "id": "01M7QQ8DZT0K1MWQWR8EKDE0EE",
+        "link": "01M7QQ8DZT0K1MWQWR8DBRQJ95",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVMMPK3A9SRVA9Q63N5SR9",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QQ8E0G7Y2X02CHK62BK8XR",
+  "type": "ops",
+  "v": 1
+}

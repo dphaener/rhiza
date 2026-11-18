@@ -36,7 +36,7 @@ func TestWatchdogPolicy(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := WatchdogPolicy{true, 20 * time.Minute, 40 * time.Minute, 30 * time.Minute, 90 * time.Minute, 2, 1, 3, true, true, 400, 8 << 30, 5 * time.Minute}
+		want := WatchdogPolicy{true, 20 * time.Minute, 40 * time.Minute, 30 * time.Minute, 90 * time.Minute, 2, 1, 1, 3, true, true, 400, 8 << 30, 5 * time.Minute}
 		if p != want {
 			t.Fatalf("got %+v, want %+v", p, want)
 		}
@@ -59,8 +59,9 @@ func TestWatchdogPolicy(t *testing.T) {
 	})
 	t.Run("project over machine", func(t *testing.T) {
 		ctx, root := watchdogCtx(t, map[string]string{
-			"rhiza.project.watchdog.retryBudget": "0",
-			"rhiza.project.watchdog.enabled":     "false",
+			"rhiza.project.watchdog.retryBudget":   "0",
+			"rhiza.project.watchdog.enabled":       "false",
+			"rhiza.project.watchdog.failedRetries": "0",
 		})
 		if err := rootcfg.SetDaemon(root, "rhiza.daemon.watchdog.retryBudget", "5"); err != nil {
 			t.Fatal(err)
@@ -68,11 +69,14 @@ func TestWatchdogPolicy(t *testing.T) {
 		if err := rootcfg.SetDaemon(root, "rhiza.daemon.watchdog.ciReruns", "4"); err != nil {
 			t.Fatal(err)
 		}
+		if err := rootcfg.SetDaemon(root, "rhiza.daemon.watchdog.failedRetries", "3"); err != nil {
+			t.Fatal(err)
+		}
 		p, err := WatchdogPolicyOf(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if p.RetryBudget != 0 || p.Enabled || p.CIReruns != 4 {
+		if p.RetryBudget != 0 || p.Enabled || p.CIReruns != 4 || p.FailedRetries != 0 {
 			t.Fatalf("got %+v", p)
 		}
 	})

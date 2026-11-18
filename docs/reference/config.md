@@ -159,6 +159,13 @@ How many times the watchdog retries a stalled step before it gives up.
 - Type: whole number
 - Default: `2`
 
+### `rhiza.daemon.watchdog.failedRetries`
+
+How many times the watchdog retries a run that failed for a real reason, or one it cannot judge, before it leaves the run to the inbox; 0 turns it off.
+
+- Type: whole number
+- Default: `1`
+
 ### `rhiza.daemon.watchdog.ciReruns`
 
 How many times the watchdog reruns a failed CI check.
@@ -357,6 +364,13 @@ How many times the watchdog retries a stalled step before it gives up.
 
 - Type: whole number
 - Default: `2`
+
+### `rhiza.project.watchdog.failedRetries`
+
+How many times the watchdog retries a run that failed for a real reason, or one it cannot judge, before it leaves the run to the inbox; 0 turns it off.
+
+- Type: whole number
+- Default: `1`
 
 ### `rhiza.project.watchdog.ciReruns`
 
