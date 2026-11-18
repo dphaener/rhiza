@@ -20182,6 +20182,10 @@ cmp stdout describe.golden.json
             "description": "The model the child's agent starts on; default the agent's",
             "type": "string"
           },
+          "no_wait": {
+            "description": "Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end. Default: wait for the child and print its outcome",
+            "type": "boolean"
+          },
           "role": {
             "description": "The child's role, such as builder or verifier: the guide it follows",
             "type": "string"
@@ -20209,7 +20213,7 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "detail": {
-            "description": "said done, the child's exit, or why it failed",
+            "description": "said done, the child's exit, or why it failed; absent under --no-wait",
             "type": "string"
           },
           "dry_run": {
@@ -20224,8 +20228,12 @@ cmp stdout describe.golden.json
             "description": "The leaf it worked on",
             "type": "string"
           },
+          "no_wait": {
+            "description": "True if the spawn returned once the child started (--no-wait), without its outcome",
+            "type": "boolean"
+          },
           "outcome": {
-            "description": "pass when the child said done (rhiza session done) or its agent exited 0, else fail",
+            "description": "pass when the child said done (rhiza session done) or its agent exited 0, else fail; absent under --no-wait",
             "enum": [
               "pass",
               "fail"
@@ -20260,7 +20268,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome",
+      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started",
       "write": true
     },
     {

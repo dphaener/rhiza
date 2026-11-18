@@ -140,7 +140,7 @@ func TestRunSpawn(t *testing.T) {
 			t.Fatalf("spawns %+v", st.Spawns)
 		}
 		sp := st.Spawns[0]
-		if sp.Step != "build" || sp.Parent != "parent-1" || sp.Session != "child-1" || sp.Role != "verifier" || sp.Leaf != "run-spawn" || !sp.Ended || sp.Outcome != "pass" {
+		if sp.Step != "build" || sp.Parent != "parent-1" || sp.Session != "child-1" || sp.Role != "verifier" || sp.Leaf != "run-spawn" || !sp.Ended || sp.Outcome != "pass" || sp.NoWait {
 			t.Errorf("spawn %+v", sp)
 		}
 		var seen bool
@@ -204,8 +204,75 @@ func TestRunSpawn(t *testing.T) {
 		if resp.Outcome != "fail" || resp.Detail != "exit 1" || resp.ExitCode() != 1 {
 			t.Fatalf("response %+v", resp)
 		}
-		if sp := s.state(t).Spawns[0]; sp.Outcome != "fail" || sp.Detail != "exit 1" {
+		if sp := s.state(t).Spawns[0]; sp.Outcome != "fail" || sp.Detail != "exit 1" || sp.NoWait {
 			t.Errorf("spawn %+v", sp)
+		}
+	})
+
+	// A --no-wait spawn returns while its child still runs: the session
+	// and brief set, no outcome or detail, exit 0, its spawn entry marked
+	// no-wait, no spawn-ended entry, and the child's pane left open.
+	t.Run("NoWait", func(t *testing.T) {
+		s := newSpawnFixture(t)
+		s.child = func(rec *session.Record) {
+			rec.Tab = session.Tab{Session: "s1", Block: "block:c1"}
+			rec.Status = session.Status{}
+		}
+		rex := &spawnRex{}
+		s.f.ctx.Exec = rex.exec
+		r := s.req()
+		r.NoWait = true
+		resp, err := s.sp.spawn(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if resp.Session != "child-1" || resp.Brief == "" || resp.Outcome != "" || resp.Detail != "" || resp.ExitCode() != 0 || !resp.NoWait || s.slept != 0 {
+			t.Fatalf("response %+v, slept %d", resp, s.slept)
+		}
+		j, err := s.store.Read("R1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var spawns, ended int
+		for _, e := range j.Entries {
+			switch e.Type {
+			case run.TypeSpawn:
+				spawns++
+				if !e.NoWait || e.Session != "child-1" {
+					t.Errorf("spawn entry %+v", e)
+				}
+			case run.TypeSpawnEnded:
+				ended++
+			}
+		}
+		if spawns != 1 || ended != 0 {
+			t.Errorf("%d spawn and %d spawn-ended entries", spawns, ended)
+		}
+		if sp := j.State().Spawns[0]; !sp.NoWait || sp.Ended || sp.Outcome != "" {
+			t.Errorf("spawn %+v", sp)
+		}
+		if len(rex.calls) != 0 {
+			t.Errorf("rex calls %q", rex.calls)
+		}
+		var out bytes.Buffer
+		resp.Human(&out)
+		if got := out.String(); !strings.Contains(got, "child-1") || !strings.Contains(got, "not waited for") {
+			t.Errorf("human %q", got)
+		}
+	})
+
+	// A --no-wait spawn whose child cannot be started returns the start
+	// error and journals no spawn entry.
+	t.Run("NoWaitStartFails", func(t *testing.T) {
+		s := newSpawnFixture(t)
+		s.sp.start = func(SessionStartRequest) (string, error) { return "", errors.New("rex tab new: server down") }
+		r := s.req()
+		r.NoWait = true
+		if _, err := s.sp.spawn(r); err == nil || !strings.Contains(err.Error(), "server down") {
+			t.Fatalf("err %v", err)
+		}
+		if sp := s.state(t).Spawns; len(sp) != 0 {
+			t.Errorf("spawns %+v", sp)
 		}
 	})
 

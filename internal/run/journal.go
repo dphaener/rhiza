@@ -531,6 +531,10 @@ type Entry struct {
 	Process *Process `json:"process,omitempty"`
 	// Parent is a spawn entry's calling session.
 	Parent string `json:"parent,omitempty"`
+	// NoWait marks a spawn entry whose spawn returned once the child
+	// started (rhiza run spawn --no-wait): the run's engine journals its
+	// end.
+	NoWait bool `json:"no_wait,omitempty"`
 }
 
 // Finding is one finding: of a plan review round, node Node (its handle
@@ -774,7 +778,8 @@ const HandbackParked = "handback cap reached: "
 
 // Spawn is one child session a step's session spawned: Step the calling
 // step, Parent the calling session, Session the child. Outcome and Detail
-// are empty until the child ends.
+// are empty until the child ends. NoWait marks a child whose spawn returned
+// once it started (rhiza run spawn --no-wait).
 type Spawn struct {
 	Step    string
 	Parent  string
@@ -785,6 +790,7 @@ type Spawn struct {
 	Outcome string
 	Detail  string
 	Ended   bool
+	NoWait  bool
 }
 
 // SpawnHold is a spawn that waited on a hold: Step the calling step, Detail
@@ -1859,7 +1865,7 @@ func (j Journal) State() State {
 			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Detail: e.Detail, At: e.At})
 		case TypeSpawn:
 			st.addSession(e.Step, e.Session)
-			st.Spawns = append(st.Spawns, Spawn{Step: e.Step, Parent: e.Parent, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Model: e.Model})
+			st.Spawns = append(st.Spawns, Spawn{Step: e.Step, Parent: e.Parent, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Model: e.Model, NoWait: e.NoWait})
 			for i := range st.SpawnHolds {
 				if h := &st.SpawnHolds[i]; h.Held() && h.Parent == e.Parent && h.Step == e.Step {
 					h.Until = e.At

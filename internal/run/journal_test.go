@@ -155,6 +155,26 @@ func TestFoldFinished(t *testing.T) {
 	}
 }
 
+// TestFoldSpawnNoWait: a spawn entry's no-wait mark folds onto its Spawn;
+// a waiting spawn's stays false, and an ended no-wait child keeps it.
+func TestFoldSpawnNoWait(t *testing.T) {
+	j := Journal{ID: "r", Entries: []Entry{
+		startedEntry("a", 0),
+		{Type: TypeEntered, At: at(1), Step: "a", Visit: 1},
+		{Type: TypeSpawn, At: at(2), Step: "a", Parent: "P", Session: "C1", Role: "builder"},
+		{Type: TypeSpawn, At: at(3), Step: "a", Parent: "P", Session: "C2", Role: "verifier", NoWait: true},
+		{Type: TypeSpawnEnded, At: at(4), Step: "a", Parent: "P", Session: "C2", Outcome: "pass", Detail: "said done"},
+	}}
+	st := j.State()
+	want := []Spawn{
+		{Step: "a", Parent: "P", Session: "C1", Role: "builder"},
+		{Step: "a", Parent: "P", Session: "C2", Role: "verifier", NoWait: true, Outcome: "pass", Detail: "said done", Ended: true},
+	}
+	if !reflect.DeepEqual(st.Spawns, want) {
+		t.Fatalf("spawns = %+v, want %+v", st.Spawns, want)
+	}
+}
+
 func TestFoldAutonomous(t *testing.T) {
 	plain := startedEntry("a", 0)
 	if st := (Journal{Entries: []Entry{plain}}).State(); st.Autonomous {
