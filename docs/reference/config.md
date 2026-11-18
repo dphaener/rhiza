@@ -15,9 +15,9 @@ Pause the whole daemon: no project is worked while true.
 
 ### `rhiza.daemon.maxRuns`
 
-The most runs the daemon works at once, across all projects.
+The most runs the daemon works at once, across all projects; auto starts another only while the pre-start checks (load, memory, free tmp, disk) have room.
 
-- Type: whole number
+- Type: whole number or auto
 - Default: `2`
 - Flag: `rhiza daemon --max-runs` overrides it for a run
 

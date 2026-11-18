@@ -54,6 +54,25 @@ type settingDef struct {
 	emptyOK bool
 }
 
+// MaxRunsAuto is the rhiza.daemon.maxRuns value that lets the daemon start
+// another run only while the pre-start checks have room, in place of a
+// pinned cap.
+const MaxRunsAuto = "auto"
+
+// ValidateDaemonMaxRuns checks a rhiza.daemon.maxRuns value: a whole number
+// of at least 1, or auto. rhiza.project.maxRuns and --max-runs take a whole
+// number only.
+func ValidateDaemonMaxRuns(v string) error {
+	if v == MaxRunsAuto {
+		return nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 1 {
+		return fmt.Errorf("must be a whole number of at least 1 or auto")
+	}
+	return nil
+}
+
 // ProjectAgentKey names the project setting that picks the agent adapter.
 const ProjectAgentKey = "rhiza.project.agent"
 
@@ -114,13 +133,7 @@ var settingDefs = []settingDef{
 	// The hook commands run through sh -c, per project.
 	{project: true, key: "rhiza.eventCommand", def: "", typ: "shell command", desc: "A command run through sh -c for each event; unset means none", validate: validateCommand},
 	{project: true, key: "rhiza.notifyCommand", def: "", typ: "shell command", desc: "A command run through sh -c to notify the owner; unset means none", validate: validateCommand},
-	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", typ: "whole number", desc: "The most runs the daemon works at once, across all projects", validate: func(v string) error {
-		n, err := strconv.Atoi(v)
-		if err != nil || n < 1 {
-			return fmt.Errorf("must be a whole number of at least 1")
-		}
-		return nil
-	}},
+	{key: "rhiza.daemon.maxRuns", def: strconv.Itoa(daemon.DefaultMaxRuns), flag: "--max-runs", typ: "whole number or auto", desc: "The most runs the daemon works at once, across all projects; auto starts another only while the pre-start checks (load, memory, free tmp, disk) have room", validate: ValidateDaemonMaxRuns},
 	{key: "rhiza.daemon.minFree", def: "10G", flag: "--min-free", typ: "size", desc: "The free disk space below which the daemon starts no run, such as 10G", validate: func(v string) error {
 		_, err := daemon.ParseSize(v)
 		return err
@@ -411,8 +424,13 @@ func settingValue(rows []Setting, key string) string {
 
 // daemonConf is the daemon's effective settings for one poll.
 type daemonConf struct {
-	rows    []Setting
+	rows []Setting
+	// maxRuns is the machine-wide cap on running runs: the pinned number,
+	// or the default when maxRunsAuto is set.
 	maxRuns int
+	// maxRunsAuto marks rhiza.daemon.maxRuns=auto: each poll's cap follows
+	// the pre-start checks instead of a pinned number.
+	maxRunsAuto bool
 	// projectMax is the project's own cap on its running runs within the
 	// machine-wide maxRuns, 0 for none.
 	projectMax int
@@ -488,7 +506,12 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 		return daemonConf{}, err
 	}
 	c := daemonConf{rows: rows}
-	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
+	if v := settingValue(rows, "rhiza.daemon.maxRuns"); v == MaxRunsAuto {
+		c.maxRunsAuto = true
+		c.maxRuns = daemon.DefaultMaxRuns
+	} else {
+		c.maxRuns, _ = strconv.Atoi(v)
+	}
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
 	c.minTmpFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minTmpFree"))
 	c.maxLoad, _ = parseMaxLoad(settingValue(rows, "rhiza.daemon.maxLoad"))

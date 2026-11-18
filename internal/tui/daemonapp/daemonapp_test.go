@@ -180,8 +180,44 @@ func TestValidLimitSetsAndQuits(t *testing.T) {
 	}
 }
 
+func TestAutoLimitSetsAndQuits(t *testing.T) {
+	f, s := open(t, "false")
+	typeLimit(t, s, "auto")
+	drive(t, s, "enter")
+	sets := f.sets()
+	if len(sets) != 1 || strings.Join(sets[0], " ") != "daemon.set -- rhiza.daemon.maxRuns auto" {
+		t.Errorf("sets = %v", sets)
+	}
+	if !s.Closed() {
+		t.Error("app did not quit")
+	}
+}
+
+func TestLimitValidators(t *testing.T) {
+	for _, v := range []string{"1", "12", "auto"} {
+		if err := validateMaxRuns(v); err != nil {
+			t.Errorf("run limit %q refused: %v", v, err)
+		}
+	}
+	for _, v := range []string{"0", "-1", "autox", "x", ""} {
+		if err := validateMaxRuns(v); err == nil || !strings.Contains(err.Error(), "a whole number of at least 1 or auto") {
+			t.Errorf("run limit %q: error %v", v, err)
+		}
+	}
+	for _, v := range []string{"", "2"} {
+		if err := validateProjectMaxRuns(v); err != nil {
+			t.Errorf("project run limit %q refused: %v", v, err)
+		}
+	}
+	for _, v := range []string{"auto", "0", "x"} {
+		if err := validateProjectMaxRuns(v); err == nil {
+			t.Errorf("project run limit %q accepted", v)
+		}
+	}
+}
+
 func TestInvalidLimitCallsNothing(t *testing.T) {
-	for _, v := range []string{"0", "x", ""} {
+	for _, v := range []string{"0", "-1", "autox", "x", ""} {
 		f, s := open(t, "false")
 		typeLimit(t, s, v)
 		drive(t, s, "enter")
