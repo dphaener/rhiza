@@ -461,16 +461,16 @@ type listCacheRecord struct {
 
 // ListCachePath is the file a DiskCache store keeps its list cache in:
 // <user cache dir>/rhiza/run-list/<hash of the store's folder>.gob, placed
-// by the os package's rules over getenv (userdir). ok is false when there
-// is no user cache dir.
+// by the os package's rules over getenv (userdir). dir is absolute (the
+// caller resolves it against its own working directory, never the
+// process's), and cleaned before hashing. ok is false when there is no
+// user cache dir.
 func ListCachePath(dir string, getenv func(string) string) (path string, ok bool) {
 	c, err := userdir.Cache(getenv)
 	if err != nil || c == "" {
 		return "", false
 	}
-	if abs, err := filepath.Abs(dir); err == nil {
-		dir = abs
-	}
+	dir = filepath.Clean(dir)
 	sum := sha256.Sum256([]byte(dir))
 	return filepath.Join(c, "rhiza", "run-list", hex.EncodeToString(sum[:16])+".gob"), true
 }
