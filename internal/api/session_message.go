@@ -76,50 +76,64 @@ type SessionMessageResponse struct {
 	DryRun  bool   `json:"dry_run,omitempty" desc:"True if nothing was written or sent"`
 }
 
-// runSessionMessage checks the request and the session, resolves the
-// sender, writes the message file and types the pointer once the session
-// is at its prompt. A dry run does all but write and send.
+// runSessionMessage is the session.message op: it delivers the message
+// and journals it as a message intervention on the session's run.
 func runSessionMessage(ctx *Ctx, req any) (any, error) {
-	r := req.(SessionMessageRequest)
+	return sendSessionMessage(ctx, req.(SessionMessageRequest), true)
+}
+
+// deliverSessionMessage delivers a message as session.message does but
+// journals nothing: the daemon's nudges and the API-error re-prompts are
+// Rhiza's own actions, never outside interventions.
+func deliverSessionMessage(ctx *Ctx, r SessionMessageRequest) error {
+	_, err := sendSessionMessage(ctx, r, false)
+	return err
+}
+
+// sendSessionMessage checks the request and the session, resolves the
+// sender, writes the message file and types the pointer once the session
+// is at its prompt; with journal set, a sent message is journalled. A dry
+// run does all but write and send.
+func sendSessionMessage(ctx *Ctx, r SessionMessageRequest, journal bool) (SessionMessageResponse, error) {
 	ref := strings.TrimSpace(r.Session)
 	if ref == "" {
-		return nil, Usagef("session message needs a session ID").WithNext(sessionLsNext)
+		return SessionMessageResponse{}, Usagef("session message needs a session ID").WithNext(sessionLsNext)
 	}
 	if strings.TrimSpace(r.Text) == "" {
-		return nil, Usagef("the message is blank: say something").WithNext(sessionMessageNext)
+		return SessionMessageResponse{}, Usagef("the message is blank: say something").WithNext(sessionMessageNext)
 	}
 	timeout, err := messageTimeout(r.Timeout)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	st, err := sessionStore(ctx)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	rec, err := readSession(st, ref)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	if err := messageable(rec); err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	if !ctx.DryRun && ctx.Exec == nil {
-		return nil, Errorf("cannot send a message: this caller runs no programs")
+		return SessionMessageResponse{}, Errorf("cannot send a message: this caller runs no programs")
 	}
 	from, err := messageSender(ctx)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	dir, rel, err := messageFolder(ctx, rec)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	content := messageContent(from, rec, rfc3339(ctx.Now()), r.Text)
 	resp := SessionMessageResponse{Session: rec.ID, From: from.Handle, Waited: roundWait(0)}
 	if ctx.DryRun {
 		name, err := nextMessageName(dir)
 		if err != nil {
-			return nil, err
+			return SessionMessageResponse{}, err
 		}
 		resp.File = filepath.Join(dir, name)
 		resp.Pointer = messagePointer(from.Handle, rel+"/"+name)
@@ -128,22 +142,26 @@ func runSessionMessage(ctx *Ctx, req any) (any, error) {
 	}
 	name, err := writeMessage(dir, content)
 	if err != nil {
-		return nil, err
+		return SessionMessageResponse{}, err
 	}
 	resp.File = filepath.Join(dir, name)
 	resp.Pointer = messagePointer(from.Handle, rel+"/"+name)
 	if queued, err := queuePointer(st, rec.ID, resp.Pointer); err != nil {
-		return nil, withNote(err, "the message is in "+resp.File)
+		return SessionMessageResponse{}, withNote(err, "the message is in "+resp.File)
 	} else if queued {
-		journalMessage(ctx, st, rec, from, r.Text)
+		if journal {
+			journalMessage(ctx, st, rec, from, r.Text)
+		}
 		return resp, nil
 	}
 	waited, err := typePointer(ctx, st, rec.ID, resp.Pointer, timeout)
 	if err != nil {
-		return nil, withNote(err, "the message is in "+resp.File)
+		return SessionMessageResponse{}, withNote(err, "the message is in "+resp.File)
 	}
 	resp.Waited = roundWait(waited)
-	journalMessage(ctx, st, rec, from, r.Text)
+	if journal {
+		journalMessage(ctx, st, rec, from, r.Text)
+	}
 	return resp, nil
 }
 

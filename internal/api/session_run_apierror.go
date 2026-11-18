@@ -17,11 +17,11 @@ import (
 // re-prompted. Tests shorten it.
 var apiErrorBackoff = []time.Duration{time.Minute, 2 * time.Minute, 4 * time.Minute}
 
-// sendAPIErrorMessage sends the session a message, as session.message does.
+// sendAPIErrorMessage sends the session a message as session.message does,
+// journalling no intervention: a re-prompt is Rhiza's own action.
 // Tests replace it.
 var sendAPIErrorMessage = func(ctx *Ctx, sid, text string) error {
-	_, err := runSessionMessage(ctx, SessionMessageRequest{Session: sid, Text: text})
-	return err
+	return deliverSessionMessage(ctx, SessionMessageRequest{Session: sid, Text: text})
 }
 
 // apiErrorWatch is the state of one session's API-error handling across

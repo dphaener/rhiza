@@ -531,3 +531,45 @@ func TestSessionMessageJournalsIntervention(t *testing.T) {
 		t.Errorf("stderr %q", stderr.String())
 	}
 }
+
+// The daemon's nudge and an API-error re-prompt deliver a message to a
+// run's session as session.message does, from a caller with no
+// RHIZA_SESSION, yet journal no intervention: both are Rhiza's own actions.
+// Not parallel: other tests replace daemonSend and sendAPIErrorMessage.
+func TestSessionMessageRhizaSendsJournalNothing(t *testing.T) {
+	f := newMessageFixture(t)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R1", run.Entry{
+		Type: run.TypeStarted, Step: "build", At: time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC),
+		Started: &run.Started{Workflow: "conduct", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Notes"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Run = "R1" }); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(string) string { return "" }
+
+	for _, c := range []struct {
+		name string
+		send func(*Ctx, string, string) error
+	}{
+		{"daemon nudge", daemonSend},
+		{"API-error re-prompt", sendAPIErrorMessage},
+	} {
+		f.setHook(t, session.StateIdle, "")
+		if err := c.send(f.ctx, f.sid, "carry on"); err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		j, err := store.Read("R1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if ivs := j.State().Interventions; len(ivs) != 0 {
+			t.Errorf("%s journalled %+v", c.name, ivs)
+		}
+	}
+	if _, err := os.Stat(f.messageFile("0002.md")); err != nil {
+		t.Errorf("both messages not delivered: %v", err)
+	}
+}
