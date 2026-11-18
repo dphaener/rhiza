@@ -188,6 +188,7 @@ var processScripts = map[string]string{
 	"build-workflow":                       "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c",
 	"byo-workflow-daemon":                  "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; exec rhiza daemon --once",
 	"byo-workflow-hold-intervention":       "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; rhiza with &; exec rhiza daemon --once",
+	"byo-workflow-retry":                   "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; a fake bin/ rhiza in front of the in-process one; starts rhiza through sh -c; exec rhiza daemon --once",
 	"carve-guards":                         "starts rhiza through sh -c",
 	"change-new-workflow-flag":             "starts rhiza through sh -c",
 	"change-request-kind":                  "a fake bin/ rex that runs its tab's rhiza command; starts rhiza through sh -c",

@@ -1,0 +1,356 @@
+# Under the daemon, a run of the bring-your-own example workflow
+# myteam-flow (docs/examples/byo/workflow.toml; the archive's copy below is
+# held byte-identical to it by TestDocsExampleBYOWorkflowCopies) whose
+# close-out command fails once, a transient failure, is retried by the
+# watchdog with no one acting: the run fails at close-out, the next daemon
+# --once poll queues its continuation with --retry and continues it as a
+# detached run resume --foreground, which runs close-out again (not
+# services or work), and the run ends succeeded with no journalled
+# intervention.
+#
+# (failure case) In a second project with rhiza.daemon.watchdog.failedRetries
+# set to 0, the same failure is left to the inbox: no poll queues or resumes
+# it, the run stays failed and rhiza inbox lists it.
+#
+# The Setup's rhiza.daemon.failureClassifier is empty, so the watchdog
+# cannot call a failure transient: each retry is charged to failedRetries
+# (default 1). The detached processes are logged, not started
+# (RHIZA_TEST_DETACH_LOG), so the logged resume is run by hand.
+#
+# Nothing reaches docker, make, GitHub, Rex or Claude Code: all are fakes on
+# PATH, as in byo-workflow-daemon.txtar, with no lint failure. The fake gh
+# keeps its PR state beside $ORIGIN, the project's bare origin. The fake
+# rhiza fails rhiza ship close-out on its first call per origin (a stand-in
+# for a transient error) and runs the in-process rhiza otherwise.
+
+mkdir $HOME/.claude/projects/p
+mkdir $HOME/.claude/skills/myteam/skills/implement
+cp $WORK/SKILL.md $HOME/.claude/skills/myteam/skills/implement/SKILL.md
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+chmod 755 bin/make
+chmod 755 bin/docker
+chmod 755 bin/rhiza
+env REAL_RHIZA=$RHIZA_TEST_BIN/rhiza
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+env ORIGIN=$WORK/origin.git
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $ORIGIN
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/myteam-flow.toml .rhiza/workflows/myteam-flow.toml
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+
+# An accepted change set of one leaf, committed on main and pushed.
+exec rhiza change new 'Team flow' --title 'Team flow' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# The run, started by hand: every step passes up to the merge, then
+# close-out's command fails and the run fails there.
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --workflow myteam-flow --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=1$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} failed$'
+exec rhiza run status
+stdout '^- merge \(visit 1\): pass, then close-out'
+stdout '^- close-out \(visit 1\): fail, then end'
+exec sh -c 'rhiza run status --json | grep -o "\"id\": \"[0-9A-Z]*\"" | head -1 | tr -dc 0-9A-Z > $WORK/run1'
+
+# The daemon's poll retries it with no one acting: the watchdog charges the
+# failure to failedRetries and queues the run's continuation with --retry.
+exec rhiza daemon --permission-mode manual --autonomous --once
+stderr -count=1 'watchdog: run [0-9A-Z]{26} step close-out failure classified real \(classifier off\): resumed with --retry \(failed retry 1 of 1\)'
+! stdout 'Started a run'
+exec sh -c 'grep -c "\"retry\": true" .git/rhiza/continues.json'
+stdout '^1$'
+exec sh -c 'grep -c "$(cat $WORK/run1)" .git/rhiza/continues.json'
+stdout '^1$'
+! exists $WORK/detach.log
+
+# The next poll continues it as a detached run resume --foreground --retry
+# (logged, not started). That poll's watchdog counts the run it just
+# resumed as live, since its resume may not hold the run's lock yet: no
+# second retry, nothing left to the inbox.
+exec rhiza daemon --permission-mode manual --autonomous --once
+stdout -count=1 '^Resumed run [0-9A-Z]{26}$'
+! stderr 'watchdog: run'
+exec sh -c 'grep -c "RHIZA_DAEMON_RESUME=1 rhiza run resume --foreground $(cat $WORK/run1) --retry$" $WORK/detach.log'
+stdout '^1$'
+exec sh -c 'grep -c . $WORK/detach.log'
+stdout '^1$'
+! exec grep -q "\"run\"" .git/rhiza/continues.json
+
+# The logged resume, run by hand: close-out runs again and passes; services
+# and work do not run again. The run succeeds with no intervention.
+env RHIZA_DAEMON_RESUME=1
+exec sh -c 'rhiza run resume --foreground "$(cat $WORK/run1)" --retry > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+env RHIZA_DAEMON_RESUME=
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status
+stdout '^- services \(visit 1\): pass, then work'
+stdout '^- work \(visit 1\): pass, then gate'
+stdout '^- close-out \(visit 1\): fail, then end'
+stdout '^- close-out \(visit 2, retried\): pass, then end'
+! stdout '^- (services|work|gate|signoff|push|wait-ci|merge) \(visit 2'
+stdout 'retried at close-out, after: step "close-out" ended with outcome "fail"$'
+exec rhiza run status --json
+stdout '"workflow": "myteam-flow"'
+stdout '"state": "succeeded"'
+stdout '"intervention_count": 0'
+cmp $WORK/docker.log $WORK/want.docker
+cmp $WORK/claude.log $WORK/want.claude
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+! exists $WORK/repo.team-flow
+exec rhiza inbox --json
+! stdout '01M5PWGEF85Y185JZ2ZGCNH40N'
+fold-ok
+
+# (failure case) A second project, its own origin, with the failed-retry
+# budget at 0 before its run's first poll (the watchdog remembers a failure
+# it left to the inbox): the same close-out failure is left there, the run
+# is never resumed and stays failed, and rhiza inbox lists it.
+cd $WORK
+env ORIGIN=$WORK/origin2.git
+exec git init -q --bare origin2.git
+mkdir repo2
+cd repo2
+exec git init -q
+exec git remote add origin $ORIGIN
+exec rhiza init
+exec rhiza project add $WORK/repo2
+mkdir .rhiza/workflows
+cp $WORK/myteam-flow.toml .rhiza/workflows/myteam-flow.toml
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+exec rhiza change new 'Team flow' --title 'Team flow' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+exec rhiza daemon set rhiza.daemon.watchdog.failedRetries 0
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --workflow myteam-flow --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=1$'
+exec rhiza run status
+stdout '^- close-out \(visit 1\): fail, then end'
+exec rm $WORK/detach.log
+exec rhiza daemon --permission-mode manual --autonomous --once
+stderr -count=1 'watchdog: run [0-9A-Z]{26} step close-out failure classified real, left to the inbox: classifier off'
+! stderr 'resumed with --retry'
+! exec grep -q '"run"' .git/rhiza/continues.json
+exec rhiza daemon --permission-mode manual --autonomous --once
+! stdout 'Resumed run'
+! stderr 'watchdog: run'
+! exists $WORK/detach.log
+exec rhiza run status --json
+stdout '"state": "failed"'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ failed run [0-9A-Z]{26}, change set 01M5PWGEF85Y185JZ2ZGCNH40N, step close-out$'
+stdout 'close-out: fetch origin: connection reset by peer'
+stdout 'next: rhiza run resume --retry '
+exec rhiza inbox --json
+stdout '"kind": "failed"'
+stdout '"step": "close-out"'
+fold-ok
+
+-- myteam-flow.toml --
+# Bring your own agent, level 3: a workflow.
+#
+# The team's own steps, put together from the primitives: a hook that
+# starts the services, one agent step running the team's skill, a gate
+# of the team's own commands that hands a red back to that agent, the
+# owner's sign-off, the push, a CI wait, the merge and close-out, and a
+# cleanup hook that stops the services however the run ends.
+name = "myteam-flow"
+handback_cap = 3
+
+[env]
+TMPDIR = "{run_tmp}"
+CI = "true"
+
+[step.services]
+kind = "command"
+run = "docker compose up -d --wait"
+on.pass = "work"
+
+[step.work]
+kind = "agent"
+invoke = "/myteam:implement Change set {change} ({title}). Your brief is {brief} and the model around it is {slice}. Build it, land it with rhiza land and rhiza render, commit, then run rhiza session done."
+handback = "/myteam:implement The run handed change set {change} back: read {handback}, fix what it names, land and render again, then run rhiza session done."
+permission_mode = "acceptEdits"
+until = "true"
+until_when = "done"
+on.pass = "gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check", "make lint", "make test"]
+on.pass = "signoff"
+on.fail = "handback:work"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "handback:work"
+
+[step.push]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-ci"
+on.fail = "handback:work"
+
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled --no-rebase"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "merge"
+on.timeout = "handback:work"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "close-out"
+on.fail = "handback:work"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+
+[[cleanup]]
+name = "stop-services"
+run = "docker compose down"
+-- want.claude --
+implement
+-- want.docker --
+compose up -d --wait
+compose down
+compose down
+-- dispatch.toml --
+[ready]
+feature = "myteam-flow"
+-- SKILL.md --
+---
+name: implement
+description: The team's own implement skill (a stub)
+---
+Build the change set.
+-- bin/docker --
+#!/bin/sh
+echo "$*" >> "$WORK/docker.log"
+exit 0
+-- bin/rex --
+#!/bin/sh
+if [ -n "$FAKE_REX_DAEMON" ]; then
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/make --
+#!/bin/sh
+echo "$1 pass" >> "$WORK/make.log"
+exit 0
+-- bin/rhiza --
+#!/bin/sh
+if [ "$1 $2" = "ship close-out" ] && [ ! -e "$ORIGIN.closeout-failed" ]; then
+	touch "$ORIGIN.closeout-failed"
+	echo 'close-out: fetch origin: connection reset by peer' >&2
+	exit 1
+fi
+exec "$REAL_RHIZA" "$@"
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+case "$last" in
+"/myteam:implement Change set"*)
+	echo implement >> "$WORK/claude.log"
+	echo first > first.txt
+	git add first.txt
+	git commit -q -m "build first" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: first" -- first.txt || exit 1
+	rhiza add evidence first-verified --field 'statement=first works' --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link first-verified verifies first --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza land >&2 || exit 1
+	rhiza render >&2 || exit 1
+	git add -A -- .rhiza
+	git commit -q -m 'Land and render' -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR" || exit 1
+	rhiza session done >&2 || exit 1
+	;;
+*)
+	echo "fake claude: unexpected prompt: $last" >> "$WORK/claude.log"
+	exit 1
+	;;
+esac
+exit 0
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$ORIGIN.gh.log"
+o="$ORIGIN"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$o.merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$o.pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	touch "$o.pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/team-flow)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Team flow (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$o.merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac
