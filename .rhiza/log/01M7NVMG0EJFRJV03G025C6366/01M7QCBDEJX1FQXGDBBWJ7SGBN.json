@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QCA1QY0MEMJSDPEPRZCN6W",
+  "after": [
+    "01M7QBVDDNBRHCR75V2SEKNK5G"
+  ],
+  "at": "2026-11-18T13:08:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 3c125fa0b. Ran go test -trimpath -p 2 ./internal/api -run 'TestWatchdogStalled|TestDaemonNudgeStalled|TestStepSessions|TestRunStalled' (exit 0; TestWatchdogStalledSpawnedChild, TestDaemonNudgeStalledSpawnedChild, TestStepSessions, TestWatchdogStalled, TestDaemonNudgeStalled, TestRunStalledNow pass), rhiza ship generate (exit 0, 0 changed) and rhiza render (exit 0, only this verifier's own actor files). The full ./internal/api run in Checks was not re-run per the brief (builder ran it; scoped run raised no doubt). Diff read: stepSessions adds open spawn children of the current step; stallSessions drops parents waiting on an open spawn and feeds runStalledAll (daemon nudge) and watchdogProgress; watchdogStalled's stop closes sids plus spawnWaiting. TestWatchdogStalledSpawnedChild replays 2026-11-16: conduct run, conductor spawn of fixer with no spawn-ended, fixer autonomous idle by hook with no done; nothing before 20m, fixer nudged (not conductor) at 21m, at 41m stop R:fixer,conductor and one resume (queueContinue retry=true) with Spent 1; done child and ended spawn not nudged/counted; conductor waiting on a reporting fixer never nudged or stopped despite a 5h-old report. TestDaemonNudgeStalledSpawnedChild sends to the fixer only. must_not respected: session.Stalled/Stallable, policy keys/defaults, run spawn, --json shapes untouched; autonomousOnly hold path unchanged. gofmt clean, no TODOs, only listed files changed besides the actor record."
+        },
+        "handle": "stall-covers-spawned-children-verified",
+        "id": "01M7QCBDD0HW8BA1079TQGQ8W7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QCBDD0HW8BA1079TKJ1G3B",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QCBDD0HW8BA1079TKJ1G3B",
+        "id": "01M7QCBDDRX5VEYBC3MVHXVGMK",
+        "link": "01M7QCBDDRX5VEYBC3MS2H442Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QBVD8Y319MBF5A5DA03TQH",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMG0EJFRJV03G025C6366",
+  "for": "01M7QBPFZN7TAGDJBQXZJ0J9KV",
+  "id": "01M7QCBDEJX1FQXGDBBWJ7SGBN",
+  "type": "ops",
+  "v": 1
+}
