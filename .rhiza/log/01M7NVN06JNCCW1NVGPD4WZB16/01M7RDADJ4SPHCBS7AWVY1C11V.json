@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RD8Y4S1GFW8VJ36VGBR3VZ",
+  "after": [
+    "01M7RCZND0PBB0TNEBCXDMR624"
+  ],
+  "at": "2026-11-18T22:44:27Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 38f0f597e, env -u RHIZA_*/SHIP_*/REX_* go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/byo-workflow-hold-intervention$' -count=1 passed (exit 0), as did TestDocsExampleBYOWorkflowCopies|TestProcessScripts|TestProcessListConverted|TestScriptOrder|TestScriptEnv; rhiza ship generate and rhiza render exit 0. The script holds myteam-flow's work step at RHIZA_TEST_LOAD1/5=3.5 (one spawn-held for step work in rhiza inbox --json and text, zero session journal entries, no claude call), releases at low load via daemon --once (the session starts, inbox clear), asserts intervention_count 0 after the session's own message 'Own note' (failure case), then 1 message intervention naming actor test, step work and the text after an outside rhiza session message; the run then succeeds and lands. The embedded myteam-flow.toml is byte-identical to docs/examples/byo/workflow.toml; the commit changes no docs/ or internal/ file and no Go code names myteam or work; processScripts entry added with its reason."
+        },
+        "handle": "byo-spawn-hold-intervention-verified",
+        "id": "01M7RDADF60FE8Q8Z920QJWNAA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RDADF60FE8Q8Z91XTWEJKR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RDADF60FE8Q8Z91XTWEJKR",
+        "id": "01M7RDADGQZM612398Y8AR2N5H",
+        "link": "01M7RDADGQZM612398Y61F6CRP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB62EDVAPFFYGG892NFT57",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "id": "01M7RDADJ4SPHCBS7AWVY1C11V",
+  "type": "ops",
+  "v": 1
+}
