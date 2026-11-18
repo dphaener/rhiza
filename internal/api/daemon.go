@@ -1390,7 +1390,7 @@ func daemonQueuedContinues(ctx *Ctx, rs *run.Store, runs []run.Journal, running,
 			if c.NoWait {
 				args = append(args, "--no-wait")
 			}
-			if err := daemonDetach(ctx, "run "+c.Run, c.Run, nil, args); err != nil {
+			if err := daemonDetach(ctx, "run "+c.Run, c.Run, []string{envDaemonResume + "=1"}, args); err != nil {
 				return nil, err
 			}
 			continued = append(continued, c.Run)
@@ -1714,7 +1714,7 @@ func daemonStart(ctx *Ctx, fold *daemonFolded, cs string, autonomous bool, mode 
 // daemonResume continues run id as a detached rhiza run resume --foreground
 // process, with the permission mode the run started with.
 func daemonResume(ctx *Ctx, id string) error {
-	return daemonDetach(ctx, "run "+id, id, nil, []string{"run", "resume", "--foreground", id})
+	return daemonDetach(ctx, "run "+id, id, []string{envDaemonResume + "=1"}, []string{"run", "resume", "--foreground", id})
 }
 
 func init() {

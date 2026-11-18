@@ -1,0 +1,119 @@
+# A person's rhiza run resume journals a resume intervention, resume
+# --retry a retry intervention and rhiza run abandon an abandon
+# intervention, each with the caller's actor and the step, shown by run
+# status. A dry run journals none. (failure case) A resume the daemon
+# drives journals none: RHIZA_DAEMON_RESUME, which the daemon sets on the
+# run resume --foreground it detaches for its own resume, a queued
+# continuation and the watchdog's retry.
+
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp ../hold.toml .rhiza/workflows/hold.toml
+cp ../flaky.toml .rhiza/workflows/flaky.toml
+
+# A run stopped at its wait.
+rhiza change new 'Hold a run' --title Hold --json
+rhiza run start --foreground --workflow hold --no-wait
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 0'
+
+# A dry run of the resume journals nothing.
+rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG --dry-run
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 0'
+
+# The person's resume, queued for the daemon: one resume intervention.
+rhiza run resume 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 1'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "resumed at step hold",\n\s+"kind": "resume",\n\s+"step": "hold"'
+
+# (failure case) The daemon drives the queued continuation, or resumes the
+# run itself: no intervention.
+env RHIZA_DAEMON_RESUME=1
+rhiza run resume --foreground --no-wait 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^Run 01M5PWGJC82P7YGZTWYFFZ0VJG stopped$'
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 1'
+env RHIZA_DAEMON_RESUME=
+
+# The person resumes it in the foreground: a second resume intervention.
+rhiza run resume --foreground --no-wait 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 2'
+
+# A dry run of the abandon journals nothing; the abandon journals one
+# abandon intervention.
+rhiza run abandon --dry-run 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 2'
+rhiza run abandon 01M5PWGJC82P7YGZTWYFFZ0VJG
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG --json
+stdout '"intervention_count": 3'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "abandoned at step hold",\n\s+"kind": "abandon",\n\s+"step": "hold"'
+rhiza run status 01M5PWGJC82P7YGZTWYFFZ0VJG
+stdout '^- Interventions: 3 \(resume 2, abandon 1\)$'
+
+# A failed run: step two's input is missing.
+rhiza change new 'Retry a run' --title Retry --json
+! rhiza run start --foreground --workflow flaky
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN failed$'
+
+# A dry run of the retry journals nothing.
+rhiza run resume --retry --dry-run 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN would be retried at step two$'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 0'
+
+# (failure case) The watchdog's retry, driven by the daemon: the run is
+# retried (and fails again) with no intervention.
+env RHIZA_DAEMON_RESUME=1
+! rhiza run resume --foreground --retry 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN failed$'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 0'
+stdout '"retries": \['
+env RHIZA_DAEMON_RESUME=
+
+# The person's retry, queued for the daemon (the run shows failed until
+# the daemon retries it): one retry intervention.
+! rhiza run resume --retry 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^Queued the continuation of run 01M5PWGKBGYFZMTH8Y8AF1G8GN for the daemon'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 1'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "retried at step two",\n\s+"kind": "retry",\n\s+"step": "two"'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- Interventions: 1 \(retry 1\)$'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+
+-- flaky.toml --
+name = "flaky"
+
+[step.one]
+kind = "command"
+run = "true"
+on.pass = "two"
+
+[step.two]
+kind = "command"
+run = "test -f ../input"
+on.pass = "done"
+on.fail = "failed"

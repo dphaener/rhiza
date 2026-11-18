@@ -1355,16 +1355,51 @@ func runRunResume(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		journalResume(ctx, rs, j.ID, st, retryStep)
 		resp.Run = runInfo(ctx, st, false, session.NewStore(session.Dir(common)))
 		resp.Retry = retryStep
 		return resp, nil
 	}
+	journalResume(ctx, rs, j.ID, st, retryStep)
 	resp, err := runEngineRetry(ctx, rs, common, j.ID, st.Change, st.Worktree, st.PermissionMode, st.Agent, st.Autonomous, r.NoWait, r.Retry, nil)
 	if err != nil {
 		return nil, err
 	}
 	resp.Retry = retryStep
 	return resp, nil
+}
+
+// envDaemonResume marks, to a rhiza run resume --foreground the daemon
+// detached, that the daemon resumes the run: its own resume, a continuation
+// a person queued (journalled when it was queued) or the watchdog's retry.
+// Such a resume journals no intervention.
+const envDaemonResume = "RHIZA_DAEMON_RESUME"
+
+// journalResume journals a person's resume of run id as a resume
+// intervention, or with retryStep set a retry one, with the caller's actor
+// and the step the run goes on at. The daemon's own resumes (envDaemonResume
+// set) journal none. The resume goes ahead either way, so a journal that
+// cannot be written is only a warning on stderr.
+func journalResume(ctx *Ctx, rs *run.Store, id string, st run.State, retryStep string) {
+	if strings.TrimSpace(ctxGetenv(ctx)(envDaemonResume)) != "" {
+		return
+	}
+	kind, detail, step := run.InterventionResume, "resumed", st.Current
+	if retryStep != "" {
+		kind, detail, step = run.InterventionRetry, "retried at step "+retryStep, retryStep
+	} else if step != "" {
+		detail = "resumed at step " + step
+	}
+	err := func() error {
+		from, err := messageSender(ctx)
+		if err != nil {
+			return err
+		}
+		return rs.AppendIntervention(id, run.Intervention{Kind: kind, Actor: from.Handle, Detail: detail, Step: step, At: ctx.Now()})
+	}()
+	if err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: warning: run %s's journal does not record the %s: %v\n", id, kind, err)
+	}
 }
 
 // queueContinue queues the continuation of run id for the daemon, which
@@ -1448,6 +1483,16 @@ func runRunAbandon(ctx *Ctx, req any) (any, error) {
 	}
 	if err := refuseEnded(j.State()); err != nil {
 		return nil, err
+	}
+	// The abandoning is a person's intervention, journalled before the run
+	// ends; one that cannot be journalled is only a warning.
+	cur := j.State()
+	iv := run.Intervention{Kind: run.InterventionAbandon, Actor: from.Handle, Detail: "abandoned", Step: cur.Current, At: ctx.Now()}
+	if cur.Current != "" {
+		iv.Detail = "abandoned at step " + cur.Current
+	}
+	if err := rs.AppendIntervention(j.ID, iv); err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: warning: run %s's journal does not record the abandon intervention: %v\n", j.ID, err)
 	}
 	e := run.Entry{Type: run.TypeFinished, At: ctx.Now(), End: run.Failed, Detail: detail}
 	if err := rs.Append(j.ID, e); err != nil {

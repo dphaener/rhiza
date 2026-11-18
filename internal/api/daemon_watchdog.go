@@ -299,6 +299,8 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 			return terminateRun(st)
 		},
 		classify: ctx.Verdict,
+		// The watchdog's retry is the daemon's own: queueContinue journals
+		// no intervention, and the daemon resumes it with envDaemonResume.
 		resume: func(id string) error {
 			_, err := queueContinue(ctx, common, id, true, false)
 			return err
