@@ -76,11 +76,17 @@ func testCtxNoIndex(root string) *Ctx {
 }
 
 // testCache is a test Ctx's getenv: the test binary's user cache folder
-// (XDG_CACHE_HOME, set once in TestMain) and nothing else, so an index or
-// run folder lands there, as it did when a nil getenv read the process's.
+// (XDG_CACHE_HOME, set once in TestMain) and its temporary folder (TMPDIR,
+// the rhiza-api-tmp- folder TestMain makes) and nothing else, so an index
+// or run folder lands there, and a throwaway index opened outside
+// guardProjections (a snapshot's build, testCtxNoIndex) lands under the run,
+// where TestMain checks none is left, never in the host's /tmp.
 func testCache(key string) string {
-	if key == "XDG_CACHE_HOME" {
+	switch key {
+	case "XDG_CACHE_HOME":
 		return os.Getenv("XDG_CACHE_HOME")
+	case "TMPDIR":
+		return testTmp
 	}
 	return ""
 }

@@ -100,6 +100,7 @@ func TestMain(m *testing.M) {
 	tmpsweep.StaleTemp("rhiza-api-budget-")
 	tmpsweep.StaleTemp("rhiza-api-cache-")
 	tmpsweep.StaleTemp("rhiza-api-snapshots-")
+	tmpsweep.StaleTemp("rhiza-api-tmp-")
 	// The user cache (run temp folders, index caches) is one temporary folder
 	// for the whole binary, never the host's ~/.cache, set once here so tests
 	// need no t.Setenv of their own and may call t.Parallel.
@@ -109,6 +110,14 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if err := os.Setenv("XDG_CACHE_HOME", cache); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	// Every test Ctx's TMPDIR (testCache) is one folder of the run's own, so
+	// a throwaway index opened outside guardProjections still lands under
+	// the run and is checked after m.Run.
+	testTmp, err = os.MkdirTemp("", "rhiza-api-tmp-")
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -125,12 +134,13 @@ func TestMain(m *testing.M) {
 	machineReading = func() daemon.Reading {
 		return daemon.Reading{MemAvail: 1 << 40, MemOK: true, LoadOK: true}
 	}
-	code := rootguard.Main(m.Run)
+	code := tmpLeakCode(rootguard.Main(m.Run), testTmp, os.Stderr)
 	if genDir != "" {
 		os.RemoveAll(genDir)
 	}
 	os.RemoveAll(cache)
 	os.RemoveAll(snapshotDir)
+	os.RemoveAll(testTmp)
 	os.Exit(code)
 }
 

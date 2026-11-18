@@ -1,13 +1,124 @@
 package api
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
+
+// testTmp is every test Ctx's TMPDIR (testCache answers it): a
+// rhiza-api-tmp- folder TestMain makes once, checks with tmpLeakCode after
+// m.Run and removes.
+var testTmp string
+
+// leftProjections names the rhiza-projection-* folders directly under dir:
+// throwaway indexes no one removed.
+func leftProjections(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var left []string
+	for _, e := range entries {
+		if e.IsDir() && strings.HasPrefix(e.Name(), "rhiza-projection-") {
+			left = append(left, e.Name())
+		}
+	}
+	sort.Strings(left)
+	return left, nil
+}
+
+// tmpLeakCode is the test binary's exit code once m.Run answered code: code,
+// or 1 when a throwaway index's folder is left in dir (each named on w) or
+// dir cannot be read.
+func tmpLeakCode(code int, dir string, w io.Writer) int {
+	left, err := leftProjections(dir)
+	if err != nil {
+		fmt.Fprintf(w, "checking for throwaway indexes left: %v\n", err)
+		return 1
+	}
+	if len(left) == 0 {
+		return code
+	}
+	fmt.Fprintf(w, "throwaway indexes left in %s (a projection opened and never closed):\n", dir)
+	for _, name := range left {
+		fmt.Fprintf(w, "\t%s\n", name)
+	}
+	return 1
+}
+
+func TestTmpLeakReportsLeftProjection(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "rhiza-projection-x"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "rhiza-projection-file"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "rhiza-run-1"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	left, err := leftProjections(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(left) != 1 || left[0] != "rhiza-projection-x" {
+		t.Fatalf("leftProjections = %v, want [rhiza-projection-x]", left)
+	}
+	var out bytes.Buffer
+	if code := tmpLeakCode(0, dir, &out); code == 0 {
+		t.Fatalf("tmpLeakCode = 0 with a projection folder left; output %q", out.String())
+	}
+	if !strings.Contains(out.String(), "rhiza-projection-x") {
+		t.Fatalf("output %q does not name rhiza-projection-x", out.String())
+	}
+}
+
+func TestTmpLeakEmptyFolderPasses(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	var out bytes.Buffer
+	if code := tmpLeakCode(0, dir, &out); code != 0 || out.Len() != 0 {
+		t.Fatalf("tmpLeakCode(empty) = %d, output %q; want 0 and nothing", code, out.String())
+	}
+	// A failed run's code is kept.
+	if code := tmpLeakCode(3, dir, &out); code != 3 {
+		t.Fatalf("tmpLeakCode(3, empty) = %d, want 3", code)
+	}
+}
+
+// testCache answers the run's own folder for TMPDIR, and the user cache for
+// XDG_CACHE_HOME as before; a snapshot build's Ctx (testCtxNoIndex) puts its
+// throwaway index there, never in the host's /tmp.
+func TestTmpLeakTestCacheAnswersPackageTmp(t *testing.T) {
+	t.Parallel()
+	if testTmp == "" || !strings.HasPrefix(filepath.Base(testTmp), "rhiza-api-tmp-") {
+		t.Fatalf("testTmp = %q, want a rhiza-api-tmp- folder", testTmp)
+	}
+	if got := testCache("TMPDIR"); got != testTmp {
+		t.Fatalf("testCache(TMPDIR) = %q, want %q", got, testTmp)
+	}
+	if got, want := testCache("XDG_CACHE_HOME"), os.Getenv("XDG_CACHE_HOME"); got != want || got == "" {
+		t.Fatalf("testCache(XDG_CACHE_HOME) = %q, want %q", got, want)
+	}
+	if got := testCache("HOME"); got != "" {
+		t.Fatalf("testCache(HOME) = %q, want empty", got)
+	}
+	ctx := testCtxNoIndex(t.TempDir())
+	if got := ctx.Getenv("TMPDIR"); got != testTmp {
+		t.Fatalf("testCtxNoIndex's TMPDIR = %q, want %q", got, testTmp)
+	}
+}
 
 // throwawayProjections makes ctx open throwaway indexes (no index path,
 // no user cache folder for another root's) under a fresh TMPDIR, and
