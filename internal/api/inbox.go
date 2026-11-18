@@ -1328,6 +1328,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	states := runStates(runs)
 	all := inboxItemsOf(runs, states, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
 	all = append(all, inboxUncoveredProposalsOf(all, states, fold)...)
+	all = append(all, spawnHeldItems(runs, states, rs.Live)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(states))
 	if err != nil {
 		return nil, nil, err
@@ -1386,6 +1387,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("item %s is an overlap between change sets %s and %s: it has no tab to open", item.ID, item.Change, item.Other).WithNext(item.Next)
 	}
 	rexSession, block := itemTab(item, st)
+	if item.Kind == InboxSpawnHeld && block == "" {
+		return nil, Usagef("item %s is a session held on a pre-start check: it has no session yet, and run %s has no tab to open", item.ID, item.Run).WithNext("rhiza daemon status")
+	}
 	resp := InboxOpenResponse{Item: item.ID, Kind: item.Kind, Run: item.Run, Tab: block}
 	if block == "" || ctx.Exec == nil {
 		resp.TabGone = true
