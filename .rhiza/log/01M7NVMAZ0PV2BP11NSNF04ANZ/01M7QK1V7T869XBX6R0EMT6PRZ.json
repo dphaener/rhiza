@@ -1,0 +1,109 @@
+{
+  "actor": "01M7QJS1FX6V1BRYP0ZDW5H8XM",
+  "after": [
+    "01M7QJ90EYR9B47YX08WGK8WTD"
+  ],
+  "at": "2026-11-18T15:05:23Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build in a hermetic repo: RHIZA_TEST_TMP_FREE_BYTES under rhiza.daemon.minTmpFree made daemon --once skip the ready change set as tmp-low naming free space and minimum, saved tmp_low in the daemon state, wrote a queue-wait line and one tmp-low inbox item; at the minimum, with 0, or with --min-tmp-free lowered it started; banana and 2Q refused as not a size"
+        },
+        "handle": "daemon-tmp-hold-qa-1",
+        "id": "01M7QK1TTVYK0PF2P50NJNFBSB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QK1TTVYK0PF2P50JPY3MQH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QK1TTVYK0PF2P50JPY3MQH",
+        "id": "01M7QK1TVW2EGGHFY2F3GR2SZS",
+        "link": "01M7QK1TVW2EGGHFY2F0FXBRCV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6K1VD821JQCCKK11KB5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build and a fake agent: a saved memory-low hold made rhiza run spawn journal one spawn-held entry with role verifier and the reading and limit, start no child until a daemon poll cleared it, then the child started and passed (held true); with no hold, no spawn-held entry and held false"
+        },
+        "handle": "spawn-waits-every-hold-qa-1",
+        "id": "01M7QK1TX31PWT078BJM1V09P5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QK1TX31PWT078BJGCGTN3D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QK1TX31PWT078BJGCGTN3D",
+        "id": "01M7QK1TZ4SHKAQVDM9B1PB5QB",
+        "link": "01M7QK1TZ4SHKAQVDM991NPEZ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: saved tmp-low, memory-low and disk-low holds held a foreground run's fresh step session with one parentless spawn-held entry per wait and no agent started; the session started once the hold cleared and the run succeeded"
+        },
+        "handle": "step-session-waits-holds-qa-1",
+        "id": "01M7QK1V0V5KZNRSEB14ZC2HTA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QK1V0V5KZNRSEB14VWZMVF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QK1V0V5KZNRSEB14VWZMVF",
+        "id": "01M7QK1V3GGZWD8PT1QVZPH46M",
+        "link": "01M7QK1V3GGZWD8PT1QVRP837C",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: held step sessions and a held verifier spawn of a live run each showed one spawn-held item in rhiza inbox and --json with change set, step, role and the hold's reading and limit, stable ID; gone after release and run end. Minor: rhiza inbox open on the item says no inbox item"
+        },
+        "handle": "inbox-held-spawns-qa-1",
+        "id": "01M7QK1V52V4KW3VPMGBHDF4NZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QK1V52V4KW3VPMGAT6MKWC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QK1V52V4KW3VPMGAT6MKWC",
+        "id": "01M7QK1V6QSFHHT1V2FDX95RXR",
+        "link": "01M7QK1V6QSFHHT1V2FC775QFV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QK1V7T869XBX6R0EMT6PRZ",
+  "type": "ops",
+  "v": 1
+}
