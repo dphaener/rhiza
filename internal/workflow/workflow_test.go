@@ -2329,6 +2329,38 @@ func TestEnvTable(t *testing.T) {
 	}
 }
 
+// RunEnvPairs adds TMPDIR as the run's folder unless the file's [env] sets
+// it; EnvPairs stays the file's own table.
+func TestRunEnvPairs(t *testing.T) {
+	steps := "[step.s]\nkind = \"command\"\nrun = \"true\"\non.pass = \"done\"\n"
+	for _, c := range []struct {
+		name, env string
+		need      bool
+		want      []string
+		own       []string
+	}{
+		{"no env", "", true, []string{"TMPDIR=/t"}, []string{}},
+		{"env without run_tmp", "[env]\nA = \"x\"\n", true, []string{"A=x", "TMPDIR=/t"}, []string{"A=x"}},
+		{"env with run_tmp", "[env]\nB = \"{run_tmp}/b\"\nA = \"x\"\n", true, []string{"A=x", "B=/t/b", "TMPDIR=/t"}, []string{"A=x", "B=/t/b"}},
+		{"own TMPDIR", "[env]\nTMPDIR = \"/x\"\nA = \"y\"\n", false, []string{"A=y", "TMPDIR=/x"}, []string{"A=y", "TMPDIR=/x"}},
+		{"own TMPDIR under run_tmp", "[env]\nTMPDIR = \"{run_tmp}/tmp\"\n", true, []string{"TMPDIR=/t/tmp"}, []string{"TMPDIR=/t/tmp"}},
+	} {
+		d, err := Parse("w", []byte("name = \"w\"\n"+c.env+steps))
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if got := d.NeedsRunTmp(); got != c.need {
+			t.Errorf("%s: NeedsRunTmp = %v, want %v", c.name, got, c.need)
+		}
+		if got := d.RunEnvPairs("/t"); !reflect.DeepEqual(got, c.want) {
+			t.Errorf("%s: RunEnvPairs = %v, want %v", c.name, got, c.want)
+		}
+		if got := d.EnvPairs("/t"); !reflect.DeepEqual(got, c.own) {
+			t.Errorf("%s: EnvPairs = %v, want %v", c.name, got, c.own)
+		}
+	}
+}
+
 // Both plan workflows send a review round to the critic only when it holds
 // a finding: a clean round goes straight to fresh.
 func TestPlanCleanRoundSkipsCritic(t *testing.T) {

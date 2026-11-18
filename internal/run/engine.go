@@ -752,21 +752,21 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
 }
 
-// stepEnv is the RHIZA_* variables of step on the run's change set.
+// stepEnv is the RHIZA_* variables of step on the run's change set, then
+// the workflow's run env (its [env] and TMPDIR, see RunEnvPairs), with the
+// run's temp folder made first whenever that env names it.
 func (r *running) stepEnv(step, change string) []string {
 	env := []string{
 		"RHIZA_CHANGE=" + change,
 		"RHIZA_RUN=" + r.j.ID,
 		"RHIZA_STEP=" + step,
 	}
-	if r.def.UsesRunTmp() {
-		tmp := r.e.Store.TmpDir(r.j.ID)
+	tmp := ""
+	if r.def.NeedsRunTmp() {
+		tmp = r.e.Store.TmpDir(r.j.ID)
 		_ = os.MkdirAll(tmp, 0o755)
-		env = append(env, r.def.EnvPairs(tmp)...)
-	} else {
-		env = append(env, r.def.EnvPairs("")...)
 	}
-	return env
+	return append(env, r.def.RunEnvPairs(tmp)...)
 }
 
 // StopExit is the exit code of a command step that asks the run to stop

@@ -98,7 +98,8 @@ func TestRunTmpGoneAfterFailedRun(t *testing.T) {
 	}
 }
 
-// A workflow without [env] gets no variable of Rhiza's setting and no folder.
+// A workflow without [env] gets no GOTMPDIR or [env] variable of Rhiza's
+// setting: only TMPDIR, the run's own folder.
 func TestNoEnvNoRunTmp(t *testing.T) {
 	e, r, _, _ := setup(t, strings.Replace(gotmpWF, "[env]\nFOO = \"{run_tmp}\"\nPLAIN = \"x\"\n", "", 1))
 	r.codes["build"] = []int{1}
@@ -109,6 +110,105 @@ func TestNoEnvNoRunTmp(t *testing.T) {
 		if strings.HasPrefix(kv, "GOTMPDIR=") || strings.HasPrefix(kv, "FOO=") {
 			t.Errorf("unexpected %s", kv)
 		}
+	}
+	if got := envOf(r.envs["build"], "TMPDIR"); got != e.Store.TmpDir(runID) {
+		t.Errorf("TMPDIR = %q, want %q", got, e.Store.TmpDir(runID))
+	}
+}
+
+const tmpdirCleanup = `
+[[cleanup]]
+name = "tidy"
+run = "true"
+`
+
+// A workflow whose [env] names no {run_tmp}, and one with no [env] at all,
+// give every command, wait, agent and cleanup step TMPDIR as the run's own
+// folder, made before the step starts; what the steps write under it is
+// gone once the run ends, succeeded or failed.
+func TestStepsGetDefaultTMPDIR(t *testing.T) {
+	noRunTmp := strings.Replace(gotmpWF, "FOO = \"{run_tmp}\"\n", "", 1) + tmpdirCleanup
+	noEnv := strings.Replace(gotmpWF, "[env]\nFOO = \"{run_tmp}\"\nPLAIN = \"x\"\n", "", 1) + tmpdirCleanup
+	for _, wf := range []struct{ name, src string }{{"env without run_tmp", noRunTmp}, {"no env", noEnv}} {
+		for _, fail := range []bool{false, true} {
+			t.Run(wf.name+"/failed="+strconv.FormatBool(fail), func(t *testing.T) {
+				e, r, _, _ := setup(t, wf.src)
+				want := e.Store.TmpDir(runID)
+				seen := map[string]bool{}
+				write := func(step string, env []string) {
+					tmp := envOf(env, "TMPDIR")
+					if tmp != want {
+						t.Errorf("%s: TMPDIR = %q, want %q", step, tmp, want)
+						return
+					}
+					if n := strings.Count(strings.Join(env, "\n"), "TMPDIR="); n != 1 {
+						t.Errorf("%s: %d TMPDIR pairs in %v", step, n, env)
+					}
+					if fi, err := os.Stat(tmp); err != nil || !fi.IsDir() {
+						t.Errorf("%s: TMPDIR missing when the step ran: %v", step, err)
+						return
+					}
+					if err := os.WriteFile(filepath.Join(tmp, step+".out"), []byte("x"), 0o644); err != nil {
+						t.Errorf("%s: write under TMPDIR: %v", step, err)
+					}
+					seen[step] = true
+				}
+				r.onEnv = write
+				if fail {
+					r.outcome["S-agent"] = "fail"
+				} else {
+					r.outcome["S-agent"] = "pass"
+				}
+				r.holds["ci"] = []bool{true}
+				st, err := e.Run(runID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if (st.Result == Succeeded) == fail {
+					t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+				}
+				for _, step := range []string{"build", "ci", "agent", "tidy"} {
+					if !seen[step] {
+						t.Errorf("%s did not run with TMPDIR", step)
+					}
+				}
+				if envOf(r.envs["build"], "PLAIN") != "" && wf.name == "no env" {
+					t.Error("PLAIN set without [env]")
+				}
+				if wf.name == "env without run_tmp" && envOf(r.envs["build"], "PLAIN") != "x" {
+					t.Errorf("PLAIN = %q, want x", envOf(r.envs["build"], "PLAIN"))
+				}
+				if _, err := os.Stat(want); !os.IsNotExist(err) {
+					t.Errorf("run folder still there after the run ended: %v", err)
+				}
+			})
+		}
+	}
+}
+
+// A workflow whose [env] sets TMPDIR keeps its own, with no second TMPDIR
+// pair, and its other keys and their {run_tmp} filling are unchanged.
+func TestOwnTMPDIRWins(t *testing.T) {
+	e, r, _, _ := setup(t, strings.Replace(gotmpWF, "PLAIN = \"x\"\n", "PLAIN = \"x\"\nTMPDIR = \"/x\"\n", 1))
+	r.codes["build"] = []int{1}
+	if _, err := e.Run(runID); err != nil {
+		t.Fatal(err)
+	}
+	env := r.envs["build"]
+	var tmps []string
+	for _, kv := range env {
+		if v, ok := strings.CutPrefix(kv, "TMPDIR="); ok {
+			tmps = append(tmps, v)
+		}
+	}
+	if len(tmps) != 1 || tmps[0] != "/x" {
+		t.Errorf("TMPDIR pairs = %v, want [/x]", tmps)
+	}
+	if got := envOf(env, "FOO"); got != e.Store.TmpDir(runID) {
+		t.Errorf("FOO = %q", got)
+	}
+	if got := envOf(env, "PLAIN"); got != "x" {
+		t.Errorf("PLAIN = %q", got)
 	}
 }
 

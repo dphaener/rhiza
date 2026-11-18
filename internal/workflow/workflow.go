@@ -234,6 +234,27 @@ func (d *Definition) EnvPairs(runTmp string) []string {
 	return out
 }
 
+// RunEnvPairs is the env a run's processes get from the workflow file:
+// EnvPairs(runTmp), then TMPDIR=runTmp unless the file's [env] sets TMPDIR
+// itself, so what a step writes under $TMPDIR is removed with the run's
+// temp folder. EnvPairs stays the file's own [env] (workflow describe shows
+// it); every place that starts a run's step, agent or cleanup uses this.
+func (d *Definition) RunEnvPairs(runTmp string) []string {
+	out := d.EnvPairs(runTmp)
+	if _, ok := d.Env["TMPDIR"]; !ok {
+		out = append(out, "TMPDIR="+runTmp)
+	}
+	return out
+}
+
+// NeedsRunTmp reports whether RunEnvPairs names the run's temp folder:
+// an [env] value uses {run_tmp}, or the file leaves TMPDIR to Rhiza. A
+// caller makes the folder before the process starts whenever it is true.
+func (d *Definition) NeedsRunTmp() bool {
+	_, own := d.Env["TMPDIR"]
+	return !own || d.UsesRunTmp()
+}
+
 func buildEnv(in map[string]string) (map[string]string, error) {
 	for k := range in {
 		ok := k != ""
