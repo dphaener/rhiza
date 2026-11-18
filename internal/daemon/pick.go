@@ -38,6 +38,7 @@ const (
 	SkipUnjournaled  = "unjournaled"
 	SkipNoSlot       = "no-slot"
 	SkipDiskLow      = "disk-low"
+	SkipTmpLow       = "tmp-low"
 	SkipUsageReserve = "usage-reserve"
 	SkipShipOwner    = "ship-owner"
 	SkipPaused       = "paused"

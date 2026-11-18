@@ -57,6 +57,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 		{"api-error", ids(InboxAPIError, InboxItem{Session: "S1", Detail: "session S1 stopped on an API error: API Error: 403"}), "T: a session stopped on an API error"},
 		{"stalled", ids(InboxStalled, InboxItem{}), "T: a session stalled"},
 		{"disk-low", ids(InboxDiskLow, InboxItem{}), "disk space is low: the daemon holds new starts and resumes"},
+		{"tmp-low", ids(InboxTmpLow, InboxItem{}), "temp space is low: the daemon holds new starts and resumes"},
 		{"load-high", ids(InboxLoadHigh, InboxItem{}), "machine load is high: the daemon holds new starts and resumes"},
 		{"memory-low", ids(InboxMemoryLow, InboxItem{}), "available memory is low: the daemon holds new starts and resumes"},
 		{"usage-reserve", ids(InboxUsageReserve, InboxItem{}), "usage reserve: the daemon holds new launches until the window resets"},
@@ -77,7 +78,7 @@ func TestInboxNoticeNamesNoHandleOrID(t *testing.T) {
 			}
 		}
 	}
-	for _, k := range []string{InboxQuestion, InboxOpen, InboxSignoff, InboxFailed, InboxGaveUp, InboxSkipped, InboxBlocker, InboxOverlap, InboxStalled, InboxDiskLow, InboxUsageReserve, InboxLoadHigh, InboxMemoryLow, InboxMainStale, InboxAccept, InboxInterview} {
+	for _, k := range []string{InboxQuestion, InboxOpen, InboxSignoff, InboxFailed, InboxGaveUp, InboxSkipped, InboxBlocker, InboxOverlap, InboxStalled, InboxDiskLow, InboxTmpLow, InboxUsageReserve, InboxLoadHigh, InboxMemoryLow, InboxMainStale, InboxAccept, InboxInterview} {
 		if !kinds[k] {
 			t.Errorf("no case for kind %s", k)
 		}

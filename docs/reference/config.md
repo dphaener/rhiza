@@ -29,6 +29,14 @@ The free disk space below which the daemon starts no run, such as 10G.
 - Default: `10G`
 - Flag: `rhiza daemon --min-free` overrides it for a run
 
+### `rhiza.daemon.minTmpFree`
+
+The free space on the filesystem of the daemon's temp directory (TMPDIR when set) below which the daemon starts no run, such as 2G; 0 turns it off.
+
+- Type: size
+- Default: `2G`
+- Flag: `rhiza daemon --min-tmp-free` overrides it for a run
+
 ### `rhiza.daemon.maxLoad`
 
 The 1-minute load per core above which the daemon starts no run until the 5-minute load is back under it; 0 turns it off.

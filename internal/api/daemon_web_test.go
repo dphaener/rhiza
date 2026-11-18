@@ -66,12 +66,13 @@ func TestDaemonWebListenerFollowsPort(t *testing.T) {
 			return common + "\n", nil
 		}
 		if len(args) == 4 && args[0] == "config" && args[2] == "--get-regexp" {
-			// One settings read: the host, then the port, the disk guard off.
+			// One settings read: the host, then the port, the disk and
+			// temp space checks off.
 			if calledFrom("daemonConfOf") {
 				lastHost = <-hosts
 				lastPort = <-ports
 			}
-			cfg := map[string]string{"rhiza.daemon.minFree": "0"}
+			cfg := map[string]string{"rhiza.daemon.minFree": "0", "rhiza.daemon.minTmpFree": "0"}
 			if lastHost != "" {
 				cfg[web.HostKey] = lastHost
 			}
@@ -221,24 +222,24 @@ func TestDaemonWebNoListenerOnceOrTestNow(t *testing.T) {
 	}
 }
 
-// noDiskReads answers the git config reads of rhiza.daemon.minFree (0, the
-// guard off), for a daemon test that must run without RHIZA_TEST_NOW and so
-// cannot pin its free disk: with it off, the daemon never reads the free
-// space at all.
+// noDiskReads answers the git config reads of rhiza.daemon.minFree and
+// rhiza.daemon.minTmpFree (0, the checks off), for a daemon test that must
+// run without RHIZA_TEST_NOW and so cannot pin its free disk: with them off,
+// the daemon never reads the free space at all.
 //
-// The settings' one snapshot read is git's (nil: none) with minFree 0 last,
-// so it wins.
+// The settings' one snapshot read is git's (nil: none) with both minimums 0
+// last, so they win.
 func noDiskReads(args []string, git func(...string) (string, error)) (string, bool) {
 	if len(args) == 4 && args[0] == "config" && args[1] == "-z" && args[2] == "--get-regexp" {
 		var out string
 		if git != nil {
 			out, _ = git(args...)
 		}
-		return out + "rhiza.daemon.minfree\n0\x00", true
+		return out + "rhiza.daemon.minfree\n0\x00rhiza.daemon.mintmpfree\n0\x00", true
 	}
 	if len(args) == 3 && args[0] == "config" {
 		switch args[2] {
-		case "rhiza.daemon.minFree":
+		case "rhiza.daemon.minFree", "rhiza.daemon.minTmpFree":
 			return "0\n", true
 		}
 	}

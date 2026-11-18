@@ -97,6 +97,10 @@ type State struct {
 	// DiskLow is set while the last poll found free space under the
 	// daemon's minimum, and absent once a poll finds enough.
 	DiskLow *DiskLow `json:"disk_low,omitempty"`
+	// TmpLow is set while the last poll found free space on the daemon's
+	// temp directory's filesystem under its minimum, and absent once a poll
+	// finds enough.
+	TmpLow *DiskLow `json:"tmp_low,omitempty"`
 	// MachineHold is set while the last poll held new runs for load or
 	// memory, and absent once a poll no longer does.
 	MachineHold *MachineHold `json:"machine_hold,omitempty"`

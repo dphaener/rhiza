@@ -478,7 +478,7 @@ Output (`--json` fields):
 Run the daemon in the foreground: one per repository, held by a lock in the git common dir.
 
 ```
-rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--max-load <max-load>] [--min-memory <min-memory>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
+rhiza daemon [--max-runs <max-runs>] [--once] [--autonomous] [--min-free <min-free>] [--max-load <max-load>] [--min-memory <min-memory>] [--min-tmp-free <min-tmp-free>] [--permission-mode <permission-mode>] [--event-command <event-command>] [--notify-command <notify-command>]
 ```
 
 Arguments and flags:
@@ -489,6 +489,7 @@ Arguments and flags:
 - `--min-free`: Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off
 - `--max-load`: Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off
 - `--min-memory`: Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off
+- `--min-tmp-free`: Start and resume nothing while the filesystem of the daemon's temp directory (TMPDIR when set) has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off
 - `--permission-mode`: Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts
 - `--event-command`: Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried
 - `--notify-command`: Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried
@@ -524,7 +525,7 @@ rhiza daemon set <key> <value> [--project <project>]
 
 Arguments and flags:
 
-- `<key>`: The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
+- `<key>`: The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, minTmpFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff (required)
 - `<value>`: The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes (required)
 - `--project`: The registered project a project setting is written to; default the current project
 
@@ -797,7 +798,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza inbox
 
-List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first.
+List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs, sessions of live runs blocked on a permission prompt, spawns and step sessions of live runs held by a pre-start check, and the daemon's low disk space, oldest first.
 
 ```
 rhiza inbox [--project <project>] [--all]
@@ -1885,7 +1886,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run spawn
 
-Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started.
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage, load, memory, disk or temp-space hold is on) and print its outcome, or with --no-wait return once it is started.
 
 ```
 rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>] [--no-wait]
@@ -1909,7 +1910,7 @@ Output (`--json` fields):
 - `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
 - `detail` (string): said done, the child's exit, or why it failed; absent under --no-wait
 - `dry_run` (boolean): True if nothing was started or journaled
-- `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
+- `held` (boolean): True if the spawn waited on a usage, load, memory, disk or temp-space hold before it started the child
 - `leaf` (string): The leaf it worked on
 - `no_wait` (boolean): True if the spawn returned once the child started (--no-wait), without its outcome
 - `outcome` (string): pass when the child said done (rhiza session done) or its agent exited 0, else fail; absent under --no-wait

@@ -608,7 +608,7 @@ func (m *Model) View() tea.View {
 // no change set.
 func title(it api.InboxItem) string {
 	switch it.Kind {
-	case api.InboxDiskLow:
+	case api.InboxDiskLow, api.InboxTmpLow:
 		return "Daemon holds starts"
 	case api.InboxMainStale:
 		return "Main not updated"

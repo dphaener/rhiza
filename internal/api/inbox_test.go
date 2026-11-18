@@ -1,8 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"slices"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/op"
@@ -134,5 +137,71 @@ func TestInboxBlockersListProposedNotDraft(t *testing.T) {
 	}
 	if _, ok := texts["cache-q"]; ok {
 		t.Errorf("the draft's blocker cache-q is listed: %+v", texts["cache-q"])
+	}
+}
+
+// A live run's open spawn-held entries are one spawn-held item each, a
+// spawned child's naming its role and the step session's its step, both
+// with the entry's detail; a hold released by its spawn or the step's
+// session entry, or one in an ended or unheld run, gives none, and a hold
+// keeps its one ID.
+func TestInboxSpawnHeldItems(t *testing.T) {
+	t.Parallel()
+	at := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	const load = "machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00"
+	const mem = "machine hold: memory-low: 1.0 GiB available, under the minimum of 2.0 GiB"
+	journal := func(extra ...run.Entry) run.Journal {
+		es := []run.Entry{
+			{Type: run.TypeStarted, At: at, Step: "build", Started: &run.Started{Change: "CS1", Workflow: "conduct"}},
+			{Type: run.TypeEntered, At: at, Step: "build", Visit: 1},
+			{Type: run.TypeSpawnHeld, At: at.Add(time.Second), Step: "build", Detail: mem},
+			{Type: run.TypeSession, At: at.Add(2 * time.Second), Step: "build", Session: "P1"},
+			{Type: run.TypeSpawnHeld, At: at.Add(3 * time.Second), Step: "build", Parent: "P1", Role: "verifier", Detail: load},
+		}
+		return run.Journal{ID: "R1", Entries: append(es, extra...)}
+	}
+	items := func(j run.Journal, live bool) []InboxItem {
+		js := []run.Journal{j}
+		return spawnHeldItems(js, runStates(js), func(string) bool { return live })
+	}
+
+	got := items(journal(), true)
+	if len(got) != 1 {
+		t.Fatalf("items %+v, want the verifier's spawn only", got)
+	}
+	it := got[0]
+	if it.Kind != InboxSpawnHeld || it.Run != "R1" || it.Change != "CS1" || it.Step != "build" || it.Session != "P1" || it.At != "2030-01-01T00:00:03Z" {
+		t.Errorf("item %+v", it)
+	}
+	if want := "a verifier session spawned by P1 waits: " + load; it.Detail != want {
+		t.Errorf("detail %q, want %q", it.Detail, want)
+	}
+	if again := items(journal(), true); again[0].ID != it.ID {
+		t.Errorf("ID %s then %s, want one ID per hold", it.ID, again[0].ID)
+	}
+
+	step := run.Journal{ID: "R1", Entries: journal().Entries[:3]}
+	if got := items(step, true); len(got) != 1 || got[0].Session != "" || got[0].Detail != "the step's session waits: "+mem {
+		t.Errorf("step session hold: %+v", got)
+	}
+
+	spawned := journal(run.Entry{Type: run.TypeSpawn, At: at.Add(time.Minute), Step: "build", Parent: "P1", Session: "C1", Role: "verifier"})
+	if got := items(spawned, true); len(got) != 0 {
+		t.Errorf("released by its spawn: %+v, want none", got)
+	}
+	ended := journal(run.Entry{Type: run.TypeFinished, At: at.Add(time.Minute), End: run.Failed})
+	if got := items(ended, true); len(got) != 0 {
+		t.Errorf("ended run: %+v, want none", got)
+	}
+	if got := items(journal(), false); len(got) != 0 {
+		t.Errorf("run no process holds: %+v, want none", got)
+	}
+
+	var out bytes.Buffer
+	InboxResponse{Items: []InboxItem{it}}.Human(&out)
+	for _, want := range []string{"spawn-held run R1, change set CS1, step build", "a verifier session spawned by P1 waits: " + load} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("human output %q lacks %q", out.String(), want)
+		}
 	}
 }

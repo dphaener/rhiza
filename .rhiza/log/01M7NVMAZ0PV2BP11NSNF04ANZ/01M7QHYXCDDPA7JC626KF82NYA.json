@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QHXAM7YKZPWSA591AZ03RD",
+  "after": [
+    "01M7QHN5HY1KD7ERBHHXSYA6FV"
+  ],
+  "at": "2026-11-18T14:46:18Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 278907eb7. Re-ran its Checks (capped scopes): go vet ./internal/api ./internal/run exit 0; go test -trimpath -p 2 ./internal/run exit 0; go test -trimpath -p 2 ./internal/api -run 'StepHold|Spawn' exit 0 (TestWatchdogStepHoldNotStalled, TestRunSpawnStepHoldSameDetail PASS); rhiza ship generate exit 0 (0 files); rhiza render exit 0 (only the verifier's own actor file, restored). go test -count=1 ./internal/run -run StepHold: TestAgentStepHoldWaitsThenStarts (memory-low detail for two polls: one spawn-held entry for build with no Parent, heldStarts 0, session entry after it releases the hold, StepHeld false), TestAgentStepHoldResumedWaitsOnce, TestAgentStepHoldNotOnRejoin (no StartHold call, no spawn-held) all PASS. Diff: engine.go waitStartHold runs only when session == \"\" (never on rejoin or handback, agent steps only), never fails a step; stepRunner.StartHold returns spawnHoldDetail, same source as rhiza run spawn per Decision m40-spawn-gate-reads-daemon-state; journal.go releases a no-Parent hold on the step's session entry; watchdog skips a held step (needed for the not-stalled acceptance point). No stubs or TODOs; no change to daemon run picking or counting."
+        },
+        "handle": "step-session-waits-holds-verified",
+        "id": "01M7QHYXAE9XGC1ANFXV9CBYS8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QHYXAE9XGC1ANFXQJSS2DJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QHYXAE9XGC1ANFXQJSS2DJ",
+        "id": "01M7QHYXBFV4A0892MEEMNT3R3",
+        "link": "01M7QHYXBFV4A0892MEDDD2FXR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QHYXCDDPA7JC626KF82NYA",
+  "type": "ops",
+  "v": 1
+}

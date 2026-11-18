@@ -30,6 +30,7 @@ import (
 	"github.com/dphaener/rhiza/internal/release"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/userdir"
 	"github.com/dphaener/rhiza/internal/web"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -56,6 +57,7 @@ type DaemonRequest struct {
 	MinFree        string `json:"min_free,omitempty" desc:"Start and resume nothing while the repo's filesystem has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 10G; 0 turns the guard off"`
 	MaxLoad        string `json:"max_load,omitempty" desc:"Start no run while the 1-minute load per core is over this, until the 5-minute load is back under it: a number; default 3.0; 0 turns the check off"`
 	MinMemory      string `json:"min_memory,omitempty" desc:"Start no run while the available memory is under this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off"`
+	MinTmpFree     string `json:"min_tmp_free,omitempty" desc:"Start and resume nothing while the filesystem of the daemon's temp directory (TMPDIR when set) has less free space than this: bytes, or a number with K, M, G or T (powers of 1024); default 2G; 0 turns the check off"`
 	PermissionMode string `json:"permission_mode,omitempty" desc:"Start each run with this --permission-mode, for its agent steps that set none; checked against ship-change before the daemon starts"`
 	EventCommand   string `json:"event_command,omitempty" desc:"Run this command through sh -c in the repo root once per change set lifecycle move (proposed, accepted, rejected, withdrawn, superseded, landed, reopened) it has not handled, in log order, with the move as JSON on stdin and RHIZA_EVENT, RHIZA_EVENT_CHANGE, RHIZA_EVENT_ENTRY and RHIZA_EVENT_TITLE set; default the git config rhiza.eventCommand. The first run only records the moves already in the log. A failing or timed-out (10 s) command is logged and not retried"`
 	NotifyCommand  string `json:"notify_command,omitempty" desc:"Run this command through sh -c in the repo root once per new inbox item, with the item's JSON on stdin and RHIZA_INBOX_KIND, RHIZA_INBOX_ID, RHIZA_INBOX_CHANGE and RHIZA_INBOX_TITLE set; default the git config rhiza.notifyCommand. A failing or timed-out (10 s) command is logged and not retried"`
@@ -477,6 +479,7 @@ func daemonStartState(common string, self daemon.Holder, version, commit string,
 		state.Events, state.EventsSeeded = prev.Events, prev.EventsSeeded
 		state.Hooks = prev.Hooks
 		state.DiskLow = prev.DiskLow
+		state.TmpLow = prev.TmpLow
 		state.MachineHold = prev.MachineHold
 		state.Machine = prev.Machine
 		state.UsageHold = prev.UsageHold
@@ -576,6 +579,7 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)
+	items = append(items, tmpLowItems(state.TmpLow)...)
 	items = append(items, usageHoldItems(state.UsageHold)...)
 	items = append(items, watchdogHoldItems(state.WatchdogHolds)...)
 	items = append(items, machineHoldItems(state.MachineHold, ctx.Now())...)
@@ -685,6 +689,8 @@ func inboxNotice(what string, it InboxItem) string {
 		return what + ": an interrupted run was not resumed"
 	case InboxDiskLow:
 		return "disk space is low: the daemon holds new starts and resumes"
+	case InboxTmpLow:
+		return "temp space is low: the daemon holds new starts and resumes"
 	case InboxUsageReserve:
 		return "usage reserve: the daemon holds new launches until the window resets"
 	case InboxLoadHigh:
@@ -1019,7 +1025,8 @@ func daemonPoll1(ctx *Ctx, rs *run.Store, pending map[string]daemonPending, unjo
 	host, _ := os.Hostname()
 	low, free := daemonDiskLow(ctx, minFree)
 	// A usage hold stops everything the daemon would launch but a milestone
-	// request's plan run; low disk, load and memory stop all.
+	// request's plan run; low disk, load, memory and low temp space (machine,
+	// see daemonConf.hostHold) stop all.
 	diskLow := low
 	low = low || machine != nil
 	stopped := low || hold != nil
@@ -1417,6 +1424,52 @@ func repoFreeBytes(ctx *Ctx) (uint64, error) {
 // a function that fails the test, so none reads the host's disk.
 var diskFreeBytes = daemon.FreeBytes
 
+// daemonTmpLow is the tmp-low hold of a poll: set while free space on the
+// filesystem of the daemon's temp directory is under minTmpFree, nil
+// otherwise, keeping prev's Since while the hold lasts. A minTmpFree of 0
+// turns the check off, and so does free space that cannot be read. It logs
+// each hold and release.
+func daemonTmpLow(ctx *Ctx, minTmpFree uint64, prev *daemon.DiskLow) *daemon.DiskLow {
+	var low *daemon.DiskLow
+	if minTmpFree > 0 {
+		if free, err := tmpFreeBytes(ctx); err == nil && free < minTmpFree {
+			low = &daemon.DiskLow{Since: ctx.Now().UTC(), Free: free, Min: minTmpFree}
+			if prev != nil {
+				low.Since = prev.Since
+			}
+		}
+	}
+	switch {
+	case low != nil && prev == nil:
+		daemonLogf(ctx, "holding new runs: %s: %s", daemon.SkipTmpLow, tmpLowDetail(low))
+	case low == nil && prev != nil:
+		daemonLogf(ctx, "released the %s hold on new runs", daemon.SkipTmpLow)
+	}
+	return low
+}
+
+// tmpLowDetail names the free temp space and the minimum of a tmp-low hold.
+func tmpLowDetail(low *daemon.DiskLow) string {
+	return fmt.Sprintf("%s free in the temp directory, under the minimum of %s", daemon.FormatSize(low.Free), daemon.FormatSize(low.Min))
+}
+
+// tmpFreeBytes is the free space on the filesystem of the daemon's temp
+// directory: userdir.Temp over the Ctx's environment. RHIZA_TEST_TMP_FREE_BYTES
+// stands in for it alongside RHIZA_TEST_NOW, and under RHIZA_TEST_NOW
+// without it the figure is not known, so no test reads the host's temp
+// space.
+func tmpFreeBytes(ctx *Ctx) (uint64, error) {
+	getenv := ctxGetenv(ctx)
+	if getenv("RHIZA_TEST_NOW") != "" {
+		v := getenv("RHIZA_TEST_TMP_FREE_BYTES")
+		if v == "" {
+			return 0, errors.New("RHIZA_TEST_NOW is set without RHIZA_TEST_TMP_FREE_BYTES")
+		}
+		return strconv.ParseUint(v, 10, 64)
+	}
+	return diskFreeBytes(userdir.Temp(getenv))
+}
+
 // conductorWorkflow reports whether workflow ref is a conductor default: its
 // first step is an agent step that declares checks, so it plans a change set's
 // leaves itself.
@@ -1700,8 +1753,8 @@ type DaemonSkip struct {
 	Change  string   `json:"change" desc:"The change set's ID; empty for a queued request that was not started"`
 	Request string   `json:"request,omitempty" desc:"The queued request's ID, when the skip is a request whose workflow does not resolve or names a skill missing from the installed guide"`
 	Title   string   `json:"title" desc:"The change set's display title, or the request's text"`
-	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved"`
-	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space, when disk-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
+	Reason  string   `json:"reason" desc:"Why it was not started: no-milestone, no-leaves, not-ready, live, failed, shipped, held, unjournaled, no-slot, disk-low, tmp-low, load-high, memory-low, usage-reserve, ship-owner or workflow-unresolved"`
+	Detail  []string `json:"detail" desc:"The readiness reasons, when the reason is not-ready; the free space and the minimum, when disk-low or tmp-low; the load or memory reading and limit, when load-high or memory-low; the kept slot, when no-slot keeps one for a queued plan request; the reserve hold, when usage-reserve; the workflow, where the pick came from and why it does not resolve, when workflow-unresolved; else empty"`
 }
 
 // skipText is the words for a skip reason in the text status.
@@ -1716,6 +1769,7 @@ var skipText = map[string]string{
 	daemon.SkipUnjournaled:  "its start wrote no journal",
 	daemon.SkipNoSlot:       "waiting for a slot",
 	daemon.SkipDiskLow:      "disk space is low",
+	daemon.SkipTmpLow:       "temp space is low",
 	daemon.SkipLoadHigh:     "machine load is high",
 	daemon.SkipMemoryLow:    "available memory is low",
 	daemon.SkipUsageReserve: "usage reserve: held until the window resets",

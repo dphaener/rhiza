@@ -99,8 +99,8 @@ func WebEventSources(base *Ctx, health *WebHealth) web.Sources {
 					paused = v.Value
 				}
 			}
-			got["daemon"] = fmt.Sprintf("%s|%v|paused=%s|max=%d|runs=%s|disk=%v|usage=%v|stopped=%v|skips=%d",
-				s.Process, s.Autonomous, paused, s.MaxRuns, strings.Join(runs, ","), s.DiskLow != nil, s.UsageHold != nil, !s.Stopped.IsZero(), len(s.Skips))
+			got["daemon"] = fmt.Sprintf("%s|%v|paused=%s|max=%d|runs=%s|disk=%v|tmp=%v|usage=%v|stopped=%v|skips=%d",
+				s.Process, s.Autonomous, paused, s.MaxRuns, strings.Join(runs, ","), s.DiskLow != nil, s.TmpLow != nil, s.UsageHold != nil, !s.Stopped.IsZero(), len(s.Skips))
 			return got
 		},
 	}

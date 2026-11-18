@@ -113,9 +113,11 @@ const (
 	// TypeSpawn, TypeSpawnHeld and TypeSpawnEnded are a session's child
 	// sessions (rhiza run spawn): a child started under the calling step
 	// (Step, Parent the caller's session, Session the child, Role, Leaf and
-	// Model its own), the spawn waiting while a usage or machine hold is on
+	// Model its own), the spawn waiting while a pre-start hold is on
 	// (Detail says which), and the child's end (Outcome pass or fail, Detail
-	// its exit or reason).
+	// its exit or reason). A spawn-held entry with no Parent is the engine's
+	// own: a step's fresh agent session waiting on a hold, released by the
+	// step's session entry.
 	TypeSpawn      = "spawn"
 	TypeSpawnHeld  = "spawn-held"
 	TypeSpawnEnded = "spawn-ended"
@@ -793,12 +795,15 @@ type Spawn struct {
 	NoWait  bool
 }
 
-// SpawnHold is a spawn that waited on a hold: Step the calling step, Detail
-// what held it, At when. Until is when the hold lifted and the child
-// started, zero while it waits.
+// SpawnHold is a spawn that waited on a hold: Step the calling step, Role
+// the child's role, Detail what held it, At when. Until is when the hold lifted and the child
+// started, zero while it waits. One with no Parent is a step's own fresh
+// agent session waiting (see Engine and StartHolder): its Until is the
+// step's session entry.
 type SpawnHold struct {
 	Step   string
 	Parent string
+	Role   string
 	Detail string
 	At     time.Time
 	Until  time.Time
@@ -806,6 +811,17 @@ type SpawnHold struct {
 
 // Held reports whether the spawn still waits on its hold.
 func (h SpawnHold) Held() bool { return h.Until.IsZero() }
+
+// StepHeld is the hold step's fresh agent session still waits on, and
+// false when none does.
+func (s State) StepHeld(step string) (SpawnHold, bool) {
+	for _, h := range s.SpawnHolds {
+		if h.Step == step && h.Parent == "" && h.Held() {
+			return h, true
+		}
+	}
+	return SpawnHold{}, false
+}
 
 // Amendment is one amended entry: a step's brief or plan file replaced
 // while the step ran. File is relative to the run's worktree and Actor is
@@ -1794,6 +1810,11 @@ func (j Journal) State() State {
 		case TypeSession:
 			st.Session[e.Step] = e.Session
 			st.addSession(e.Step, e.Session)
+			for i := range st.SpawnHolds {
+				if h := &st.SpawnHolds[i]; h.Held() && h.Parent == "" && h.Step == e.Step {
+					h.Until = e.At
+				}
+			}
 		case TypeBlocked:
 			b := Block{}
 			if e.Block != nil {
@@ -1862,7 +1883,7 @@ func (j Journal) State() State {
 				Text: e.Text, Summary: e.Summary, Structured: e.Structured, At: e.At,
 			})
 		case TypeSpawnHeld:
-			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Detail: e.Detail, At: e.At})
+			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Role: e.Role, Detail: e.Detail, At: e.At})
 		case TypeSpawn:
 			st.addSession(e.Step, e.Session)
 			st.Spawns = append(st.Spawns, Spawn{Step: e.Step, Parent: e.Parent, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Model: e.Model, NoWait: e.NoWait})

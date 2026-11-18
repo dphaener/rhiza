@@ -118,6 +118,18 @@ type Handbacker interface {
 	Handback(step workflow.Step, session string, cause HandbackCause) error
 }
 
+// StartHolder is a Runner that can hold an agent step's fresh session
+// before it starts: StartHold returns why new starts are held now, in
+// words naming the reading and the limit, and "" when none is. While one
+// is, the engine waits on its Clock between polls, journals one spawn-held
+// entry for the step with no Parent per wait, and starts the session once
+// the hold lifts; the step's session entry releases the hold. A rejoined or
+// handed-back session is never held, nor is a command step. A Runner
+// without it starts every session at once.
+type StartHolder interface {
+	StartHold(step workflow.Step) string
+}
+
 // ChildState is where a spawned child session stands: Ended with its
 // Outcome and Detail once it has exited, or Gone (with Detail saying why)
 // when its session record no longer exists.
@@ -1031,6 +1043,9 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		}
 	}
 	if session == "" {
+		if err := r.waitStartHold(step); err != nil {
+			return result{}, err
+		}
 		s, err := r.e.Runner.StartAgent(step, step.Model(r.j.State().CurrentVisit), env)
 		if err != nil {
 			return errResult(err), nil
@@ -1055,6 +1070,37 @@ func (r *running) agent(step workflow.Step, env []string) (result, error) {
 		r.closeSessionPane(step.Name, session)
 	}
 	return res, nil
+}
+
+// waitStartHold waits, polling at the step's interval, while the Runner
+// (StartHolder) holds new starts, journaling one spawn-held entry for the
+// step the first time it finds one on. A hold already journaled and not yet
+// released (a resumed run) is waited on without a second entry. A hold never
+// fails or stops the step.
+func (r *running) waitStartHold(step workflow.Step) error {
+	sh, ok := r.e.Runner.(StartHolder)
+	if !ok {
+		return nil
+	}
+	interval := step.Interval
+	if interval <= 0 {
+		interval = workflow.DefaultInterval
+	}
+	_, held := r.j.State().StepHeld(step.Name)
+	for {
+		why := sh.StartHold(step)
+		if why == "" {
+			return nil
+		}
+		if !held {
+			if err := r.append(Entry{Type: TypeSpawnHeld, Step: step.Name, Detail: why}); err != nil {
+				return err
+			}
+			r.log("step %s: session held: %s", step.Name, why)
+			held = true
+		}
+		r.clock().Sleep(interval)
+	}
 }
 
 // pollAgent polls the step's session until the step ends (see agent).

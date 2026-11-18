@@ -33,7 +33,7 @@ func init() {
 	register(Operation{
 		Name:     "inbox",
 		ReadOnly: true,
-		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first",
+		Summary:  "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs, sessions of live runs blocked on a permission prompt, spawns and step sessions of live runs held by a pre-start check, and the daemon's low disk space, oldest first",
 		Request:  reflect.TypeFor[InboxRequest](),
 		Response: reflect.TypeFor[InboxResponse](),
 		Run:      runInbox,
@@ -82,6 +82,7 @@ const (
 	InboxPermission   = "permission"
 	InboxAPIError     = "api-error"
 	InboxDiskLow      = "disk-low"
+	InboxTmpLow       = "tmp-low"
 	InboxUsageReserve = "usage-reserve"
 	InboxLoadHigh     = "load-high"
 	InboxMemoryLow    = "memory-low"
@@ -91,6 +92,7 @@ const (
 	InboxInterview    = "interview"
 	InboxWorkflow     = "workflow"
 	InboxGuideStale   = "guide-stale"
+	InboxSpawnHeld    = "spawn-held"
 )
 
 // InboxRequest takes nothing.
@@ -102,7 +104,7 @@ type InboxRequest struct {
 // InboxItem is one thing waiting on the owner.
 type InboxItem struct {
 	ID             string              `json:"id" desc:"The item's short ID: stable while the item waits"`
-	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale"`
+	Kind           string              `json:"kind" desc:"question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, tmp-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow, guide-stale or spawn-held"`
 	At             string              `json:"at" desc:"When it began to wait, RFC 3339 UTC"`
 	Run            string              `json:"run,omitempty" desc:"The run it belongs to; absent for a blocker and an overlap"`
 	Change         string              `json:"change" desc:"The change set of the run; for a blocker, the change set the question blocks; for an overlap, the first of the two (A)"`
@@ -112,7 +114,7 @@ type InboxItem struct {
 	Tab            string              `json:"tab,omitempty" desc:"A question, an interview or a permission item: the title of the session's tab"`
 	TabBlock       string              `json:"tab_block,omitempty" desc:"A question, an interview or a permission item: the Rex block of the session's tab"`
 	TabSession     string              `json:"tab_session,omitempty" desc:"A question, an interview or a permission item: the Rex session of the session's tab"`
-	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped"`
+	Session        string              `json:"session,omitempty" desc:"A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped; a spawn-held item: the session whose child's spawn waits, absent for a step's own session"`
 	Recommendation string              `json:"recommendation,omitempty" desc:"A question or a blocker: what the advisor recommends answering; absent while it has not, or when it failed"`
 	Reasons        string              `json:"reasons,omitempty" desc:"A question or a blocker: why the advisor recommends it"`
 	Restatement    string              `json:"restatement,omitempty" desc:"A blocker: what is asked in plain words, as the advisor restated it; absent until it has"`
@@ -124,7 +126,7 @@ type InboxItem struct {
 	OtherTitle     string              `json:"other_title,omitempty" desc:"An overlap: the second change set's title; absent when the log has no such change set"`
 	Target         string              `json:"target,omitempty" desc:"An overlap: the node or link both change sets write, its handle when it has one"`
 	TargetTitle    string              `json:"target_title,omitempty" desc:"An overlap: the target node's statement; absent when it has none"`
-	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on"`
+	Detail         string              `json:"detail,omitempty" desc:"A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on; a spawn-held item: what waits and the hold's reading and limit"`
 	Next           string              `json:"next,omitempty" desc:"The command that clears it, when one does"`
 	Project        string              `json:"project,omitempty" desc:"The registered project the item belongs to, on an inbox that covers every project; absent for the daemon's machine-wide items (low disk, usage hold) and on a single project's inbox"`
 }
@@ -193,8 +195,8 @@ func (r InboxResponse) Human(w io.Writer) {
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
-		if it.Kind == InboxDiskLow {
-			fmt.Fprintf(w, "%s disk-low\n", it.ID)
+		if it.Kind == InboxDiskLow || it.Kind == InboxTmpLow {
+			fmt.Fprintf(w, "%s %s\n", it.ID, it.Kind)
 			fmt.Fprintf(w, "  %s\n", it.Detail)
 			continue
 		}
@@ -788,7 +790,7 @@ func inboxScopes(ctx *Ctx, project string, all bool) (scopes []inboxScope, merge
 // inboxMachineWide says an item is the daemon's, the same in every
 // project: it is listed once, with no project.
 func inboxMachineWide(kind string) bool {
-	return kind == InboxDiskLow || kind == InboxUsageReserve || kind == InboxLoadHigh || kind == InboxMemoryLow
+	return kind == InboxDiskLow || kind == InboxTmpLow || kind == InboxUsageReserve || kind == InboxLoadHigh || kind == InboxMemoryLow
 }
 
 // mergeInbox is the items of every scope, tagged with their project and
@@ -856,6 +858,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	states := runStates(runs)
 	items := inboxItemsOf(runs, states, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
 	items = append(items, inboxUncoveredProposalsOf(items, states, fold)...)
+	items = append(items, spawnHeldItems(runs, states, rs.Live)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(states))
 	if err != nil {
 		return nil, err
@@ -882,6 +885,56 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 		}
 	}
 	return items, nil
+}
+
+// spawnHeldItems is one spawn-held item for each spawn or step session a
+// live run's journal still holds (run.SpawnHold.Held): states[i] is
+// runs[i].State() and locked reports a run another process holds. A run
+// that ended, or that no process holds, gives none: nothing waits in it.
+// The item is gone once the spawn or the step's session entry releases the
+// hold. Its ID hashes the run, the step, the waiting parent and when the
+// hold began, so one hold has one ID while it waits.
+//
+// The daemon's notices read inboxItems, not this: a held spawn waits on a
+// machine-wide hold, which has its own item.
+func spawnHeldItems(runs []run.Journal, states []run.State, locked func(id string) bool) []InboxItem {
+	items := []InboxItem{}
+	for i, j := range runs {
+		st := states[i]
+		if st.Ended || len(st.SpawnHolds) == 0 || locked == nil || !locked(j.ID) {
+			continue
+		}
+		for _, h := range st.SpawnHolds {
+			if !h.Held() {
+				continue
+			}
+			at := h.At.UTC().Format(time.RFC3339)
+			sum := sha256.Sum256([]byte(strings.Join([]string{j.ID, InboxSpawnHeld, h.Step, h.Parent, at}, "\x00")))
+			items = append(items, InboxItem{
+				ID: hex.EncodeToString(sum[:])[:7], Kind: InboxSpawnHeld, At: at,
+				Run: j.ID, Change: st.Change, Step: h.Step, Session: h.Parent,
+				Detail: spawnHeldDetail(h),
+			})
+		}
+	}
+	return items
+}
+
+// spawnHeldDetail says what waits on hold h, then the hold's own detail:
+// the check that holds it with its reading and limit.
+func spawnHeldDetail(h run.SpawnHold) string {
+	what := "the step's session waits"
+	if h.Parent != "" {
+		role := h.Role
+		if role == "" {
+			role = "child"
+		}
+		what = "a " + role + " session spawned by " + h.Parent + " waits"
+	}
+	if h.Detail == "" {
+		return what + " on a pre-start check"
+	}
+	return what + ": " + h.Detail
 }
 
 // sortInboxItems orders items oldest first, ties by ID.
@@ -1040,7 +1093,9 @@ func overlapItemsNamed(ovs []gmodel.Overlap, name func(id.ID) (string, string)) 
 }
 
 // inboxDiskLow is one disk-low item while the daemon's last poll found free
-// space under its minimum, and none once a later poll found enough. It began to wait at the first poll that found it low.
+// space under its minimum, and none once a later poll found enough; and so
+// one tmp-low item for the free space of its temp directory. Each began to
+// wait at the first poll that found it low.
 func inboxDiskLow(ctx *Ctx) []InboxItem {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
@@ -1050,7 +1105,7 @@ func inboxDiskLow(ctx *Ctx) []InboxItem {
 	if !ok {
 		return nil
 	}
-	return diskLowItems(st.DiskLow)
+	return append(diskLowItems(st.DiskLow), tmpLowItems(st.TmpLow)...)
 }
 
 // diskLowItems is one disk-low item for low, none when low is nil.
@@ -1063,6 +1118,19 @@ func diskLowItems(low *daemon.DiskLow) []InboxItem {
 	return []InboxItem{{
 		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxDiskLow, At: at,
 		Detail: fmt.Sprintf("%s free, under the minimum of %s: the daemon holds new starts and resumes", daemon.FormatSize(low.Free), daemon.FormatSize(low.Min)),
+	}}
+}
+
+// tmpLowItems is one tmp-low item for low, none when low is nil.
+func tmpLowItems(low *daemon.DiskLow) []InboxItem {
+	if low == nil {
+		return nil
+	}
+	at := low.Since.UTC().Format(time.RFC3339)
+	sum := sha256.Sum256([]byte(strings.Join([]string{InboxTmpLow, at}, "\x00")))
+	return []InboxItem{{
+		ID: hex.EncodeToString(sum[:])[:7], Kind: InboxTmpLow, At: at,
+		Detail: tmpLowDetail(low) + ": the daemon holds new starts and resumes",
 	}}
 }
 
@@ -1260,6 +1328,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	states := runStates(runs)
 	all := inboxItemsOf(runs, states, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
 	all = append(all, inboxUncoveredProposalsOf(all, states, fold)...)
+	all = append(all, spawnHeldItems(runs, states, rs.Live)...)
 	blockers, err := inboxBlockers(ctx, questionAdvice(states))
 	if err != nil {
 		return nil, nil, err
@@ -1293,6 +1362,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 	if item.Kind == InboxDiskLow {
 		return nil, Usagef("item %s is the daemon's low disk space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
 	}
+	if item.Kind == InboxTmpLow {
+		return nil, Usagef("item %s is the daemon's low temp space: it has no tab to open", item.ID).WithNext("rhiza daemon status")
+	}
 	if item.Kind == InboxLoadHigh || item.Kind == InboxMemoryLow {
 		return nil, Usagef("item %s is the daemon's %s hold on new runs: it has no tab to open", item.ID, item.Kind).WithNext("rhiza daemon status")
 	}
@@ -1315,6 +1387,9 @@ func runInboxOpen(ctx *Ctx, req any) (any, error) {
 		return nil, Usagef("item %s is an overlap between change sets %s and %s: it has no tab to open", item.ID, item.Change, item.Other).WithNext(item.Next)
 	}
 	rexSession, block := itemTab(item, st)
+	if item.Kind == InboxSpawnHeld && block == "" {
+		return nil, Usagef("item %s is a session held on a pre-start check: it has no session yet, and run %s has no tab to open", item.ID, item.Run).WithNext("rhiza daemon status")
+	}
 	resp := InboxOpenResponse{Item: item.ID, Kind: item.Kind, Run: item.Run, Tab: block}
 	if block == "" || ctx.Exec == nil {
 		resp.TabGone = true

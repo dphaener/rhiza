@@ -1,0 +1,78 @@
+# A live run whose journal holds a spawn on a pre-start check gives one
+# spawn-held item naming the change set, the step, the child's role and the
+# hold's reading and limit, in rhiza inbox and rhiza inbox --json. A hold
+# released by its spawn or by the step's session entry gives none, nor does
+# a hold in an ended run or in a run no process holds. The journals are
+# fixtures; run-lock holds a run as a live one.
+
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+
+# A run no process holds gives no item.
+cp ../held.jsonl .git/rhiza/runs/HELD1.jsonl
+rhiza inbox --json
+! stdout 'spawn-held'
+
+# Held by a live process: one item, with its detail.
+run-lock .git/rhiza/runs HELD1
+rhiza inbox --json
+stdout -count=1 '"kind": "spawn-held"'
+stdout '"run": "HELD1"'
+stdout '"change": "CSHELD"'
+stdout '"step": "build"'
+stdout '"session": "P1"'
+stdout '"at": "2030-01-01T00:00:03Z"'
+stdout '"detail": "a verifier session spawned by P1 waits: machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00"'
+rhiza inbox
+stdout -count=1 '^[0-9a-f]+ spawn-held run HELD1, change set CSHELD, step build$'
+stdout '^  a verifier session spawned by P1 waits: machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00$'
+
+# A step's own session held: the item names the step, no child.
+cp ../stepheld.jsonl .git/rhiza/runs/STEP1.jsonl
+run-lock .git/rhiza/runs STEP1
+rhiza inbox --json
+stdout -count=2 '"kind": "spawn-held"'
+stdout '"detail": "the step''s session waits: disk-low: 1.0 GiB free, under the minimum of 2.0 GiB"'
+
+# Released by the spawn and by the step's session entry: no item.
+cp ../spawned.jsonl .git/rhiza/runs/HELD1.jsonl
+cp ../stepstarted.jsonl .git/rhiza/runs/STEP1.jsonl
+rhiza inbox --json
+! stdout 'spawn-held'
+
+# An ended run's open hold gives none.
+cp ../ended.jsonl .git/rhiza/runs/HELD1.jsonl
+rhiza inbox --json
+! stdout 'spawn-held'
+
+-- held.jsonl --
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"conduct","definition":"","change":"CSHELD","autonomous":true}}
+{"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"session","at":"2030-01-01T00:00:02Z","step":"build","session":"P1"}
+{"type":"spawn-held","at":"2030-01-01T00:00:03Z","step":"build","parent":"P1","role":"verifier","detail":"machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00"}
+-- spawned.jsonl --
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"conduct","definition":"","change":"CSHELD","autonomous":true}}
+{"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"session","at":"2030-01-01T00:00:02Z","step":"build","session":"P1"}
+{"type":"spawn-held","at":"2030-01-01T00:00:03Z","step":"build","parent":"P1","role":"verifier","detail":"machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00"}
+{"type":"spawn","at":"2030-01-01T00:05:00Z","step":"build","parent":"P1","session":"C1","role":"verifier"}
+-- ended.jsonl --
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"conduct","definition":"","change":"CSHELD","autonomous":true}}
+{"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"session","at":"2030-01-01T00:00:02Z","step":"build","session":"P1"}
+{"type":"spawn-held","at":"2030-01-01T00:00:03Z","step":"build","parent":"P1","role":"verifier","detail":"machine hold: load-high: 1-minute load 4.00 per core, over the limit of 3.00"}
+{"type":"finished","at":"2030-01-01T00:05:00Z","end":"failed","detail":"stopped"}
+-- stepheld.jsonl --
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"work","definition":"","change":"CSSTEP","autonomous":true}}
+{"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"spawn-held","at":"2030-01-01T00:00:02Z","step":"build","detail":"disk-low: 1.0 GiB free, under the minimum of 2.0 GiB"}
+-- stepstarted.jsonl --
+{"type":"started","at":"2030-01-01T00:00:00Z","step":"build","started":{"workflow":"work","definition":"","change":"CSSTEP","autonomous":true}}
+{"type":"entered","at":"2030-01-01T00:00:01Z","step":"build","visit":1}
+{"type":"spawn-held","at":"2030-01-01T00:00:02Z","step":"build","detail":"disk-low: 1.0 GiB free, under the minimum of 2.0 GiB"}
+{"type":"session","at":"2030-01-01T00:05:00Z","step":"build","session":"S2"}

@@ -325,17 +325,29 @@ func governorHold(ctx *Ctx, common string) *usageHold {
 	return &usageHold{Kind: kind, Reset: h.ResetAt}
 }
 
-// spawnHoldDetail is why a spawn waits now, in words: the daemon's usage
-// hold (its last poll's, or a limit hit's) or its machine load or memory
-// hold, as the inbox reads them from the daemon state. It is empty when
-// none is on. rhiza.daemon.maxRuns never holds a spawn.
+// spawnHoldDetail is why a spawn, or a workflow step's fresh agent session
+// (stepRunner.StartHold), waits now, in words naming the reading and
+// the limit: any pre-start check the daemon's last saved state holds new
+// starts for (its usage hold, its load-high or memory-low machine hold, its
+// disk-low or tmp-low hold), or a limit hit's usage hold, as the inbox reads
+// them. It is empty when none is on. rhiza.daemon.maxRuns never holds a
+// spawn, and a spawn reads none of the host's load, memory or free space.
 func spawnHoldDetail(ctx *Ctx, common string) string {
 	if st, ok := daemon.ReadState(common); ok {
 		if h := st.UsageHold; h != nil {
 			return "usage hold: " + usageHoldDetail(*h)
 		}
 		if h := st.MachineHold; h != nil {
-			return "machine hold: " + h.Detail
+			if h.Reason == "" {
+				return "machine hold: " + h.Detail
+			}
+			return "machine hold: " + h.Reason + ": " + h.Detail
+		}
+		if low := st.DiskLow; low != nil {
+			return fmt.Sprintf("%s: %s free, under the minimum of %s", daemon.SkipDiskLow, daemon.FormatSize(low.Free), daemon.FormatSize(low.Min))
+		}
+		if low := st.TmpLow; low != nil {
+			return daemon.SkipTmpLow + ": " + tmpLowDetail(low)
 		}
 	}
 	if h := governorHold(ctx, common); h != nil {

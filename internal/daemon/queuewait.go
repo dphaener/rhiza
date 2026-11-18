@@ -94,7 +94,7 @@ func ReadQueueWaitsIn(dir string) []QueueWait {
 // run starts: the only ones the journal records.
 var preStartReasons = map[string]bool{
 	SkipNoSlot: true, SkipNotReady: true, SkipNoMilestone: true, SkipNoLeaves: true,
-	SkipDiskLow: true, SkipLoadHigh: true, SkipMemoryLow: true, SkipUsageReserve: true,
+	SkipDiskLow: true, SkipTmpLow: true, SkipLoadHigh: true, SkipMemoryLow: true, SkipUsageReserve: true,
 	SkipPaused: true, SkipShipOwner: true, SkipWorkflow: true,
 }
 

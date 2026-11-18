@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QH014K8EZHZ07KVAG4B3HJ",
+  "after": [
+    "01M7QGA6XD2NDW0S38SMXHNPZ9"
+  ],
+  "at": "2026-11-18T14:35:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 921336c28, re-ran every Checks: command in capped scopes, each exit 0: go test -trimpath -p 2 ./internal/daemon/...; ./internal/api -run 'Tmp|Disk|Setting|QueueWait'; ./internal/api whole (180s); ./cmd/rhiza TestScripts/daemon-tmp-low (-v: PASS); TestScripts/describe-golden -update (golden unchanged, tree clean after); the 23-script daemon/settings list; TestScripts/run-ship-change; rhiza ship generate (0 changed files) and rhiza render (only the verifier's own actor page). Diff read: daemonTmpLow/tmpFreeBytes read TMPDIR (else os.TempDir) and, under RHIZA_TEST_NOW, only RHIZA_TEST_TMP_FREE_BYTES (unknown otherwise, so no test reads host tmp); the hold goes to daemonPoll1 and schedules/demand via daemonConf.hostHold as skip reason tmp-low with the detail '1.0 GiB free in the temp directory, under the minimum of 2.0 GiB', is saved as tmp_low in daemon.state.json, is in queue-wait's hold reasons, and gives a machine-wide tmp-low inbox item. rhiza.daemon.minTmpFree has a 2G default, is validated as a size, and has a --min-tmp-free flag. daemon-tmp-low.txtar covers: under the minimum the change set is skipped with the state, journal and inbox checked; 'banana' is refused as not a size; 0 never holds; at the minimum the change set starts. The disk-low/minFree logic is unchanged, and the files stay within the leaf with no TODOs or stubs"
+        },
+        "handle": "daemon-tmp-hold-verified",
+        "id": "01M7QHBJFRASWH6EQGK0XHCQZS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QHBJFRASWH6EQGJZ0CTM0S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QHBJFRASWH6EQGJZ0CTM0S",
+        "id": "01M7QHBJGNAF2Z95V7A9K03P71",
+        "link": "01M7QHBJGNAF2Z95V7A6HY1DPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6K1VD821JQCCKK11KB5",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QHBJHH701989ZQAKGVG2T2",
+  "type": "ops",
+  "v": 1
+}

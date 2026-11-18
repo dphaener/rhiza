@@ -125,6 +125,10 @@ var settingDefs = []settingDef{
 		_, err := daemon.ParseSize(v)
 		return err
 	}},
+	{key: "rhiza.daemon.minTmpFree", def: "2G", flag: "--min-tmp-free", typ: "size", desc: "The free space on the filesystem of the daemon's temp directory (TMPDIR when set) below which the daemon starts no run, such as 2G; 0 turns it off", validate: func(v string) error {
+		_, err := daemon.ParseSize(v)
+		return err
+	}},
 	{key: "rhiza.daemon.maxLoad", def: "3.0", flag: "--max-load", typ: "number", desc: "The 1-minute load per core above which the daemon starts no run until the 5-minute load is back under it; 0 turns it off", validate: func(v string) error {
 		_, err := parseMaxLoad(v)
 		return err
@@ -413,15 +417,36 @@ type daemonConf struct {
 	// machine-wide maxRuns, 0 for none.
 	projectMax int
 	minFree    uint64
+	minTmpFree uint64
 	maxLoad    float64
 	minMemory  uint64
 	// machine is the hold of new runs for load or memory this poll found.
-	machine    *daemon.MachineHold
+	machine *daemon.MachineHold
+	// tmpLow is the hold of new runs for low temp space this poll found.
+	tmpLow     *daemon.DiskLow
 	mode       string
 	autoUpdate string
 	paused     bool
 	webHost    string
 	webPort    string
+}
+
+// hostHold is the hold of new starts and resumes the machine puts on this
+// poll beside low disk on the repo: the load or memory hold, else the
+// tmp-low hold as one; nil for none.
+func (c daemonConf) hostHold() *daemon.MachineHold {
+	if c.machine != nil {
+		return c.machine
+	}
+	return tmpLowHold(c.tmpLow)
+}
+
+// tmpLowHold is a tmp-low hold as daemonPoll1 applies it, nil for none.
+func tmpLowHold(low *daemon.DiskLow) *daemon.MachineHold {
+	if low == nil {
+		return nil
+	}
+	return &daemon.MachineHold{Since: low.Since, Reason: daemon.SkipTmpLow, Detail: tmpLowDetail(low)}
 }
 
 // daemonConfOf resolves the settings for a poll: config, then the request's
@@ -436,6 +461,12 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 			return daemonConf{}, Usagef("--min-free: %v", err)
 		}
 		flags["rhiza.daemon.minFree"] = r.MinFree
+	}
+	if r.MinTmpFree != "" {
+		if _, err := daemon.ParseSize(r.MinTmpFree); err != nil {
+			return daemonConf{}, Usagef("--min-tmp-free: %v", err)
+		}
+		flags["rhiza.daemon.minTmpFree"] = r.MinTmpFree
 	}
 	if r.MaxLoad != "" {
 		if _, err := parseMaxLoad(r.MaxLoad); err != nil {
@@ -459,6 +490,7 @@ func daemonConfOf(ctx *Ctx, r DaemonRequest) (daemonConf, error) {
 	c := daemonConf{rows: rows}
 	c.maxRuns, _ = strconv.Atoi(settingValue(rows, "rhiza.daemon.maxRuns"))
 	c.minFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minFree"))
+	c.minTmpFree, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minTmpFree"))
 	c.maxLoad, _ = parseMaxLoad(settingValue(rows, "rhiza.daemon.maxLoad"))
 	c.minMemory, _ = daemon.ParseSize(settingValue(rows, "rhiza.daemon.minMemory"))
 	c.paused = settingValue(rows, "rhiza.daemon.paused") == "true" || settingValue(rows, "rhiza.project.paused") == "true"
@@ -550,7 +582,7 @@ func runDaemonSettings(ctx *Ctx, req any) (any, error) {
 
 // DaemonSetRequest names a setting and its new value.
 type DaemonSetRequest struct {
-	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
+	Key     string `json:"key" arg:"0" desc:"The setting: rhiza.project.agent, paused or maxRuns, rhiza.daemon.paused, maxRuns, minFree, minTmpFree, maxLoad, minMemory, permissionMode, usage.session, usage.weekly or usage.reserve, failureClassifier, rhiza.daemon.watchdog.* or rhiza.project.watchdog.* (enabled, agentNudge, agentRetry, commandLimit, waitLimit, retryBudget, ciReruns, pollBehind, fileBugs, autonomousOnly), rhiza.web.host, rhiza.web.port, rhiza.web.token, rhiza.ship.deployUrl, deployTimeout, ciWindow, localGate, prePushCheck or generate, or rhiza.autonomy.plan, accept, ship or signoff"`
 	Project string `json:"project,omitempty" flag:"project" desc:"The registered project a project setting is written to; default the current project"`
 	Value   string `json:"value" arg:"1" desc:"The new value: true or false, a whole number, a token count, a percent, a size, a permission mode, an IP address, a port number or off, an http(s) URL, a duration, an agent adapter name, or auto or owner, as the key takes"`
 }
