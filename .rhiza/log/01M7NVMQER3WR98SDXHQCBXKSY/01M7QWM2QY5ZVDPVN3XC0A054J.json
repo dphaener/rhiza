@@ -1,0 +1,86 @@
+{
+  "actor": "01M7QWGWDDP8XW2BRCYC207ZRZ",
+  "after": [
+    "01M7QW4X37W3VFMKNF4SA6ZK4K"
+  ],
+  "at": "2026-11-18T17:52:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA built ./cmd/rhiza to a scratch path and, in a scratch root, ran rhiza request 'first idea' --note (CRLF, multi-line Markdown with outer blank lines) --note second --json: both notes stored oldest first in requests.json and request ls --json, lines kept, CRLF to LF, outer blank trimmed; request ls text shows [2 notes]/[1 note]; a request with no notes writes no notes key. Blank and empty --note (exit 2 'is empty'), 8001 bytes (exit 2 'is 8001 bytes, at most 8000') queue nothing; 8000 bytes accepted."
+        },
+        "handle": "request-note-flag-qa-1",
+        "id": "01M7QWM2GFX06YP5601J32FGNV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QWM2GEBGMEX9FB7RP671SV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QWM2GEBGMEX9FB7RP671SV",
+        "id": "01M7QWM2HHHVQYFMM5G20DC36T",
+        "link": "01M7QWM2HHHVQYFMM5FYNG15SM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: rhiza request note <8-char prefix> 'third\\r\\nline two' appended a third note (printed with all notes, CRLF to LF); --dry-run --json showed the would-be note and requests.json stayed unchanged; unknown ID, 3-char prefix, ambiguous prefix, blank and 9000-byte notes, missing args and a drawn request (Run set, human and --json) were each usage errors (exit 2) with requests.json byte-identical; after a real daemon --once drew the run, note was refused as no longer queued."
+        },
+        "handle": "request-note-add-qa-1",
+        "id": "01M7QWM2JMN5N5NEASGA1NB42T",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QWM2JMN5N5NEASG8X5D9EG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QWM2JMN5N5NEASG8X5D9EG",
+        "id": "01M7QWM2KMA4FY0Z42VNCGNGVC",
+        "link": "01M7QWM2KMA4FY0Z42VHJ55FM7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N9F6ZF8ZZZWAH3685DT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build and fake rex/claude: queued a request with two --note values (one multi-line Markdown) plus a third via request note, rhiza daemon --once drew its run, run start --foreground --request ran the plan workflow; the planner's brief.md had ## Request notes right after ## Change set, the lead sentence and Note 1..3 verbatim in order, then ## Leaves. A plan run with no request had no Request notes section. go test ./internal/run ./internal/daemon -run Brief|Request, ./internal/api -run Request and the request-notes-brief, describe-golden, plan-requests, brief-files scripts pass."
+        },
+        "handle": "request-notes-plan-brief-qa-1",
+        "id": "01M7QWM2MWC4M6PA76587TB51V",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QWM2MWC4M6PA7655RKP2DW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QWM2MWC4M6PA7655RKP2DW",
+        "id": "01M7QWM2P03WJMP2592KQ517YG",
+        "link": "01M7QWM2P03WJMP2592G4PADD0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3NDW5YGBD04964SJCJ0G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "id": "01M7QWM2QY5ZVDPVN3XC0A054J",
+  "type": "ops",
+  "v": 1
+}
