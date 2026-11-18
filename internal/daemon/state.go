@@ -44,6 +44,9 @@ type State struct {
 	LastPoll time.Time `json:"last_poll"`
 	Stopped  time.Time `json:"stopped,omitempty"`
 	MaxRuns  int       `json:"max_runs"`
+	// MaxRunsAuto says rhiza.daemon.maxRuns is auto: MaxRuns is then the
+	// cap the last poll worked out from its pre-start checks.
+	MaxRunsAuto bool `json:"max_runs_auto,omitempty"`
 	// Settings are the effective settings of the last poll, each with the
 	// source it came from (default, git config or flag).
 	Settings   []SettingValue `json:"settings,omitempty"`

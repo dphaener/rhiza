@@ -336,3 +336,33 @@ func TestDaemonMaxRunsAuto(t *testing.T) {
 		t.Errorf("project maxRuns auto: error %v, want a whole-number refusal", err)
 	}
 }
+
+// TestDaemonMaxRunsAutoCap checks the cap under rhiza.daemon.maxRuns=auto:
+// one over the runs running while every pre-start check has room, the runs
+// running while the load or memory hold, the tmp-low hold or the disk-low
+// check holds.
+func TestDaemonMaxRunsAutoCap(t *testing.T) {
+	room := daemonConf{maxRunsAuto: true}
+	machine := room
+	machine.machine = &daemon.MachineHold{Reason: daemon.SkipLoadHigh}
+	tmp := room
+	tmp.tmpLow = &daemon.DiskLow{Free: 1, Min: 2}
+	disk := room
+	disk.diskLow = true
+	for _, c := range []struct {
+		name    string
+		conf    daemonConf
+		running int
+		want    int
+	}{
+		{"room, none running", room, 0, 1},
+		{"room, two running", room, 2, 3},
+		{"machine hold", machine, 2, 2},
+		{"tmp low", tmp, 1, 1},
+		{"disk low", disk, 0, 0},
+	} {
+		if got := c.conf.autoMaxRuns(c.running); got != c.want {
+			t.Errorf("%s: autoMaxRuns(%d) = %d, want %d", c.name, c.running, got, c.want)
+		}
+	}
+}

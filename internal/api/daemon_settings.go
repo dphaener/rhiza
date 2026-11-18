@@ -441,7 +441,10 @@ type daemonConf struct {
 	// machine is the hold of new runs for load or memory this poll found.
 	machine *daemon.MachineHold
 	// tmpLow is the hold of new runs for low temp space this poll found.
-	tmpLow     *daemon.DiskLow
+	tmpLow *daemon.DiskLow
+	// diskLow is the disk-low check this poll's prepare found: free space
+	// on the repo's filesystem under minFree.
+	diskLow    bool
 	mode       string
 	autoUpdate string
 	paused     bool
@@ -457,6 +460,18 @@ func (c daemonConf) hostHold() *daemon.MachineHold {
 		return c.machine
 	}
 	return tmpLowHold(c.tmpLow)
+}
+
+// autoMaxRuns is the machine-wide cap of a poll under
+// rhiza.daemon.maxRuns=auto, from the home project's settings and readings:
+// running plus one while every pre-start check (the load and memory hold,
+// the tmp-low hold, the disk-low check) has room, running while any holds.
+// It reads nothing anew, so each further start waits for the next poll.
+func (c daemonConf) autoMaxRuns(running int) int {
+	if c.hostHold() != nil || c.diskLow {
+		return running
+	}
+	return running + 1
 }
 
 // tmpLowHold is a tmp-low hold as daemonPoll1 applies it, nil for none.

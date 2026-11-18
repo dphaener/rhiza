@@ -322,8 +322,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		// Every project's demand is read before any starts: the run slots
 		// are machine-wide, filled round-robin across the projects (see
 		// daemon.RoundRobin), each under its own rhiza.project.maxRuns.
-		// The home project's settings give the machine-wide maxRuns.
+		// The home project's settings give the machine-wide maxRuns; under
+		// auto, its pre-start readings do (daemonConf.autoMaxRuns).
 		maxRuns := daemon.DefaultMaxRuns
+		maxRunsAuto := false
+		var homeConf daemonConf
 		if r.MaxRuns > 0 {
 			maxRuns = r.MaxRuns
 		}
@@ -342,9 +345,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 			if name == homeName {
 				maxRuns = turns[i].conf.maxRuns
+				maxRunsAuto = turns[i].conf.maxRunsAuto
+				homeConf = turns[i].conf
 			}
 			picks = append(picks, turns[i].pick)
 			running += turns[i].pick.Running
+		}
+		if maxRunsAuto {
+			maxRuns = homeConf.autoMaxRuns(running)
 		}
 		share := map[string]int{}
 		picked := daemon.RoundRobin(picks, running, maxRuns, lastTurn)
@@ -353,7 +361,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			share[pk.Project]++
 		}
 		for i, name := range polled {
-			if err := projs[name].poll(r, &resp, turns[i], maxRuns, share[name]); err != nil && firstErr == nil {
+			if err := projs[name].poll(r, &resp, turns[i], maxRuns, maxRunsAuto, share[name]); err != nil && firstErr == nil {
 				firstErr = err
 			}
 		}

@@ -73,7 +73,7 @@ func (h *schedHarness) poll(maxRuns int) {
 	}
 	resp := DaemonResponse{}
 	for i, p := range h.projs {
-		if err := p.poll(r, &resp, turns[i], maxRuns, share[p.name]); err != nil {
+		if err := p.poll(r, &resp, turns[i], maxRuns, false, share[p.name]); err != nil {
 			h.t.Fatal(err)
 		}
 	}

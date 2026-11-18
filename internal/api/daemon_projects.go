@@ -231,6 +231,7 @@ func (p *daemonProj) prepare(r DaemonRequest, onConf func(daemonConf)) daemonTur
 		state.MachineHold, state.Machine = conf.machine, &reading
 		conf.tmpLow = daemonTmpLow(ctx, conf.minTmpFree, state.TmpLow)
 		state.TmpLow = conf.tmpLow
+		conf.diskLow, _ = daemonDiskLow(ctx, conf.minFree)
 	})
 	if onConf != nil {
 		p.steps.run(p.name, "housekeeping", func() { onConf(conf) })
@@ -354,7 +355,7 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 	if conf.paused || ferr != nil {
 		return nil, 0, 0, running
 	}
-	if low, _ := daemonDiskLow(ctx, conf.minFree); low || conf.hostHold() != nil {
+	if conf.diskLow || conf.hostHold() != nil {
 		return nil, 0, 0, running
 	}
 	// A queued milestone request's plan run takes a slot first, then the
@@ -427,16 +428,17 @@ func daemonDemand(ctx *Ctx, rs *run.Store, pending, unjournaled map[string]daemo
 
 // poll is the rest of the project's poll, after prepare read t: what the
 // per-repo daemon did at each tick, with share the run slots the
-// machine-wide round-robin gave it. What the poll started is appended to
+// machine-wide round-robin gave it, maxRuns the cap it was filled to and
+// maxRunsAuto whether rhiza.daemon.maxRuns=auto set that cap. What the poll started is appended to
 // resp.
-func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, maxRuns, share int) error {
+func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, maxRuns int, maxRunsAuto bool, share int) error {
 	ctx, state := p.ctx, &p.state
 	if t.err != nil {
 		return t.err
 	}
 	conf, hold := t.conf, t.hold
 	minFree := conf.minFree
-	state.MaxRuns = maxRuns
+	state.MaxRuns, state.MaxRunsAuto = maxRuns, maxRunsAuto
 	var skips []daemon.Skip
 	var started, resumed, planned []string
 	var err error
