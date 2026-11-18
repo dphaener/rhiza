@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QXT0PWZ9D3102WFXRV38DK",
+  "after": [
+    "01M7QXK39VXFX2RTQ76Z0Z6B2P"
+  ],
+  "at": "2026-11-18T18:14:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 0b9e4a2b9: go test -trimpath -p 2 ./internal/api -run 'MaxRuns' exit 0 (TestDaemonMaxRunsAuto PASS: daemon set auto, daemon settings reads auto, daemonConf maxRunsAuto true with maxRuns at the default; 3 pins cap 3; --max-runs 4 overrides auto; 0, -1, autox refused naming 'a whole number of at least 1 or auto'; auto refused for rhiza.project.maxRuns); go test -trimpath -p 2 ./internal/tui/daemonapp/... exit 0 (TestAutoLimitSetsAndQuits writes daemon.set rhiza.daemon.maxRuns auto; TestLimitValidators, TestInvalidLimitCallsNothing refuse 0/-1/autox); -count=1 rerun of internal/api -run 'MaxRuns|Setting|DaemonConf' exit 0; rhiza ship generate and rhiza render exit 0 with a clean tree. Diff read against c8e833d39: default 2, --max-runs int and rhiza.project.maxRuns unchanged, poll untouched, no stubs or TODOs; only the leaf's files plus the generated docs/reference/config.md and .rhiza changed."
+        },
+        "handle": "maxruns-auto-setting-verified",
+        "id": "01M7QXW25R2YHA603MA16JVV1B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QXW25R2YHA603M9ZQQPHJV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QXW25R2YHA603M9ZQQPHJV",
+        "id": "01M7QXW26R0XP70V7X2QCRBC97",
+        "link": "01M7QXW26R0XP70V7X2M3B8VRF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2Z9E3VYWJRD30PF1514",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M7QXFGFM5DQXY4GC23G663TX",
+  "id": "01M7QXW27RG6PMS2C64TTERNGV",
+  "type": "ops",
+  "v": 1
+}
