@@ -589,7 +589,8 @@ func failedRetryDue(pol WatchdogPolicy, m daemon.WatchdogRun, j run.Journal, st 
 // failedRetries (each charged as an attempt in FailedRetries). A failure
 // neither budget covers is left to the inbox, each verdict and reason
 // logged, as is an attended run when the policy is autonomous-only. A run
-// with a live process is never touched. It returns the memory after, and
+// with a live process is never touched, and a real failure whose resume
+// errors is left to the inbox. It returns the memory after, and
 // the first error.
 func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id string) bool, mem []daemon.WatchdogRun, d watchdogDeps) ([]daemon.WatchdogRun, error) {
 	var first error
@@ -630,6 +631,12 @@ func watchdogTransient(pol WatchdogPolicy, journals []run.Journal, live func(id 
 		if err := d.resume(j.ID); err != nil {
 			if first == nil {
 				first = fmt.Errorf("resume run %s: %w", j.ID, err)
+			}
+			// A real failure the watchdog cannot resume is left to the
+			// inbox, or failedRetryDue would hide it every poll.
+			if !transient {
+				mem[i].Judged = j.Entries[len(j.Entries)-1].At
+				d.log("watchdog: run %s step %s failure classified real (%s), its resume failed (%v), left to the inbox", j.ID, step, v.Reason, err)
 			}
 			continue
 		}

@@ -1008,6 +1008,39 @@ func TestWatchdogFailedRetriesTransientKeepsBudget(t *testing.T) {
 	}
 }
 
+// TestWatchdogFailedRetryResumeError: (failure case) a real failure whose
+// resume errors is left to the inbox: the error is returned, the retry is
+// not charged, the failed run is listed at once and not resumed again on
+// the next poll while its journal still ends there.
+func TestWatchdogFailedRetryResumeError(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	js := []run.Journal{failedRun("real", "FAIL: TestThing expected 1 got 2", true, t0)}
+	var resumed, log []string
+	d := watchdogDeps{
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return errors.New("worktree gone") },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, FailedRetries: 1, AutonomousOnly: true}
+	mem, err := watchdogTransient(pol, js, func(string) bool { return false }, nil, d)
+	if err == nil || !strings.Contains(err.Error(), "worktree gone") {
+		t.Fatalf("err %v, want the resume error", err)
+	}
+	if len(mem) != 1 || mem[0].FailedRetries != 0 || len(mem[0].Attempts) != 0 {
+		t.Fatalf("memory %+v, want no retry charged", mem)
+	}
+	if got := failedItems(js, pol, mem); len(got) != 1 {
+		t.Fatalf("inbox %+v, want the failed run whose resume failed", got)
+	}
+	if len(log) != 1 || !strings.Contains(log[0], "worktree gone") || !strings.Contains(log[0], "left to the inbox") {
+		t.Errorf("log %q", log)
+	}
+	if mem, err = watchdogTransient(pol, js, func(string) bool { return false }, mem, d); err != nil || len(resumed) != 1 {
+		t.Fatalf("second poll: resumed %v, err %v, want no second resume", resumed, err)
+	}
+}
+
 // planRetryWorkflow is a plan-shaped project workflow: its interview agent
 // step is followed by a review-check that, failing, retries the run from
 // the interview, as the built-in plan's review loop does.
