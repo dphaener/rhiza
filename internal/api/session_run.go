@@ -194,16 +194,19 @@ func runSessionRun(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	env, unset := launchEnv(rec)
-	if rec.Run != "" && !ctx.DryRun {
+	// A session of a run gets the run's env, as the run's steps do: its
+	// workflow's [env] and TMPDIR (see workflow.RunEnvPairs), the run's
+	// temp folder made before a real start whenever that env names it.
+	if rec.Run != "" {
 		if common, err := gitCommonDir(ctx); err == nil {
 			rs := runStore(ctx, common)
 			if j, err := rs.Read(rec.Run); err == nil {
-				if def, err := j.State().ParseDefinition(); err == nil && len(def.Env) > 0 {
+				if def, err := j.State().ParseDefinition(); err == nil {
 					tmp := rs.TmpDir(rec.Run)
-					if def.UsesRunTmp() {
+					if def.NeedsRunTmp() && !ctx.DryRun {
 						_ = os.MkdirAll(tmp, 0o755)
 					}
-					env = append(env, def.EnvPairs(tmp)...)
+					env = append(env, def.RunEnvPairs(tmp)...)
 				}
 			}
 		}

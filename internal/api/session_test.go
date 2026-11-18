@@ -1094,7 +1094,8 @@ func TestCopyChangeSetLogWritesReadOnly(t *testing.T) {
 
 // A session in a run whose workflow has an [env] table gets it over the
 // terminal's environment: {run_tmp} is the run's own temp folder, made
-// before the agent starts, and a plain value is set as written.
+// before the agent starts, a plain value is set as written, and TMPDIR is
+// the run's temp folder as for the run's steps.
 //
 // Serial: its workflow names {run_tmp}, so its step makes and removes
 // the run temp folder os.UserCacheDir()/rhiza/run-tmp/R1, shared by every
@@ -1123,8 +1124,8 @@ func TestSessionRunWorkflowEnv(t *testing.T) {
 		t.Fatal(err)
 	}
 	agent := fs.programs[len(fs.programs)-1]
-	want := []string{"GOFLAGS=-count=1", "GOTMPDIR=" + tmp + "/go"}
-	if got := agent.Env[len(agent.Env)-2:]; !slices.Equal(got, want) {
+	want := []string{"GOFLAGS=-count=1", "GOTMPDIR=" + tmp + "/go", "TMPDIR=" + tmp}
+	if got := agent.Env[len(agent.Env)-3:]; !slices.Equal(got, want) {
 		t.Errorf("agent env %v, want it to end with %v", agent.Env, want)
 	}
 	if !slices.Equal(resp.(SessionRunResponse).Env, agent.Env) {

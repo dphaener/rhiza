@@ -104,11 +104,14 @@ func shipBuildStale(ctx *Ctx, bin string) bool {
 // builds the head with the SHIP_HEAD_BUILD the workflow names.
 func shipRunEnv(ctx *Ctx, st run.State, runTmp string) *Ctx {
 	def, err := st.ParseDefinition()
-	if err != nil || len(def.Env) == 0 {
+	if err != nil {
 		return ctx
 	}
+	if def.NeedsRunTmp() {
+		_ = os.MkdirAll(runTmp, 0o755)
+	}
 	env := map[string]string{}
-	for _, kv := range def.EnvPairs(runTmp) {
+	for _, kv := range def.RunEnvPairs(runTmp) {
 		k, v, _ := strings.Cut(kv, "=")
 		env[k] = v
 	}
