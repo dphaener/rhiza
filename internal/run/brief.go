@@ -45,9 +45,9 @@ type BriefInput struct {
 const ContractLastLine = "Full contract: rhiza guide contract"
 
 // RenderBrief renders a session's brief.md: the change set, the request's
-// notes (only when in has some), the previous attempt (only when in has one), its leaves, the decisions, the
-// constraints, the check commands and a short contract summary, in that
-// order.
+// notes (only when in has some), the previous attempt (only when in has
+// one), its leaves, the decisions, the constraints, the check commands and
+// a short contract summary, in that order.
 func RenderBrief(in BriefInput) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Brief\n\n## Change set\n\n- Title: %s\n- ID: %s\n- Intent: %s\n", in.ChangeTitle, in.ChangeID, in.Intent)

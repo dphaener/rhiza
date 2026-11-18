@@ -81,7 +81,7 @@ on.pass = "gate"
 
 Three placeholders carry the run's context, each the path of a file in the session's folder:
 
-- `{brief}` is `brief.md`: the change set, its leaves, the decisions and constraints that apply, the check commands and a short summary of the contract every role follows.
+- `{brief}` is `brief.md`: the change set, its leaves, the decisions and constraints that apply, the check commands and a short summary of the contract every role follows. A plan run drawn for a request with notes also gets them, verbatim and oldest first, in a Request notes section.
 - `{slice}` is `slice.json`, the model around the change set, the same bytes `rhiza slice --json` prints.
 - `{handback}` is `handback.md`, what went red and why, written when a later step hands the run back. That's why the `handback` text names it.
 
