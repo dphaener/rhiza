@@ -81,6 +81,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza repair`](#rhiza-repair)
 - [`rhiza request`](#rhiza-request)
 - [`rhiza request ls`](#rhiza-request-ls)
+- [`rhiza request note`](#rhiza-request-note)
 - [`rhiza retire`](#rhiza-retire)
 - [`rhiza rex install`](#rhiza-rex-install)
 - [`rhiza rex uninstall`](#rhiza-rex-uninstall)
@@ -1349,6 +1350,24 @@ rhiza request ls
 Output (`--json` fields):
 
 - `requests` (array of object): The requests, oldest first
+
+## rhiza request note
+
+Add a note for the planner to a queued plan request of this clone.
+
+```
+rhiza request note <request> <text>
+```
+
+Arguments and flags:
+
+- `<request>`: The request, by its full ID or a unique prefix of at least 4 characters; it must still be queued (no plan run drawn for it) (required)
+- `<text>`: The note for the request's planner: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused (required)
+
+Output (`--json` fields):
+
+- `dry_run` (boolean): True if nothing was written
+- `request` (object): The request, its notes oldest first, the new one last
 
 ## rhiza retire
 

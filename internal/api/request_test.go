@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -281,5 +282,100 @@ func TestRequestNotes(t *testing.T) {
 		if reqs, err := daemon.ReadRequests(f.common); err != nil || len(reqs) != 2 {
 			t.Errorf("%s note: %d requests, %v; want nothing queued", name, len(reqs), err)
 		}
+	}
+}
+
+// rhiza request note adds a note to a queued request, named by its ID or a
+// unique prefix, after those --note gave it; --dry-run writes nothing. A
+// request whose plan run is drawn, an unknown ID, an ambiguous or short
+// prefix and an empty note are usage errors that leave requests.json as it
+// was.
+func TestRequestNoteAdd(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "req")
+	resp, err := callOp(t, f.ctx, "request", `{"text":"Dark mode","notes":["First idea"]}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := resp.(RequestResponse).Request.ID
+	body, err := json.Marshal(map[string]string{"request": id, "text": "  Second\r\nidea  "})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err = callOp(t, f.ctx, "request.note", string(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"First idea", "Second\nidea"}
+	if got := resp.(RequestNoteResponse).Request.Notes; !slices.Equal(got, want) {
+		t.Fatalf("request note printed notes %q, want %q", got, want)
+	}
+	if text := human(t, resp); !strings.Contains(text, "Note 2:\n  Second\n  idea\n") {
+		t.Errorf("request note text:\n%s\nwant the second note's lines", text)
+	}
+	ls, err := callOp(t, f.ctx, "request.ls", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := ls.(RequestLsResponse).Requests[0].Notes; !slices.Equal(got, want) {
+		t.Fatalf("request ls notes %q, want %q", got, want)
+	}
+
+	// A unique prefix resolves; a dry run writes nothing.
+	f.ctx.DryRun = true
+	resp, err = callOp(t, f.ctx, "request.note", `{"request":"`+id[:6]+`","text":"Third"}`)
+	f.ctx.DryRun = false
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := resp.(RequestNoteResponse); !r.DryRun || len(r.Request.Notes) != 3 || r.Request.ID != id {
+		t.Fatalf("dry run by prefix: %+v", r)
+	}
+	resp, err = callOp(t, f.ctx, "request.note", `{"request":"`+id[:6]+`","text":"Third"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := resp.(RequestNoteResponse).Request.Notes; len(got) != 3 || got[2] != "Third" {
+		t.Fatalf("prefix note: notes %q", got)
+	}
+
+	// Refusals: set up a drawn request and two sharing a prefix.
+	reqs, err := daemon.ReadRequests(f.common)
+	if err != nil {
+		t.Fatal(err)
+	}
+	at := reqs[0].At
+	reqs = append(reqs,
+		daemon.Request{ID: "01ZZAAAA0000000000000000AA", Kind: daemon.KindFeature, Text: "Twin one", At: at},
+		daemon.Request{ID: "01ZZAAAA0000000000000000BB", Kind: daemon.KindFeature, Text: "Twin two", At: at},
+		daemon.Request{ID: "01YYDRAWN00000000000000000", Kind: daemon.KindFeature, Text: "Drawn", At: at, Run: "01YYRUN0000000000000000000", StartedAt: at},
+	)
+	if err := daemon.WriteRequests(f.common, reqs); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(filepath.Join(daemon.Dir(f.common), daemon.RequestsFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{
+		"drawn":     `{"request":"01YYDRAWN00000000000000000","text":"Late"}`,
+		"unknown":   `{"request":"01XXXXXXXXXXXXXXXXXXXXXXXX","text":"Lost"}`,
+		"ambiguous": `{"request":"01ZZAAAA","text":"Which"}`,
+		"short":     `{"request":"` + id[:3] + `","text":"Short"}`,
+		"empty":     `{"request":"` + id + `","text":" \n "}`,
+	} {
+		_, err := callOp(t, f.ctx, "request.note", body)
+		if e := AsError(err); e == nil || e.Code != CodeUsage {
+			t.Errorf("%s: %v, want a usage error", name, err)
+		}
+		after, err := os.ReadFile(filepath.Join(daemon.Dir(f.common), daemon.RequestsFile))
+		if err != nil || string(after) != string(before) {
+			t.Errorf("%s: requests.json changed (%v)", name, err)
+		}
+	}
+	// Not UTF-8, built as the request itself: JSON would replace the bytes.
+	o, _ := Lookup("request.note")
+	if _, err := o.Run(f.ctx, RequestNoteRequest{Request: id, Text: "bad \xff"}); AsError(err) == nil || AsError(err).Code != CodeUsage {
+		t.Errorf("not UTF-8: %v, want a usage error", err)
 	}
 }
