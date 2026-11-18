@@ -2295,3 +2295,118 @@ func (s State) PastLanding() bool {
 	}
 	return false
 }
+
+// PreviousAttempt is what an agent step session started after a run's last
+// retried entry is told of the attempt that failed: the failed step's
+// hand-back cause, as CauseOf reads it, and the findings of the latest
+// round recorded before the retry.
+type PreviousAttempt struct {
+	Cause    HandbackCause
+	Findings []AttemptFinding
+}
+
+// AttemptFinding is one finding of a PreviousAttempt's round: the check
+// that recorded it ("plan review" for a plan review round's), its severity
+// and its text.
+type AttemptFinding struct {
+	Check    string
+	Severity string
+	Text     string
+}
+
+// PlanReviewCheck names the check of a plan review round's finding that
+// names none.
+const PlanReviewCheck = "plan review"
+
+// PreviousAttempt is the attempt before the run's last retried entry, nil
+// for a run never retried. The failed step is the one the retried entry
+// names (the finished entry's step, or the last ended step, in a journal
+// written before retried entries named it); its outcome and detail are its
+// ended entry's when it was the last step to end before the retry, else
+// "failed" and the finished entry's detail (a step that went over its
+// max_visits never ended). The step's kind, from the definition the run
+// started with, decides how the detail reads.
+func (j Journal) PreviousAttempt() *PreviousAttempt {
+	last := -1
+	for i, e := range j.Entries {
+		if e.Type == TypeRetried {
+			last = i
+		}
+	}
+	if last < 0 {
+		return nil
+	}
+	retried := j.Entries[last]
+	before := Journal{ID: j.ID, Entries: j.Entries[:last]}.State()
+	failed := retried.Failed
+	if failed == "" {
+		failed = before.FinishedStep
+	}
+	n := len(before.Steps)
+	if failed == "" && n > 0 {
+		failed = before.Steps[n-1].Step
+	}
+	outcome, detail := Failed, retried.Detail
+	if n > 0 && before.Steps[n-1].Step == failed {
+		outcome, detail = before.Steps[n-1].Outcome, before.Steps[n-1].Detail
+	}
+	step := workflow.Step{Name: failed}
+	if def, err := before.ParseDefinition(); err == nil {
+		if s, ok := def.Steps[failed]; ok {
+			step = s
+		}
+	}
+	return &PreviousAttempt{Cause: CauseOf(step, outcome, detail), Findings: latestRoundFindings(j.Entries[:last], before)}
+}
+
+// latestRoundFindings are the findings of the latest round among entries
+// (folded as st): a plan review round's own, or for a review check's round
+// the latest round of every check of its step in the same cycle, in the
+// order the checks first appear. A leaf's findings are no round.
+func latestRoundFindings(entries []Entry, st State) []AttemptFinding {
+	k := -1
+	for i, e := range entries {
+		if e.Type == TypeFindings && e.Leaf == "" {
+			k = i
+		}
+	}
+	if k < 0 {
+		return nil
+	}
+	var out []AttemptFinding
+	add := func(check string, fs []Finding) {
+		for _, f := range fs {
+			c := check
+			if c == "" {
+				c = f.Check
+			}
+			if c == "" {
+				c = PlanReviewCheck
+			}
+			out = append(out, AttemptFinding{Check: c, Severity: f.Severity, Text: f.Reason})
+		}
+	}
+	e := entries[k]
+	if e.Check == "" {
+		add("", e.Findings)
+		return out
+	}
+	cycle := -1
+	for _, c := range st.Checks {
+		if r, ok := c.LatestRound(); ok && c.Step == e.Step && c.Check == e.Check {
+			cycle = r.Cycle
+		}
+	}
+	for _, c := range st.Checks {
+		if c.Step != e.Step {
+			continue
+		}
+		for i := len(c.Rounds) - 1; i >= 0; i-- {
+			if c.Rounds[i].Cycle == cycle {
+				add(c.Check, c.Rounds[i].Findings)
+				break
+			}
+		}
+	}
+	return out
+}

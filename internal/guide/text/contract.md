@@ -33,7 +33,10 @@ unknown placeholder.
 
 In the session's own directory under the runs directory:
 
-- `brief.md`: your task, built from the model (`RHIZA_BRIEF`).
+- `brief.md`: your task, built from the model (`RHIZA_BRIEF`). After a failed run is
+  retried, an agent step's brief also has a Previous attempt section: the failed step,
+  its outcome, its cause or output tail and the findings of the latest round before
+  the retry.
 - `slice.json`: `rhiza slice --json` for the change set when the session started (`RHIZA_SLICE`).
 - `handback.md`: why the session was handed back, only after a hand-back (`RHIZA_HANDBACK`).
 

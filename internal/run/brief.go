@@ -33,17 +33,24 @@ type BriefInput struct {
 	Constraints  []string // statements
 	PrePushCheck string   // rhiza.ship.prePushCheck, "" when unset
 	LocalGate    string   // rhiza.ship.localGate, "" when unset
+	// Previous is the attempt before the run's last retry, for an agent
+	// step session started after it; nil renders no section.
+	Previous *PreviousAttempt
 }
 
 // ContractLastLine ends brief.md's contract summary.
 const ContractLastLine = "Full contract: rhiza guide contract"
 
-// RenderBrief renders a session's brief.md: the change set, its leaves, the
-// decisions, the constraints, the check commands and a short contract
-// summary, in that order.
+// RenderBrief renders a session's brief.md: the change set, the previous
+// attempt (only when in has one), its leaves, the decisions, the
+// constraints, the check commands and a short contract summary, in that
+// order.
 func RenderBrief(in BriefInput) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Brief\n\n## Change set\n\n- Title: %s\n- ID: %s\n- Intent: %s\n", in.ChangeTitle, in.ChangeID, in.Intent)
+	if in.Previous != nil {
+		writePreviousAttempt(&b, *in.Previous)
+	}
 
 	b.WriteString("\n## Leaves\n")
 	if len(in.Leaves) == 0 {
@@ -87,6 +94,39 @@ func RenderBrief(in BriefInput) string {
 	b.WriteString("\n## Contract\n\n")
 	b.WriteString(contractSection)
 	return b.String()
+}
+
+// writePreviousAttempt writes brief.md's Previous attempt section: the
+// failed step and its outcome, its failing commands, output tail and cause
+// as a hand-back gives them, and the latest round's findings.
+func writePreviousAttempt(b *strings.Builder, p PreviousAttempt) {
+	c := p.Cause
+	b.WriteString("\n## Previous attempt\n\nThe run failed and was retried; this is how the attempt before this one ended.\n\n")
+	fmt.Fprintf(b, "- Failed step: %s\n- Outcome: %s\n", c.Step, c.Outcome)
+	for _, f := range c.Commands {
+		if f.OutputPath == "" {
+			fmt.Fprintf(b, "- Failing command: `%s`\n", f.Command)
+			continue
+		}
+		fmt.Fprintf(b, "- Failing command: `%s`: output in %s\n", f.Command, f.OutputPath)
+	}
+	if c.Output != "" {
+		fmt.Fprintf(b, "\n### Output tail\n\n```\n%s\n```\n", c.Output)
+	}
+	if c.Cause != "" {
+		fmt.Fprintf(b, "\n### Cause\n\n%s\n", c.Cause)
+	}
+	b.WriteString("\n### Findings of the latest round\n\n")
+	if len(p.Findings) == 0 {
+		b.WriteString("none\n")
+	}
+	for _, f := range p.Findings {
+		label := f.Check
+		if f.Severity != "" {
+			label += ", " + f.Severity
+		}
+		fmt.Fprintf(b, "- %s: %s\n", label, f.Text)
+	}
 }
 
 // contractSection is the body of a brief's Contract section, which every

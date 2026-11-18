@@ -33,16 +33,26 @@ const (
 // worktree holds it, and slice.json, the bytes `rhiza slice --json` prints
 // for the run's change set now, and records the directory on req so the
 // agent gets RHIZA_BRIEF, RHIZA_SLICE and, when handback.md is there,
-// RHIZA_HANDBACK. A dry run writes nothing. A directory or file that cannot
-// be written fails the start with its path.
+// RHIZA_HANDBACK. An agent step's session started after the run's last
+// retried entry finds the attempt before it in brief.md; a leaf's or a
+// check's does not. A dry run writes nothing. A directory or file that
+// cannot be written fails the start with its path.
 func (r *stepRunner) prepareSession(req *SessionStartRequest, step, session string) error {
 	common, err := gitCommonDir(r.ctx)
 	if err != nil {
 		return err
 	}
-	dir := run.SessionDir(common, r.run, step, r.runState().CurrentVisit, session)
+	j, err := runStore(r.ctx, common).Read(r.run)
+	if err != nil {
+		j = run.Journal{}
+	}
+	dir := run.SessionDir(common, r.run, step, j.State().CurrentVisit, session)
 	req.briefDir = dir
-	return r.fillSession(dir)
+	var prev *run.PreviousAttempt
+	if session == run.AgentSessionName() {
+		prev = j.PreviousAttempt()
+	}
+	return r.fillSession(dir, prev)
 }
 
 // prepareKeyed is prepareSession for a session that is no step visit, an
@@ -56,13 +66,14 @@ func (r *stepRunner) prepareKeyed(req *SessionStartRequest, kind string) {
 			return "", err
 		}
 		dir := run.KeyedSessionDir(common, r.run, kind, sid)
-		return dir, r.fillSession(dir)
+		return dir, r.fillSession(dir, nil)
 	}
 }
 
 // fillSession writes brief.md and slice.json into dir for the run's change
-// set. A dry run writes nothing.
-func (r *stepRunner) fillSession(dir string) error {
+// set, brief.md with prev's Previous attempt section when prev is not nil.
+// A dry run writes nothing.
+func (r *stepRunner) fillSession(dir string, prev *run.PreviousAttempt) error {
 	if r.ctx.DryRun {
 		return nil
 	}
@@ -118,6 +129,7 @@ func (r *stepRunner) fillSession(dir string) error {
 	if err != nil {
 		return err
 	}
+	in.Previous = prev
 	return run.WriteSessionFiles(dir, run.RenderBrief(in), js)
 }
 
