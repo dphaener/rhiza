@@ -26,6 +26,7 @@ func buildWorkflow(s Step, fs fileStep, fail func(string, ...any) (Step, error))
 		{"stall", fs.Stall != ""},
 		{"interval", fs.Interval != ""},
 		{"max_visits", fs.MaxVisits != 0},
+		{"retry_from", fs.RetryFrom != ""},
 	}
 	for _, r := range refused {
 		if r.set {
@@ -138,6 +139,13 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 				on[o] = ft
 			}
 			s.On = on
+			if s.RetryFrom != "" {
+				rt, err := target(s.RetryFrom)
+				if err != nil {
+					return fmt.Errorf("step %q: retry_from: %w", n, err)
+				}
+				s.RetryFrom = rt
+			}
 			steps[n] = s
 			order = append(order, n)
 			continue
@@ -154,8 +162,24 @@ func (d *Definition) expand(start string, resolve Resolver, stack []string, incl
 				on[o] = ft
 			}
 			s.On = on
+			if s.RetryFrom != "" {
+				s.RetryFrom = in.step.Workflow + "/" + s.RetryFrom
+			}
 			steps[s.Name] = s
 			order = append(order, s.Name)
+		}
+	}
+	for _, n := range order {
+		s := steps[n]
+		if s.RetryFrom == "" {
+			continue
+		}
+		ts, ok := steps[s.RetryFrom]
+		switch {
+		case !ok:
+			return fmt.Errorf("step %q: retry_from names %q, which is not a step left to run (skipped or unreachable); want a step the run can restart at", n, s.RetryFrom)
+		case ts.Kind == KindArbiter:
+			return fmt.Errorf("step %q: retry_from names %q, an arbiter step; the engine calls it on a question: want another step", n, s.RetryFrom)
 		}
 	}
 	declared := declaredOf(d, nil)
@@ -310,6 +334,14 @@ func includeWorkflow(s Step, resolve Resolver, stack []string, includes map[stri
 			}
 		}
 		is.On = on
+		if is.RetryFrom != "" {
+			if is.RetryFrom, err = resolveSkip(is.RetryFrom); err != nil {
+				return fail("%v", err)
+			}
+			if is.RetryFrom == TargetDone || is.RetryFrom == TargetFailed {
+				return fail("workflow %q: step %q: retry_from leads through skipped steps to %s; want a step the run can restart at", s.Workflow, n, is.RetryFrom)
+			}
+		}
 		all[n] = is
 	}
 	// Keep what the included workflow can still reach.

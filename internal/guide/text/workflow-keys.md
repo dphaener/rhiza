@@ -26,6 +26,10 @@ Every key a workflow file takes, the default when it is unset, and what
 - `on.<outcome>`: a step, `done`, `failed` or `handback:<agent step>`.
 - `max_visits`: unset or 0 means once.
 - `stall`: such as `"20m"`; unset takes the watchdog's default for the kind.
+- `retry_from`: the step a failed run restarts at when it fails here, by any retry; another
+  step (not itself or the arbiter), `<workflow step>/<step>` for an included one, and prefixed
+  like `on.*` targets when its workflow is included; unset restarts at the failed step. Not on
+  a `workflow` or `arbiter` step.
 
 ## Step kinds
 

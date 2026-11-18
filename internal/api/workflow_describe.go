@@ -41,10 +41,11 @@ type WorkflowRoleView struct {
 
 // WorkflowStepView is one step in order.
 type WorkflowStepView struct {
-	Name  string             `json:"name" desc:"The step's name; <workflow>/<step> for a step of an included workflow"`
-	Kind  string             `json:"kind" desc:"agent, wait, command, arbiter, leaves, checks or signoff"`
-	On    map[string]string  `json:"on" desc:"The next step (or done or failed) by outcome"`
-	Roles []WorkflowRoleView `json:"roles" desc:"The step's sessions, with their model ladders and prompts"`
+	Name      string             `json:"name" desc:"The step's name; <workflow>/<step> for a step of an included workflow"`
+	Kind      string             `json:"kind" desc:"agent, wait, command, arbiter, leaves, checks or signoff"`
+	On        map[string]string  `json:"on" desc:"The next step (or done or failed) by outcome"`
+	RetryFrom string             `json:"retry_from" desc:"The step a failed run restarts at when it fails at this step; empty means the step itself"`
+	Roles     []WorkflowRoleView `json:"roles" desc:"The step's sessions, with their model ladders and prompts"`
 }
 
 // WorkflowDescribeResponse is the described workflow.
@@ -108,6 +109,9 @@ func (r WorkflowDescribeResponse) Human(w io.Writer) {
 		for _, k := range keys {
 			fmt.Fprintf(w, "  on.%s -> %s\n", k, s.On[k])
 		}
+		if s.RetryFrom != "" {
+			fmt.Fprintf(w, "  retry_from -> %s\n", s.RetryFrom)
+		}
 		for _, ro := range s.Roles {
 			fmt.Fprintf(w, "  role %s models [%s]\n", ro.Role, strings.Join(ro.Models, ", "))
 			if len(ro.LowRiskModels) > 0 {
@@ -128,7 +132,7 @@ func roleView(name string, r workflow.Role) WorkflowRoleView {
 }
 
 func stepView(s workflow.Step) WorkflowStepView {
-	v := WorkflowStepView{Name: s.Name, Kind: s.Kind, On: map[string]string{}, Roles: []WorkflowRoleView{}}
+	v := WorkflowStepView{Name: s.Name, Kind: s.Kind, On: map[string]string{}, RetryFrom: s.RetryFrom, Roles: []WorkflowRoleView{}}
 	for k, t := range s.On {
 		v.On[k] = t
 	}

@@ -100,6 +100,18 @@ stdout '"low_risk_models": \[\s*"sonnet"\s*\]'
 stdout '"risky_paths": \['
 stdout '"low_risk_models": \[\]'
 
+# a step's retry_from, and an included workflow's prefixed
+cp $WORK/retry.toml .rhiza/workflows/retry.toml
+rhiza workflow describe retry
+stdout '^check command\n  on\.pass -> done\n  retry_from -> plan$'
+rhiza workflow describe retry --json
+stdout '"retry_from": "plan"'
+stdout '"retry_from": ""'
+cp $WORK/inc-retry.toml inc-retry.toml
+rhiza workflow describe inc-retry.toml
+stdout '^retry/check command\n  on\.fail -> failed\n  on\.pass -> after\n  retry_from -> retry/plan$'
+stdout '^after command\n  retry_from -> retry/check$'
+
 # nothing was written: no runs, and the model still folds
 rhiza run ls
 ! stdout 'inc|build'
@@ -151,3 +163,22 @@ run = "rm -rf tmp"
 [step.only]
 kind = "command"
 run = "true"
+-- retry.toml --
+[step.plan]
+kind = "agent"
+prompt = "plan"
+on.pass = "check"
+[step.check]
+kind = "command"
+run = "true"
+retry_from = "plan"
+on.pass = "done"
+-- inc-retry.toml --
+[step.w]
+kind = "workflow"
+workflow = "retry"
+on.pass = "after"
+[step.after]
+kind = "command"
+run = "true"
+retry_from = "w/check"

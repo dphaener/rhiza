@@ -414,6 +414,11 @@ type Step struct {
 	// definition, whose workflow steps are expanded.
 	Workflow string
 	Skip     []string
+	// RetryFrom is the step of the same workflow a failed run restarts at
+	// when it fails at this step; empty means the step itself. In a parsed
+	// definition it names a flat step: <workflow>/<step> when it is in an
+	// included workflow.
+	RetryFrom string
 	// On maps an outcome to the next step, or to done or failed.
 	On map[string]string
 }
@@ -784,6 +789,7 @@ type fileStep struct {
 	Check          []fileCheck       `toml:"check"`
 	Critic         *fileRole         `toml:"critic"`
 	Fixer          *fileRole         `toml:"fixer"`
+	RetryFrom      string            `toml:"retry_from"`
 	On             map[string]string `toml:"on"`
 }
 
@@ -1070,6 +1076,7 @@ func buildStep(name string, fs fileStep) (Step, error) {
 		Handback:       fs.Handback,
 		MaxVisits:      fs.MaxVisits,
 		Models:         fs.Models,
+		RetryFrom:      fs.RetryFrom,
 		On:             fs.On,
 	}
 	if s.On == nil {
@@ -1580,6 +1587,7 @@ func buildArbiter(s Step, fs fileStep, fail func(string, ...any) (Step, error)) 
 		{"until_when", fs.UntilWhen != "", "it ends when its agent says done or exits"},
 		{"timeout", fs.Timeout != "", "it ends when its agent says done or exits"},
 		{"max_visits", fs.MaxVisits != 0, "no step goes to it, so it has no visits"},
+		{"retry_from", fs.RetryFrom != "", "its outcome goes back to the step that asked, so a run never fails at it"},
 	}
 	for _, r := range refused {
 		if r.set {
@@ -1618,8 +1626,12 @@ func positiveDuration(v string) (time.Duration, error) {
 
 // checkTargets refuses an outcome name that does not match the pattern or
 // that the step's kind cannot produce, a target that is neither a step nor
-// done or failed, and a target that is the arbiter step.
+// done or failed, and a target that is the arbiter step. It checks the
+// step's retry_from too.
 func checkTargets(s Step, steps map[string]Step) error {
+	if err := checkRetryFrom(s, steps); err != nil {
+		return err
+	}
 	outcomes := make([]string, 0, len(s.On))
 	for o := range s.On {
 		outcomes = append(outcomes, o)
@@ -1675,6 +1687,33 @@ func checkTargets(s Step, steps map[string]Step) error {
 		if ts, ok := steps[t]; !ok || ts.Kind != KindChecks {
 			return fmt.Errorf("step %q: on.changes names %q, which is not a checks step; want the checks step that fixes what the owner asks for", s.Name, t)
 		}
+	}
+	return nil
+}
+
+// checkRetryFrom refuses a retry_from that names the step itself, or
+// anything but another step of the workflow (a step of an included
+// workflow as <workflow step>/<step>, checked once expanded) other than the
+// arbiter step.
+func checkRetryFrom(s Step, steps map[string]Step) error {
+	t := s.RetryFrom
+	if t == "" {
+		return nil
+	}
+	if t == s.Name {
+		return fmt.Errorf("step %q: retry_from names the step itself; a failed run restarts there anyway, so remove it or name another step", s.Name)
+	}
+	if w, _, ok := strings.Cut(t, "/"); ok {
+		if ws, ok := steps[w]; ok && ws.Kind == KindWorkflow {
+			return nil
+		}
+	}
+	ts, ok := steps[t]
+	if !ok {
+		return fmt.Errorf("step %q: retry_from names %q, which is not a step of this workflow; want another step to restart a failed run at", s.Name, t)
+	}
+	if ts.Kind == KindArbiter {
+		return fmt.Errorf("step %q: retry_from names %q, an arbiter step; the engine calls it on a question: want another step", s.Name, t)
 	}
 	return nil
 }

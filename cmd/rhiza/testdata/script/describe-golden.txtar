@@ -29225,6 +29225,10 @@ cmp stdout describe.golden.json
                   "description": "The next step (or done or failed) by outcome",
                   "type": "object"
                 },
+                "retry_from": {
+                  "description": "The step a failed run restarts at when it fails at this step; empty means the step itself",
+                  "type": "string"
+                },
                 "roles": {
                   "description": "The step's sessions, with their model ladders and prompts",
                   "items": {
@@ -29276,6 +29280,7 @@ cmp stdout describe.golden.json
                 "kind",
                 "name",
                 "on",
+                "retry_from",
                 "roles"
               ],
               "type": "object"
