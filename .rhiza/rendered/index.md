@@ -9553,6 +9553,7 @@
 - [claude-code-8ca1825c](actor/claude-code-8ca1825c.md)
 - [claude-code-8cb092b0](actor/claude-code-8cb092b0.md)
 - [claude-code-8cb3cee5](actor/claude-code-8cb3cee5.md)
+- [claude-code-8cb85843](actor/claude-code-8cb85843.md)
 - [claude-code-8cbcb0bc](actor/claude-code-8cbcb0bc.md)
 - [claude-code-8cd68bc7](actor/claude-code-8cd68bc7.md)
 - [claude-code-8ce55bbc](actor/claude-code-8ce55bbc.md)
