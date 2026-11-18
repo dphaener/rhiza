@@ -590,7 +590,8 @@ Output (`--json` fields):
 - `live` (integer): The machine-wide live runs holding a slot (running, not interrupted), summed over the daemon's projects
 - `load` (object): The last poll's load per core; absent before a poll recorded one
 - `max` (integer): rhiza.daemon.maxRuns as the daemon's last poll recorded it: the cap live plus starting is counted against
-- `max_runs` (integer): How many runs it keeps running at once
+- `max_runs` (integer): How many runs it keeps running at once; under auto, the cap its last poll worked out
+- `max_runs_auto` (boolean): True when its last poll ran under rhiza.daemon.maxRuns=auto: max_runs and max are then the cap that poll worked out from its pre-start checks
 - `memory` (object): The last poll's available memory; absent before a poll recorded one
 - `mode` (string): How this installation runs the daemon: service when daemon install wrote a systemd unit, else tab (the Rex tab 'rhiza daemon')
 - `poll_behind` (string): Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up

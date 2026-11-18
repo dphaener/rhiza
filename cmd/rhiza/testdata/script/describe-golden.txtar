@@ -2150,8 +2150,12 @@ cmp stdout describe.golden.json
             "type": "integer"
           },
           "max_runs": {
-            "description": "How many runs it keeps running at once",
+            "description": "How many runs it keeps running at once; under auto, the cap its last poll worked out",
             "type": "integer"
+          },
+          "max_runs_auto": {
+            "description": "True when its last poll ran under rhiza.daemon.maxRuns=auto: max_runs and max are then the cap that poll worked out from its pre-start checks",
+            "type": "boolean"
           },
           "memory": {
             "additionalProperties": false,

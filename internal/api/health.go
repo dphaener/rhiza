@@ -254,8 +254,9 @@ func healthDaemon(ctx, home *Ctx, all bool) HealthPart {
 // healthRunsAgainstCap adds the runs against rhiza.daemon.maxRuns to the
 // daemon part: live runs (an interrupted one takes no slot) plus starts not
 // journaled yet, summed over the daemon's projects, as a detail line. The
-// part is bad when they exceed the cap, with a detail line for each live
-// run: its project, run and change set title.
+// part is bad when they exceed a numeric cap, with a detail line for each
+// live run: its project, run and change set title. Under
+// rhiza.daemon.maxRuns=auto it is never bad for the cap.
 func healthRunsAgainstCap(ctx *Ctx, p HealthPart, s DaemonStatusResponse) HealthPart {
 	if s.MaxRuns <= 0 {
 		return p
@@ -301,13 +302,25 @@ func healthRunsAgainstCap(ctx *Ctx, p HealthPart, s DaemonStatusResponse) Health
 		}
 	}
 	p.Live, p.Starting, p.Max = &live, &starting, &s.MaxRuns
-	p.Detail = append(p.Detail, fmt.Sprintf("runs: %d/%d live, %d starting", live, s.MaxRuns, starting))
-	if live+starting > s.MaxRuns {
+	p.Detail = append(p.Detail, runsAgainstCap(live, starting, s.MaxRuns, s.MaxRunsAuto))
+	// Under auto the cap is the last poll's running plus at most one, so
+	// runs over it are the auto cap catching up, not a breach.
+	if !s.MaxRunsAuto && live+starting > s.MaxRuns {
 		p.State = HealthBad
 		p.Summary += fmt.Sprintf("; over rhiza.daemon.maxRuns %d", s.MaxRuns)
 		p.Detail = append(p.Detail, lines...)
 	}
 	return p
+}
+
+// runsAgainstCap is the runs line of daemon status and health: live runs
+// and starts against the cap, the cap marked auto when the last poll ran
+// under rhiza.daemon.maxRuns=auto.
+func runsAgainstCap(live, starting, max int, auto bool) string {
+	if auto {
+		return fmt.Sprintf("runs: %d live (auto cap %d), %d starting", live, max, starting)
+	}
+	return fmt.Sprintf("runs: %d/%d live, %d starting", live, max, starting)
 }
 
 // healthTitler gives a change set's display title in ctx's model, empty
