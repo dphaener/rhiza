@@ -874,19 +874,25 @@ func sortInboxItems(items []InboxItem) []InboxItem {
 // advice gives the advisor's restatement and recommendation on a question
 // by its node ID (questionAdvice), for a question a run raised from a
 // template: a failed leaf, a review cycle cap.
+//
+// It reads only what the blockers need: the to-be view named outright
+// (toBeView ignores the effective change set, so none is worked out) and
+// planGatherBlockers' inputs, with no dependency analysis or roadmap.
+// The items come in change set ID order: inboxOne sorts them, and
+// findInboxItems matches them by ID.
 func inboxBlockers(ctx *Ctx, advice map[string]run.Advice) ([]InboxItem, error) {
-	r, err := openReader(ctx, "inbox", "", toBeView)
+	r, err := openReader(ctx, "inbox", viewToBe, toBeView)
 	if err != nil {
 		return nil, err
 	}
 	defer r.Close()
-	in, err := planGather(r)
+	in, err := planGatherBlockers(r)
 	if err != nil {
 		return nil, err
 	}
-	res := planCore(in)
+	order := planBlockersOnly(in)
 	var qs []id.ID
-	for _, p := range res.order {
+	for _, p := range order {
 		if p.info.State == changeset.StateDraft {
 			continue
 		}
@@ -910,7 +916,7 @@ func inboxBlockers(ctx *Ctx, advice map[string]run.Advice) ([]InboxItem, error) 
 		}
 	}
 	items := []InboxItem{}
-	for _, p := range res.order {
+	for _, p := range order {
 		if p.info.State == changeset.StateDraft {
 			continue
 		}
