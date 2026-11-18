@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-18T10:19:57Z",
+  "body": {
+    "intent": "Fix watchdog transient failure at step plan/close-out: run 01M7PSG0M7APCTB4V1YKPTM394, request 01M7KHWSWG3ENZ81KH148SK1GD; log: main was not updated: git pull --ff-only origin main: From https://github.com/dphaener/rhiza | * branch                main       -> FETCH_HEAD | fatal: Cannot rebase onto multiple branches.",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M7Q2Q68JE50NCRKGCT5Z3APZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q2Q68JE50NCRKGCWYT1XQB",
+  "type": "open",
+  "v": 4
+}
