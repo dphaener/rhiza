@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QVQR8TZ8A2XB2AGTVVZJCN",
+  "after": [
+    "01M7QVH1BTSHMT063RTZNRG4A7"
+  ],
+  "at": "2026-11-18T17:38:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier in a detached checkout at e91bc0f3e re-ran the Checks block: go test -trimpath -p 2 ./internal/api/ -run Request (exit 0; -v shows TestRequestNoteAdd PASS), go test ./cmd/rhiza -run 'TestScripts/describe-golden$' with -update then without (both exit 0, golden unchanged), rhiza ship generate and rhiza render (exit 0, tree clean). TestRequestNoteAdd queues with one --note, adds a second via request.note, request ls shows both in order, a 6-char prefix resolves, --dry-run writes nothing, and drawn (Run set), unknown, ambiguous, short-prefix, empty and non-UTF-8 notes are usage errors with requests.json byte-identical. Diff writes only through daemon.UpdateRequests (dry run reads only), refuses Run!=\"\" per request-note-while-queued, leaves rhiza request's flags unchanged, no TODOs. Smoke test of a scratch build: note by prefix, --dry-run, abc and blank note refused with exit 2."
+        },
+        "handle": "request-note-add-verified",
+        "id": "01M7QVSZ1F8HXQKFKHJ1E1S66Z",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QVSZ1F8HXQKFKHHYYNDNQ3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QVSZ1F8HXQKFKHHYYNDNQ3",
+        "id": "01M7QVSZ2EMG9ETM4PB84Y3D09",
+        "link": "01M7QVSZ2EMG9ETM4PB7YQA6N0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N9F6ZF8ZZZWAH3685DT",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "id": "01M7QVSZ3JBW6GXSNP0F8Q8E4G",
+  "type": "ops",
+  "v": 1
+}

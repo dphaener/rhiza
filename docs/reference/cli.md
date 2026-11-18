@@ -81,6 +81,7 @@ Every command takes the global flags, prints markdown or, with `--json`, JSON, a
 - [`rhiza repair`](#rhiza-repair)
 - [`rhiza request`](#rhiza-request)
 - [`rhiza request ls`](#rhiza-request-ls)
+- [`rhiza request note`](#rhiza-request-note)
 - [`rhiza retire`](#rhiza-retire)
 - [`rhiza rex install`](#rhiza-rex-install)
 - [`rhiza rex uninstall`](#rhiza-rex-uninstall)
@@ -1320,7 +1321,7 @@ Output (`--json` fields):
 Queue a plan request in this clone: the daemon starts a plan run for it.
 
 ```
-rhiza request <text> [--kind <kind>] [--milestone <milestone>] [--workflow <workflow>] [--ref <ref>]
+rhiza request <text> [--kind <kind>] [--milestone <milestone>] [--workflow <workflow>] [--ref <ref>] [--note <note>]...
 ```
 
 Arguments and flags:
@@ -1330,6 +1331,7 @@ Arguments and flags:
 - `--milestone`: A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)
 - `--workflow`: A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)
 - `--ref`: An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none
+- `--note`: A note for the request's planner, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused (repeatable)
 
 Output (`--json` fields):
 
@@ -1348,6 +1350,24 @@ rhiza request ls
 Output (`--json` fields):
 
 - `requests` (array of object): The requests, oldest first
+
+## rhiza request note
+
+Add a note for the planner to a queued plan request of this clone.
+
+```
+rhiza request note <request> <text>
+```
+
+Arguments and flags:
+
+- `<request>`: The request, by its full ID or a unique prefix of at least 4 characters; it must still be queued (no plan run drawn for it) (required)
+- `<text>`: The note for the request's planner: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused (required)
+
+Output (`--json` fields):
+
+- `dry_run` (boolean): True if nothing was written
+- `request` (object): The request, its notes oldest first, the new one last
 
 ## rhiza retire
 

@@ -1,0 +1,31 @@
+{
+  "actor": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "after": [
+    "01M7QV3NHJ7DKY1RP9N4JT43YH"
+  ],
+  "at": "2026-11-18T17:26:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The orchestrator's real planner notes (~/orchestrator/planner-notes/*.md, 548 to 1997 bytes, numbered Markdown lists) are what a request should carry, so a note keeps its lines; a byte cap well above them keeps a pasted log out of every planner's brief",
+          "statement": "A request note is free text, possibly several lines (Markdown, as the orchestrator's planner-notes files are), stored on the request in requests.json (daemon.Request.Notes, oldest first) as given apart from trimming leading and trailing blank space and turning CRLF into LF; an empty note is refused, and a note over 8000 bytes or not valid UTF-8 is refused; rhiza request ls shows each request's notes (notes in --json, the count in text)",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "request-note-shape",
+        "id": "01M7QV3MX64Z7YN4PS47QSPP29",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QV3MX64Z7YN4PS45QXGE9D",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QV52M95V0GVJRFAAK9Z4TV",
+  "type": "ops",
+  "v": 1
+}

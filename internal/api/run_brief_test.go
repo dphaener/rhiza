@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
@@ -374,5 +375,37 @@ func TestRunRetryBriefPreviousAttempt(t *testing.T) {
 	}
 	if b := brief(1); strings.Contains(b, "Previous attempt") {
 		t.Errorf("the retry rewrote the earlier session's brief.md:\n%s", b)
+	}
+}
+
+// (failure case) A request queue that cannot be read does not fail the
+// session start: brief.md is still written, without a Request notes
+// section, and stderr warns that it has no request notes.
+func TestSessionBriefUnreadableRequestQueue(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "brief-queue")
+	cs := newChange(t, f.ctx, `{"intent":"Readable tabs"}`).ChangeSet
+	if err := os.MkdirAll(daemon.Dir(f.common), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(daemon.Dir(f.common), daemon.RequestsFile), []byte("{not json"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var stderr strings.Builder
+	f.ctx.Stderr = &stderr
+	r := &stepRunner{ctx: f.ctx, change: cs.String(), run: "R1", worktree: filepath.Join(t.TempDir(), "none")}
+	dir := filepath.Join(t.TempDir(), "session")
+	if err := r.fillSession(dir, nil); err != nil {
+		t.Fatalf("an unreadable request queue failed the session start: %v", err)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "brief.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(md), "- Intent: Readable tabs") || strings.Contains(string(md), "Request notes") {
+		t.Errorf("brief.md, want the brief without request notes:\n%s", md)
+	}
+	if w := "rhiza: warning: run R1: brief.md has no request notes: read the request queue: "; !strings.Contains(stderr.String(), w) {
+		t.Errorf("stderr = %q, want it to contain %q", stderr.String(), w)
 	}
 }

@@ -1,0 +1,197 @@
+{
+  "actor": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "after": [
+    "01M7QBTRS5MYJEJM5BJPN2PHTW"
+  ],
+  "at": "2026-11-18T17:26:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "summary": "Autonomous conduct run 01M7QTZWVQ: no owner to ask. The conductor read the intent m40-request-notes (measure: a test queues a request with two notes and finds both in the plan run's brief) and the code. A plan request lives in .git/rhiza/requests.json (internal/daemon/requests.go, daemon.Request), queued by rhiza request (internal/api/request.go) and listed by rhiza request ls. The daemon draws the plan run's ID onto the request (Request.Run) before run start --request takes it, so a plan run finds its request by its own run ID. Every agent step session's brief.md is rendered by run.RenderBrief (internal/run/brief.go) from run.BriefInput, filled by stepRunner.fillSession/briefInput (internal/api/run_brief.go). Repeatable flags are []string fields with a flag tag (as change new --source). The conductor ruled the open choices as Decisions marked assumed.",
+          "title": "Conductor's plan of change set 01M7NVMQ (a request carries notes)"
+        },
+        "handle": "m40-request-notes-conduct-plan",
+        "id": "01M7QV3MVZ69652ERAK98MZWXY",
+        "key": null,
+        "kind": "source",
+        "node": "01M7QV3MVZ69652ERAK97VQD1W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "fields": {
+          "reasoning": "The brief lists notes as '- <text>' lines like the run's own notes, so a note must be one line; a byte cap like --ref's keeps a pasted log out of every planner's brief",
+          "statement": "A request note is one line of text stored on the request in requests.json (daemon.Request.Notes, oldest first): whitespace runs collapse to one space as a request's text does, an empty note is refused, and a note over 2000 bytes or not valid UTF-8 is refused; rhiza request ls shows each request's notes (notes in --json, the count in text)",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "request-note-shape",
+        "id": "01M7QV3MX64Z7YN4PS47QSPP29",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QV3MX64Z7YN4PS45QXGE9D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3MX64Z7YN4PS45QXGE9D",
+        "id": "01M7QV3MYD91ZDSXB66K5A9Q31",
+        "link": "01M7QV3MYD91ZDSXB66FGXAD6K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3MVZ69652ERAK97VQD1W",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent says notes added to a queued request; once the run is drawn its planner may already have read its brief, so a later note would silently never reach it",
+          "statement": "rhiza request note <request> <text> adds a note to a request only while it is queued (no plan run drawn for it); a request whose plan run has started, or an unknown one, is a usage error and nothing is written",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "request-note-while-queued",
+        "id": "01M7QV3MZBRKBZ46M9ZZZET8ZK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QV3MZBRKBZ46M9ZYW1ZD43",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3MZBRKBZ46M9ZYW1ZD43",
+        "id": "01M7QV3N0GZ4QRA88N7TV7BR2Y",
+        "link": "01M7QV3N0GZ4QRA88N7TBA4SR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3MVZ69652ERAK97VQD1W",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "brief.md is the file every step session already reads, and the plan run's ID ties it to its request with no new journal field",
+          "statement": "Every agent step session of a request's plan run (the run whose ID is the request's Run) gets a Request notes section in brief.md, right after the Change set section, with one '- <text>' line per note, oldest first; a run that is no request's, or a request with no notes, renders no section. The notes are read from requests.json when the session's brief is written. Spawned children's briefs are their caller's and are not changed",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "request-notes-in-plan-brief",
+        "id": "01M7QV3N1YAQBJMZ732S6KM18K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QV3N1YAQBJMZ732P5DPQ0S",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3N1YAQBJMZ732P5DPQ0S",
+        "id": "01M7QV3N39BNW5MDAF8D8J94PN",
+        "link": "01M7QV3N39BNW5MDAF8AF0TR7M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3MVZ69652ERAK97VQD1W",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api (request_test.go) queues a request with two --note values and reads both back, in order and whitespace-collapsed, from requests.json and request ls --json; (failure case) an empty note, a note over 2000 bytes and a note that is not valid UTF-8 are each refused as usage errors and queue nothing. internal/daemon tests round-trip a Request with notes through WriteRequests/ReadRequests, and one without notes writes no notes key. cmd/rhiza's describe-golden.txtar is regenerated. Run: go test -trimpath -p 2 ./internal/api/ -run Request, go test -trimpath -p 2 ./internal/daemon/..., go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(describe-golden|plan-requests)$'",
+          "files": "internal/daemon/requests.go, internal/daemon/requests_test.go, internal/api/request.go, internal/api/request_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/runs-and-daemon.md, docs/reference/cli.md (regenerated)",
+          "must_not": "Change the request file's existing keys or the shape of a request without notes; change how a request's text, ref or workflow is read; touch the Request TUI app",
+          "statement": "rhiza request takes --note, repeatable, and queues the request with those notes (daemon.Request.Notes, oldest first, normalised and bounded as request-note-shape says); rhiza request ls lists each request's notes (notes array in --json, absent when none; '[N notes]' in text), and docs/runs-and-daemon.md says so"
+        },
+        "handle": "request-note-flag",
+        "id": "01M7QV3N5ZZR8C2R4TJ03DHX0N",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "id": "01M7QV3N7N5Q95FQ52Q2TWZJ2Y",
+        "link": "01M7QV3N7N5Q95FQ52PYZ6S1DZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3MX64Z7YN4PS45QXGE9D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "A test in internal/api queues a request with one --note, adds a second with request.note, and request ls --json shows both in order; a prefix resolves; (failure case) a request whose plan run has started (Run set), an unknown ID, an ambiguous prefix and an empty note are each usage errors that leave requests.json unchanged. describe-golden.txtar is regenerated. Run: go test -trimpath -p 2 ./internal/api/ -run Request, go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/describe-golden$'",
+          "files": "internal/api/request.go (or a new internal/api/request_note.go), internal/api/request_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/runs-and-daemon.md, docs/reference/cli.md (regenerated)",
+          "must_not": "Add a note to a request whose plan run has been drawn; write requests.json outside daemon.UpdateRequests; change rhiza request's own flags",
+          "statement": "rhiza request note <request> <text> (operation request.note) appends a note to a queued request under the queue's lock (daemon.UpdateRequests), the request named by its full ID or a unique prefix of 4+ characters, the note normalised and bounded as request-note-shape says; --dry-run writes nothing; it prints the request with its notes"
+        },
+        "handle": "request-note-add",
+        "id": "01M7QV3N9F6ZF8ZZZWAK8BW1Y4",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7QV3N9F6ZF8ZZZWAH3685DT",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3N9F6ZF8ZZZWAH3685DT",
+        "id": "01M7QV3NANEKRGPG134SYCYAN2",
+        "link": "01M7QV3NANEKRGPG134P8BHTP2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3MZBRKBZ46M9ZYW1ZD43",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3N9F6ZF8ZZZWAH3685DT",
+        "id": "01M7QV3NC7KB795G2CBAZBPGK1",
+        "link": "01M7QV3NC7KB795G2CB929D1ER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "internal/run brief tests render a BriefInput with two request notes (section after Change set, both lines in order) and one with none (no section, bytes unchanged from today). A new cmd/rhiza testscript request-notes-brief.txtar queues a request with two --note values, lets the daemon draw its run (fake rex, as plan-requests.txtar does), runs that plan run by hand with a fake claude, and finds both notes in the planner session's brief.md; (failure case) a plan run started for a request with no notes has no Request notes section in its brief. Run: go test -trimpath -p 2 ./internal/run/ -run Brief, go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(request-notes-brief|brief-files)$'",
+          "files": "internal/run/brief.go, internal/run/brief_test.go, internal/api/run_brief.go, cmd/rhiza/testdata/script/request-notes-brief.txtar",
+          "must_not": "Change brief.md for a run that is no request's; change spawned children's briefs (RenderSpawnBrief); add a field to the run journal; start a process in the testscript unless it is listed on processScripts with its reason",
+          "statement": "The brief.md of every agent step session of a request's plan run shows the request's notes in a Request notes section after the Change set section, one '- <text>' line each, oldest first (run.BriefInput gains the notes; stepRunner.fillSession reads them from requests.json by the run's ID); a run that is no request's, or one whose request has no notes, renders no such section"
+        },
+        "handle": "request-notes-plan-brief",
+        "id": "01M7QV3NDW5YGBD04965J205RR",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7QV3NDW5YGBD04964SJCJ0G",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3NDW5YGBD04964SJCJ0G",
+        "id": "01M7QV3NF2X5WSBJNTDEEZ67FR",
+        "link": "01M7QV3NF2X5WSBJNTDAJNFGY5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N1YAQBJMZ732P5DPQ0S",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QV3NDW5YGBD04964SJCJ0G",
+        "id": "01M7QV3NGAMTW1G5VYBC7SNACZ",
+        "link": "01M7QV3NGAMTW1G5VYBAW1RMNQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QV3NHJ7DKY1RP9N4JT43YH",
+  "type": "ops",
+  "v": 1
+}

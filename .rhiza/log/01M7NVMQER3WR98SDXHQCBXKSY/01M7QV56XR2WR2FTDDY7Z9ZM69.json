@@ -1,0 +1,32 @@
+{
+  "actor": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "after": [
+    "01M7QV54FSTZTCG5P9H68HQ06K"
+  ],
+  "at": "2026-11-18T17:27:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "A test in internal/api (request_test.go) queues a request with two --note values, one of them several lines, and reads both back in order, lines kept and outer blank space trimmed, from requests.json and request ls --json; (failure case) an empty or blank note, a note over 8000 bytes and a note that is not valid UTF-8 are each refused as usage errors and queue nothing. internal/daemon tests round-trip a Request with notes through WriteRequests/ReadRequests, and one without notes writes no notes key. cmd/rhiza's describe-golden.txtar is regenerated. Run: go test -trimpath -p 2 ./internal/api/ -run Request, go test -trimpath -p 2 ./internal/daemon/..., go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(describe-golden|plan-requests)$'",
+          "files": "internal/daemon/requests.go, internal/daemon/requests_test.go, internal/api/request.go, internal/api/request_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/runs-and-daemon.md, docs/reference/cli.md (regenerated)",
+          "must_not": "Change the request file's existing keys or the shape of a request without notes; change how a request's text, ref or workflow is read; touch the Request TUI app",
+          "statement": "rhiza request takes --note, repeatable, and queues the request with those notes (daemon.Request.Notes, oldest first, normalised and bounded as request-note-shape says: multi-line kept); rhiza request ls lists each request's notes (notes array in --json, absent when none; '[N notes]' in text), and docs/runs-and-daemon.md says so"
+        },
+        "handle": "request-note-flag",
+        "id": "01M7QV3N5ZZR8C2R4TJ03DHX0N",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "op": "node.create",
+        "parent": "01M6D4SYDB1P7NX7DGKT0D19HM"
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QV56XR2WR2FTDDY7Z9ZM69",
+  "type": "ops",
+  "v": 1
+}

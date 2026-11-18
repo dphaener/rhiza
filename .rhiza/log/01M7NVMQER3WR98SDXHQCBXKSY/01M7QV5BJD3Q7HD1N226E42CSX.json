@@ -1,0 +1,30 @@
+{
+  "actor": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "after": [
+    "01M7QV59BAWX2VZM2A2718R2QS"
+  ],
+  "at": "2026-11-18T17:27:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "summary": "Autonomous conduct run 01M7QTZWVQ: no owner to ask. The conductor read the intent m40-request-notes (measure: a test queues a request with two notes and finds both in the plan run's brief) and the code. A plan request lives in .git/rhiza/requests.json (internal/daemon/requests.go, daemon.Request), queued by rhiza request (internal/api/request.go) and listed by rhiza request ls. The daemon draws the plan run's ID onto the request (Request.Run) before run start --request takes it, so a plan run finds its request by its own run ID. Every agent step session's brief.md is rendered by run.RenderBrief (internal/run/brief.go) from run.BriefInput, filled by stepRunner.fillSession/briefInput (internal/api/run_brief.go). Repeatable flags are []string fields with a flag tag (as change new --source). The conductor ruled the open choices as Decisions marked assumed. The orchestrator then relayed machine rules for the run and pointed to its planner-notes files (~/orchestrator/planner-notes/*.md) as real examples of the notes a request should carry: multi-line Markdown of 548 to 1997 bytes; the note shape and brief section were ruled to keep such notes whole.",
+          "title": "Conductor's plan of change set 01M7NVMQ (a request carries notes)"
+        },
+        "handle": "m40-request-notes-conduct-plan",
+        "id": "01M7QV3MVZ69652ERAK98MZWXY",
+        "key": null,
+        "kind": "source",
+        "node": "01M7QV3MVZ69652ERAK97VQD1W",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QV5BJD3Q7HD1N226E42CSX",
+  "type": "ops",
+  "v": 1
+}

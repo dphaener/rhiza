@@ -8927,6 +8927,13 @@ cmp stdout describe.golden.json
             "description": "A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)",
             "type": "string"
           },
+          "notes": {
+            "description": "A note for the request's planner, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ref": {
             "description": "An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none",
             "type": "string"
@@ -8979,6 +8986,13 @@ cmp stdout describe.golden.json
               "milestone": {
                 "description": "The ID of the milestone intent the request names; absent if none",
                 "type": "string"
+              },
+              "notes": {
+                "description": "The request's notes for its planner, oldest first; absent if none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
               },
               "ref": {
                 "description": "The request's opaque external reference, if any: untrusted text",
@@ -9055,6 +9069,13 @@ cmp stdout describe.golden.json
                   "description": "The ID of the milestone intent the request names; absent if none",
                   "type": "string"
                 },
+                "notes": {
+                  "description": "The request's notes for its planner, oldest first; absent if none",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "ref": {
                   "description": "The request's opaque external reference, if any: untrusted text",
                   "type": "string"
@@ -9094,6 +9115,103 @@ cmp stdout describe.golden.json
         "type": "object"
       },
       "summary": "List this clone's plan requests, oldest first, each with its state, run and planned change set",
+      "write": false
+    },
+    {
+      "name": "request.note",
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "request": {
+            "description": "The request, by its full ID or a unique prefix of at least 4 characters; it must still be queued (no plan run drawn for it)",
+            "type": "string"
+          },
+          "text": {
+            "description": "The note for the request's planner: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request",
+          "text"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "additionalProperties": false,
+        "properties": {
+          "dry_run": {
+            "description": "True if nothing was written",
+            "type": "boolean"
+          },
+          "request": {
+            "additionalProperties": false,
+            "description": "The request, its notes oldest first, the new one last",
+            "properties": {
+              "at": {
+                "description": "When it was queued, RFC 3339 UTC",
+                "type": "string"
+              },
+              "change": {
+                "description": "The change set its plan run plans in; absent until the run's journal names it",
+                "type": "string"
+              },
+              "id": {
+                "description": "The request's ID",
+                "type": "string"
+              },
+              "kind": {
+                "description": "feature, bug or milestone",
+                "type": "string"
+              },
+              "milestone": {
+                "description": "The ID of the milestone intent the request names; absent if none",
+                "type": "string"
+              },
+              "notes": {
+                "description": "The request's notes for its planner, oldest first; absent if none",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "ref": {
+                "description": "The request's opaque external reference, if any: untrusted text",
+                "type": "string"
+              },
+              "run": {
+                "description": "Its plan run; absent while queued",
+                "type": "string"
+              },
+              "state": {
+                "description": "queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)",
+                "type": "string"
+              },
+              "text": {
+                "description": "What to plan",
+                "type": "string"
+              },
+              "workflow": {
+                "description": "The workflow the request named for its change set's ready pick; absent if none",
+                "type": "string"
+              }
+            },
+            "required": [
+              "at",
+              "id",
+              "kind",
+              "state",
+              "text"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "type": "object"
+      },
+      "summary": "Add a note for the planner to a queued plan request of this clone",
       "write": false
     },
     {

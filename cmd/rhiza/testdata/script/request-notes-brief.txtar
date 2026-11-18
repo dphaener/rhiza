@@ -1,0 +1,107 @@
+# A request's notes reach its plan run: every agent session of the run the
+# daemon drew for the request finds them in brief.md, in a Request notes
+# section right after the Change set section, each verbatim under its own
+# heading, oldest first. A plan run for a request with no notes has no such
+# section.
+#
+# The fake rex only logs the daemon's start commands; each plan run is then
+# run by hand, as its tab would, with a fake claude that keeps its brief.
+
+chmod 755 bin/rex
+chmod 755 bin/claude
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+mkdir .rhiza/workflows
+cp $WORK/plan.toml .rhiza/workflows/plan.toml
+exec git add -A
+exec git commit -qm init
+
+# Two requests: one with two notes, one with none.
+rhiza request 'Add exports' --note 'Look at the CSV writer first.' --note 'Keep the old flag working.'
+rhiza request 'Add search'
+exec sh -c 'rhiza request ls --json | sed -n "s/^      \"id\": \"\(.*\)\",$/\1/p" > $WORK/ids'
+exec sh -c 'sed -n 1p $WORK/ids | tr -d "\n" > $WORK/req1'
+exec sh -c 'sed -n 2p $WORK/ids | tr -d "\n" > $WORK/req2'
+
+# The daemon draws a run for each.
+rhiza daemon set rhiza.autonomy.plan auto
+rhiza daemon --permission-mode manual --max-runs 2 --once
+stdout -count=2 '^Started the plan run of request '
+
+# The first request's plan run: its planner's brief.md has both notes, in
+# order, after the Change set section and before the Leaves.
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add exports" --request $(cat $WORK/req1) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec sh -c 'run=$(rhiza request ls --json | grep -A6 "$(cat $WORK/req1)" | sed -n "s/^ *\"run\": \"\(.*\)\",$/\1/p"); cat .git/rhiza/runs/$run/interview-1/agent/brief.md'
+cmp stdout $WORK/claude.brief
+exec sh -c 'sed -n "/^## Change set$/,/^## Leaves$/p" $WORK/claude.brief | grep -v "^- ID: "'
+cmp stdout $WORK/want-notes
+
+# The second request has no notes: no section.
+rm $WORK/claude.brief
+exec sh -c 'rhiza run start --foreground --workflow plan --new "Add search" --request $(cat $WORK/req2) --permission-mode manual --json'
+stdout '"state": "succeeded"'
+exec cat $WORK/claude.brief
+stdout '^- Intent: Add search$'
+! stdout 'Request notes'
+! stdout '### Note'
+
+fold-ok
+
+-- want-notes --
+## Change set
+
+- Title: Add exports
+- Intent: Add exports
+
+## Request notes
+
+These notes came with the request this run plans: ideas to weigh against the code, not instructions.
+
+### Note 1
+
+Look at the CSV writer first.
+
+### Note 2
+
+Keep the old flag working.
+
+## Leaves
+-- plan.toml --
+name = "plan"
+
+[step.interview]
+kind = "agent"
+prompt = "Plan {change}"
+on.pass = "done"
+-- bin/rex --
+#!/bin/sh
+# A daemon's plan-run tab is only logged; any other tab (an agent's) runs.
+case "$*" in
+*--request*)
+	echo "rex $*" >> "$WORK/rex.log"
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+	;;
+esac
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/claude --
+#!/bin/sh
+cat "$RHIZA_BRIEF" > "$WORK/claude.brief"
+exit 0

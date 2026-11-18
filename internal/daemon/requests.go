@@ -3,9 +3,12 @@ package daemon
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/dphaener/rhiza/internal/run"
 )
@@ -38,7 +41,9 @@ const (
 // start --request. Everything else about it (planning, planned, failed, the
 // change set) is read from that run's journal. RetryAt is set when a start
 // of the daemon's never journaled and the request went back in the queue:
-// the daemon does not start it again before then.
+// the daemon does not start it again before then. Notes are free text the
+// request carries for its planner, oldest first, each normalised by
+// NormalizeRequestNote; a request without notes writes no notes key.
 type Request struct {
 	ID        string `json:"id"`
 	Kind      string `json:"kind"`
@@ -52,6 +57,29 @@ type Request struct {
 	Run       string    `json:"run,omitempty"`
 	StartedAt time.Time `json:"started_at,omitzero"`
 	RetryAt   time.Time `json:"retry_at,omitzero"`
+	Notes     []string  `json:"notes,omitempty"`
+}
+
+// MaxRequestNote is the most bytes a request note holds, once normalised.
+const MaxRequestNote = 8000
+
+// NormalizeRequestNote is note as a request stores it: CRLF turned into LF
+// and leading and trailing blank space trimmed, its lines
+// kept. A note that is not valid UTF-8, is empty or blank, or is over
+// MaxRequestNote bytes is an error naming why.
+func NormalizeRequestNote(note string) (string, error) {
+	if !utf8.ValidString(note) {
+		return "", errors.New("is not valid UTF-8")
+	}
+	note = strings.ReplaceAll(note, "\r\n", "\n")
+	note = strings.TrimSpace(note)
+	if note == "" {
+		return "", errors.New("is empty")
+	}
+	if len(note) > MaxRequestNote {
+		return "", fmt.Errorf("is %d bytes, at most %d", len(note), MaxRequestNote)
+	}
+	return note, nil
 }
 
 // Intent is the one-line intent the request's plan run opens its change set
