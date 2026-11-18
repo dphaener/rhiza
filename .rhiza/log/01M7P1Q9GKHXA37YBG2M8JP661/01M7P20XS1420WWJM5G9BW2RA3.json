@@ -1,0 +1,312 @@
+{
+  "actor": "01M7P1QZV2KHRENAZQAMMAXMFW",
+  "after": [
+    "01M7P20NMP9WKMBHEHFSG0YNDK"
+  ],
+  "at": "2026-11-18T00:48:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Run alone on 2026-11-18 (go test -trimpath -count=1 -p 2 -cpuprofile ./internal/index, the VM at load about 3.6), internal/index took 41 s wall and 42 CPU-s (34.9 user + 7.6 sys), below the 48 s it took before milestone 39; its top costs are catchUpFrom and refold under TestBudget's generated model, which the budget needs",
+          "statement": "01M7P1Q9 has no leaf for internal/index's tests: their 113 s in the cold make test is contention from the packages beside them (internal/api's 318 s above all), not their own cost, and the api and script leaves cut that contention"
+        },
+        "handle": "m39-no-index-package-leaf",
+        "id": "01M7P20WX9YGJV4ZVJWHSPN74F",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P20WX9YGJV4ZVJWHMBR4G5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P20WX9YGJV4ZVJWHMBR4G5",
+        "id": "01M7P20WY9BCKBYV3HWFQW7558",
+        "link": "01M7P20WY9BCKBYV3HWF7PWMQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The change set's intent says to profile each before changing anything and never to lower a target. Package wall times in one make test overlap (a package's time includes the others' load) and the shared VM's load swings, so a leaf is judged on its own before/after CPU on the same box, measured inside its own commit",
+          "statement": "Each test-time leaf of 01M7P1Q9 starts from a profile and ends with the same one: its commit's Checks: block gives the before and after measurement (go test -cpuprofile with /usr/bin/time for a package, RHIZA_CPUPROFILE with one scratch-built binary for a command) and the pprof -top -cum lines of the cost it cuts. The cut is the top cost that profile names inside the leaf's statement; no milestone target, budget test threshold, rapid check count or test is lowered, skipped or deleted to get there"
+        },
+        "handle": "m39-time-profile-first",
+        "id": "01M7P20WZ6PD3HASF9AK5MJGEM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "id": "01M7P20X02CFDTW4RK04B358JS",
+        "link": "01M7P20X02CFDTW4RK02VAXHQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "The intent offers shared prebuilt index fixtures or a cheaper index setup. Sharing one open index between parallel tests is ruled out by api-tests-on-index's must_not; a per-test copy of a prebuilt file gives the prebuilt fixture without sharing. The index's freshness check (folder stat keys, then entry names) already handles a copied tree whose inodes and change times differ, so the copy needs no production change",
+          "statement": "internal/api's tests keep one index file per test, as api-tests-on-index requires, but stop building it from nothing: a snapshot template is indexed once when it is built and each copy gets a copy of that index file beside its tree, so a test catches up only what it writes after the copy. Tests on a fresh root keep a fresh index; their setup cost is cut only where the profile shows it"
+        },
+        "handle": "m39-api-index-per-test-copy",
+        "id": "01M7P20X15CAXSAPT33YB34B0K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P20X15CAXSAPT33THYGRC2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P20X15CAXSAPT33THYGRC2",
+        "id": "01M7P20X2062PT1S67WXP0DM5X",
+        "link": "01M7P20X2062PT1S67WTV6RBJ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Checks: block gives, before and after, /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 -p 2 -cpuprofile $TMPDIR/api.prof ./internal/api and the index-setup lines of go tool pprof -top -cum $TMPDIR/api.prof (index.Open, ensureSchema, catch-up), the after run's user+sys CPU at most half the before's; go test -trimpath -count=1 -p 2 -shuffle=on ./internal/api passes twice with different seeds; go test -list '.*' ./internal/api counts no fewer tests than before. Failure case: a new test in internal/api/fixture_test.go writes an entry (an apply) on a snapshot copy and reads it back through the copy's index, which catches up from the copied index file; and the template's own index file is unchanged after that test (its size and modification time compared), so no copy writes the template's index",
+          "files": "internal/api/fixture_test.go, internal/api/init_test.go, internal/api/*_test.go that build snapshot templates or call testCtx on a snapshot copy",
+          "must_not": "Change non-test code, including internal/index's freshness check or SQLite pragmas; share one index file or open index between two tests; lower a budget test threshold or delete, skip or shorten a test; regenerate internal/api/testdata/test-timings.tsv by hand",
+          "statement": "internal/api's tests no longer catch each test's index up from an empty file: every snapshot template carries the index its build caught up, snapshot.copy gives each copy its own copy of that index file under the test's t.TempDir(), and the index setup left per test in the profile (open, schema, catch-up) is cut"
+        },
+        "handle": "api-tests-copy-prebuilt-index",
+        "id": "01M7P20X412DYC423YKZTF38ZV",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M7P20X412DYC423YKYB9Y917",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20X412DYC423YKYB9Y917",
+        "id": "01M7P20X54EM1E0YEFFCMBJJV3",
+        "link": "01M7P20X54EM1E0YEFFATN452V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X15CAXSAPT33THYGRC2",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20X412DYC423YKYB9Y917",
+        "id": "01M7P20X637FVACJSX7MGZ9C6P",
+        "link": "01M7P20X637FVACJSX7GJQ1581",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Checks: block gives, before and after, /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 -cpuprofile $TMPDIR/scripts.prof ./cmd/rhiza -run TestScripts and the go tool pprof -top -cum lines of the cost cut, the after run's user+sys CPU at least 15% below the before's; go test -trimpath -count=1 ./cmd/rhiza passes; go test -list '.*' ./cmd/rhiza and the count of cmd/rhiza/testdata/script/*.txtar are unchanged. Failure case: a scratch copy of one affected script with its expected output changed still fails under the changed harness (named in the Checks: block, not committed), so the cut skips no assertion",
+          "files": "cmd/rhiza/main_test.go, cmd/rhiza/testdata/script/*.txtar only where the cut moves a script's setup",
+          "must_not": "Add a script to processScripts; delete, skip or merge a script or a line of one; change non-test code outside cmd/rhiza/main_test.go; touch the network, Rex, agents or gh; regenerate cmd/rhiza/testdata/script-timings.tsv by hand",
+          "statement": "cmd/rhiza's testscripts stop paying for the top cost a go test -cpuprofile of ./cmd/rhiza names outside the commands they check (setup in main_test.go's Setup, per-script repository or index building, git or process starts the scripts do not assert on), cut in the test harness so every script still runs every line"
+        },
+        "handle": "scripts-top-cost-cut",
+        "id": "01M7P20X7FRK4EP2SSK8JEDEB4",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M7P20X7FRK4EP2SSK5VYVRPZ",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20X7FRK4EP2SSK5VYVRPZ",
+        "id": "01M7P20X8R4YAJDR7P7YA96V0S",
+        "link": "01M7P20X8R4YAJDR7P7W2GA0A9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The inbox profile puts 37% in run.(*Store).List: readFile and parseFile of every journal, the in-process journalCache gone with each CLI process. Finished runs' journals never change, so a cache keyed on the file's stat lets one call parse only live ones, without changing the journal format older runs were written in",
+          "statement": "rhiza inbox stops parsing every run journal on each call: run.Store.List (or a listing the inbox uses in its place) reuses what it parsed of a journal whose file has not changed since, kept in the user cache keyed by path, size and modification time, and parses only new or changed journals. A changed journal is always read fresh"
+        },
+        "handle": "m39-inbox-run-summaries",
+        "id": "01M7P20X9RTKTAMZ7RH1AVGC0H",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P20X9RTKTAMZ7RGZ39SMDK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P20X9RTKTAMZ7RGZ39SMDK",
+        "id": "01M7P20XAZC4YAAWBWE51HS0GX",
+        "link": "01M7P20XAZC4YAAWBWE21EWVMZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/run passes, with a new test in internal/run/store_test.go: List twice over a store, the second call parses only a journal appended between them (a parse counter or hook asserts it) and returns the same journals as an uncached List. Checks: block gives RHIZA_CPUPROFILE=$TMPDIR/inbox.prof $TMPDIR/rhiza-x inbox in the main checkout (one warm call first) before and after, with go tool pprof -top -cum showing run.(*Store).List's share fall, and /usr/bin/time -f '%e s' of the warm call both times. go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox' passes. Failure case: a journal rewritten to the same size within the same modification-time tick, or a cache file that is corrupt or from another format version, is read from the journal itself, not trusted (both tested in internal/run/store_test.go)",
+          "files": "internal/run/store.go, internal/run/store_test.go, internal/api/inbox.go only where it calls rs.List",
+          "must_not": "Change the run journal's file format or what List returns; write the cache under the repository or .rhiza; read the host's real user cache in a test; serve a changed journal from the cache",
+          "statement": "rhiza inbox reads the run journals that changed since its last call and reuses, from a cache in the user cache folder keyed by each journal's path, size and modification time, what it parsed of the rest, so run.Store.List's share of an inbox call falls to the journals that changed"
+        },
+        "handle": "inbox-run-list-cached",
+        "id": "01M7P20XBYDN7HR4ZRGBQVFYSV",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "id": "01M7P20XD4D39YWG5E5QXJCFPF",
+        "link": "01M7P20XD4D39YWG5E5MV974WW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X9RTKTAMZ7RGZ39SMDK",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "id": "01M7P20XDZ2XH7R2W8ZVFV46VG",
+        "link": "01M7P20XDZ2XH7R2W8ZS8F49MD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Proposal' passes, with a new test in internal/api/proposals_test.go counting the overlays built for an inbox over several proposed and draft change sets (at most one, and none when every proposed set has a run). Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x inbox in the main checkout (warm) before and after, showing inboxUncoveredProposals' share fall, and /usr/bin/time -f '%e s' of the warm call both times. Failure case: a proposed change set whose what-if has a conflict still gets its accept item with the same text as before (the existing proposals tests keep passing unchanged)",
+          "files": "internal/api/proposals.go, internal/api/proposals_test.go, internal/api/inbox.go only where it builds the fold the proposals read",
+          "must_not": "Change which proposals the inbox lists or their item text; change internal/index or internal/model; change the --json shape of rhiza inbox",
+          "statement": "rhiza inbox's uncovered-proposals items (inboxUncoveredProposals in internal/api/proposals.go) cost only the proposed change sets they report: the what-if overlay the profile shows under writeIndex.buildModel and index.WhatIfOverlayOver is built once per call for the proposed sets, or skipped when no proposed set lacks a covering run, not once per candidate or for every in-flight set"
+        },
+        "handle": "inbox-proposals-overlay-once",
+        "id": "01M7P20XEZF2EG09V98HWRRWRQ",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7P20XEZF2EG09V98GMRZZ94",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XEZF2EG09V98GMRZZ94",
+        "id": "01M7P20XG19ZDYKTMJZKKR373A",
+        "link": "01M7P20XG19ZDYKTMJZHDERRHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "reasoning": "The check profile puts 20% of rhiza check in Seed.builder's copyNode/copyFields, run for each of about 64 in-flight change sets over the whole model, while a change set's ops touch a handful of nodes. internal/model is the spec (strict-engine-is-spec), so the change must not alter any view, only how it is built",
+          "statement": "model.WhatIfFrom stops deep-copying every node and link of the as-is seed for each in-flight change set: Seed.builder shares the seed's records read-only and copies a node or link (its fields, history and aspects) only when an op of the view writes it, so the seed and other views built from it never change. The strict engine's results stay byte-for-byte the same, checked by the parity and model tests"
+        },
+        "handle": "m39-whatif-copy-on-write",
+        "id": "01M7P20XH0X429BY4P7BT44TEW",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7P20XH0X429BY4P79EYNPV5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XH0X429BY4P79EYNPV5",
+        "id": "01M7P20XJ16JEM0ZJCN3V860KW",
+        "link": "01M7P20XJ16JEM0ZJCN2Y36MR1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P1XZWPBEW388FYBFYYVZF6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/model/... ./internal/check/... ./internal/index/... passes, and go test -trimpath -count=1 -p 2 ./internal/api -run 'Parity|Projection|WhatIf' passes. A new benchmark or test in internal/model shows WhatIfFrom's allocations on a generated model of a few thousand nodes with a one-op change set fall by at least 80% from before (testing.AllocsPerRun or -benchmem, both numbers in the Checks: block). Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check in the main checkout before and after, showing model.WhatIfFrom's share fall, and /usr/bin/time -f '%e s' both times. Failure case: a test in internal/model builds two what-if views from one seed, each with ops updating the same node's fields, history and aspects, and asserts the seed and the other view are unchanged",
+          "files": "internal/model/seed.go, internal/model/whatif.go, internal/model/*_test.go for the new test and benchmark",
+          "must_not": "Change any view's nodes, links, problems or versions; change Seed's exported shape or the index's stored format; touch internal/check",
+          "statement": "model.WhatIfFrom (internal/model) copies from the seed only the nodes and links the view's ops write, sharing the rest read-only, so building a what-if view costs the change set's ops rather than the whole model"
+        },
+        "handle": "whatif-copies-only-written",
+        "id": "01M7P20XK14P9JE95J3J67SM77",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7P20XK14P9JE95J3GQVS36H",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XK14P9JE95J3GQVS36H",
+        "id": "01M7P20XM4A5TS34J2CG6J0MWF",
+        "link": "01M7P20XM4A5TS34J2CF6R3PKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XH0X429BY4P79EYNPV5",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XK14P9JE95J3GQVS36H",
+        "id": "01M7P20XN6TEBD01AYQ4JF4SHA",
+        "link": "01M7P20XN6TEBD01AYQ1QDQ4QB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/check/... passes, with a new test in internal/check giving the same in-flight link findings as before for a model with a bad link created by one in-flight set and a bad as-is link (the as-is one reported by the link rule only, once). Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check in the main checkout before and after, showing checker.inFlightLinks' share fall, and /usr/bin/time -f '%e s' both times; make self-check passes. Failure case: a link created by an in-flight change set whose endpoint is retired or re-kinded by another op of that same set is still reported",
+          "files": "internal/check/check.go, internal/check/check_test.go",
+          "must_not": "Change which findings rhiza check reports, their severity, rule or text; change internal/model",
+          "statement": "rhiza check's in-flight link rule (checker.inFlightLinks in internal/check/check.go) checks only the links each draft, proposed or accepted change set itself created in its what-if view, instead of running badLinks over every link of every view and keeping those afterwards"
+        },
+        "handle": "check-inflight-links-own-only",
+        "id": "01M7P20XPG0C2NH160Z6HEWF3X",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "id": "01M7P20XQY4QM3PVNDD14CK0BF",
+        "link": "01M7P20XQY4QM3PVNDCXPEF3YJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P20XS1420WWJM5G9BW2RA3",
+  "type": "ops",
+  "v": 1
+}

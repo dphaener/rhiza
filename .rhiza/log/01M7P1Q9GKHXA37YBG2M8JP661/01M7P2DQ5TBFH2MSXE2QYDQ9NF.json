@@ -1,0 +1,152 @@
+{
+  "actor": "01M7P2B0EHKZG2RF6VQHEKVYPW",
+  "after": [
+    "01M7P20XS1420WWJM5G9BW2RA3"
+  ],
+  "at": "2026-11-18T00:55:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/run passes, with a new test in internal/run/store_test.go: List twice over a store, the second call parses only a journal appended between them (a parse counter or hook asserts it) and returns the same journals as an uncached List. Checks: block gives RHIZA_CPUPROFILE=$TMPDIR/inbox.prof $TMPDIR/rhiza-x inbox in the main checkout (one warm call first) before and after, with go tool pprof -top -cum showing run.(*Store).List's share fall, and /usr/bin/time -f '%e s' of the warm call both times. go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox' passes. Failure case: a cache file that is corrupt or from another format version is not trusted, and every journal is read from the journal itself, with List returning the same journals as an uncached List (tested in internal/run/store_test.go)",
+          "files": "internal/run/store.go, internal/run/store_test.go, internal/api/inbox.go only where it calls rs.List",
+          "must_not": "Change the run journal's file format or what List returns; write the cache under the repository or .rhiza; read the host's real user cache in a test; serve a changed journal from the cache",
+          "statement": "rhiza inbox reads the run journals that changed since its last call and reuses, from a cache in the user cache folder keyed by each journal's path, size and modification time, what it parsed of the rest, so run.Store.List's share of an inbox call falls to the journals that changed"
+        },
+        "handle": "inbox-run-list-cached",
+        "id": "01M7P20XBYDN7HR4ZRGBQVFYSV",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Proposal' passes, with a new test in internal/api/proposals_test.go counting the overlays built for an inbox over several proposed and draft change sets, some proposed sets covered by a run: one overlay per proposed set with no covering run, none for a covered proposed set or a draft set, and none when every proposed set has a run. Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x inbox in the main checkout (warm) before and after, showing inboxUncoveredProposals' share fall, and /usr/bin/time -f '%e s' of the warm call both times. Failure case: a proposed change set whose what-if has a conflict still gets its accept item with the same text as before (the existing proposals tests keep passing unchanged)",
+          "files": "internal/api/proposals.go, internal/api/proposals_test.go, internal/api/inbox.go only where it builds the fold the proposals read",
+          "must_not": "Change which proposals the inbox lists or their item text; change internal/index or internal/model; change the --json shape of rhiza inbox",
+          "statement": "rhiza inbox's uncovered-proposals items (inboxUncoveredProposals in internal/api/proposals.go) cost only the proposed change sets they report: the proposed sets a run already covers are filtered out (uncoveredProposals) before any view is built, so the what-if overlay the profile shows under writeIndex.buildModel and index.WhatIfOverlayOver is built once for each proposed set that lacks a covering run, in that set's own view, and never for a covered, draft or accepted set"
+        },
+        "handle": "inbox-proposals-overlay-once",
+        "id": "01M7P20XEZF2EG09V98HWRRWRQ",
+        "key": "zzz",
+        "kind": "capability",
+        "node": "01M7P20XEZF2EG09V98GMRZZ94",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/model/... ./internal/check/... ./internal/index/... passes, and go test -trimpath -count=1 -p 2 ./internal/api -run 'Parity|Projection|WhatIf' passes. A new benchmark or test in internal/model shows WhatIfFrom's allocations on a generated model of a few thousand nodes with a one-op change set fall by at least 80% from before (testing.AllocsPerRun or -benchmem, both numbers in the Checks: block). Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check in the main checkout before and after, showing model.WhatIfFrom's share fall, and /usr/bin/time -f '%e s' both times. Failure case: a test in internal/model builds two what-if views from one seed, each with ops updating the same node's fields, history and aspects, and asserts the seed and the other view are unchanged",
+          "files": "internal/model/seed.go (Seed.builder), internal/model/apply.go (builder.node and builder.link, and the History, aspects and Retired writes the copy-on-write must intercept), internal/model/view.go (whatIf, whatIfLayer, layer), internal/model/*_test.go for the new test and benchmark",
+          "must_not": "Change any view's nodes, links, problems or versions; change Seed's exported shape or the index's stored format; touch internal/check",
+          "statement": "model.WhatIfFrom (internal/model) copies from the seed only the nodes and links the view's ops write, sharing the rest read-only, so building a what-if view costs the change set's ops rather than the whole model"
+        },
+        "handle": "whatif-copies-only-written",
+        "id": "01M7P20XK14P9JE95J3J67SM77",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7P20XK14P9JE95J3GQVS36H",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 for each package the cut touches among ./internal/store/... ./internal/check/... ./internal/model/... passes, and make self-check passes. Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check, built at the commit, in the main checkout with nothing else running (one call first), before and after, with the pprof -top -cum lines of each cost cut, and /usr/bin/time -f '%e s' $TMPDIR/rhiza-x check after the cut is at most 5 s. Failure case: a log with an entry that fails to read or parse gives the same rhiza check error and exit code as before the cut, tested in the touched package's tests, and the existing store and check tests keep passing unchanged",
+          "files": "internal/store/read.go and internal/store/*_test.go, internal/check/check.go and internal/check/check_test.go, internal/model where the profile puts the cost",
+          "must_not": "Change which findings rhiza check reports, their severity, rule or text; change the log's file format; lower the 5 s target or any budget test threshold",
+          "statement": "rhiza check finishes within 5 s on this repo (m39-check-fast's measure) once whatif-copies-only-written and check-inflight-links-own-only land: the costs a profile of rhiza check still shows after them, store.readEntries' reading of the log (11% in the research profile) and the rest of checker.model above all, are cut top cost first until the measure holds"
+        },
+        "handle": "check-within-target",
+        "id": "01M7P2DPVWZFS2QYB8MMPRNXK5",
+        "key": "zz",
+        "kind": "capability",
+        "node": "01M7P2DPVWZFS2QYB8MJY5K4KQ",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DPVWZFS2QYB8MJY5K4KQ",
+        "id": "01M7P2DPWWFKAXY35V8MBDGS8C",
+        "link": "01M7P2DPWWFKAXY35V8K7R9TZZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XK14P9JE95J3GQVS36H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DPVWZFS2QYB8MJY5K4KQ",
+        "id": "01M7P2DPY27YHDD5TEEX9Z79F4",
+        "link": "01M7P2DPY27YHDD5TEEWQFVBSY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DPVWZFS2QYB8MJY5K4KQ",
+        "id": "01M7P2DPZ1RT0X6M9MSFFCQAYK",
+        "link": "01M7P2DPZ1RT0X6M9MSDMQXFRQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Proposal' passes, and go test -trimpath -count=1 passes for each other package the cut touches. Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x inbox, built at the commit, in the main checkout with nothing else running (one warm call first), before and after, with the pprof -top -cum lines of each cost cut, and /usr/bin/time -f '%e s' of the warm $TMPDIR/rhiza-x inbox after the cut is at most 0.20 s. Failure case: the before and after binaries' rhiza inbox --json, run back to back in the main checkout, print the same bytes, and an inbox over a run journal that fails to parse reports it as before (the existing inbox tests keep passing unchanged)",
+          "files": "internal/api/inbox.go and internal/api/*_test.go, and the package under internal/ where the profile puts the cost, with its tests",
+          "must_not": "Change which items rhiza inbox lists, their text or the --json shape; change the run journal or log file format; lower the 200 ms target or any budget test threshold",
+          "statement": "rhiza inbox answers within 200 ms warm on this repo (m39-reads-fast's measure) once inbox-run-list-cached and inbox-proposals-overlay-once land: the costs a profile of a warm rhiza inbox still shows after them (the 39% of the research profile outside run.Store.List and inboxUncoveredProposals) are cut top cost first until the measure holds"
+        },
+        "handle": "inbox-within-target",
+        "id": "01M7P2DQ0586Z1Q0HQ24HFTA0Y",
+        "key": "zzzi",
+        "kind": "capability",
+        "node": "01M7P2DQ0586Z1Q0HQ212YY90Y",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DQ0586Z1Q0HQ212YY90Y",
+        "id": "01M7P2DQ1RAP08AHDBCKSJW49G",
+        "link": "01M7P2DQ1RAP08AHDBCG2AC35M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DQ0586Z1Q0HQ212YY90Y",
+        "id": "01M7P2DQ2T5AVK91WPDQ8JBDKB",
+        "link": "01M7P2DQ2T5AVK91WPDN4ZX2DS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2DQ0586Z1Q0HQ212YY90Y",
+        "id": "01M7P2DQ46BEFV9KSHKK6QJMY8",
+        "link": "01M7P2DQ46BEFV9KSHKJK3CP7Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P2DQ5TBFH2MSXE2QYDQ9NF",
+  "type": "ops",
+  "v": 1
+}

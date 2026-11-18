@@ -1,0 +1,196 @@
+{
+  "actor": "01M7P2PN42RSECCA7CVQBW0YB9",
+  "after": [
+    "01M7P2DQ5TBFH2MSXE2QYDQ9NF"
+  ],
+  "at": "2026-11-18T01:04:03Z",
+  "body": {
+    "drop": [
+      "01M7P2DPVWZFS2QYB8MMPRNXK5",
+      "01M7P2DPWWFKAXY35V8MBDGS8C",
+      "01M7P2DPY27YHDD5TEEX9Z79F4",
+      "01M7P2DPZ1RT0X6M9MSFFCQAYK",
+      "01M7P2DQ0586Z1Q0HQ24HFTA0Y",
+      "01M7P2DQ1RAP08AHDBCKSJW49G",
+      "01M7P2DQ2T5AVK91WPDQ8JBDKB",
+      "01M7P2DQ46BEFV9KSHKK6QJMY8"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/store/... ./internal/entry/... passes, and make self-check passes. Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check, built at the parent commit and at the commit, in the main checkout, with the pprof -top -cum lines of store.readEntries, entry.Decode and canon.Canonicalize, store.readEntries' share falling, and each run's user+sys CPU from /usr/bin/time. Failure case: a new test in internal/store reads a log holding an entry file that is not canonical and one that fails to parse, and gets the same errors as before the cut; the before and after binaries' rhiza check --json in the main checkout print the same bytes and exit code; the existing store and entry tests keep passing unchanged",
+          "files": "internal/store/read.go, internal/store/*_test.go, internal/entry/entry.go, internal/entry/entry_test.go",
+          "must_not": "Change the log's file format; accept an entry file the current reader refuses; change which findings rhiza check reports, their severity, rule or text; lower the 5 s target or any budget test threshold",
+          "statement": "rhiza check's read of the log costs less: store.readEntries' decode of every entry file (readEntry, entry.Decode and canon.Canonicalize: 17% of a RHIZA_CPUPROFILE of rhiza check in the main checkout on 2026-11-18, canon.Canonicalize 10.5% of the whole) is cut in internal/store and internal/entry, every entry still decoded and checked as strictly as before"
+        },
+        "handle": "check-log-decode-cheaper",
+        "id": "01M7P2X9C68DXSQNHA0SJY25YM",
+        "key": "zzi",
+        "kind": "capability",
+        "node": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./internal/model/... ./internal/check/... passes, and make self-check passes. Checks: block gives RHIZA_CPUPROFILE of $TMPDIR/rhiza-x check, built at the parent commit and at the commit, with the pprof -top -cum lines of model.whatIf, model.whatIfLayer and (*builder).finishModel, their share falling; and $TMPDIR/rhiza-base, built at the change set's base 5d2596d (a git worktree under $TMPDIR), and $TMPDIR/rhiza-x, built at the commit, run alternately five times each back to back in the main checkout after one warm call of each, each run's user+sys CPU taken from /usr/bin/time -f '%e s %U user %S sys' for rhiza check, the median of $TMPDIR/rhiza-x's at most 59% (5 s / 8.4 s) of the median of $TMPDIR/rhiza-base's. Failure case: the parent commit's and the commit's binaries' rhiza check --json in the main checkout print the same bytes and exit code, and a new test in internal/model/view_test.go builds a what-if view over a change set whose op the fold refuses and gets the same problem as before the cut; the existing model and check tests keep passing unchanged",
+          "files": "internal/model/view.go, internal/model/apply.go (finishModel only), internal/model/view_test.go",
+          "must_not": "Change which findings rhiza check reports, their severity, rule or text; change the log's file format; lower the 5 s target or any budget test threshold",
+          "statement": "Each in-flight change set's what-if view in rhiza check costs less to finish: model.whatIf's whatIfLayer and (*builder).finishModel (8.4% of the 2026-11-18 profile of rhiza check, beside the Seed.builder copying whatif-copies-only-written cuts) are cut in internal/model, and once check-log-decode-cheaper, whatif-copies-only-written and check-inflight-links-own-only have landed with it, rhiza check's CPU is within m39-check-fast's 5 s target in proportion: at most 5/8.4 of the base binary's"
+        },
+        "handle": "check-whatif-finish-cheaper",
+        "id": "01M7P2X9DSE7CVKCPE6T4VZXBX",
+        "key": "zzr",
+        "kind": "capability",
+        "node": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "op": "node.create",
+        "parent": "01M5SWSJ0K067EMGMKBTA224AY"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Plan' passes. Checks: block gives RHIZA_CPUPROFILE of a warm $TMPDIR/rhiza-x inbox, built at the parent commit and at the commit, with the pprof -top -cum lines of inboxBlockers, planGather and planCore, their share falling; and $TMPDIR/rhiza-base, built at the change set's base 5d2596d (a git worktree under $TMPDIR), and $TMPDIR/rhiza-x, built at the commit, run alternately five times each back to back in the main checkout after one warm call of each, each run's user+sys CPU taken from /usr/bin/time -f '%e s %U user %S sys' for rhiza inbox, the median of $TMPDIR/rhiza-x's at most 31% (200 ms / 645 ms) of the median of $TMPDIR/rhiza-base's. Failure case: the parent commit's and the commit's binaries' rhiza inbox --json, run back to back in the main checkout, print the same bytes, and a new test in internal/api lists a proposed change set's blocking question as before with the same text while a draft set's blocker stays unlisted; the existing inbox and plan tests keep passing unchanged",
+          "files": "internal/api/inbox.go, internal/api/plan.go, internal/api/inbox_test.go, internal/api/plan_test.go",
+          "must_not": "Change which items rhiza inbox lists, their text or the --json shape; change what rhiza plan reports; change the run journal or log file format; lower the 200 ms target or any budget test threshold",
+          "statement": "rhiza inbox's blocker items cost less: inboxBlockers' planGather and planCore over the to-be view (changeset.(*Analysis).graph and Closure: 6.7% of a warm RHIZA_CPUPROFILE of rhiza inbox in the main checkout on 2026-11-18) are cut in internal/api, and once inbox-run-list-cached and inbox-proposals-overlay-once have landed with it, a warm rhiza inbox's CPU is within m39-reads-fast's 200 ms target in proportion: at most 200/645 of the base binary's"
+        },
+        "handle": "inbox-blockers-cheaper",
+        "id": "01M7P2X9G4SDMT389QMT8V95W8",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "op": "node.create",
+        "parent": "01M61R7PE1A85AANAP21324RS8"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 ./cmd/rhiza passes; go test -list '.*' ./cmd/rhiza and the count of cmd/rhiza/testdata/script/*.txtar are unchanged. Checks: block gives, before and after, /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 -cpuprofile $TMPDIR/ship.prof ./cmd/rhiza -run 'TestScripts/run-ship' with the go tool pprof -top -cum lines of the cost cut, the after run's user+sys CPU below the before's; and /usr/bin/time -f '%e s %U user %S sys' go test -trimpath -count=1 ./internal/api ./cmd/rhiza ./internal/index run once at the commit and once in a git worktree at the change set's base 5d2596d under $TMPDIR, back to back, the commit's user+sys CPU at most 60% (240 s / 400 s) of the base's, both wall times reported. Failure case: a scratch copy of one run-ship script with its expected output changed still fails under the changed harness (named in the Checks: block, not committed), so the cut skips no assertion",
+          "files": "cmd/rhiza/main_test.go, cmd/rhiza/testdata/script/run-ship-*.txtar only where the cut moves a script's setup",
+          "must_not": "Add a script to processScripts; delete, skip or merge a script or a line of one; change non-test code outside cmd/rhiza/main_test.go; touch the network, Rex, agents or gh; regenerate cmd/rhiza/testdata/script-timings.tsv by hand; lower the 240 s target or any budget test threshold",
+          "statement": "The cold suite's critical path shortens: cmd/rhiza's run-ship scripts (run-ship-ci-fix, run-ship-conflict-fix, run-ship-conflict-fix-more, run-ship-change-rebase, run-ship-model-conflict, run-ship-land-conflict and run-ship-change, about 95 s of the 864 script-seconds in cmd/rhiza/testdata/script-timings.tsv) stop paying for the top cost a go test -cpuprofile of them names outside the commands they check after scripts-top-cost-cut, cut in cmd/rhiza's test harness; and once api-tests-copy-prebuilt-index and scripts-top-cost-cut have landed with it, a cold run of the three slowest packages is within m39-cold's 240 s target in proportion: at most 240/400 of the base's CPU"
+        },
+        "handle": "cold-run-ship-scripts-cut",
+        "id": "01M7P2X9HGS6ACMZCBMKYDJRP2",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "op": "node.create",
+        "parent": "01M5SWSJNK2F1E8QPHF1TJHMPQ"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "id": "01M7P2X9NFRVSZA02N0RK8NEM9",
+        "link": "01M7P2X9NFRVSZA02N0Q7KRBDD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "id": "01M7P2X9S61EPGSSSMW5TCTEKC",
+        "link": "01M7P2X9S61EPGSSSMW3NJXEC4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "id": "01M7P2X9W3SAQR3VMVMA53AG6Z",
+        "link": "01M7P2X9W3SAQR3VMVM8H2SDY2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "id": "01M7P2X9YP4Z2A7T5N664RK8S3",
+        "link": "01M7P2X9YP4Z2A7T5N64RMV8S6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20WZ6PD3HASF9AGKQ8YFA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "id": "01M7P2XA0XF281DP6XEHNW0500",
+        "link": "01M7P2XA0XF281DP6XEGTEEF0H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XK14P9JE95J3GQVS36H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "id": "01M7P2XA3GMCST5GS8QB1RSTKM",
+        "link": "01M7P2XA3GMCST5GS8Q89QJ9MY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "id": "01M7P2XA6XFDS4W4ZVQYCRBWXZ",
+        "link": "01M7P2XA6XFDS4W4ZVQX7704PG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "id": "01M7P2XA94T5ZXNRBF3RFFD9HJ",
+        "link": "01M7P2XA94T5ZXNRBF3QYE0YNR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "id": "01M7P2XABA64DQAFGNFQSW3JVH",
+        "link": "01M7P2XABA64DQAFGNFP8JV9EZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "id": "01M7P2XACQ7J83H660RP6QKM7X",
+        "link": "01M7P2XACQ7J83H660RNXFGR4H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X412DYC423YKYB9Y917",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "id": "01M7P2XAE1AC9Q2V4PY0WBD150",
+        "link": "01M7P2XAE1AC9Q2V4PY0C2E4S3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X7FRK4EP2SSK5VYVRPZ",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P2XAP0N1QBDFFCYEQKC3H7",
+  "type": "ops",
+  "v": 1
+}
