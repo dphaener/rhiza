@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PW5KM6PX9G6M6KHH0TAGNX",
+  "after": [
+    "01M7PVW1V8Y9000RD30YDRCH9X"
+  ],
+  "at": "2026-11-18T08:27:20Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 21c89c3b5, in capped scopes with RHIZA_/SHIP_/REX_ unset: (1) go test -trimpath -p 2 -count=30 ./cmd/rhiza -run 'TestScripts/^headless-run-agent-tabs$' exit 0 (52s). (2) Scratch, uncommitted edit to the fake rex creating $WORK/repo/.git/worktrees/repo.built/index.lock before each builder pane and removing it 0.3s later: with the old builder (single git add/commit) the same command at -count=1 exits 1, all six builder attempts 'fail (exit 1)'; with the new retrying builder it exits 0; scratch edit reverted, cmd/ clean. (3) The diff touches only the txtar's header comment and the bin/claude builder body; no assertion lines changed, no Go code, no other scripts. rhiza ship generate and rhiza render exit 0."
+        },
+        "handle": "headless-tabs-builder-waits-index-lock-verified",
+        "id": "01M7PW907QAFR33NQZZ60WQ121",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PW907QAFR33NQZZ21SVJZ6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PW907QAFR33NQZZ21SVJZ6",
+        "id": "01M7PW908R0SHY9GKMS2X5FGX9",
+        "link": "01M7PW908R0SHY9GKMS1NFRJK1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSQZS492GXWNYNX3EEK1KR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PSG0YN06CTQCB1Z4KZ77WQ",
+  "for": "01M7PVKWWS5FTKRVZQHXQPXMV5",
+  "id": "01M7PW90A2YJ1GFH504YRA47X1",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,63 @@
+{
+  "actor": "01M7PWKW6EDE737ZDZ6HEWAPB4",
+  "after": [
+    "01M7PW90A2YJ1GFH504YRA47X1"
+  ],
+  "at": "2026-11-18T08:37:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 21c89c3b5: fresh go build -trimpath to a scratch path; in a capped scope with RHIZA_/SHIP_/REX_ unset, go test -trimpath -p 2 -count=1 ./internal/api -run 'TestCommitOnly|TestEvidenceCommit' passed (TestCommitOnlyIndexLocked 0.57s, TestCommitOnlyIndexLockedThroughout 2.13s, i.e. failing after the ~2 s bound). By hand with git 2.53 in a scratch linked worktree: a held index.lock makes update-index --add exit 128 with \"Unable to create '...index.lock': File exists.\", which the retry's match covers; a missing path fails with 'does not exist', which it does not match, so other failures fail at once."
+        },
+        "handle": "evidence-commit-waits-index-lock-qa-1",
+        "id": "01M7PWV0ZYA0JF12F7JSCK5NV8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PWV0ZYA0JF12F7JSB9Y35F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PWV0ZYA0JF12F7JSB9Y35F",
+        "id": "01M7PWV10TWATC3M4XA4JQVWT4",
+        "link": "01M7PWV10TWATC3M4XA19C2X7X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSZC9T64QYFHRD9KP08P3A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 21c89c3b5, capped scope, RHIZA_/SHIP_/REX_ unset: go test -trimpath -p 2 -count=10 ./cmd/rhiza -run 'TestScripts/^headless-run-agent-tabs$' passed (18.5s). With a temporary uncommitted edit making the fake rex create the pane worktree's index.lock (git rev-parse --git-path) before each pane and remove it 0.3 s later: -count=3 passed with the new fake builder; with the old fake builder put back it failed with 'attempt N builder ... fail (exit 1)'. Edit reverted; the script is unchanged."
+        },
+        "handle": "headless-tabs-builder-waits-index-lock-qa-1",
+        "id": "01M7PWV11V9FYDYJSZMEJVWHGC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PWV11V9FYDYJSZMASTCZ1Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PWV11V9FYDYJSZMASTCZ1Y",
+        "id": "01M7PWV12P32V8G13E7P2XGNHD",
+        "link": "01M7PWV12P32V8G13E7M43W56V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSQZS492GXWNYNX3EEK1KR",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PSG0YN06CTQCB1Z4KZ77WQ",
+  "for": "01M7PVKWWS5FTKRVZQHXQPXMV5",
+  "id": "01M7PWV13ECKCWJ6V342RKZS5A",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PVSKT0H6HA0G8365E49PNN",
+  "after": [
+    "01M7PT4060J80R3JS4GMG7PH7H"
+  ],
+  "at": "2026-11-18T08:20:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 441a2631c, in a systemd-run scope (MemoryMax=6G TasksMax=300, -p 2, RHIZA_/SHIP_/REX_ unset): go test -trimpath -p 2 ./internal/api -run 'TestCommitOnly|TestEvidenceCommit' -count=1 -v exit 0 (TestCommitOnlyIndexLocked 0.54s, TestCommitOnlyIndexLockedThroughout 2.18s, HeadMoved/HeadMovedEveryTry/EvidenceCommit pass); go vet ./internal/api exit 0. Pre-fix (run_leaves.go from HEAD~1 in a scratch worktree, plus only the indexLockWait const so tests compile): TestCommitOnlyIndexLocked fails with git's \"index.lock': File exists\" and TestCommitOnlyIndexLockedThroughout fails after 59ms with no bounded wait. Diff read: retry only on \"index.lock': File exists\", 50ms poll bounded by 2s, update-ref/commit not repeated (hook asserted once), only run_leaves.go and run_leaves_test.go changed besides the builder's actor record; HeadMoved tests untouched; no testscript changed; no TODOs."
+        },
+        "handle": "evidence-commit-waits-index-lock-verified",
+        "id": "01M7PVW1S57XJYD4BYG7MFY397",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PVW1S57XJYD4BYG46XRYHM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PVW1S57XJYD4BYG46XRYHM",
+        "id": "01M7PVW1T9MCGEFRJWWPQD6260",
+        "link": "01M7PVW1T9MCGEFRJWWNYW1XF2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSZC9T64QYFHRD9KP08P3A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PSG0YN06CTQCB1Z4KZ77WQ",
+  "for": "01M7PVKWWS5FTKRVZQHXQPXMV5",
+  "id": "01M7PVW1V8Y9000RD30YDRCH9X",
+  "type": "ops",
+  "v": 1
+}
