@@ -1,0 +1,65 @@
+{
+  "actor": "01M7PSGH2W5KPVJJ6VD0P6ZVJA",
+  "after": [
+    "01M7PSQJ5F9JA624179RJB1HBX"
+  ],
+  "at": "2026-11-18T07:43:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Fix the headless-run-agent-tabs flake in its fixture, not by quarantine: the fake bin/claude builder retries its git add and git commit while the shared run worktree's index is locked by concurrent git work, as a real agent would; the two CI symptoms of PRs #513 and #593 are already fixed (verifier-verdict-reads-fresh-model, and commitOnly's HEAD-moved retry from PR #595), and the index.lock race is the one that still reproduces at main",
+          "wording": "Fix the fixture's index.lock race; do not quarantine. Planner's ruling in an autonomous plan run, from the reproduction"
+        },
+        "handle": "headless-tabs-fix-fixture-lock",
+        "id": "01M7PSQZKR8DG3J4VXE1X293J2",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7PSQZKR8DG3J4VXDYVTNPJK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PSQZKR8DG3J4VXDYVTNPJK",
+        "id": "01M7PSQZMZ2G2QSJCEA1WK9HJ1",
+        "link": "01M7PSQZMZ2G2QSJCE9Z9ZTV03",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSQJ4KXWA4M3043WG83YPC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Every go test below runs inside systemd-run --user --scope --quiet -p MemoryMax=6G -p TasksMax=300 with -p 2 and RHIZA_*/SHIP_*/REX_* unset, one at a time. (1) go test -trimpath -p 2 -count=30 ./cmd/rhiza -run 'TestScripts/^headless-run-agent-tabs$' passes; before the fix the same command failed about once in 15 to 20 runs with 'attempt 1 builder ... fail (exit 1)' and 'Unable to create ... index.lock: File exists' in $WORK/panes.out. (2) (failure case) With a temporary scratch edit, not committed, that makes the fake rex create $WORK/repo/.git/worktrees/repo.built/index.lock before it starts a builder's pane and remove it about 0.3 s later in the background, the script fails once with the old fake builder (the builder exits 1 on the lock) and passes once with the new one; the commit's Checks: block records both runs. (3) Every existing assertion of the script still holds unchanged.",
+          "files": "cmd/rhiza/testdata/script/headless-run-agent-tabs.txtar",
+          "must_not": "Change any Go code (internal/ or cmd/rhiza/*.go); drop, loosen or reorder any assertion of the script; skip or quarantine the script; edit other scripts' fake builders; use busy loops, CPU stress or parallel stress runs to reproduce",
+          "statement": "In cmd/rhiza/testdata/script/headless-run-agent-tabs.txtar, the fake bin/claude builder retries its git add and git commit of the leaf file (a bounded loop of short sleeps, about 5 s in all, then exit 1) while either fails, so a sibling's or the runner's hold on the shared run worktree's index.lock no longer fails a builder attempt, and the script's header comment says why"
+        },
+        "handle": "headless-tabs-builder-waits-index-lock",
+        "id": "01M7PSQZS492GXWNYNX55AFWG0",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M7PSQZS492GXWNYNX3EEK1KR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PSQZS492GXWNYNX3EEK1KR",
+        "id": "01M7PSQZTRWAR0KXPEFDG9H5Y5",
+        "link": "01M7PSQZTRWAR0KXPEF9JEF48Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSQZKR8DG3J4VXDYVTNPJK",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7PSG0YN06CTQCB1Z4KZ77WQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PSQZWNQYVJSP5S6RXACP0Y",
+  "type": "ops",
+  "v": 1
+}

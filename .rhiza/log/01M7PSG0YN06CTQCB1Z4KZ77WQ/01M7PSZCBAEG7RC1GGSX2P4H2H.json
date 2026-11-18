@@ -1,0 +1,42 @@
+{
+  "actor": "01M7PSXZN67YJ1A2HQVHKD2FCD",
+  "after": [
+    "01M7PSR0XTS7PTMX6VJX6BWZJP"
+  ],
+  "at": "2026-11-18T07:47:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Every go test below runs inside systemd-run --user --scope --quiet -p MemoryMax=6G -p TasksMax=300 with -p 2 and RHIZA_*/SHIP_*/REX_* unset, one at a time. (1) A new test TestCommitOnlyIndexLocked in internal/api/run_leaves_test.go, built on evidenceCommitRunner and raceEvidence, creates the run worktree's index.lock (git rev-parse --git-path index.lock) from the commitOnlyHeadRead hook and removes it about 300 ms later; CommitEvidence succeeds, HEAD is the Evidence commit, the hook ran once (the commit was built once), and git status shows the Evidence entries committed with the real index equal to HEAD. Before the fix the same test fails with git's 'index.lock': File exists error. (2) (failure case) A new test TestCommitOnlyIndexLockedThroughout holds index.lock for the whole call: CommitEvidence fails with an error naming index.lock after the bounded wait (well under 10 s), the hook ran once, and the lock file is left as the test made it. (3) go test -trimpath -p 2 ./internal/api -run 'TestCommitOnly|TestEvidenceCommit' passes, TestCommitOnlyHeadMoved and TestCommitOnlyHeadMovedEveryTry unchanged.",
+          "files": "internal/api/run_leaves.go, internal/api/run_leaves_test.go",
+          "must_not": "Retry update-index on any error but an existing index.lock; rebuild or re-move the commit on that retry; wait unbounded or over about 2 s; change the headless-run-agent-tabs script or any other testscript; use busy loops, CPU stress or parallel stress runs to reproduce",
+          "statement": "In internal/api/run_leaves.go, commitOnly's update-index --add of the committed paths on the run worktree's real index, run after a successful update-ref, retries while git fails because index.lock exists (a builder's concurrent git add or commit in the shared run worktree), with short sleeps for a bounded time of about 2 s, then fails with git's error; any other update-index failure still fails at once, and the commit is not built again (HEAD already holds it). Its doc comment says why"
+        },
+        "handle": "evidence-commit-waits-index-lock",
+        "id": "01M7PSZC9T64QYFHRD9NY8W77W",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M7PSZC9T64QYFHRD9KP08P3A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PSZC9T64QYFHRD9KP08P3A",
+        "id": "01M7PSZCAHYP8KXMEY1QC55DY3",
+        "link": "01M7PSZCAHYP8KXMEY1NMC7WER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PSQJ4KXWA4M3043WG83YPC",
+        "type": "derived-from"
+      }
+    ]
+  },
+  "change_set": "01M7PSG0YN06CTQCB1Z4KZ77WQ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PSZCBAEG7RC1GGSX2P4H2H",
+  "type": "ops",
+  "v": 1
+}
