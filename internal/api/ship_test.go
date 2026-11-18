@@ -777,13 +777,15 @@ func TestShipCloseOut(t *testing.T) {
 	}
 	main := filepath.Dir(f.common)
 	x.answers = map[string]string{
-		"git worktree remove " + f.worktree:                    "",
-		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "2222\n",
-		"git branch -D cs/ship-it":                             "Deleted branch cs/ship-it\n",
-		"git push origin --delete cs/ship-it":                  "!error: unable to delete 'cs/ship-it': remote ref does not exist",
-		"git symbolic-ref --short HEAD":                        "main\n",
-		"git status --porcelain --untracked-files=no":          "",
-		"git pull --ff-only origin main":                       "",
+		"git worktree remove " + f.worktree:                         "",
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it":      "2222\n",
+		"git branch -D cs/ship-it":                                  "Deleted branch cs/ship-it\n",
+		"git push origin --delete cs/ship-it":                       "!error: unable to delete 'cs/ship-it': remote ref does not exist",
+		"git symbolic-ref --short HEAD":                             "main\n",
+		"git status --porcelain --untracked-files=no":               "",
+		"git fetch origin main":                                     "",
+		"git ls-files --others --exclude-standard -z -- .rhiza/log": "",
+		"git merge --ff-only refs/remotes/origin/main":              "",
 	}
 	resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
 	if err != nil {
@@ -805,6 +807,7 @@ func TestShipCloseOut(t *testing.T) {
 			t.Errorf("forced: %q", c)
 		}
 	}
+	wantMainFastForward(t, x.calls, true)
 	got := human(t, r)
 	for _, s := range []string{"Removed worktree " + f.worktree + ".", "Deleted branch cs/ship-it.", "origin/cs/ship-it was already gone.", "Updated main in " + main + "."} {
 		if !strings.Contains(got, s) {
@@ -834,6 +837,79 @@ func TestShipCloseOut(t *testing.T) {
 	}
 }
 
+// wantMainFastForward checks calls updated main by git fetch origin main
+// and then, when merged, git merge --ff-only refs/remotes/origin/main, with
+// no git pull and no merge after a failed fetch.
+func wantMainFastForward(t *testing.T, calls []string, merged bool) {
+	t.Helper()
+	fetch, merge := slices.Index(calls, "git fetch origin main"), slices.Index(calls, "git merge --ff-only refs/remotes/origin/main")
+	if fetch < 0 {
+		t.Errorf("no git fetch origin main in %q", calls)
+	}
+	if merged && merge < fetch {
+		t.Errorf("no git merge --ff-only refs/remotes/origin/main after the fetch in %q", calls)
+	}
+	if !merged && merge >= 0 {
+		t.Errorf("merged after a failed fetch: %q", calls)
+	}
+	for _, c := range calls {
+		if strings.HasPrefix(c, "git pull") {
+			t.Errorf("ran %q", c)
+		}
+	}
+}
+
+// A close-out whose fetch or fast-forward merge fails reports update-main
+// failed with git's error and records main-stale; a failed fetch merges
+// nothing.
+func TestShipCloseOutUpdateMainFails(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, key, err string
+		merged         bool
+	}{
+		{"Merge", "git merge --ff-only refs/remotes/origin/main", "fatal: Not possible to fast-forward, aborting.", true},
+		{"Fetch", "git fetch origin main", "fatal: unable to access origin", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f, _, state := shipFixture(t)
+			if err := writeShipState(state, shipState{PR: 7, Head: "abc1234def", MergeCommit: "fff0000aaa"}); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.RemoveAll(f.worktree); err != nil {
+				t.Fatal(err)
+			}
+			x := &shipExec{answers: map[string]string{
+				"git rev-parse --verify --quiet refs/heads/cs/ship-it":      "!",
+				"git push origin --delete cs/ship-it":                       "",
+				"git symbolic-ref --short HEAD":                             "main\n",
+				"git status --porcelain --untracked-files=no":               "",
+				"git fetch origin main":                                     "",
+				"git ls-files --others --exclude-standard -z -- .rhiza/log": "",
+				"git merge --ff-only refs/remotes/origin/main":              "",
+			}}
+			x.answers[c.key] = "!" + c.err
+			f.ctx.Exec = x.run
+			resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			r := resp.(ShipCloseOutResponse)
+			last := r.Steps[len(r.Steps)-1]
+			if r.MainUpdated || r.ExitCode() != 1 || !strings.HasPrefix(r.Detail, "main was not updated: ") ||
+				!strings.Contains(r.Detail, c.err) || last.Step != "update-main" || last.Result != "failed" || last.Detail != r.Detail {
+				t.Errorf("close-out = %+v", r)
+			}
+			ms, ok := daemon.ReadMainStale(f.common)
+			if !ok || ms.Detail != r.Detail {
+				t.Errorf("main-stale = %+v, %v", ms, ok)
+			}
+			wantMainFastForward(t, x.calls, c.merged)
+		})
+	}
+}
+
 func TestShipCloseOutForget(t *testing.T) {
 	t.Parallel()
 	f, _, state := shipFixture(t)
@@ -841,12 +917,14 @@ func TestShipCloseOutForget(t *testing.T) {
 		t.Fatal(err)
 	}
 	x := &shipExec{answers: map[string]string{
-		"git worktree remove " + f.worktree:                    "",
-		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
-		"git push origin --delete cs/ship-it":                  "",
-		"git symbolic-ref --short HEAD":                        "main\n",
-		"git status --porcelain --untracked-files=no":          "",
-		"git pull --ff-only origin main":                       "",
+		"git worktree remove " + f.worktree:                         "",
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it":      "!",
+		"git push origin --delete cs/ship-it":                       "",
+		"git symbolic-ref --short HEAD":                             "main\n",
+		"git status --porcelain --untracked-files=no":               "",
+		"git fetch origin main":                                     "",
+		"git ls-files --others --exclude-standard -z -- .rhiza/log": "",
+		"git merge --ff-only refs/remotes/origin/main":              "",
 	}}
 	f.ctx.Exec = x.run
 	if _, err := callOp(t, f.ctx, "ship.close-out", `{"forget":true}`); err != nil {
@@ -1033,14 +1111,16 @@ func TestShipCloseOutClosesTabs(t *testing.T) {
 		}
 	}
 	x := &shipExec{answers: map[string]string{
-		"git worktree remove " + f.worktree:                    "",
-		"rex window close -s session:s1 window:w1":             "",
-		"rex window close -s session:s1 window:gone":           `!Error: window target "window:gone" not found`,
-		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
-		"git push origin --delete cs/ship-it":                  "",
-		"git symbolic-ref --short HEAD":                        "main\n",
-		"git status --porcelain --untracked-files=no":          "",
-		"git pull --ff-only origin main":                       "",
+		"git worktree remove " + f.worktree:                         "",
+		"rex window close -s session:s1 window:w1":                  "",
+		"rex window close -s session:s1 window:gone":                `!Error: window target "window:gone" not found`,
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it":      "!",
+		"git push origin --delete cs/ship-it":                       "",
+		"git symbolic-ref --short HEAD":                             "main\n",
+		"git status --porcelain --untracked-files=no":               "",
+		"git fetch origin main":                                     "",
+		"git ls-files --others --exclude-standard -z -- .rhiza/log": "",
+		"git merge --ff-only refs/remotes/origin/main":              "",
 	}}
 	f.ctx.Exec = x.run
 	resp, err := callOp(t, f.ctx, "ship.close-out", `{}`)
@@ -1928,11 +2008,13 @@ func TestShipCloseOutRecordsStaleMain(t *testing.T) {
 		t.Fatal(err)
 	}
 	x := &shipExec{answers: map[string]string{
-		"git rev-parse --verify --quiet refs/heads/cs/ship-it": "!",
-		"git push origin --delete cs/ship-it":                  "!error: unable to delete 'cs/ship-it': remote ref does not exist",
-		"git symbolic-ref --short HEAD":                        "main\n",
-		"git status --porcelain --untracked-files=no":          " M README.md\n",
-		"git pull --ff-only origin main":                       "",
+		"git rev-parse --verify --quiet refs/heads/cs/ship-it":      "!",
+		"git push origin --delete cs/ship-it":                       "!error: unable to delete 'cs/ship-it': remote ref does not exist",
+		"git symbolic-ref --short HEAD":                             "main\n",
+		"git status --porcelain --untracked-files=no":               " M README.md\n",
+		"git fetch origin main":                                     "",
+		"git ls-files --others --exclude-standard -z -- .rhiza/log": "",
+		"git merge --ff-only refs/remotes/origin/main":              "",
 	}}
 	f.ctx.Exec = x.run
 	items := func() []InboxItem { return inboxMainStale(f.ctx) }

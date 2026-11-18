@@ -549,8 +549,7 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 
 	resp.Detail = shipMainBlocked(ctx, t.main)
 	if resp.Detail == "" {
-		dropIncomingLogCopies(ctx, t.main)
-		if _, err := gitAt(ctx, t.main, "pull", "--ff-only", "origin", "main"); err != nil {
+		if err := fastForwardMain(ctx, t.main); err != nil {
 			resp.Detail = err.Error()
 		}
 	}
@@ -578,15 +577,28 @@ func runShipCloseOut(ctx *Ctx, req any) (any, error) {
 	return resp, nil
 }
 
+// fastForwardMain updates the main checkout to origin/main: git fetch
+// origin main, then git merge --ff-only refs/remotes/origin/main, never git
+// pull, so neither a concurrent fetch rewriting FETCH_HEAD nor the user's
+// pull.rebase or pull.ff settings can fail it. Between the two it drops the
+// untracked log copies the merge would write. A failed fetch merges nothing.
+// The caller checks shipMainBlocked first.
+func fastForwardMain(ctx *Ctx, main string) error {
+	if _, err := gitAt(ctx, main, "fetch", "origin", "main"); err != nil {
+		return err
+	}
+	dropIncomingLogCopies(ctx, main)
+	_, err := gitAt(ctx, main, "merge", "--ff-only", "refs/remotes/origin/main")
+	return err
+}
+
 // dropIncomingLogCopies removes the untracked .rhiza/log files in main that
 // origin/main holds byte for byte, so the fast-forward may write them as
 // tracked files. A change set opened in the main checkout leaves its first
 // entries there. Files that differ, or that origin/main lacks, stay; the
-// pull then fails and names them. Best effort: any git failure drops nothing.
+// merge then fails and names them. It reads origin/main as fastForwardMain
+// just fetched it. Best effort: any git failure drops nothing.
 func dropIncomingLogCopies(ctx *Ctx, main string) {
-	if _, err := gitAt(ctx, main, "fetch", "origin", "main"); err != nil {
-		return
-	}
 	out, err := gitAt(ctx, main, "ls-files", "--others", "--exclude-standard", "-z", "--", ".rhiza/log")
 	if err != nil {
 		return
