@@ -1184,3 +1184,109 @@ func TestCheckShipLeaves(t *testing.T) {
 		})
 	}
 }
+
+// run status shows each review check round's evidence lines with the
+// leaf's handle, in --json and under the round in the human output. A
+// round with no evidence has no evidence key and prints no evidence lines,
+// and a round with findings prints them as before. An evidence line whose
+// leaf no longer resolves (retired after the round was journalled) still
+// shows, with its ID and an empty leaf_handle, and run status succeeds.
+func TestRunStatusCheckRoundEvidence(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "roundevidence")
+	a := newChange(t, f.ctx, `{"intent":"Show evidence"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"parent","fields":["statement=Holds the leaves"]}`)
+	leafA := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-a","parent":"parent","fields":["statement=Does A"]}`).Nodes[0].String()
+	leafB := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-b","parent":"parent","fields":["statement=Does B"]}`).Nodes[0].String()
+	leafC := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-c","parent":"parent","fields":["statement=Does C"]}`).Nodes[0].String()
+
+	t0 := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	conduct := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"qa\"\n"
+	if err := store.Create("RE1", run.Entry{
+		Type: run.TypeStarted, Step: "conduct", At: t0,
+		Started: &run.Started{Workflow: "w", Definition: conduct, Change: a.ChangeSet.String(), Title: "Show evidence"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range []run.Entry{
+		{Type: run.TypeEntered, Step: "conduct", Visit: 1},
+		{Type: run.TypeFindings, Step: "conduct", Check: "plan", Cycle: 1, Findings: []run.Finding{}, Evidence: []run.Evidence{
+			{Leaf: leafA, LeafHandle: "leaf-a", Line: "go test ./a: ok"},
+			{Leaf: leafB, LeafHandle: "leaf-b", Line: "read b.go:3: holds"},
+		}},
+		{Type: run.TypeFindings, Step: "conduct", Check: "qa", Cycle: 1, Findings: []run.Finding{
+			{ID: "f1", Check: "qa", Severity: "minor", Leaf: leafA, LeafHandle: "leaf-a", Place: "a.go:1", Reason: "A breaks"},
+		}},
+		{Type: run.TypeFindings, Step: "conduct", Check: "qa", Cycle: 1, Findings: []run.Finding{}, Evidence: []run.Evidence{
+			{Leaf: leafC, LeafHandle: "leaf-c", Line: "ran c: ok"},
+		}},
+	} {
+		e.At = t0.Add(time.Minute)
+		if err := store.Append("RE1", e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Leaf C is retired after its round was journalled.
+	mustWrite(t, f.ctx, "retire", `{"ref":"leaf-c","reason":"Dropped"}`)
+
+	resp, err := callOp(t, f.ctx, "run.status", `{"run":"RE1"}`)
+	if err != nil {
+		t.Fatalf("run status: %v", err)
+	}
+	info := resp.(RunInfo)
+	if len(info.Checks) != 2 {
+		t.Fatalf("checks %+v", info.Checks)
+	}
+	plan, qa := info.Checks[0], info.Checks[1]
+	if plan.Check != "plan" || qa.Check != "qa" || len(plan.Rounds) != 1 || len(qa.Rounds) != 2 {
+		t.Fatalf("checks %+v", info.Checks)
+	}
+	want := []RunEvidence{
+		{Leaf: leafA, LeafHandle: "leaf-a", Line: "go test ./a: ok"},
+		{Leaf: leafB, LeafHandle: "leaf-b", Line: "read b.go:3: holds"},
+	}
+	if !slices.Equal(plan.Rounds[0].Evidence, want) {
+		t.Errorf("plan round evidence %+v, want %+v", plan.Rounds[0].Evidence, want)
+	}
+	if got := qa.Rounds[1].Evidence; !slices.Equal(got, []RunEvidence{{Leaf: leafC, Line: "ran c: ok"}}) {
+		t.Errorf("retired leaf's evidence %+v, want its ID and no handle", got)
+	}
+
+	b, err := json.Marshal(info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var raw struct {
+		Checks []struct {
+			Rounds []map[string]json.RawMessage `json:"rounds"`
+		} `json:"checks"`
+	}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := raw.Checks[1].Rounds[0]["evidence"]; ok {
+		t.Errorf("a round with no evidence has an evidence key: %s", raw.Checks[1].Rounds[0]["evidence"])
+	}
+	if got := string(raw.Checks[0].Rounds[0]["evidence"]); got != `[{"leaf":"`+leafA+`","leaf_handle":"leaf-a","line":"go test ./a: ok"},{"leaf":"`+leafB+`","leaf_handle":"leaf-b","line":"read b.go:3: holds"}]` {
+		t.Errorf("plan round evidence JSON %s", got)
+	}
+	if got := string(raw.Checks[1].Rounds[1]["evidence"]); got != `[{"leaf":"`+leafC+`","leaf_handle":"","line":"ran c: ok"}]` {
+		t.Errorf("retired leaf's evidence JSON %s", got)
+	}
+
+	text := human(t, info)
+	for _, w := range []string{
+		"  - round 1 (cycle 1): no findings\n    - evidence for leaf-a: go test ./a: ok\n    - evidence for leaf-b: read b.go:3: holds\n",
+		"  - round 1 (cycle 1): 1 finding, 0 confirmed\n    - " + findingLine(qa.Rounds[0].Findings[0]) + "\n  - round 2",
+		"  - round 2 (cycle 1): no findings\n    - evidence for " + leafC + ": ran c: ok\n",
+	} {
+		if !strings.Contains(text, w) {
+			t.Errorf("human text lacks %q:\n%s", w, text)
+		}
+	}
+	if n := strings.Count(text, "evidence for"); n != 3 {
+		t.Errorf("%d evidence lines, want 3:\n%s", n, text)
+	}
+}

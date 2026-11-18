@@ -333,12 +333,20 @@ type RunCheckQuestion struct {
 
 // RunCheckRound is one findings round of a review check.
 type RunCheckRound struct {
-	Round     int          `json:"round" desc:"The round's number in the check, from 1"`
-	Cycle     int          `json:"cycle" desc:"The check's cycle it was recorded in, from 1"`
-	At        string       `json:"at" desc:"When its findings were journalled, RFC 3339 UTC"`
-	Findings  []RunFinding `json:"findings" desc:"The check's findings, in order, each with its latest verdict; empty for a clean check"`
-	Verdicts  []RunVerdict `json:"verdicts,omitempty" desc:"The verdicts journalled on the round, in order; absent before any"`
-	Confirmed int          `json:"confirmed" desc:"How many findings the latest verdict confirms"`
+	Round     int           `json:"round" desc:"The round's number in the check, from 1"`
+	Cycle     int           `json:"cycle" desc:"The check's cycle it was recorded in, from 1"`
+	At        string        `json:"at" desc:"When its findings were journalled, RFC 3339 UTC"`
+	Findings  []RunFinding  `json:"findings" desc:"The check's findings, in order, each with its latest verdict; empty for a clean check"`
+	Evidence  []RunEvidence `json:"evidence,omitempty" desc:"The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none"`
+	Verdicts  []RunVerdict  `json:"verdicts,omitempty" desc:"The verdicts journalled on the round, in order; absent before any"`
+	Confirmed int           `json:"confirmed" desc:"How many findings the latest verdict confirms"`
+}
+
+// RunEvidence is one evidence line of a review check's round.
+type RunEvidence struct {
+	Leaf       string `json:"leaf" desc:"The leaf node it is for, by ID"`
+	LeafHandle string `json:"leaf_handle" desc:"That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)"`
+	Line       string `json:"line" desc:"What the check ran or read for the leaf's acceptance, with the result"`
 }
 
 // RunCheckCycle is one cycle a check ran in.
@@ -1575,7 +1583,41 @@ func runRunStatus(ctx *Ctx, req any) (any, error) {
 		}
 	}
 	spawnedStatements(ctx, st, info.Spawned)
+	evidenceHandles(ctx, st, info.Checks)
 	return info, nil
+}
+
+// evidenceHandles sets each check round's evidence lines' leaf handles
+// from the run's change set as it is now: a leaf that no longer resolves
+// among its leaves (retired, or no longer a leaf, since the round was
+// journalled) keeps its ID and an empty handle. When the model cannot be
+// read the journalled handles stay; run status never fails on it.
+func evidenceHandles(ctx *Ctx, st run.State, checks []RunCheck) {
+	if st.Change == "" || !slices.ContainsFunc(checks, func(c RunCheck) bool {
+		return slices.ContainsFunc(c.Rounds, func(rd RunCheckRound) bool { return len(rd.Evidence) > 0 })
+	}) {
+		return
+	}
+	cs, err := id.Parse(st.Change)
+	if err != nil {
+		return
+	}
+	leaves := &leafSet{ctx: ctx, rr: reviewRun{id: st.ID, state: st, change: cs}}
+	defer leaves.close()
+	if err := leaves.load(); err != nil {
+		return
+	}
+	for _, c := range checks {
+		for _, rd := range c.Rounds {
+			for i := range rd.Evidence {
+				e := &rd.Evidence[i]
+				e.LeafHandle = ""
+				if n, err := leaves.resolve(e.Leaf); err == nil {
+					e.LeafHandle = n.Handle
+				}
+			}
+		}
+	}
 }
 
 // runWaiting is the change sets among gated, the latest gated entry's,
@@ -3313,6 +3355,9 @@ func runCheckInfo(st run.State, c run.CheckState) RunCheck {
 		for _, f := range rd.Findings {
 			rr.Findings = append(rr.Findings, runFinding(f, rd))
 		}
+		for _, e := range rd.Evidence {
+			rr.Evidence = append(rr.Evidence, RunEvidence{Leaf: e.Leaf, LeafHandle: e.LeafHandle, Line: e.Line})
+		}
 		for _, v := range rd.Verdicts {
 			rr.Verdicts = append(rr.Verdicts, RunVerdict{Finding: v.Finding, Verdict: v.Verdict, Reason: v.Reason, Severity: v.Severity, Original: v.Original})
 		}
@@ -3557,11 +3602,18 @@ func (r RunInfo) Human(w io.Writer) {
 			for _, rd := range c.Rounds {
 				if len(rd.Findings) == 0 {
 					fmt.Fprintf(w, "  - round %d (cycle %d): no findings\n", rd.Round, rd.Cycle)
-					continue
+				} else {
+					fmt.Fprintf(w, "  - round %d (cycle %d): %d %s, %d confirmed\n", rd.Round, rd.Cycle, len(rd.Findings), shipPlural(len(rd.Findings), "finding", "findings"), rd.Confirmed)
+					for _, f := range rd.Findings {
+						fmt.Fprintf(w, "    - %s\n", findingLine(f))
+					}
 				}
-				fmt.Fprintf(w, "  - round %d (cycle %d): %d %s, %d confirmed\n", rd.Round, rd.Cycle, len(rd.Findings), shipPlural(len(rd.Findings), "finding", "findings"), rd.Confirmed)
-				for _, f := range rd.Findings {
-					fmt.Fprintf(w, "    - %s\n", findingLine(f))
+				for _, e := range rd.Evidence {
+					leaf := e.LeafHandle
+					if leaf == "" {
+						leaf = e.Leaf
+					}
+					fmt.Fprintf(w, "    - evidence for %s: %s\n", leaf, oneLine(e.Line))
 				}
 			}
 			for _, q := range c.Questions {
