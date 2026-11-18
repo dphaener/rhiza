@@ -1,0 +1,32 @@
+{
+  "actor": "01M7PZQJ8Y9KESF541ZEJQJZ8D",
+  "after": [
+    "01M7Q028ESW0N1T91DNB7NV4KT"
+  ],
+  "at": "2026-11-18T09:33:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'TestProjection|TestWorkspace|TestWritesThroughIndexMatchFold$|TestAddKeysAndParent$|TestCarveKeepsIDs$|TestReviewCheckQuestionInNodeChangeSet$|TestOtherRoot' passes. A new test in projection_test.go opens a workspace with openWorkspace and no projection under a ctx whose TMPDIR is a fresh t.TempDir(): (failure case) its changeSets() answers nothing and projectionFailure() is an error naming the missing projection, and no rhiza-projection-* folder is created in that TMPDIR or by the call at all. Run with TMPDIR set to a fresh scratch folder, the four named leaking tests leave no rhiza-projection-* folder in /tmp whose index.db-wal names that scratch folder (the planner's reproduction left 29). ctxWorkspace closes its projection when its caller is done, at the latest in a t.Cleanup registered after guardProjections's, so guardProjections still reports a projection left open.",
+          "files": "internal/api/projection.go:120-140, internal/api/projection_test.go, internal/api/change_test.go (ctxWorkspace and its openWorkspace calls), internal/api/workspace_test.go, internal/api/other_root_index_test.go",
+          "must_not": "Change openWriteIndex's throwaway folder location or its removal on close and on a failed open; change the production callers of openWorkspace (status.go, run_model_cache.go, openCtxWorkspace, openRootWorkspace) beyond what the fallback's removal needs; change cmd/rhiza; delete or skip any test",
+          "statement": "A workspace opened with no projection never opens a throwaway index over a bare Ctx: workspace.projection() with none given answers a failed projection naming the missing projection, and the test helpers that open workspaces (ctxWorkspace and the direct openWorkspace calls in tests) give it their Ctx's projection (useProjection(ctx)) and close it, so no test leaves a rhiza-projection-* folder in the real /tmp"
+        },
+        "handle": "workspace-projection-no-bare-ctx",
+        "id": "01M7Q028AA08ZP6HAFHJ1J9SDQ",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7Q028AA08ZP6HAFHHVHHF15",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q02FJXYCMC8YB8S87ZYNFA",
+  "type": "ops",
+  "v": 1
+}

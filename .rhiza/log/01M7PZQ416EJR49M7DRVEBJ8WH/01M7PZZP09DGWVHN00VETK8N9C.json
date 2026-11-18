@@ -1,0 +1,41 @@
+{
+  "actor": "01M7PZZ1NWMA0TV7P0100V2693",
+  "after": [
+    "01M7PZYYTA1RWV5588YP6KM0ZF"
+  ],
+  "at": "2026-11-18T09:32:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The intent's expected outcomes are all about the leak; the open-pr clause asks only to 'look at why', which the planner has done. The OOM kills came mostly from the leak filling a RAM-backed /tmp (7.1 GB), which this change set fixes; open-pr's RSS is a separate cost in the check/fold path, touching files unrelated to the leak and needing profiling work whose size is unknown. Folding it in would grow a bug fix's scope and delay the leak fix, which is the urgent part. A discovered-from draft change set keeps the finding traceable and lets it be planned and sized on its own.",
+          "statement": "Keep change set 01M7PZQ4 scoped to the /tmp projection leak (workspace.projection() fallback without Getenv, ctxWorkspace never closing its projection, every throwaway folder removed on close, tests under t.TempDir(), the leak guard checking no folder is left). The open-pr memory work goes into its own draft change set, discovered from 01M7PZQ4, carrying the finding: open-pr's pre-push check runs rhiza check in-process over a fresh checkout (ship_prepush.go prePushRhizaCheck), and rhiza check alone on this repo (7,298 log entries) peaks at 832 MB RSS, so the fix needs profiling of the check/fold path. This change set's 'look at why' clause is met by that investigation and the follow-up draft; it builds no memory reduction itself.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "open-pr-memory-separate",
+        "id": "01M7PZZNYEYG25TCDK5E289BCM",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7PZZNYEYG25TCDK5CG81MKZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PZZNYEYG25TCDK5CG81MKZ",
+        "id": "01M7PZZNZEK746D24KGFWTKW5R",
+        "link": "01M7PZZNZEK746D24KGEKYMKN4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PZYYT99GN2EXD6AVFB427X",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PZZP09DGWVHN00VETK8N9C",
+  "type": "ops",
+  "v": 1
+}

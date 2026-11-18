@@ -1,0 +1,15 @@
+{
+  "actor": "01M7PZQJ8Y9KESF541ZEJQJZ8D",
+  "after": [],
+  "at": "2026-11-18T09:33:47Z",
+  "body": {
+    "intent": "Cut rhiza ship open-pr's peak memory: earlyoom SIGTERMed 'rhiza ship open-pr' twice on 2026-11-17 at VmRSS 2.2 GB. Its pre-push check runs rhiza check in-process over a fresh checkout (internal/api/ship_prepush.go prePushRhizaCheck), and rhiza check alone on this repo (7,298 log entries) peaks at 832 MB RSS. Profile open-pr's check/fold path on a repo this size and cut the dominant allocations, with a memory budget that catches a regression. Found while planning the throwaway projections leak fix (01M7PZQ4).",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7Q02NPNGVJMNP8MR2W1TZ7T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q02NPNGVJMNP8MR6EPVHRB",
+  "type": "open",
+  "v": 1
+}

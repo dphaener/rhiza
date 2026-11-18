@@ -1,0 +1,115 @@
+{
+  "actor": "01M7PZQJ8Y9KESF541ZEJQJZ8D",
+  "after": [
+    "01M7Q027CEVYME1A55MPM1KCF0"
+  ],
+  "at": "2026-11-18T09:33:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "Every production caller of openWorkspace already gives a projection first, so the bare-Ctx fallback serves only test helpers, and it is the leak: no Getenv sends the throwaway index to the real /tmp and no liveProjections hides it from guardProjections. Failing loudly turns any future miss into a test failure rather than a silent folder in /tmp.",
+          "statement": "A workspace given no projection (openWorkspace without useProjection or setProjection) opens none: its reads fail with an error saying it has no projection, instead of opening a throwaway index over a bare Ctx with no Getenv in the process's temp folder; every caller, tests included, gives the workspace its Ctx's projection and closes it",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "no-bare-ctx-projection",
+        "id": "01M7Q02864Z0214NHD6CRKBGDY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7Q02864Z0214NHD6B6BT6W0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q02864Z0214NHD6B6BT6W0",
+        "id": "01M7Q0286Z06VNJMCZTZS8BJN1",
+        "link": "01M7Q0286Z06VNJMCZTYZBZ37H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q01C8EJ93NW8ZEJ7CF9VWX",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "reasoning": "guardProjections covers only Ctxs from testCtx and snapshot.copy; testCache answers no TMPDIR, so snapshot builds and testCtxNoIndex Ctxs fall back to /tmp. One package folder checked at the end covers them without reading or cleaning the host's shared /tmp, which other runs write to concurrently.",
+          "statement": "internal/api's TestMain gives every test Ctx a TMPDIR of its own (a rhiza-api-tmp- folder made once, answered by testCache, swept when stale like rhiza-api-cache-) and fails the test binary when any rhiza-projection-* folder is left in it after m.Run, so a projection opened outside guardProjections (snapshot builds, testCtxNoIndex) still lands under the test run and is still checked",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "package-tmp-leak-guard",
+        "id": "01M7Q02888E9MAC9FTS1SAB2JE",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7Q02888E9MAC9FTS0KVXS5D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q02888E9MAC9FTS0KVXS5D",
+        "id": "01M7Q0289ANNC8W2Y0A4HKPZ2S",
+        "link": "01M7Q0289ANNC8W2Y0A1GRP070",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q01C8EJ93NW8ZEJ7CF9VWX",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'TestProjection|TestWorkspace|TestWritesThroughIndexMatchFold$|TestAddKeysAndParent$|TestCarveKeepsIDs$|TestReviewCheckQuestionInNodeChangeSet$|TestOtherRootIndex' passes. A new test in projection_test.go opens a workspace with openWorkspace and no projection under a ctx whose TMPDIR is a fresh t.TempDir(): (failure case) its changeSets() answers nothing and projectionFailure() is an error naming the missing projection, and no rhiza-projection-* folder is created in that TMPDIR or by the call at all. Run with TMPDIR set to a fresh scratch folder, the four named leaking tests leave no rhiza-projection-* folder in /tmp whose index.db-wal names that scratch folder (the planner's reproduction left 29). ctxWorkspace closes its projection when its caller is done, at the latest in a t.Cleanup registered after guardProjections's, so guardProjections still reports a projection left open.",
+          "files": "internal/api/projection.go:120-140, internal/api/projection_test.go, internal/api/change_test.go (ctxWorkspace and its openWorkspace calls), internal/api/workspace_test.go, internal/api/other_root_index_test.go",
+          "must_not": "Change openWriteIndex's throwaway folder location or its removal on close and on a failed open; change the production callers of openWorkspace (status.go, run_model_cache.go, openCtxWorkspace, openRootWorkspace) beyond what the fallback's removal needs; change cmd/rhiza; delete or skip any test",
+          "statement": "A workspace opened with no projection never opens a throwaway index over a bare Ctx: workspace.projection() with none given answers a failed projection naming the missing projection, and the test helpers that open workspaces (ctxWorkspace and the direct openWorkspace calls in tests) give it their Ctx's projection (useProjection(ctx)) and close it, so no test leaves a rhiza-projection-* folder in the real /tmp"
+        },
+        "handle": "workspace-projection-no-bare-ctx",
+        "id": "01M7Q028AA08ZP6HAFHJ1J9SDQ",
+        "key": "zzzzz",
+        "kind": "capability",
+        "node": "01M7Q028AA08ZP6HAFHHVHHF15",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7Q028AA08ZP6HAFHHVHHF15",
+        "id": "01M7Q028BFK63MWRQYAHB5DQT8",
+        "link": "01M7Q028BFK63MWRQYAEZWY4A1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q02864Z0214NHD6B6BT6W0",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -count=1 -p 2 ./internal/api -run 'TestProjection|TestSnapshot|TestShipCheckModelConflictClosesProjection|TestRunStatusGatedClosesProjection|TestWorktreeWorkspaceClosesReplacedProjection|TestSessionWorkspaceMissClosesProjection|TestTmpLeak' passes, and afterwards no rhiza-api-tmp- folder of that run is left. The end-of-run check is a function over a folder (leftProjections or similar) covered by a test: (failure case) a folder holding a rhiza-projection-x subfolder is reported with its name and makes TestMain exit non-zero; an empty one is not. testCache answers the package folder for TMPDIR and still answers XDG_CACHE_HOME as today, and the snapshot builds (testCtxNoIndex) put their throwaway indexes there, not in /tmp. tmpsweep.StaleTemp sweeps rhiza-api-tmp- like rhiza-api-cache-.",
+          "files": "internal/api/budget_test.go (TestMain), internal/api/init_test.go (testCache, testCtxNoIndex), internal/api/projection_leak_test.go",
+          "must_not": "Touch production code; read, glob or clean the host's /tmp beyond the run's own rhiza-api-tmp- folder; replace guardProjections or its per-test TMPDIR; change any other test package",
+          "statement": "internal/api's test binary gives every test Ctx a TMPDIR of its own (testCache answers a rhiza-api-tmp- folder TestMain makes once and sweeps when stale) and fails, naming them, when any rhiza-projection-* folder is left there after m.Run, then removes the folder"
+        },
+        "handle": "api-tests-tmp-leak-guard",
+        "id": "01M7Q028CFJFVMEDZAKXF2Q27H",
+        "key": "zzzzzi",
+        "kind": "capability",
+        "node": "01M7Q028CFJFVMEDZAKVXVRPNF",
+        "op": "node.create",
+        "parent": "01M5SWS1V2VF3MF5R7A78C6JQA"
+      },
+      {
+        "decision": null,
+        "from": "01M7Q028CFJFVMEDZAKVXVRPNF",
+        "id": "01M7Q028DMV6RWA0A4F0QB1MDM",
+        "link": "01M7Q028DMV6RWA0A4EXP4EGTS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q02888E9MAC9FTS0KVXS5D",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q028ESW0N1T91DNB7NV4KT",
+  "type": "ops",
+  "v": 1
+}
