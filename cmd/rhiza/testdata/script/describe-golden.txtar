@@ -20225,7 +20225,7 @@ cmp stdout describe.golden.json
             "type": "boolean"
           },
           "held": {
-            "description": "True if the spawn waited on a usage or machine hold before it started the child",
+            "description": "True if the spawn waited on a usage, load, memory, disk or temp-space hold before it started the child",
             "type": "boolean"
           },
           "leaf": {
@@ -20272,7 +20272,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started",
+      "summary": "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage, load, memory, disk or temp-space hold is on) and print its outcome, or with --no-wait return once it is started",
       "write": true
     },
     {

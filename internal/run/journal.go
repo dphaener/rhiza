@@ -793,12 +793,13 @@ type Spawn struct {
 	NoWait  bool
 }
 
-// SpawnHold is a spawn that waited on a hold: Step the calling step, Detail
-// what held it, At when. Until is when the hold lifted and the child
+// SpawnHold is a spawn that waited on a hold: Step the calling step, Role
+// the child's role, Detail what held it, At when. Until is when the hold lifted and the child
 // started, zero while it waits.
 type SpawnHold struct {
 	Step   string
 	Parent string
+	Role   string
 	Detail string
 	At     time.Time
 	Until  time.Time
@@ -1862,7 +1863,7 @@ func (j Journal) State() State {
 				Text: e.Text, Summary: e.Summary, Structured: e.Structured, At: e.At,
 			})
 		case TypeSpawnHeld:
-			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Detail: e.Detail, At: e.At})
+			st.SpawnHolds = append(st.SpawnHolds, SpawnHold{Step: e.Step, Parent: e.Parent, Role: e.Role, Detail: e.Detail, At: e.At})
 		case TypeSpawn:
 			st.addSession(e.Step, e.Session)
 			st.Spawns = append(st.Spawns, Spawn{Step: e.Step, Parent: e.Parent, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Model: e.Model, NoWait: e.NoWait})

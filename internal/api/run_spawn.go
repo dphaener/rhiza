@@ -5,7 +5,8 @@ package api
 // process, never the daemon's; the child is started as any run session is
 // (through the run's agent adapter and permission mode), is journaled as a
 // child of the calling step, and counts against no rhiza.daemon.maxRuns: only
-// a usage hold or the machine load hold makes the spawn wait. The child ends
+// a hold in the daemon's last saved state (usage, load-high, memory-low,
+// disk-low or tmp-low; see spawnHoldDetail) makes the spawn wait. The child ends
 // when it says done (rhiza session done) or its process exits, whichever
 // comes first; a child that said done has its Rex pane closed by the spawn
 // itself, so its agent exits with or without a daemon. With --no-wait the
@@ -29,7 +30,7 @@ import (
 func init() {
 	register(Operation{
 		Name:     "run.spawn",
-		Summary:  "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started",
+		Summary:  "Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage, load, memory, disk or temp-space hold is on) and print its outcome, or with --no-wait return once it is started",
 		Write:    true,
 		Request:  reflect.TypeFor[RunSpawnRequest](),
 		Response: reflect.TypeFor[RunSpawnResponse](),
@@ -66,7 +67,7 @@ type RunSpawnResponse struct {
 	Check   string `json:"check,omitempty" desc:"The review check it worked on, its RHIZA_CHECK"`
 	Cycle   int    `json:"cycle,omitempty" desc:"Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges"`
 	Brief   string `json:"brief,omitempty" desc:"The child's brief.md, an absolute path"`
-	Held    bool   `json:"held,omitempty" desc:"True if the spawn waited on a usage or machine hold before it started the child"`
+	Held    bool   `json:"held,omitempty" desc:"True if the spawn waited on a usage, load, memory, disk or temp-space hold before it started the child"`
 	Outcome string `json:"outcome,omitempty" enum:"pass,fail" desc:"pass when the child said done (rhiza session done) or its agent exited 0, else fail; absent under --no-wait"`
 	Detail  string `json:"detail,omitempty" desc:"said done, the child's exit, or why it failed; absent under --no-wait"`
 	NoWait  bool   `json:"no_wait,omitempty" desc:"True if the spawn returned once the child started (--no-wait), without its outcome"`
@@ -164,7 +165,8 @@ func (sp spawner) spawn(r RunSpawnRequest) (RunSpawnResponse, error) {
 		return resp, nil
 	}
 
-	// Wait while a hold is on, journaled once per wait.
+	// Wait while the daemon's saved state holds new starts, journaled once
+	// per wait with the child's role.
 	rs := rr.store
 	for held := false; ; held = true {
 		why := spawnHoldDetail(ctx, common)

@@ -1886,7 +1886,7 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run spawn
 
-Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started.
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage, load, memory, disk or temp-space hold is on) and print its outcome, or with --no-wait return once it is started.
 
 ```
 rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>] [--no-wait]
@@ -1910,7 +1910,7 @@ Output (`--json` fields):
 - `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
 - `detail` (string): said done, the child's exit, or why it failed; absent under --no-wait
 - `dry_run` (boolean): True if nothing was started or journaled
-- `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
+- `held` (boolean): True if the spawn waited on a usage, load, memory, disk or temp-space hold before it started the child
 - `leaf` (string): The leaf it worked on
 - `no_wait` (boolean): True if the spawn returned once the child started (--no-wait), without its outcome
 - `outcome` (string): pass when the child said done (rhiza session done) or its agent exited 0, else fail; absent under --no-wait

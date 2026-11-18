@@ -404,6 +404,97 @@ func TestRunSpawn(t *testing.T) {
 	})
 }
 
+// A spawn waits while the daemon's saved state holds new starts for any
+// pre-start check: memory-low, tmp-low or disk-low. The hold clears at the
+// ctx sleep's second call; until then no child starts, and the wait is one
+// spawn-held entry with the child's role and a detail naming the reading
+// and the limit, released in run state once the child starts. No hold, no
+// entry.
+func TestRunSpawnHolds(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name  string
+		state func(now time.Time) daemon.State
+		want  []string
+	}{
+		{"MemoryLow", func(now time.Time) daemon.State {
+			return daemon.State{MachineHold: &daemon.MachineHold{Since: now, Reason: daemon.SkipMemoryLow, Detail: "512.0 MiB available, under the minimum of 1.0 GiB"}}
+		}, []string{"memory-low", "512.0 MiB available", "minimum of 1.0 GiB"}},
+		{"TmpLow", func(now time.Time) daemon.State {
+			return daemon.State{TmpLow: &daemon.DiskLow{Since: now, Free: 1 << 20, Min: 2 << 30}}
+		}, []string{"tmp-low", "1.0 MiB free in the temp directory", "minimum of 2.0 GiB"}},
+		{"DiskLow", func(now time.Time) daemon.State {
+			return daemon.State{DiskLow: &daemon.DiskLow{Since: now, Free: 3 << 20, Min: 5 << 30}}
+		}, []string{"disk-low", "3.0 MiB free", "minimum of 5.0 GiB"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			s := newSpawnFixture(t)
+			write := func(st daemon.State) {
+				if err := daemon.WriteState(s.f.common, st); err != nil {
+					t.Fatal(err)
+				}
+			}
+			write(c.state(s.f.ctx.Now()))
+			s.onSleep = func() {
+				if len(s.reqs) != 0 {
+					t.Error("a child started while the hold was on")
+				}
+				if s.slept == 2 {
+					write(daemon.State{})
+				}
+			}
+			resp, err := s.sp.spawn(s.req())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Held || resp.Outcome != "pass" || s.slept != 2 || len(s.reqs) != 1 {
+				t.Fatalf("response %+v, slept %d, starts %d", resp, s.slept, len(s.reqs))
+			}
+			j, err := s.store.Read("R1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			var held []run.Entry
+			for _, e := range j.Entries {
+				if e.Type == run.TypeSpawnHeld {
+					held = append(held, e)
+				}
+			}
+			if len(held) != 1 || held[0].Role != "verifier" {
+				t.Fatalf("spawn-held entries %+v", held)
+			}
+			for _, w := range c.want {
+				if !strings.Contains(held[0].Detail, w) {
+					t.Errorf("detail %q lacks %q", held[0].Detail, w)
+				}
+			}
+			holds := j.State().SpawnHolds
+			if len(holds) != 1 || holds[0].Held() || holds[0].Role != "verifier" || holds[0].Detail != held[0].Detail {
+				t.Errorf("run state holds %+v", holds)
+			}
+			if sp := j.State().Spawns; len(sp) != 1 || sp[0].Session != "child-1" {
+				t.Errorf("spawns %+v", sp)
+			}
+		})
+	}
+
+	t.Run("NoHold", func(t *testing.T) {
+		t.Parallel()
+		s := newSpawnFixture(t)
+		if err := daemon.WriteState(s.f.common, daemon.State{}); err != nil {
+			t.Fatal(err)
+		}
+		resp, err := s.sp.spawn(s.req())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if resp.Held || s.slept != 0 || len(s.state(t).SpawnHolds) != 0 {
+			t.Fatalf("response %+v, slept %d, holds %+v", resp, s.slept, s.state(t).SpawnHolds)
+		}
+	})
+}
+
 // In a conductor run's conduct step (declaring checks plan, code and qa) a
 // check-plan child gets check plan and a cycle, so its RHIZA_CHECK and
 // RHIZA_CYCLE are set; a critic names its check with --check; a --check
