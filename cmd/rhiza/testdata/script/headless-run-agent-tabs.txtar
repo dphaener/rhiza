@@ -10,6 +10,11 @@
 # The fake rex logs each call to rex.log, numbering new blocks b1, b2, ...
 # and runs the pane's command in the background. The fake claude commits
 # a builder's leaf and records a verifier's Evidence.
+#
+# Both builders share the run's worktree, so one builder's git add or
+# commit can find index.lock held by its sibling or by the runner's own
+# commit (git fails at once on a held lock). The fake builder retries its
+# add and commit with short sleeps, about 5 s in all, before it fails.
 
 chmod 755 bin/rex
 chmod 755 bin/claude
@@ -139,9 +144,13 @@ echo "{\"window_id\":\"window:w$n\",\"block_ids\":[\"block:b$n\"]}"
 #!/bin/sh
 if [ "$RHIZA_ROLE" = builder ]; then
 	echo "$RHIZA_LEAF" > "$RHIZA_LEAF.txt"
-	git add "$RHIZA_LEAF.txt"
-	git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" || exit 1
-	exit 0
+	for i in $(seq 1 50); do
+		git add "$RHIZA_LEAF.txt" &&
+			git commit -q -m "build $RHIZA_LEAF" -m "Leaf: $RHIZA_LEAF" -- "$RHIZA_LEAF.txt" &&
+			exit 0
+		sleep 0.1
+	done
+	exit 1
 fi
 rhiza add evidence "$RHIZA_LEAF-ok" --field "statement=$RHIZA_LEAF works" --field result=PASS --change "$RHIZA_CHANGE" || exit 1
 rhiza link "$RHIZA_LEAF-ok" verifies "$RHIZA_LEAF" --change "$RHIZA_CHANGE" || exit 1
