@@ -61,15 +61,20 @@ func whatIfLayer(b *builder, sets []changeset.ChangeSet, cs id.ID) {
 		b.problems = append(b.problems, Problem{ChangeSet: cs,
 			Err: fmt.Errorf("%w: change set %s is %q, not draft, proposed or accepted", ErrState, cs, sets[i].State)})
 	default:
-		deps := changeset.Closure(sets, cs)
+		// One analysis answers Closure and Revised, which would each work
+		// out the landed links and the ops by change set again.
+		a := changeset.Analyze(sets)
+		deps := a.Closure(cs)
 		var top []changeset.ChangeSet
 		for _, s := range sets {
-			if s.ID == cs || slices.Contains(deps, s.ID) {
+			if s.ID == cs {
+				top = append(top, s)
+			} else if _, ok := slices.BinarySearchFunc(deps, s.ID, id.Compare); ok {
 				top = append(top, s)
 			}
 		}
 		layer(b, top)
-		for _, r := range changeset.Revised(sets, cs) {
+		for _, r := range a.Revised(cs) {
 			b.problems = append(b.problems, Problem{ChangeSet: cs, Op: r.Op, Err: revisedErr(r)})
 		}
 	}

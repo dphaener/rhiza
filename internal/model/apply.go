@@ -153,28 +153,37 @@ func (b *builder) finishModel(clone bool) (Model, []Problem) {
 		kind   op.Kind
 		handle string
 	}
-	// first holds the first node seen at each place, and groups every node
-	// of a place that more than one holds.
-	first := make(map[place]id.ID, len(b.m.nodes))
-	groups := map[place][]id.ID{}
+	// Two nodes share a place only when they share a handle, so the nodes
+	// are first keyed by handle alone, which is cheaper to hash than a
+	// place; only the handles more than one node holds are grouped by
+	// place. first holds the first node seen with each handle, and more
+	// every node of a handle that more than one holds.
+	first := make(map[string]id.ID, len(b.m.nodes))
+	more := map[string][]id.ID{}
 	for k, r := range b.m.nodes {
-		n := r.v
-		if n.Retired {
+		if r.v.Retired {
 			continue
 		}
-		p := place{parent: n.Parent, handle: n.Handle}
-		if !op.HasParent(n.Kind) {
-			p = place{kind: n.Kind, handle: n.Handle}
-		}
-		f, ok := first[p]
+		f, ok := first[r.v.Handle]
 		if !ok {
-			first[p] = k
+			first[r.v.Handle] = k
 			continue
 		}
-		if groups[p] == nil {
-			groups[p] = []id.ID{f}
+		if more[r.v.Handle] == nil {
+			more[r.v.Handle] = []id.ID{f}
 		}
-		groups[p] = append(groups[p], k)
+		more[r.v.Handle] = append(more[r.v.Handle], k)
+	}
+	groups := map[place][]id.ID{}
+	for _, ns := range more {
+		for _, k := range ns {
+			n := &b.m.nodes[k].v
+			p := place{parent: n.Parent, handle: n.Handle}
+			if !op.HasParent(n.Kind) {
+				p = place{kind: n.Kind, handle: n.Handle}
+			}
+			groups[p] = append(groups[p], k)
+		}
 	}
 	var ps []Problem
 	for i, p := range b.problems {
