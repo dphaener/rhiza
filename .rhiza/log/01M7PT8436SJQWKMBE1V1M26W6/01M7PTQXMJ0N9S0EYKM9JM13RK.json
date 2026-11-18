@@ -1,0 +1,32 @@
+{
+  "actor": "01M7PTQ9EF3GSTQJJ2KTNVFG1C",
+  "after": [
+    "01M7PTHJHRTJQ52RCD7V14HCX1"
+  ],
+  "at": "2026-11-18T08:00:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "Each listed script passes with go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-.*|plan-workflow-pr|bugfix-workflow-autonomous|inbox-signoff|ship-change-one-ci)$'; (failure case) one of them (e.g. run-ship-change.txtar) gains or keeps an assertion that its fake check's clean round without evidence, run once by hand in the script, fails with stderr naming the uncovered leaf before the covered round is recorded.",
+          "files": "cmd/rhiza/testdata/script/run-ship-rerun-pass.txtar, cmd/rhiza/testdata/script/run-ship-ci-fix.txtar, cmd/rhiza/testdata/script/run-ship-model-conflict.txtar, cmd/rhiza/testdata/script/run-ship-merge-main-moved.txtar, cmd/rhiza/testdata/script/plan-workflow-pr.txtar, cmd/rhiza/testdata/script/bugfix-workflow-autonomous.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch-resume.txtar, cmd/rhiza/testdata/script/run-ship-land-conflict.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch.txtar, cmd/rhiza/testdata/script/run-ship-change-rebase.txtar, cmd/rhiza/testdata/script/run-ship-deploy-timeout.txtar, cmd/rhiza/testdata/script/run-ship-merge-draft.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch-fail.txtar, cmd/rhiza/testdata/script/inbox-signoff.txtar, cmd/rhiza/testdata/script/run-ship-change.txtar, cmd/rhiza/testdata/script/run-ship-conflict-fix-more.txtar, cmd/rhiza/testdata/script/run-ship-signoff.txtar, cmd/rhiza/testdata/script/run-ship-conflict-fix.txtar, cmd/rhiza/testdata/script/run-ship-change-fail.txtar, cmd/rhiza/testdata/script/run-ship-ci-lint-fix.txtar, cmd/rhiza/testdata/script/run-ship-rerun-fail.txtar, cmd/rhiza/testdata/script/run-ship-deploy-check.txtar, cmd/rhiza/testdata/script/ship-change-one-ci.txtar",
+          "must_not": "Change Go code; drop or weaken an existing assertion of a script; touch scripts of classic checks steps or plan review.",
+          "statement": "The cmd/rhiza testscripts whose fake conductor checks record rounds with rhiza run findings --check in a conductor step pass an evidence line for every leaf their round does not name in a finding, so they pass under the leaf-coverage refusal."
+        },
+        "handle": "conduct-fixtures-cover-leaves",
+        "id": "01M7PTHCV4EMFSDRTDC90TJ4QP",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PTQXMJ0N9S0EYKM9JM13RK",
+  "type": "ops",
+  "v": 1
+}

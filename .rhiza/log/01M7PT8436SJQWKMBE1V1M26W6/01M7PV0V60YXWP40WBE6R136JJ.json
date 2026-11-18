@@ -1,0 +1,32 @@
+{
+  "actor": "01M7PTYEKFR3M156AWERP5H08Y",
+  "after": [
+    "01M7PTQXMJ0N9S0EYKM9JM13RK"
+  ],
+  "at": "2026-11-18T08:05:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "ship-change-one-ci.txtar passes with go test -trimpath ./cmd/rhiza -run 'TestScripts/ship-change-one-ci$', its fake claude in the built-in ship-change's conduct step recording each plan, code and qa round with an evidence line for the leaf first; (failure case) the script asserts that a clean round without evidence for first, recorded by hand in the conduct step before the covered round, fails with stderr naming the uncovered leaf first.",
+          "files": "cmd/rhiza/testdata/script/ship-change-one-ci.txtar",
+          "must_not": "Change Go code; drop or weaken an existing assertion of a script; touch scripts of classic checks steps or plan review.",
+          "statement": "The cmd/rhiza testscripts whose fake conductor checks record rounds with rhiza run findings --check in a conductor step pass an evidence line for every leaf their round does not name in a finding, so they pass under the leaf-coverage refusal."
+        },
+        "handle": "conduct-fixtures-cover-leaves",
+        "id": "01M7PTHCV4EMFSDRTDC90TJ4QP",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PV0V60YXWP40WBE6R136JJ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,30 @@
+{
+  "actor": "01M7PT8JQZBMPJEVBEYTG1G58H",
+  "after": [
+    "01M7PT8436SJQWKMBE1VQXPFPR"
+  ],
+  "at": "2026-11-18T07:54:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "e50b77ed-cc5e-4e7f-950d-01a1eda447fd",
+          "statement": "Change set 'Fix Shallow checks pass': how should `rhiza run findings --check` refuse a shallow empty round in a conductor step (an agent step declaring checks; classic checks steps unchanged)? Check names are free workflow config (plan/code/qa are only ship-change's names)."
+        },
+        "handle": "question-e50b77ed-1",
+        "id": "01M7PTC9TPNZFD522P4EF5K3B2",
+        "key": null,
+        "kind": "question",
+        "node": "01M7PTC9TPNZFD522P4DG5W7W7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PTC9TPNZFD522P4HP750CC",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,148 @@
+{
+  "actor": "01M7PT8JQZBMPJEVBEYTG1G58H",
+  "after": [
+    "01M7PTHBVMTKFFTQTYNV9KBAC1"
+  ],
+  "at": "2026-11-18T07:56:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... ./internal/run/... passes with new tests in internal/api/run_review_test.go: in a conductor step a round with one evidence line per leaf is journaled with its lines on the round; a round whose only finding names leaf A and evidence covers leaf B is accepted; a change set with no leaves accepts {\"findings\":[]}; at a classic checks step {\"findings\":[]} is still accepted; (failure case) in a conductor step {\"findings\":[]} with two leaves is a usage error naming both leaves with Next pointing at the run.findings schema and the journal holds no new entry; (failure case) an evidence line whose leaf is not a leaf of the change set, or whose line is blank, is a usage error. go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it with -update, and make self-check passes (docs/reference/cli.md regenerated).",
+          "files": "internal/api/run_review.go, internal/api/run_review_test.go, internal/api/run_round_recorded_test.go, internal/api/session_done_check_test.go, internal/api/skill_check_test.go, internal/run/journal.go, internal/run/journal_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/reference/cli.md",
+          "must_not": "Key any rule on a check's name (plan, code, qa); add a time or duration heuristic; change plan-review rounds, --leaf verifier findings or classic checks steps beyond accepting an optional evidence list; change rhiza run review-check; edit cmd/rhiza testscripts other than describe-golden.txtar.",
+          "statement": "In a conductor step (workflow.Step.Conducts()), rhiza run findings --check takes an optional evidence list ({leaf, line}) beside findings and refuses, journaling nothing, a round that leaves any live leaf of the run's change set uncovered (no finding naming it and no non-blank evidence line for it), naming each uncovered leaf; evidence lines are journaled on the findings entry and round."
+        },
+        "handle": "check-round-leaf-coverage",
+        "id": "01M7PTHCNE0M4REEQY58YMF6VF",
+        "key": "zzzr",
+        "kind": "capability",
+        "node": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "id": "01M7PTHCPDDWF3ND9BR1J9HR7E",
+        "link": "01M7PTHCPDDWF3ND9BR04Z59FY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTF00HA0WBMQ27P1K6W4BT",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'RunStatus|CheckRound' passes with a new test in internal/api/run_test.go: a conductor run whose check journaled a round with two evidence lines shows both, with leaf handles, in run status --json and in the human output under that round; a round with no evidence has no evidence key in --json and prints no evidence lines; (failure case) a round with findings and no evidence lines prints its findings exactly as before. go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it with -update, and make self-check passes.",
+          "files": "internal/api/run.go, internal/api/run_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/reference/cli.md",
+          "must_not": "Change how findings, verdicts or plan-review rounds are shown; change run findings' validation.",
+          "statement": "rhiza run status shows each review check round's evidence lines: --json gives every RunCheckRound an evidence array of {leaf, leaf_handle, line}, absent when the round has none, and the human output lists them under the round with the leaf's handle."
+        },
+        "handle": "check-round-evidence-status",
+        "id": "01M7PTHCQDJX30S30ZZTXTANMN",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "id": "01M7PTHCRHVPR6J59JWY8F7F44",
+        "link": "01M7PTHCRHVPR6J59JWWVCVR81",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTF00HA0WBMQ27P1K6W4BT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "id": "01M7PTHCSP4DPBYZV86F8FQDAJ",
+        "link": "01M7PTHCSP4DPBYZV86DG1ZRB1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Each listed script passes with go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-ship-.*|plan-workflow-pr|bugfix-workflow-autonomous|inbox-signoff)$'; (failure case) one of them (e.g. run-ship-change.txtar) gains or keeps an assertion that its fake check's clean round without evidence, run once by hand in the script, fails with stderr naming the uncovered leaf before the covered round is recorded.",
+          "files": "cmd/rhiza/testdata/script/run-ship-rerun-pass.txtar, cmd/rhiza/testdata/script/run-ship-ci-fix.txtar, cmd/rhiza/testdata/script/run-ship-model-conflict.txtar, cmd/rhiza/testdata/script/run-ship-merge-main-moved.txtar, cmd/rhiza/testdata/script/plan-workflow-pr.txtar, cmd/rhiza/testdata/script/bugfix-workflow-autonomous.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch-resume.txtar, cmd/rhiza/testdata/script/run-ship-land-conflict.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch.txtar, cmd/rhiza/testdata/script/run-ship-change-rebase.txtar, cmd/rhiza/testdata/script/run-ship-deploy-timeout.txtar, cmd/rhiza/testdata/script/run-ship-merge-draft.txtar, cmd/rhiza/testdata/script/run-ship-main-dispatch-fail.txtar, cmd/rhiza/testdata/script/inbox-signoff.txtar, cmd/rhiza/testdata/script/run-ship-change.txtar, cmd/rhiza/testdata/script/run-ship-conflict-fix-more.txtar, cmd/rhiza/testdata/script/run-ship-signoff.txtar, cmd/rhiza/testdata/script/run-ship-conflict-fix.txtar, cmd/rhiza/testdata/script/run-ship-change-fail.txtar, cmd/rhiza/testdata/script/run-ship-ci-lint-fix.txtar, cmd/rhiza/testdata/script/run-ship-rerun-fail.txtar, cmd/rhiza/testdata/script/run-ship-deploy-check.txtar",
+          "must_not": "Change Go code; drop or weaken an existing assertion of a script; touch scripts of classic checks steps or plan review.",
+          "statement": "The cmd/rhiza testscripts whose fake conductor checks record rounds with rhiza run findings --check in a conductor step pass an evidence line for every leaf their round does not name in a finding, so they pass under the leaf-coverage refusal."
+        },
+        "handle": "conduct-fixtures-cover-leaves",
+        "id": "01M7PTHCV4EMFSDRTDC90TJ4QP",
+        "key": "zzzy",
+        "kind": "capability",
+        "node": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "id": "01M7PTHCWVJF10PPG7RJVK4AF3",
+        "link": "01M7PTHCWVJF10PPG7RJ8TXB5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTF00HA0WBMQ27P1K6W4BT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "id": "01M7PTHCXWQDV2P8Y6P958GKA6",
+        "link": "01M7PTHCXWQDV2P8Y6P6P52C72",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with new assertions in check_plan_test.go, check_code_test.go, check_qa_test.go and check_compliance_test.go that each guide's run findings --check example carries an \"evidence\" list with leaf and line, says one line per acceptance point, and says an uncovered leaf is refused; check_qa_test.go still asserts the Evidence node apply example.",
+          "failure_waiver": "Guide text only: no input path to refuse; the refusal itself is tested in check-round-leaf-coverage.",
+          "files": "internal/guide/text/check-plan.md, internal/guide/text/check-code.md, internal/guide/text/check-qa.md, internal/guide/text/check-compliance.md, internal/guide/check_plan_test.go, internal/guide/check_code_test.go, internal/guide/check_qa_test.go, internal/guide/check_compliance_test.go",
+          "must_not": "Change check-quality or check-model; change Go code outside internal/guide tests; drop the QA Evidence node instruction.",
+          "statement": "The check-plan, check-code, check-qa and check-compliance guides show the findings file with an evidence list and tell the check to write one evidence line per acceptance point of each leaf (what it ran or read, with the result), that a round leaving a leaf uncovered is refused in a conductor run, and check-qa still has the QA check write Evidence nodes on each leaf."
+        },
+        "handle": "check-guides-evidence-lines",
+        "id": "01M7PTHCYQHPSDSYPH4GSZHYXR",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "id": "01M7PTHCZW79ACAWZQYWNG0GA2",
+        "link": "01M7PTHCZW79ACAWZQYV2BDCQJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTF00HA0WBMQ27P1K6W4BT",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "id": "01M7PTHD0TPWP7W610FQ8X541M",
+        "link": "01M7PTHD0TPWP7W610FPSM2KCW",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PTHD1WFE53Y4Z9GSA6HBRW",
+  "type": "ops",
+  "v": 1
+}

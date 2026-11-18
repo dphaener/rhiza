@@ -1,0 +1,61 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7PV0V60YXWP40WBE6R136JJ"
+  ],
+  "at": "2026-11-18T08:08:21Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f1 (contradiction on check-guides-evidence-lines): The leaf (and Decision shallow-round-needs-leaf-coverage) treat check-compliance as guidance used by conductors, but internal/guide/text/conduct.md:38 spawns only --role check-plan, check-code and check-qa; check-compliance is the classic review workflow's check (kind checks), which the Decision leaves unchanged. Telling the compliance check that an uncovered leaf is refused in a conductor run describes a refusal it never meets; drop check-compliance.md and check_compliance_test.go from the leaf, or say why a conductor would run it. The critic confirmed it: Real: internal/guide/text/conduct.md:38 has the conductor spawn only --role check-plan, check-code and check-qa, and review.md:7-13 lists check-compliance as the classic workflows' check (docs-review.toml declares it under a kind = \"checks\" step). The Decision keeps classic checks steps unchanged with evidence optional, so a compliance check never meets the uncovered-leaf refusal; the leaf telling it that such a round is refused in a conductor run, and the Decision's 'check-compliance guidance used by conductors', contradict the code. Major for a contradiction stands. How should it be settled?"
+        },
+        "handle": "review-01m7pt83txevmbecpw6e6ee114-r3-f1",
+        "id": "01M7PV67Z9271HEMW6WWBFHBCQ",
+        "key": null,
+        "kind": "question",
+        "node": "01M7PV67Z9271HEMW6WVBX719P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PV67Z9271HEMW6WVBX719P",
+        "id": "01M7PV680BF2M3CDG4X3D17322",
+        "link": "01M7PV680BF2M3CDG4X21EDSKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "type": "blocks"
+      },
+      {
+        "fields": {
+          "statement": "Plan review round 3 left finding f2 (no-failure-case on check-round-evidence-status): The acceptance's '(failure case)' is 'a round with findings and no evidence lines prints its findings exactly as before', a regression check of the happy display path, not a failure path of the leaf. run status showing evidence has no input it refuses; the leaf needs either a real failure path (e.g. an evidence line naming a leaf no longer in the change set still prints with its ID and no handle, not a crash) or a failure_waiver giving that reason. The critic confirmed it: Real: the leaf's '(failure case)' is a round with findings and no evidence printing as before, which is the absent-data display path (already covered by its own 'no evidence key' clause), not a failure path of run status's evidence display; the leaf has no failure_waiver. A real failure path exists to test (an evidence line whose leaf no longer resolves, e.g. a leaf retired after the round, must still print with its ID rather than fail), so either that case or a waiver is needed. Major for no-failure-case stands. How should it be settled?"
+        },
+        "handle": "review-01m7pt83txevmbecpw6e6ee114-r3-f2",
+        "id": "01M7PV681EVKB1B7PMSFFBS7C8",
+        "key": null,
+        "kind": "question",
+        "node": "01M7PV681EVKB1B7PMSEDR9K20",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PV681EVKB1B7PMSEDR9K20",
+        "id": "01M7PV682BQZGKGAR657M2FY0R",
+        "link": "01M7PV682BQZGKGAR656VHVRNM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "type": "blocks"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PV685HK793KS5X7K7C3W4Q",
+  "type": "ops",
+  "v": 1
+}
