@@ -1,0 +1,85 @@
+{
+  "actor": "01M7Q2QV1961ZSVT9F1F4GRNX5",
+  "after": [
+    "01M7Q2VE8REDFBAP7HDRB8ZFZF"
+  ],
+  "at": "2026-11-18T10:22:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "decision": null,
+        "from": "01M7Q2Q68JE50NCRKGCT5Z3APZ",
+        "id": "01M7Q2VZRZ833434J9BAEYEZMT",
+        "link": "01M7Q2VZRZ833434J9B92MNKS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVQ8DPH7H40EB1HR95HTFA",
+        "type": "serves"
+      },
+      {
+        "fields": {
+          "statement": "Close-out and the model-PR merge update the main checkout with git fetch origin main followed by git merge --ff-only refs/remotes/origin/main, through one shared helper, and never with git pull, so a concurrent fetch rewriting FETCH_HEAD and the user's pull.rebase or pull.ff settings cannot fail the update. Only the git commands change: the step is still refused when main is not on main or has tracked changes, and a failure is still recorded as main-stale.",
+          "wording": "the planner's design from its research, in an autonomous plan run with no owner present"
+        },
+        "handle": "main-fast-forward-by-ref",
+        "id": "01M7Q2VZTECZATGK3FTXP41JJA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7Q2VZTECZATGK3FTWECSN15",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q2VZTECZATGK3FTWECSN15",
+        "id": "01M7Q2VZW1F6ZPCT1E0MVS3XES",
+        "link": "01M7Q2VZW1F6ZPCT1E0MCD02XD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q2VE7VSZF9ABDDTATTW968",
+        "type": "derived-from"
+      },
+      {
+        "decision": null,
+        "from": "01M7Q2VZTECZATGK3FTWECSN15",
+        "id": "01M7Q2VZX102YG9ND9RM9AJY96",
+        "link": "01M7Q2VZX102YG9ND9RHCEJW03",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5WJJH2DGK6848BWH1S5GD3A",
+        "type": "supersedes"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'TestShip|TestModelPR' passes, with: (1) the close-out unit tests in internal/api/ship_test.go (the fakes now answering git fetch origin main and git merge --ff-only refs/remotes/origin/main in place of git pull --ff-only origin main) asserting that a successful close-out runs that fetch and that merge in the main checkout, runs no git command whose first argument is pull, and reports update-main done; (2) (failure case) a close-out whose git merge --ff-only refs/remotes/origin/main fails reports update-main failed, main_updated false, a detail starting 'main was not updated: ' with git's error, and records main-stale; (3) (failure case) a close-out whose git fetch origin main fails does the same and runs no merge; (4) a test in internal/api/model_prs_test.go where a model PR merges asserts the main checkout is updated by the same fetch and merge, with no git pull, and (failure case) a failing merge records main-stale. go test -trimpath ./cmd/rhiza -run 'TestScripts/(ship-close-out-forget-retry|ship-close-out-log-copies)' passes, and grep -rn '\"pull\"' internal/api/*.go | grep -v _test.go prints nothing.",
+          "files": "internal/api/ship_close.go, internal/api/model_prs.go, internal/api/ship_test.go, internal/api/model_prs_test.go",
+          "must_not": "Change when the update is refused (shipMainBlocked) or what dropIncomingLogCopies drops; change the main-stale record, the update-main step's name or results, or the ShipCloseOutResponse JSON shape; rebase, reset or force main; retry in a loop; touch the worktree fetches in ship.go, ship_rebase.go or watchdog_noci.go, or the daemon self-update.",
+          "statement": "ship close-out and pullMainAfterModelMerge fast-forward the main checkout through one helper that runs git fetch origin main and then git merge --ff-only refs/remotes/origin/main, never git pull, so FETCH_HEAD written by a concurrent fetch and a global pull.rebase=true no longer fail the update."
+        },
+        "handle": "main-update-without-pull",
+        "id": "01M7Q2VZY1G17DVAGMK8BMD6SP",
+        "key": "zzzzy",
+        "kind": "capability",
+        "node": "01M7Q2VZY1G17DVAGMK5H1JZ1R",
+        "op": "node.create",
+        "parent": "01M5SWTCBZ9E5DEKJT4EZ8MBX6"
+      },
+      {
+        "decision": null,
+        "from": "01M7Q2VZY1G17DVAGMK5H1JZ1R",
+        "id": "01M7Q2VZYXGR9EY6XAC74NVHYC",
+        "link": "01M7Q2VZYXGR9EY6XAC4CTFGFY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q2VZTECZATGK3FTWECSN15",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7Q2Q68JE50NCRKGCT5Z3APZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q2VZZTGDP7D60JERHWFQXF",
+  "type": "ops",
+  "v": 1
+}
