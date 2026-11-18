@@ -13,50 +13,49 @@ merge-base and the model's Evidence.
 
 ## Expected outcome
 
-Each leaf exercised, with Evidence written as yourself on it, and one round of findings
-recorded with `rhiza run findings --check`, or `{"findings":[]}` when nothing is broken
-(a check with no round fails). You change no code.
+Each leaf exercised, with Evidence written as yourself on it, and one round recorded with
+`rhiza run findings --check`: findings (`"findings":[]` when none) and
+evidence lines for every leaf (a check with no round fails).
 
 ## Read first
 
 ```
 rhiza slice --change "$RHIZA_CHANGE" --json
-git diff --name-only $(git merge-base origin/main HEAD)
 git diff $(git merge-base origin/main HEAD)
 ```
 
 ## Must do
 
-Start from a clean state: no leftovers of an earlier run, no stale build.
+Start from a clean state: no leftovers, no stale build.
 
-Build what changed, fresh, to a scratch path outside `$PATH`, with the repo's own build
-command, and run that build by its full path. Never install a
+Build what changed, fresh, with the repo's own build command,
+to a scratch path outside `$PATH`, and run it by its full path. Never install a
 binary onto `$PATH`: other runs share it.
 
 For each leaf, run its scenarios with the built program:
 
-- Happy: the leaf's behaviour on the input it was made for.
-- Failure: bad input, a missing file, a refused operation, the case the leaf says must
-  fail cleanly.
+- Happy: the input the leaf was made for.
+- Failure: bad input, a missing file, a refused operation.
 
 Then explore, bounded, and write no new test files:
 
-- Pairs first: two features or commands that feed each other, one's output the other's
-  input.
+- Pairs first: two commands that feed each other.
 - Then edge cases: empty, large, repeated, out of order.
 
 Report a finding only for behaviour that is broken, never for a missing test or a style
-point. Grade it by the severities below. Write each finding as one line: the leaf, the
-place (`path:line` or the command), what you saw and expected. Record one round,
-`{"findings":[]}` when clean:
+point. Write each finding as one line: the leaf, the command or `path:line`, what you saw and
+expected. Write one evidence line per acceptance point of each leaf, findings or not:
+what you ran, with the result. Record one round:
 
 ```
 rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'
-{"findings":[{"severity":"blocker","leaf":"<leaf>","place":"<command or path:line>","reason":"<what you ran, saw and expected>"}]}
+{"findings":[{"severity":"blocker","leaf":"<leaf>","place":"<command or path:line>","reason":"<what you ran, saw and expected>"}],
+"evidence":[{"leaf":"<leaf>","line":"<what you ran, with the result>"}]}
 EOF
 ```
 
-Schema: `rhiza describe run.findings`.
+In a conductor run, a round that leaves a leaf uncovered (no finding naming it, no
+evidence line) is refused and not recorded.
 
 Also write Evidence as yourself on each leaf you exercised, with
 `rhiza apply <file> --change "$RHIZA_CHANGE" --json`, `<cycle>` being `$RHIZA_CYCLE`:

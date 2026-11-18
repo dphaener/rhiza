@@ -56,7 +56,12 @@ func TestCheckPlanText(t *testing.T) {
 		"record": {
 			`rhiza run findings --check "$RHIZA_CHECK" - <<'EOF'`,
 			`{"findings":[{"severity":"major","leaf":"<leaf>","place":"path:line","reason":`,
-			`{"findings":[]}`,
+			`"findings":[]`,
+		},
+		"coverage": {
+			"}],\n" + `"evidence":[{"leaf":"<leaf>","line":"<what you ran`,
+			"one evidence line per", "acceptance point of each leaf", "findings or",
+			"In a conductor run, a round that leaves a leaf uncovered (no finding naming it, no\nevidence line) is refused and not recorded",
 		},
 	})
 	if !strings.Contains(sectionOf(c.Body, "## Task"), "Never run `rhiza run status`") {
