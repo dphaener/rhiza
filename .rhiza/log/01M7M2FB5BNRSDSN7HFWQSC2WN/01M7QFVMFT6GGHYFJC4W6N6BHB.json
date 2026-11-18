@@ -1,0 +1,86 @@
+{
+  "actor": "01M7QFM7C200491NHPFZQVTVB5",
+  "after": [
+    "01M7QESX1G9Y0FPWQ33FV1XJJK"
+  ],
+  "at": "2026-11-18T14:09:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build in a scratch root (fake rex running the child in the background): rhiza run spawn --no-wait returned at once with rc 0, session, brief and no_wait:true, no outcome; journal spawn entry no_wait:true, spawn-ended only when the child ended. Missing brief rc 2, failed rex start rc 1 with no spawn entry; the default waiting spawn unchanged (pass (exit 0), no no_wait, no wake). Scoped tests TestRunSpawn, TestSpawn|TestFold, TestScripts/(run-spawn|describe-golden) pass."
+        },
+        "handle": "spawn-no-wait-qa-1",
+        "id": "01M7QFVM8AF1SXGVN7AXBZBQ94",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QFVM8AF1SXGVN7AVCMBF0H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QFVM8AF1SXGVN7AVCMBF0H",
+        "id": "01M7QFVM9AKCQ8KCGKHXNJ41GN",
+        "link": "01M7QFVM9AKCQ8KCGKHVN4BAYS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE202T3TYENJVMH40K1XPT",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build: two no-wait children (exit 1, said done) each got one spawn-ended entry and one wake; the parent's message file names child, role, leaf, outcome, detail and rhiza run status --json; the said-done child's pane closed, the exited child's left open. A working parent got both pointers queued at once; an exited or prompt-less parent's wake failure was logged, not retried, and the run succeeded. A waiting child's end woke no one. TestSpawnWake, TestSpawnResume, TestRunSpawnWake pass."
+        },
+        "handle": "spawn-wake-conductor-qa-1",
+        "id": "01M7QFVMAC94WYEP2R3KQEVHTS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QFVMAC94WYEP2R3FYQRZAJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QFVMAC94WYEP2R3FYQRZAJ",
+        "id": "01M7QFVMBJNS3M97MNWC7PP038",
+        "link": "01M7QFVMBJNS3M97MNWBDGWWB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a fresh build: rhiza guide conduct tells the conductor to spawn with --no-wait, start independent children together, end its turn without sleep or poll and act on each wake-up via rhiza run status --json, keeping the never sleep/poll rule; rhiza guide conduct-roles documents --no-wait, the wake message and the waiting default for other callers. internal/guide tests, TestDocsPrimitives and TestScripts/guide-install pass."
+        },
+        "handle": "conduct-no-wait-guide-qa-1",
+        "id": "01M7QFVMCKP412GQQHEYSQT9CY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QFVMCKP412GQQHEYS3R2ZA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QFVMCKP412GQQHEYS3R2ZA",
+        "id": "01M7QFVMDRRJSYFZPET3MC25XZ",
+        "link": "01M7QFVMDRRJSYFZPET0NE4815",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE205YR8ZF9RC2WQ469440",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M2FB5BNRSDSN7HFWQSC2WN",
+  "for": "01M7QDV2KCTWV1WQYVGM79AZ3Q",
+  "id": "01M7QFVMFT6GGHYFJC4W6N6BHB",
+  "type": "ops",
+  "v": 1
+}

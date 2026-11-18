@@ -1885,10 +1885,10 @@ Exit code: set by the result, besides the shared codes.
 
 ## rhiza run spawn
 
-Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome.
+Start a child session of the run RHIZA_RUN names in the run's worktree, with the brief file given as its brief, wait for it (journaled as held while a usage or machine hold is on) and print its outcome, or with --no-wait return once it is started.
 
 ```
-rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>]
+rhiza run spawn --role <role> --brief <brief> [--leaf <leaf>] [--model <model>] [--check <check>] [--no-wait]
 ```
 
 Appends to the log.
@@ -1900,17 +1900,19 @@ Arguments and flags:
 - `--brief`: A file holding the caller's brief for the child: its brief.md holds the contract section, then this file (required)
 - `--model`: The model the child's agent starts on; default the agent's
 - `--check`: The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role
+- `--no-wait`: Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end; default wait for the child and print its outcome
 
 Output (`--json` fields):
 
 - `brief` (string): The child's brief.md, an absolute path
 - `check` (string): The review check it worked on, its RHIZA_CHECK
 - `cycle` (integer): Its RHIZA_CYCLE: the step's latest cycle, else the check's round it records (a check-<check> role) or judges
-- `detail` (string): said done, the child's exit, or why it failed
+- `detail` (string): said done, the child's exit, or why it failed; absent under --no-wait
 - `dry_run` (boolean): True if nothing was started or journaled
 - `held` (boolean): True if the spawn waited on a usage or machine hold before it started the child
 - `leaf` (string): The leaf it worked on
-- `outcome` (string): pass when the child said done (rhiza session done) or its agent exited 0, else fail
+- `no_wait` (boolean): True if the spawn returned once the child started (--no-wait), without its outcome
+- `outcome` (string): pass when the child said done (rhiza session done) or its agent exited 0, else fail; absent under --no-wait
 - `parent` (string): The calling session
 - `role` (string): The child's role
 - `run` (string): The run's full ID

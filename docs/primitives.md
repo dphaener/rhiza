@@ -42,7 +42,9 @@ rhiza run spawn --role builder --leaf export-csv --brief brief.md
 
 The child starts in the run's worktree through the run's agent adapter and permission mode, with a prompt telling it to read its brief and follow `rhiza guide <role>`. Its `brief.md` is the contract section followed by the file you passed. `--leaf` gives it a leaf to work on, `--model` picks its model and `--check` names the review check it works on (a `check-<name>` role gets that one without the flag). The spawn is journaled as a child of the calling step and doesn't count against `rhiza.daemon.maxRuns`. Only a usage hold or the machine load hold makes it wait, and that wait is journaled too.
 
-The command blocks until the child exits. Its outcome is `pass` when the child exited 0 and `fail` otherwise, and `rhiza run spawn` exits 1 on a fail. A red spawn doesn't hand anything back by itself: the agent that spawned it decides what's next, usually a retry or a fixer. If that agent gives up and its own step fails, the step's `on.fail` takes over.
+By default the command blocks until the child exits. Its outcome is `pass` when the child exited 0 and `fail` otherwise, and `rhiza run spawn` exits 1 on a fail. A red spawn doesn't hand anything back by itself: the agent that spawned it decides what's next, usually a retry or a fixer. If that agent gives up and its own step fails, the step's `on.fail` takes over.
+
+With `--no-wait` the command returns as soon as the child has started, printing its session and no outcome. The run's engine then records the child's end: it closes the child's pane if it said done and sends the parent session a message naming the child, its role, leaf, outcome and detail, pointing at `rhiza run status --json` for the rest. That's how `ship-change`'s conductor works: it spawns with `--no-wait`, starts independent children together, ends its turn and acts on each wake-up instead of sitting in a blocked command. A child's question still goes to the arbiter in a conductor step, so it wakes no one; only the child's end does. The blocking default stays for any other caller.
 
 ## Gate
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QEJF0KXSNCYVKZR67VNMBR",
+  "after": [
+    "01M7QEA6MC4PJPRJFF2SXJJ3J7"
+  ],
+  "at": "2026-11-18T13:48:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At e94526667 re-ran the Checks: block: go test -p 2 -trimpath ./internal/run -run 'TestSpawnWake|TestSpawnResume' (PASS, both TestSpawnWake subtests), go test -p 2 -trimpath ./internal/run (ok), go test -p 2 -trimpath ./internal/api -run 'TestRunSpawnWake|TestRunSpawn' (TestRunSpawnWake SaidDone/Exit1 PASS), go vet ./internal/run ./internal/api, rhiza ship generate, rhiza render: all exit 0. Diff read: engine.reconcileSpawns calls the optional SpawnWaker only when AppendSpawnEnded added the entry and the spawn is NoWait, so one wake per child, none for a waiting child, a wake error is only logged; TestSpawnWake covers said-done and exit-1 children across repeated polls and a driver restart, a waiting child waking no one, and an erroring wake logged once with its spawn-ended entry kept. stepRunner.WakeParent closes a said-done child's pane via closeSessionPane and messages the parent (queued while working, typed with a 30s timeout when idle) naming child, role, leaf, outcome, detail and rhiza run status; TestRunSpawnWake checks the pane close, the untouched pane of an exited child, the message file under .rhiza/local/messages/parent-1 and the queued pointer. Only the leaf's four files plus its model log and render changed; no stubs or TODOs."
+        },
+        "handle": "spawn-wake-conductor-verified",
+        "id": "01M7QEM6AEJ14K8337XSGHK941",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QEM6AEJ14K8337XS1MKNZY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QEM6AEJ14K8337XS1MKNZY",
+        "id": "01M7QEM6BM99RVYW977Q53VV0X",
+        "link": "01M7QEM6BM99RVYW977P3Q2FBJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7M2FB5BNRSDSN7HFWQSC2WN",
+  "for": "01M7QDV2KCTWV1WQYVGM79AZ3Q",
+  "id": "01M7QEM6D3MQ1FK3V8WV6EYWPZ",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,112 @@
+{
+  "actor": "01M7QDV2KCTWV1WQYVGM79AZ3Q",
+  "after": [
+    "01M7QE17YQ47JZ1VR49XE93NAD"
+  ],
+  "at": "2026-11-18T13:38:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestRunSpawn passes with a new case: a --no-wait spawn returns while its child still runs, with the session set, no outcome or detail, exit code 0, a spawn entry marked no-wait and no spawn-ended entry journaled, and the child's pane left open; the existing waiting cases still pass unchanged (their spawn entries carry no no-wait mark); (failure case) a --no-wait spawn whose child cannot be started returns the start error and journals no spawn entry. go test -trimpath ./internal/run -run 'TestSpawn|TestFold' shows the no-wait mark folded onto State.Spawns. go test -trimpath ./cmd/rhiza -run 'TestScripts/(run-spawn|describe-golden)' passes, describe-golden regenerated with -update.",
+          "files": "internal/api/run_spawn.go, internal/api/run_spawn_test.go, internal/run/journal.go, cmd/rhiza/testdata/script/run-spawn.txtar, cmd/rhiza/testdata/script/describe-golden.txtar, docs/reference/cli.md",
+          "must_not": "Change the default (waiting) behaviour, output or exit codes of rhiza run spawn; journal a spawn-ended entry or close the child's pane from a --no-wait spawn; send any message",
+          "statement": "rhiza run spawn --no-wait returns once the child session is started and its spawn entry is journaled, the entry marked no-wait (a new journal field, folded onto run.Spawn), its response carrying the child's session and brief and no outcome, exit 0; the hold wait before the start is unchanged, and without --no-wait spawn waits and prints the outcome exactly as today."
+        },
+        "handle": "spawn-no-wait",
+        "id": "01M7QE202T3TYENJVMH599WCTS",
+        "key": "zzzzzw",
+        "kind": "capability",
+        "node": "01M7QE202T3TYENJVMH40K1XPT",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7QE202T3TYENJVMH40K1XPT",
+        "id": "01M7QE203FKKAH8G41M2S3S1SQ",
+        "link": "01M7QE203FKKAH8G41M20QAKR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QDZZMB67DX13M3TJ8Y67BD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run -run 'TestSpawnWake|TestSpawnResume' passes: a no-wait child that said done and one that exited 1 each produce exactly one wake call to the parent with the child's role, leaf, outcome and detail, also when the poll repeats and after a driver restart; (failure case) a waiting (not no-wait) child's end recorded by the engine wakes no one, and a wake that returns an error is logged, leaves the spawn-ended entry in place and is not retried. go test -trimpath ./internal/api -run 'TestRunSpawnWake|TestRunSpawn' passes: the stepRunner's wake closes a said-done child's pane and writes a message file under the parent's .rhiza/local/messages folder naming the child, role, leaf and outcome, and leaves the pane of a child that exited alone.",
+          "files": "internal/run/engine.go, internal/run/spawnresume_test.go, internal/api/run_lost.go, internal/api/run_spawn_test.go",
+          "must_not": "Wake the conductor for a child's question or other block (askChildren and the arbiter keep those); message a parent twice for one child; let a wake failure fail the step or the run; block the engine's poll for longer than a short message timeout (session.message queues the pointer while the parent works)",
+          "statement": "When the run engine's reconcileSpawns journals the end of a no-wait spawned child (AppendSpawnEnded added it, so once per child), it closes the child's Rex pane if it said done, as a waiting spawn does, and sends the child's parent session a rhiza session message naming the child session, its role, leaf, outcome and detail and pointing at rhiza run status for the rest; the engine reaches both through an optional Runner interface (the engine runs no program), implemented by the api stepRunner over closeSessionPane and session.message."
+        },
+        "handle": "spawn-wake-conductor",
+        "id": "01M7QE2048S7N0FJFG3RKEQPG7",
+        "key": "zzzzzy",
+        "kind": "capability",
+        "node": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "id": "01M7QE2053N041QSWQP3YE5X29",
+        "link": "01M7QE2053N041QSWQP3FBFXQF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QDZZMB67DX13M3TJ8Y67BD",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with a test asserting conduct-roles.md documents --no-wait and the wake-up message and conduct.md tells the conductor to end its turn after a --no-wait spawn; (failure case) the test fails on the current text, which says only that the spawn waits for the child. go test -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestScripts/guide-install' passes.",
+          "files": "internal/guide/text/conduct.md, internal/guide/text/conduct-roles.md, internal/guide/guide_test.go, docs/primitives.md, docs/bring-your-own-agent.md",
+          "must_not": "Change any role other than the conductor's instructions; drop the rule that the conductor never sleeps or polls; tell a conductor to poll run status for its children",
+          "statement": "The conduct guides (conduct, conduct-roles) and the run spawn docs tell a conductor to spawn children with --no-wait, start independent children together, end its turn, and act on the wake-up session message each child's end sends (reading rhiza run status --json for the outcomes), and still describe the default waiting spawn for other callers."
+        },
+        "handle": "conduct-no-wait-guide",
+        "id": "01M7QE205YR8ZF9RC2WTNSK22Q",
+        "key": "zzzzzz",
+        "kind": "capability",
+        "node": "01M7QE205YR8ZF9RC2WQ469440",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7QE205YR8ZF9RC2WQ469440",
+        "id": "01M7QE206SEQN6TG2E08Q2Z2KC",
+        "link": "01M7QE206SEQN6TG2E04Z0YYQD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QDZZMB67DX13M3TJ8Y67BD",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "id": "01M7QE207KJCNK0AM1F4K8T8XY",
+        "link": "01M7QE207KJCNK0AM1F2QKVM61",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE202T3TYENJVMH40K1XPT",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7QE205YR8ZF9RC2WQ469440",
+        "id": "01M7QE208GZSF6RV6AWM669P2Z",
+        "link": "01M7QE208GZSF6RV6AWJXH9T31",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QE2048S7N0FJFG3QWQZR5T",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7M2FB5BNRSDSN7HFWQSC2WN",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QE2098RBJTCEANRTFC4XVG",
+  "type": "ops",
+  "v": 1
+}
