@@ -377,8 +377,9 @@ type Block struct {
 //	           With Check set, findings and verdict entries are instead a
 //	           review check's: findings opens the next round of check Check
 //	           of checks step Step, in cycle Cycle (when 0, the cycle of the
-//	           check's latest session), and verdict judges that check's
-//	           latest round; plan review rounds skip both
+//	           check's latest session), with its Evidence lines, and
+//	           verdict judges that check's latest round; plan review
+//	           rounds skip both
 //	gated:     Changes (run gate ended the plan: its change sets, by ID; the
 //	           latest gated entry wins)
 //	leaf-session: Step, Leaf, Handle, Role (builder or verifier), Attempt, Session,
@@ -491,6 +492,9 @@ type Entry struct {
 	// Findings are a findings entry's findings; Verdicts a verdict entry's.
 	Findings []Finding `json:"findings,omitempty"`
 	Verdicts []Verdict `json:"verdicts,omitempty"`
+	// Evidence is a review check's findings entry's evidence lines: what
+	// the check ran or read for each leaf's acceptance.
+	Evidence []Evidence `json:"evidence,omitempty"`
 	// Changes are a gated entry's plan change sets, by ID.
 	Changes []string `json:"changes,omitempty"`
 	// Leaf is a leaf entry's leaf node ID, and Role its session's role:
@@ -555,6 +559,15 @@ type Finding struct {
 	Reason     string `json:"reason"`
 }
 
+// Evidence is one evidence line of a review check's round: what the
+// check ran or read for leaf node Leaf's acceptance (its handle LeafHandle
+// when it was recorded), with the result, as Line.
+type Evidence struct {
+	Leaf       string `json:"leaf"`
+	LeafHandle string `json:"leaf_handle,omitempty"`
+	Line       string `json:"line"`
+}
+
 // EffectiveSeverity is f's severity: Severity when set, else for a
 // plan-review finding (one with a Kind) KindSeverity of its kind, else "".
 func (f Finding) EffectiveSeverity() string {
@@ -578,12 +591,14 @@ type Verdict struct {
 // Round is one plan review round: a findings entry, numbered from 1 in
 // journal order, and the verdicts journalled after it and before the next.
 // A review check's rounds are the same, numbered per check, with Cycle the
-// check's cycle the round was recorded in; a plan review round's is 0.
+// check's cycle the round was recorded in; a plan review round's is 0,
+// and Evidence its evidence lines, if any.
 type Round struct {
 	Number   int
 	Cycle    int
 	At       time.Time
 	Findings []Finding
+	Evidence []Evidence
 	Verdicts []Verdict
 }
 
@@ -1870,7 +1885,7 @@ func (j Journal) State() State {
 				if cycle == 0 {
 					cycle = c.latestSessionCycle()
 				}
-				c.Rounds = append(c.Rounds, Round{Number: len(c.Rounds) + 1, Cycle: cycle, At: e.At, Findings: e.Findings})
+				c.Rounds = append(c.Rounds, Round{Number: len(c.Rounds) + 1, Cycle: cycle, At: e.At, Findings: e.Findings, Evidence: e.Evidence})
 				break
 			}
 			if e.Leaf != "" {

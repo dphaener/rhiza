@@ -13439,6 +13439,30 @@ cmp stdout describe.golden.json
       "input": {
         "additionalProperties": false,
         "properties": {
+          "evidence": {
+            "description": "With --check, refused otherwise: evidence lines, what the check ran or read for each leaf's acceptance, with the result, one per acceptance point. In a conductor step (an agent step declaring checks) every leaf of the run's change set needs a finding naming it or an evidence line, or the round is refused and nothing is journaled; elsewhere evidence is optional",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "leaf": {
+                  "description": "The leaf of the run's change set, by handle or ID",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "line": {
+                  "description": "What the check ran or read for that leaf's acceptance, with the result",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "leaf",
+                "line"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "findings": {
             "description": "The findings, in order; empty for a clean review or check, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
             "items": {

@@ -1585,7 +1585,7 @@ rhiza run findings <file> [--leaf <leaf>] [--check <check>]
 
 Appends to the log.
 
-Input: {"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf, no-failure-case. With --check: {"findings":[{"severity":...,"leaf":...,"place":...,"reason":...},...]}, maybe empty; severity is one of blocker, major, minor, nit, leaf optional. With --leaf: {"findings":[{"reason":...},...]}, at least one. Its schema: `rhiza describe run.findings --json`.
+Input: {"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of missing-acceptance, missing-provenance, unreal-depends-on, outside-intent, contradiction, uncovered-intent, oversized-leaf, no-failure-case. With --check: {"findings":[{"severity":...,"leaf":...,"place":...,"reason":...},...]}, maybe empty; severity is one of blocker, major, minor, nit, leaf optional, plus "evidence":[{"leaf":...,"line":...},...]; in a conductor step each leaf needs a finding naming it or an evidence line. With --leaf: {"findings":[{"reason":...},...]}, at least one. Its schema: `rhiza describe run.findings --json`.
 
 Arguments and flags:
 

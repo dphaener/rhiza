@@ -9691,6 +9691,7 @@
 - [claude-code-9934b10e](actor/claude-code-9934b10e.md)
 - [claude-code-993cefc3](actor/claude-code-993cefc3.md)
 - [claude-code-9950f833](actor/claude-code-9950f833.md)
+- [claude-code-996b04c3](actor/claude-code-996b04c3.md)
 - [claude-code-996f5a14](actor/claude-code-996f5a14.md)
 - [claude-code-997346bf](actor/claude-code-997346bf.md)
 - [claude-code-99770a07](actor/claude-code-99770a07.md)
