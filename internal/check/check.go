@@ -455,8 +455,10 @@ func (c *checker) links(m model.Model, sets []changeset.ChangeSet) {
 // inFlightLinks warns on each live link, in the what-if of a draft,
 // proposed or accepted change set, that the set itself wrote and whose Ends
 // the endpoint table does not allow, each once. As-is links are the link
-// rule's. The what-if views are model's.
+// rule's. The what-if views are model's. It looks only at the links each
+// set's own create ops made, not at every link of every view.
 func (c *checker) inFlightLinks(sets []changeset.ChangeSet, wis whatIfs) {
+	known := knownSets(sets)
 	seen := map[id.ID]bool{}
 	for _, s := range sets {
 		switch s.State {
@@ -464,12 +466,19 @@ func (c *checker) inFlightLinks(sets []changeset.ChangeSet, wis whatIfs) {
 		default:
 			continue
 		}
-		for _, l := range badLinks(wis[s.ID], sets) {
-			if l.Created != s.ID || seen[l.ID] {
+		m := wis[s.ID]
+		for _, o := range s.Ops {
+			if o.Type != op.TypeLinkCreate || seen[o.Link] {
 				continue
 			}
-			seen[l.ID] = true
-			c.add(linkFinding(SeverityWarn, RuleInFlight, l))
+			l, ok := m.Link(o.Link)
+			if !ok || l.Retired || l.Created != s.ID {
+				continue
+			}
+			if b, bad := checkLink(m, known, l); bad {
+				seen[l.ID] = true
+				c.add(linkFinding(SeverityWarn, RuleInFlight, b))
+			}
 		}
 	}
 }
@@ -481,11 +490,33 @@ type badLink struct {
 	fromName, toName string
 }
 
-func badLinks(m model.Model, sets []changeset.ChangeSet) []badLink {
+// knownSets is the set of the change sets' IDs.
+func knownSets(sets []changeset.ChangeSet) map[id.ID]bool {
 	known := make(map[id.ID]bool, len(sets))
 	for _, s := range sets {
 		known[s.ID] = true
 	}
+	return known
+}
+
+func badLinks(m model.Model, sets []changeset.ChangeSet) []badLink {
+	known := knownSets(sets)
+	var bad []badLink
+	for _, l := range m.Links() {
+		if l.Retired {
+			continue
+		}
+		if b, ok := checkLink(m, known, l); ok {
+			bad = append(bad, b)
+		}
+	}
+	return bad
+}
+
+// checkLink reports whether live link l of m goes between Ends its type does
+// not allow, and the link with its Ends' names when it does. known holds the
+// change sets' IDs.
+func checkLink(m model.Model, known map[id.ID]bool, l model.Link) (badLink, bool) {
 	end := func(i id.ID) (End, string) {
 		if n, ok := m.Node(i); ok {
 			return NodeEnd(n.Kind), string(n.Kind)
@@ -495,18 +526,12 @@ func badLinks(m model.Model, sets []changeset.ChangeSet) []badLink {
 		}
 		return "", "unknown " + i.String()
 	}
-	var bad []badLink
-	for _, l := range m.Links() {
-		if l.Retired {
-			continue
-		}
-		from, fromName := end(l.From)
-		to, toName := end(l.To)
-		if !Allowed(l.Type, from, to) {
-			bad = append(bad, badLink{l, fromName, toName})
-		}
+	from, fromName := end(l.From)
+	to, toName := end(l.To)
+	if Allowed(l.Type, from, to) {
+		return badLink{}, false
 	}
-	return bad
+	return badLink{l, fromName, toName}, true
 }
 
 func linkFinding(severity, rule string, l badLink) Finding {
