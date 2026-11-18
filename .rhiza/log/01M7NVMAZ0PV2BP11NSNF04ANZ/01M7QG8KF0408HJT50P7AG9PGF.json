@@ -1,0 +1,33 @@
+{
+  "actor": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "after": [
+    "01M7QBNYEHMF1ZSPRERXV4YJZZ"
+  ],
+  "at": "2026-11-18T14:16:39Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "19238cc54189a3164e74481f913cf280460741d8ecf33050f9b4d6afb8884c9a",
+          "session": "6997790c-fb5f-4105-9548-01a1ef028399",
+          "summary": "Autonomous conductor plan, no owner present. Research found: the daemon's poll holds new starts and resumes on disk-low (rhiza.daemon.minFree, repo filesystem) and on load-high or memory-low (rhiza.daemon.maxLoad, rhiza.daemon.minMemory, internal/daemon/load.go Evaluate), saved in the daemon state file; rhiza run spawn (internal/api/run_spawn.go) already waits on the saved usage hold and machine hold (spawnHoldDetail in internal/api/usage_hold.go) and journals one spawn-held entry per wait, but not on disk-low; the run engine starts a workflow step's agent session (internal/run/engine.go agent, Runner.StartAgent) with no hold at all; no free-tmp check exists; the journal's SpawnHolds reach no inbox item. The plan adds a free-tmp hold to the daemon poll, makes rhiza run spawn and the engine's fresh step sessions wait on every saved pre-start hold, and shows a held spawn or step session in the inbox naming the reading and limit.",
+          "title": "Autonomous plan of the daemon's pre-start checks (m40 spawn holds)"
+        },
+        "handle": "m40-spawn-holds-plan",
+        "id": "01M7QG8KE8VEP99YXQSWDRPMZ5",
+        "key": null,
+        "kind": "source",
+        "node": "01M7QG8KE8VEP99YXQSVEMM8SC",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QG8KF0408HJT50P7AG9PGF",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,193 @@
+{
+  "actor": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "after": [
+    "01M7QG8KF0408HJT50P7AG9PGF"
+  ],
+  "at": "2026-11-18T14:17:31Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The free-tmp check is a daemon poll hold like disk-low: free space on the filesystem of the daemon's temp directory (os.TempDir, so TMPDIR when set) under rhiza.daemon.minTmpFree, a size defaulting to 2G with 0 turning it off, holds new starts and resumes with skip reason tmp-low naming the free space and the minimum",
+          "wording": "(assumed by the autonomous planner from the existing disk-low guard and Decision m40-host-limits-as-holds)"
+        },
+        "handle": "m40-tmp-hold-shape",
+        "id": "01M7QGA6F5QRHQQ8XHJSTS8B73",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QGA6F5QRHQQ8XHJP26P5BJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6F5QRHQQ8XHJP26P5BJ",
+        "id": "01M7QGA6FXJKNJWWPP4KX0S238",
+        "link": "01M7QGA6FXJKNJWWPP4HDKFCKN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QG8KE8VEP99YXQSVEMM8SC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A child session spawn (rhiza run spawn) and a workflow step's fresh agent session both wait on the holds in the daemon's last saved state (usage, load-high, memory-low, disk-low, tmp-low), the source rhiza run spawn already reads, not on a reading of their own, so every limit and the load hysteresis keep one meaning; each wait journals one spawn-held entry (a step session's with no parent), released by the spawn or the step's session entry",
+          "wording": "(assumed by the autonomous planner from the existing rhiza run spawn hold and Decision m40-host-limits-as-holds)"
+        },
+        "handle": "m40-spawn-gate-reads-daemon-state",
+        "id": "01M7QGA6GQ8FTEZKCRYEWJMYRF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QGA6GQ8FTEZKCRYE6PYX16",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6GQ8FTEZKCRYE6PYX16",
+        "id": "01M7QGA6HYXTY3DVCBG6AVD02H",
+        "link": "01M7QGA6HYXTY3DVCBG3AYPC84",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QG8KE8VEP99YXQSVEMM8SC",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/daemon/... and go test -trimpath ./internal/api -run 'Tmp|Disk|Setting|QueueWait'; a new testscript cmd/rhiza/testdata/script/daemon-tmp-low.txtar (go test -trimpath ./cmd/rhiza -run TestScripts/daemon-tmp-low) where RHIZA_TEST_TMP_FREE_BYTES (honoured only alongside RHIZA_TEST_NOW, like RHIZA_TEST_FREE_BYTES) under the minimum makes a daemon poll skip the ready change set as tmp-low naming the free space and minimum, the daemon state carry the tmp-low hold and rhiza inbox show a tmp-low item, and at or over the minimum the change set starts; (failure case) rhiza daemon set rhiza.daemon.minTmpFree banana is refused as not a size, and rhiza.daemon.minTmpFree 0 never holds; describe-golden regenerated (TestScripts/describe-golden)",
+          "files": "internal/daemon/disk.go, internal/daemon/pick.go, internal/daemon/state.go, internal/daemon/queuewait.go, internal/api/daemon.go, internal/api/daemon_settings.go, internal/api/inbox.go, internal/api/web_needs_you.go, internal/api/web_events.go, cmd/rhiza/testdata/script/daemon-tmp-low.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change the disk-low check on the repo's filesystem or rhiza.daemon.minFree; read the host's real temp free space in any test; fix the /tmp projection leak (bug 01M7M3JZFW)",
+          "statement": "The daemon's poll holds new starts and resumes while free space on its temp directory's filesystem is under rhiza.daemon.minTmpFree (default 2G, 0 off): skip reason tmp-low with the free space and the minimum in its detail, the hold saved in the daemon state, a queue-wait journal line and a tmp-low inbox item"
+        },
+        "handle": "daemon-tmp-hold",
+        "id": "01M7QGA6K1VD821JQCCP43PQ3Y",
+        "key": "zzw",
+        "kind": "capability",
+        "node": "01M7QGA6K1VD821JQCCKK11KB5",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6K1VD821JQCCKK11KB5",
+        "id": "01M7QGA6KX48173H3B0722ZHMK",
+        "link": "01M7QGA6KX48173H3B03TNY8ZS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6F5QRHQQ8XHJP26P5BJ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run Spawn and go test -trimpath ./internal/run: a test saves a memory-low machine hold, then (a second case) a tmp-low hold, then a disk-low hold, in the daemon state, runs the spawn with a ctx sleep that clears the hold on its second call, and sees exactly one spawn-held entry whose detail names the reading and the limit and the role, no child started while held, then the child started and the hold released in run state (SpawnHold carries Role); (failure case) with no hold saved the spawn journals no spawn-held entry and its response's held is false",
+          "files": "internal/api/usage_hold.go, internal/api/run_spawn.go, internal/api/run_spawn_test.go, internal/run/journal.go",
+          "must_not": "Count a spawn against rhiza.daemon.maxRuns; read the host's machine, disk or temp space in tests; change --no-wait or how a child's end is recorded",
+          "statement": "rhiza run spawn waits while the daemon's last saved state holds new starts for any pre-start check (usage, load-high, memory-low, disk-low or tmp-low), journaling one spawn-held entry per wait, with its role, whose detail names the reading and the limit, and starts the child once the saved state no longer holds"
+        },
+        "handle": "spawn-waits-every-hold",
+        "id": "01M7QGA6MTJS6AMR4V35CR6MHM",
+        "key": "zzzzzzi",
+        "kind": "capability",
+        "node": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "id": "01M7QGA6NQM10H5PHCNGCB92Y1",
+        "link": "01M7QGA6NQM10H5PHCNG8YPBCP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6GQ8FTEZKCRYE6PYX16",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "id": "01M7QGA6PMAJCFENQJZDW0XM1Z",
+        "link": "01M7QGA6PMAJCFENQJZBKKEYWF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6K1VD821JQCCKK11KB5",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/run and go test -trimpath ./internal/api -run 'StepHold|Spawn': an engine test with a fake Runner whose hold reports a memory-low detail for two polls sees one spawn-held entry for the step, no StartAgent call while held, then the session started and the hold released by the step's session entry; a stepRunner test sees the same detail rhiza run spawn gives for a saved tmp-low hold; (failure case) a step that rejoins its journaled session asks no hold and journals no spawn-held entry, and a held step is not reported stalled",
+          "files": "internal/run/engine.go, internal/run/journal.go, internal/run/engine_test.go, internal/api/run.go, internal/api/usage_hold.go",
+          "must_not": "Hold command steps, a rejoin or a hand-back; fail or stop a step because of a hold; change how the daemon picks or counts runs",
+          "statement": "The run engine starts a workflow step's fresh agent session only while no pre-start hold is on: while one is it waits, journaling one spawn-held entry for the step with no parent whose detail names the reading and the limit, and starts the session once the hold lifts; a step rejoining its journaled session, or handed back into it, is never held"
+        },
+        "handle": "step-session-waits-holds",
+        "id": "01M7QGA6QF8M2EWE3TP1ZBBRMX",
+        "key": "zzzzzzr",
+        "kind": "capability",
+        "node": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "id": "01M7QGA6REBDT91JKWKK156YJD",
+        "link": "01M7QGA6REBDT91JKWKJVWVXMS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6GQ8FTEZKCRYE6PYX16",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "id": "01M7QGA6SAAKBJ2429GEKECVF7",
+        "link": "01M7QGA6SAAKBJ2429GE5AP1GX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run Inbox and a new testscript cmd/rhiza/testdata/script/inbox-spawn-held.txtar (go test -trimpath ./cmd/rhiza -run TestScripts/inbox-spawn-held): a live run whose journal has an open spawn-held entry gives a spawn-held item carrying its detail in rhiza inbox and rhiza inbox --json; (failure case) a spawn-held entry released by a later spawn or session entry, or in an ended run, gives no item; describe-golden regenerated (TestScripts/describe-golden)",
+          "files": "internal/api/inbox.go, internal/api/inbox_test.go, internal/api/web_needs_you.go, cmd/rhiza/testdata/script/inbox-spawn-held.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change the load-high, memory-low, disk-low or tmp-low machine-wide items; give one hold more than one item ID",
+          "statement": "rhiza inbox shows one spawn-held item for each spawn or step session a live run's journal holds, naming the change set, the step, the role of a spawned child, and the reading and limit from the entry's detail; the item is gone once the child or the session starts"
+        },
+        "handle": "inbox-held-spawns",
+        "id": "01M7QGA6T7SB7NWYPE3SBQBSSK",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "op": "node.create",
+        "parent": "01M61R7Q0JX5BXJP6M3P1SJXTG"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "id": "01M7QGA6V68Z0B4SM1Y7MHDDXW",
+        "link": "01M7QGA6V68Z0B4SM1Y57RFS12",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6GQ8FTEZKCRYE6PYX16",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "id": "01M7QGA6W7NV9YH2GQ0H17RYGZ",
+        "link": "01M7QGA6W7NV9YH2GQ0F4AP10R",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QGA6XD2NDW0S38SMXHNPZ9",
+  "type": "ops",
+  "v": 1
+}
