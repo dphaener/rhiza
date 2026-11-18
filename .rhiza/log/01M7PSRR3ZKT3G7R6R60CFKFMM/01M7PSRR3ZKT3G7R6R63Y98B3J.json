@@ -1,0 +1,16 @@
+{
+  "actor": "01M7PSGH2W5KPVJJ6VD0P6ZVJA",
+  "after": [],
+  "at": "2026-11-18T07:43:30Z",
+  "body": {
+    "intent": "A run's own git calls on the shared run worktree's real index (commitOnly's update-index --add after a successful update-ref in internal/api/run_leaves.go) tolerate a builder's concurrent hold on index.lock, retrying briefly, so a verifier's Evidence commit is not failed by another leaf's builder running git add at that moment",
+    "kind": "intention",
+    "sources": [],
+    "title": "Evidence commit vs index.lock"
+  },
+  "change_set": "01M7PSRR3ZKT3G7R6R60CFKFMM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PSRR3ZKT3G7R6R63Y98B3J",
+  "type": "open",
+  "v": 2
+}
