@@ -124,12 +124,16 @@ func (w *workspace) setProjection(p projection) {
 	w.proj = &projectionSlot{p: p}
 }
 
-// projection is w's projection, opened on first use. A workspace opened
-// without a Ctx (openWorkspace) reads its root through a throwaway index,
-// removed when the caller closes it with closeProjection.
+// errNoProjection fails the reads of a workspace given no projection
+// (openWorkspace with neither useProjection nor setProjection).
+var errNoProjection = errors.New("the workspace has no projection: give it one with useProjection or setProjection")
+
+// projection is w's projection, opened on first use. A workspace given
+// none (openWorkspace alone) opens none: its reads answer nothing and fail
+// with errNoProjection, never a throwaway index over a bare Ctx.
 func (w *workspace) projection() projection {
 	if w.proj == nil {
-		w.useProjection(&Ctx{Root: w.root, Now: w.now, IDs: w.ids})
+		w.proj = &projectionSlot{p: failedProjection{err: errNoProjection}}
 	}
 	return w.proj.get()
 }

@@ -338,3 +338,37 @@ func TestProjectionNoTempDir(t *testing.T) {
 		}
 	}
 }
+
+// TestProjectionNoneGiven: a workspace opened with openWorkspace and given
+// no projection opens none, not a throwaway index over a bare Ctx: its
+// reads answer nothing, projectionFailure names the missing projection,
+// and no rhiza-projection-* folder is made in the Ctx's TMPDIR.
+func TestProjectionNoneGiven(t *testing.T) {
+	t.Parallel()
+	ctx, _ := indexedLog(t)
+	ctx.IndexPath = ""
+	tmp := t.TempDir()
+	withTempDir(ctx, tmp)
+	w, err := openWorkspace(ctx.Root, ctx.Now, ctx.IDs, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := w.changeSets(); len(got) != 0 {
+		t.Errorf("changeSets with no projection = %d change sets, want none", len(got))
+	}
+	err = w.projectionFailure()
+	if err == nil || !strings.Contains(err.Error(), "no projection") {
+		t.Errorf("projectionFailure = %v, want an error naming the missing projection", err)
+	}
+	if _, ok := w.proj.p.(failedProjection); !ok {
+		t.Errorf("projection = %T, want a failed projection opening no index", w.proj.p)
+	}
+	w.closeProjection()
+	left, err := filepath.Glob(filepath.Join(tmp, "rhiza-projection-*"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(left) > 0 {
+		t.Errorf("throwaway indexes made with no projection: %v", left)
+	}
+}

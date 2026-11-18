@@ -30,6 +30,8 @@ func ctxWorkspace(t *testing.T, ctx *Ctx) *workspace {
 	if err != nil {
 		t.Fatal(err)
 	}
+	w.useProjection(ctx)
+	t.Cleanup(w.closeProjection)
 	return w
 }
 
@@ -75,6 +77,8 @@ func landNodeOn(ctx *Ctx, kind op.Kind, handle string) (id.ID, error) {
 	if err != nil {
 		return id.ID{}, err
 	}
+	w.useProjection(ctx)
+	defer w.closeProjection()
 	var ids [4]id.ID
 	for i := range ids {
 		if ids[i], err = w.ids.New(); err != nil {

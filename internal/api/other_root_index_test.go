@@ -178,7 +178,7 @@ func TestOtherRootGateAnswer(t *testing.T) {
 		if _, err := callOp(t, caller, "question.answer", `{"question":"other-q","text":"Yes, do it.","run":"ROTHER"}`); err != nil {
 			t.Fatal(err)
 		}
-		w, err := openWorkspace(o.root, caller.Now, caller.IDs, false)
+		w, err := openRootWorkspace(caller, o.root, false)
 		if err != nil {
 			t.Fatal(err)
 		}
