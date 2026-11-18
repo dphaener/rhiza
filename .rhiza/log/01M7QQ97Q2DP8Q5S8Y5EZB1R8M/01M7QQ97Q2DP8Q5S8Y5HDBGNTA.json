@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "after": [],
+  "at": "2026-11-18T16:19:19Z",
+  "body": {
+    "intent": "While a run's question waits on the arbiter, rhiza run status names the arbiter, not the owner, as what it waits on",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7QQ97Q2DP8Q5S8Y5EZB1R8M",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QQ97Q2DP8Q5S8Y5HDBGNTA",
+  "type": "open",
+  "v": 1
+}
