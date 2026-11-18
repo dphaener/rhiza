@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QXFGFM5DQXY4GC23G663TX",
+  "after": [],
+  "at": "2026-11-18T18:42:32Z",
+  "body": {
+    "intent": "Under rhiza.daemon.maxRuns=auto, daemon status before the first poll and the web Overview show auto rather than a pinned number, and the schedules' stop check reuses the poll's disk reading (code-check findings f1-f3 of run 01M7QXF341135P9DZCYWE4XJVE)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7QZFF57KBPMTKY3X79Y1WCT",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QZFF57KBPMTKY3X9W0K8H3",
+  "type": "open",
+  "v": 1
+}
