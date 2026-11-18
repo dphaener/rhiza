@@ -923,6 +923,7 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 		return nil, err
 	}
 	ww.closeProjection()
+	started.Base = branchHead(ctx, t.branch)
 	claimStartLog(ctx, t.common, rid)
 	if newMilestone {
 		// The number is drawn and journaled under one lock, so two starts

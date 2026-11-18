@@ -1,0 +1,42 @@
+# A run journals each commit made on its branch since it started that the
+# run did not make as one hand-commit intervention, when it enters a step
+# and before it finishes, never twice. Step a commits once by hand, once
+# with a Review: trailer naming the run and once as a ship command step
+# does (Actor: the run process's own actor, test); only the first is a
+# hand commit, journalled on entering b, and the run succeeds as before.
+
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec git add -A
+exec git commit -qm init
+rhiza change new 'Hand commits' --title 'Hand commits' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+
+mkdir .rhiza/workflows
+cp $WORK/flow.toml .rhiza/workflows/flow.toml
+# The owner's actor, test, is committed, so the run's worktree has it.
+exec git add -A
+exec git commit -qm 'Plan hand commits'
+
+rhiza run start --foreground --workflow flow --json
+stdout '"state": "succeeded"'
+
+rhiza run status --json
+stdout '"intervention_count": 1'
+stdout '"commit": "[0-9a-f]{40}",\n\s+"detail": "commit [0-9a-f]+ on \S+: fix by hand",\n\s+"kind": "hand-commit",\n\s+"step": "b"'
+! stdout 'by the run'
+! stdout 'as a ship step'
+
+-- flow.toml --
+name = "flow"
+
+[step.a]
+kind = "command"
+run = "git commit -q --allow-empty -m 'fix by hand' && git commit -q --allow-empty -m 'by the run' -m \"Review: $RHIZA_RUN\" && git commit -q --allow-empty -m 'as a ship step' -m \"Change: $RHIZA_CHANGE\" -m 'Actor: test'"
+on.pass = "b"
+
+[step.b]
+kind = "command"
+run = "true"

@@ -299,13 +299,17 @@ type Started struct {
 	Definition string `json:"definition"`
 	// Includes holds the source of each workflow the definition's
 	// workflow steps include, by name, as the run started with them.
-	Includes       map[string]string `json:"includes,omitempty"`
-	Change         string            `json:"change"`
-	Title          string            `json:"title,omitempty"`
-	Worktree       string            `json:"worktree,omitempty"`
-	Branch         string            `json:"branch,omitempty"`
-	PermissionMode string            `json:"permission_mode,omitempty"`
-	Agent          string            `json:"agent,omitempty"`
+	Includes map[string]string `json:"includes,omitempty"`
+	Change   string            `json:"change"`
+	Title    string            `json:"title,omitempty"`
+	Worktree string            `json:"worktree,omitempty"`
+	Branch   string            `json:"branch,omitempty"`
+	// Base is the commit Branch was at when the run started: the commits
+	// on Branch after it are the run's, or hand commits. Empty for a run
+	// with no branch, or one started before it was recorded.
+	Base           string `json:"base,omitempty"`
+	PermissionMode string `json:"permission_mode,omitempty"`
+	Agent          string `json:"agent,omitempty"`
 	// Autonomous is true for a run started without the owner: it skips
 	// the owner's gates and questions, recording each. It never changes
 	// an agent's permissions.
@@ -1374,6 +1378,10 @@ type State struct {
 	Change          string
 	Title           string
 	Worktree        string
+	// Branch and Base are the started entry's: the run's branch and the
+	// commit it was at when the run started.
+	Branch string
+	Base   string
 	// Trigger and TriggerName are the started entry's: a scheduled run has
 	// a trigger and no change set.
 	Trigger        string
@@ -1727,6 +1735,8 @@ func (j Journal) State() State {
 				st.TriggerName = s.TriggerName
 				st.Title = s.Title
 				st.Worktree = s.Worktree
+				st.Branch = s.Branch
+				st.Base = s.Base
 				st.PermissionMode = s.PermissionMode
 				st.Agent = s.Agent
 				st.Definition = s.Definition

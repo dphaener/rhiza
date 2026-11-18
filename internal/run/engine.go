@@ -159,6 +159,17 @@ type SpawnWaker interface {
 	WakeParent(sp Spawn) error
 }
 
+// HandCommitScanner is a Runner that can list a run's hand commits: the
+// commits on the run's branch since it started (State.Base) that the run
+// did not make, oldest first, each as a hand-commit Intervention naming
+// its Commit and Actor. The engine scans on entering each step and before
+// the run finishes, and journals each commit the journal does not already
+// hold as a hand-commit intervention, once. A scan never blocks, fails or
+// changes the run: an error is logged. A Runner without it scans nothing.
+type HandCommitScanner interface {
+	HandCommits(st State) ([]Intervention, error)
+}
+
 // Question is a question node the Runner added: its ID and handle.
 type Question struct {
 	ID     string
@@ -622,6 +633,57 @@ func (r *running) reconcileSpawns() {
 	}
 }
 
+// scanHandCommits journals one hand-commit intervention, at step, for each
+// hand commit the Runner's HandCommitScanner finds that the journal, read
+// again, does not already hold. Every failure is logged and changes
+// nothing else: a hand commit never blocks, fails or changes the run.
+func (r *running) scanHandCommits(step string) {
+	sc, ok := r.e.Runner.(HandCommitScanner)
+	if !ok {
+		return
+	}
+	j, err := r.e.Store.Read(r.j.ID)
+	if err != nil {
+		r.log("hand commits: %v", err)
+		return
+	}
+	st := j.State()
+	found, err := sc.HandCommits(st)
+	if err != nil {
+		r.log("hand commits: %v", err)
+		return
+	}
+	seen := map[string]bool{}
+	for _, iv := range st.Interventions {
+		if iv.Kind == InterventionHandCommit && iv.Commit != "" {
+			seen[iv.Commit] = true
+		}
+	}
+	for _, iv := range found {
+		if iv.Commit == "" || seen[iv.Commit] {
+			continue
+		}
+		seen[iv.Commit] = true
+		iv.Kind, iv.Step = InterventionHandCommit, step
+		if p := InterventionProblem(iv); p != "" {
+			r.log("hand commit %s: %s", iv.Commit, p)
+			continue
+		}
+		if err := r.append(Entry{Type: TypeIntervention, Step: iv.Step, Kind: iv.Kind, Actor: iv.Actor, Detail: iv.Detail, Commit: iv.Commit}); err != nil {
+			r.log("hand commit %s: %v", iv.Commit, err)
+			continue
+		}
+		r.log("step %s: hand commit %s by %s journalled", step, shortCommit(iv.Commit), iv.Actor)
+	}
+}
+
+func shortCommit(c string) string {
+	if len(c) > 12 {
+		return c[:12]
+	}
+	return c
+}
+
 // wakeParent wakes the parent of no-wait child sp, whose end entry en was
 // just recorded, through the Runner's SpawnWaker. A waiting child's parent
 // is its spawn process, which reports the end itself.
@@ -652,6 +714,7 @@ func (r *running) loop() (State, error) {
 			r.cleanup()
 			return st, nil
 		case ActFinish, ActOverCap:
+			r.scanHandCommits(act.Step)
 			fin, err := r.finish(act.Step, act.End, act.Detail)
 			if err != nil {
 				return fin, err
@@ -659,6 +722,7 @@ func (r *running) loop() (State, error) {
 			r.cleanup()
 			return fin, nil
 		case ActEnter:
+			r.scanHandCommits(act.Step)
 			if err := r.append(Entry{Type: TypeEntered, Step: act.Step, Visit: act.Visit}); err != nil {
 				return r.j.State(), err
 			}
