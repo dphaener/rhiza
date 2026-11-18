@@ -1,0 +1,216 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [
+    "01M7RB4B5TC63MSGZW1S9V8HWM"
+  ],
+  "at": "2026-11-18T22:07:08Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The BYO daemon scripts run a copy of docs/examples/byo/workflow.toml (myteam-flow) from their archive, picked by .rhiza/dispatch.toml [ready], held byte-identical to the docs file by a Go test; docker, make, gh, rex and claude are fakes on PATH and /myteam:implement is a stub skill under $HOME/.claude/skills",
+          "wording": "(planner, from the code: a testscript cannot read repo files; dispatch [ready] is how the daemon picks a non-default workflow)"
+        },
+        "handle": "byo-example-copy-synced",
+        "id": "01M7RB61WHX6VTXBDJSJ712MZF",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RB61WHX6VTXBDJSF4VT2YE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RB61WHX6VTXBDJSF4VT2YE",
+        "id": "01M7RB61XPPX1C49Z8MW9F9HD1",
+        "link": "01M7RB61XPPX1C49Z8MTC9CD8V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB4B3DK2YBCWWGEKRE7ZGV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A gate step with no stall= gets the watchdog's command limit (commandLimit, 30m default), as a command step does, instead of the agent retry limit it falls through to today; the built-in gates keep their explicit stall=70m",
+          "wording": "(planner, from the code: StallLimit in internal/api/watchdog_policy.go switches on command, wait and signoff only, so the BYO example's gate got the agent limit)"
+        },
+        "handle": "byo-gate-command-limit",
+        "id": "01M7RB61YSZ20BFXPPMA5YF896",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RB61YSZ20BFXPPM6NEQ6P3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RB61YSZ20BFXPPM6NEQ6P3",
+        "id": "01M7RB61ZT5Y3EC49W0PMJSRSF",
+        "link": "01M7RB61ZT5Y3EC49W0MQD2GRT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB4B3DK2YBCWWGEKRE7ZGV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Stall and runaway detection on a BYO workflow's steps are shown by Go tests in internal/api over a BYO-shaped workflow (agent step work, gate step gate), not a testscript: the process table reader is nil under RHIZA_TEST_NOW",
+          "wording": "(planner, from the code: watchdogProcTable in internal/api/watchdog_runaway.go returns nil in tests)"
+        },
+        "handle": "byo-runaway-go-test",
+        "id": "01M7RB620T9FT6Y81X28N033FV",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RB620T9FT6Y81X278EJEWX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RB620T9FT6Y81X278EJEWX",
+        "id": "01M7RB621R5JPAG51T3VFYB4DZ",
+        "link": "01M7RB621R5JPAG51T3S9CY57G",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB4B3DK2YBCWWGEKRE7ZGV",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "env -u'd of RHIZA_*/SHIP_*/REX_*: go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/byo-workflow-daemon$' passes: the daemon --once start names the myteam-flow run, the run reaches succeeded with each step in order, the fake docker logs 'compose down' from the cleanup, and rhiza run status --json shows intervention_count 0; (failure case) the first gate's fake make lint exits 1, the gate hands back to work with handback.md naming make lint, and the second gate passes; go test -trimpath ./cmd/rhiza -run 'TestDocsExample' passes and fails when a script's archived .rhiza/workflows/myteam-flow.toml differs from docs/examples/byo/workflow.toml",
+          "files": "cmd/rhiza/testdata/script/byo-workflow-daemon.txtar, cmd/rhiza/main_test.go (processScripts entry with its reason), cmd/rhiza/docs_examples_test.go",
+          "must_not": "Change docs/examples/byo/*.toml; special-case a workflow or step name in production code; touch the network, Rex, a real agent, gh or docker; bind a unix socket",
+          "statement": "A testscript runs the BYO example workflow myteam-flow under the daemon end to end: the daemon picks it by dispatch [ready] for an accepted change set and its services, work, gate, signoff, push, wait-ci, merge and close-out steps pass, the stop-services cleanup runs, and the run ends succeeded with no journalled intervention"
+        },
+        "handle": "byo-workflow-daemon-e2e",
+        "id": "01M7RB622RJPBYCSMFMSABZBTT",
+        "key": "zzzzzzzy",
+        "kind": "capability",
+        "node": "01M7RB622RJPBYCSMFMQGDH35M",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB622RJPBYCSMFMQGDH35M",
+        "id": "01M7RB623SF0E21B7AZMND2RJA",
+        "link": "01M7RB623SF0E21B7AZKQEVD5W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB61WHX6VTXBDJSF4VT2YE",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 ./internal/api -run 'TestStallLimit|TestWatchdog|TestRunaway' passes, with new cases: StallLimit(\"gate\", 0, 0) returns CommandLimit and an explicit stall still wins; a myteam-flow-shaped run silent in step work is nudged then stopped and resumed with --retry; one silent in step gate past commandLimit is stopped and resumed; a runaway work session (process count past the threshold from a fake process table) fails the step with the runaway reason; (failure case) a gate step still inside commandLimit is neither stopped nor nudged; rhiza docs regenerates docs/reference/config.md with commandLimit described as covering command and gate steps",
+          "files": "internal/api/watchdog_policy.go, internal/api/watchdog_policy_test.go, internal/api/daemon_watchdog_test.go, internal/api/watchdog_runaway_test.go, docs/reference/config.md",
+          "must_not": "Change the built-in workflows' stall= values; special-case a workflow or step name; read the real process table in a test; run go test ./internal/api unscoped more than once",
+          "statement": "The watchdog's stall and runaway detection apply to a BYO workflow's steps: a gate step with no stall= gets the command limit, and Go tests over a BYO-shaped workflow show its agent step nudged then stopped and retried, its gate step stopped and retried past the command limit, and a runaway session of its agent step treated as a stall with the reason"
+        },
+        "handle": "byo-watchdog-stall-runaway",
+        "id": "01M7RB624W6QN05GB3VJC39PHR",
+        "key": "zzzzzzzz",
+        "kind": "capability",
+        "node": "01M7RB624W6QN05GB3VGZPNE90",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB624W6QN05GB3VGZPNE90",
+        "id": "01M7RB6272PW492QXXB9ENQQKF",
+        "link": "01M7RB6272PW492QXXB88C3ENJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB61YSZ20BFXPPM6NEQ6P3",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB624W6QN05GB3VGZPNE90",
+        "id": "01M7RB629ZZEETHYKH3X7W14NQ",
+        "link": "01M7RB629ZZEETHYKH3TP3EFRM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB620T9FT6Y81X278EJEWX",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "env -u'd of RHIZA_*/SHIP_*/REX_*: go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/byo-workflow-hold-intervention$' passes: with RHIZA_TEST_LOAD1/5 over maxLoad the work step does not start and rhiza inbox shows a held step session for the myteam-flow run; once the load drops the work session starts; a rhiza session message from outside the run to the work session leaves rhiza run status --json with intervention_count 1 naming the message; (failure case) a message the run's own session sends records no intervention",
+          "files": "cmd/rhiza/testdata/script/byo-workflow-hold-intervention.txtar, cmd/rhiza/main_test.go (processScripts entry if it starts a process); internal/api only for a gap found, fixed in the generic path",
+          "must_not": "Change docs/examples/byo/*.toml; special-case a workflow or step name; touch the network, Rex, a real agent, gh or docker; bind a unix socket",
+          "statement": "Under the daemon, the BYO example's work step session is held by the load hold like a built-in step's (held while load is high, started once it drops) and an outside rhiza session message to that session is journalled as an intervention shown by run status"
+        },
+        "handle": "byo-spawn-hold-intervention",
+        "id": "01M7RB62EDVAPFFYGG899TZ9JV",
+        "key": "zzzzzzzzi",
+        "kind": "capability",
+        "node": "01M7RB62EDVAPFFYGG892NFT57",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB62EDVAPFFYGG892NFT57",
+        "id": "01M7RB62G6G9ZAE6KR343T4QE7",
+        "link": "01M7RB62G6G9ZAE6KR30KVE9GH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB61WHX6VTXBDJSF4VT2YE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB62EDVAPFFYGG892NFT57",
+        "id": "01M7RB62JTD2EZXXRZ6J00TNWJ",
+        "link": "01M7RB62JTD2EZXXRZ6ENM7DBG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB622RJPBYCSMFMQGDH35M",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "env -u'd of RHIZA_*/SHIP_*/REX_*: go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/byo-workflow-retry$' passes: the fake close-out fails on its first call, the run fails at close-out, the next daemon --once poll resumes it from close-out (not from services or work), and it reaches succeeded with intervention_count 0; (failure case) with the failed-retry budget spent (rhiza.daemon.watchdog.retryBudget or the failed-retry count set to 0) the run stays failed and rhiza inbox lists it",
+          "files": "cmd/rhiza/testdata/script/byo-workflow-retry.txtar, cmd/rhiza/main_test.go (processScripts entry with its reason); internal/api only for a gap found, fixed in the generic path",
+          "must_not": "Change docs/examples/byo/*.toml; special-case a workflow or step name; touch the network, Rex, a real agent, gh or docker; bind a unix socket",
+          "statement": "Under the daemon, a BYO example run whose close-out step fails once (a transient command failure) is retried by the watchdog from that failed step with no one acting, and ends succeeded with no journalled intervention"
+        },
+        "handle": "byo-failed-run-retry",
+        "id": "01M7RB62N25AX10VV3VX6QGVF8",
+        "key": "zzzzzzzzr",
+        "kind": "capability",
+        "node": "01M7RB62N25AX10VV3VWNZH77K",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB62N25AX10VV3VWNZH77K",
+        "id": "01M7RB62PHDJXBVH9TFX5R038E",
+        "link": "01M7RB62PHDJXBVH9TFWJ8VVPS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB61WHX6VTXBDJSF4VT2YE",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB62N25AX10VV3VWNZH77K",
+        "id": "01M7RB62S3PN9VNXK3PFV5K1D6",
+        "link": "01M7RB62S3PN9VNXK3PEJAHXXN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB622RJPBYCSMFMQGDH35M",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RB62VB92WCG9XE9ZEJ14ZX",
+  "type": "ops",
+  "v": 1
+}
