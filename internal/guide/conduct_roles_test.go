@@ -35,6 +35,23 @@ func listedRoles(body string) (roles []string, mismatched []string) {
 	return roles, mismatched
 }
 
+// roleLine returns the Roles item of body for role with its indented
+// continuation lines.
+func roleLine(body, role string) string {
+	out := ""
+	for _, l := range strings.Split(sectionOf(body, "## Roles"), "\n") {
+		switch {
+		case strings.HasPrefix(l, "- `"+role+"`"):
+			out = l
+		case out != "" && strings.HasPrefix(l, "  "):
+			out += "\n" + l
+		case out != "":
+			return out
+		}
+	}
+	return out
+}
+
 // rolesWithoutTopic returns each role body lists that no guide topic is
 // named for.
 func rolesWithoutTopic(body string) []string {
@@ -121,6 +138,12 @@ func TestConductRoles(t *testing.T) {
 			"`compliance`, `quality` and `model` belong to the classic workflows",
 		},
 	})
+	if strings.Contains(c.Body, "ship rebase --no-push") {
+		t.Errorf("conduct-roles still names rhiza ship rebase --no-push")
+	}
+	if l := roleLine(c.Body, "conflict-fix"); !strings.Contains(l, "a code conflict the ship steps leave in\n  progress") {
+		t.Errorf("conduct-roles: conflict-fix entry %q names no code conflict the ship steps leave in progress", l)
+	}
 	if strings.Contains(c.Body+c.Description, "Claude") {
 		t.Errorf("conduct-roles names an agent product")
 	}

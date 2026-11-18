@@ -5,8 +5,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
+
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // byoExamples are the Bring your own agent page's worked examples, one per
@@ -68,6 +72,36 @@ func TestDocsBringYourOwn(t *testing.T) {
 		}
 		if !strings.Contains(string(b), "bring-your-own-agent.md)") {
 			t.Errorf("%s does not link docs/bring-your-own-agent.md", strings.TrimPrefix(f, "../../"))
+		}
+	}
+}
+
+// The byo conductor example keeps every step of the built-in ship-change
+// after conduct as the built-in has it, so the page's "Everything after
+// conduct is the built-in's" holds.
+func TestDocsBringYourOwnConductorSteps(t *testing.T) {
+	src, ok := workflow.Builtin("ship-change")
+	if !ok {
+		t.Fatal("no built-in ship-change")
+	}
+	builtin, err := workflow.Parse("ship-change", src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile("../../docs/examples/byo/conductor.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	byo, err := workflow.Parse("myteam-conduct", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(byo.Order, builtin.Order) {
+		t.Errorf("conductor.toml steps %q, want the built-in's %q", byo.Order, builtin.Order)
+	}
+	for _, name := range builtin.Order[1:] {
+		if !reflect.DeepEqual(byo.Steps[name], builtin.Steps[name]) {
+			t.Errorf("conductor.toml step %s = %+v, want the built-in's %+v", name, byo.Steps[name], builtin.Steps[name])
 		}
 	}
 }

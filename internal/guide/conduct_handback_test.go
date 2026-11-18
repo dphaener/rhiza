@@ -55,7 +55,9 @@ func routes(body string) map[string]string {
 
 // handbackDrift returns each problem of body against def: a hand-back step
 // with no route, a gate command the topic does not name, a route for a step
-// that never hands back, and a wait-ci route that spawns ci-fix.
+// that never hands back, a wait-ci route that spawns ci-fix, and a route that
+// names rhiza ship rebase (the run's own rebase step runs it; a conductor
+// never does).
 func handbackDrift(body string, def *workflow.Definition) []string {
 	var out []string
 	rs := routes(body)
@@ -86,6 +88,16 @@ func handbackDrift(body string, def *workflow.Definition) []string {
 	if strings.Contains(rs["wait-ci"], "ci-fix") {
 		out = append(out, "the wait-ci route names the ci-fix role")
 	}
+	var routed []string
+	for s := range rs {
+		routed = append(routed, s)
+	}
+	slices.Sort(routed)
+	for _, s := range routed {
+		if strings.Contains(rs[s], "rhiza ship rebase") {
+			out = append(out, "the "+s+" route tells the conductor to run rhiza ship rebase")
+		}
+	}
 	return out
 }
 
@@ -115,14 +127,36 @@ func TestConductHandback(t *testing.T) {
 		},
 		"commands": {
 			"`rhiza run build-check`", "`rhiza run review-check`", "`rhiza check`",
-			"`rhiza ship gate`", "`rhiza ship open-pr`", "`rhiza ship rebase --no-push`",
-			"never plain `rhiza ship rebase`",
+			"`rhiza ship gate`", "`rhiza ship open-pr`", "`rhiza ship check`",
+			"Never run `rhiza ship rebase` yourself",
 		},
-		"roles":  {"a verifier", "builder retry", "a critic", "a fixer", "the gate-fix role", "the ci-fix role", "the conflict-fix role"},
+		"roles": {"a verifier", "builder retry", "a critic", "a fixer", "the gate-fix role", "the ci-fix role", "the conflict-fix role"},
+		"ship rebase": {
+			"- `pr-green`:", "- `rebase`:", "An unresolved merge of main",
+			"A code conflict left in progress", "failing on the merged head",
+			"a gh, fetch or git error", "The merge step never hands back",
+		},
 		"limits": {"`handback_cap` (3 unless", "parks the run stopped with an inbox item", "never hand back"},
 		"finish": {"`rhiza land`", "`rhiza render`", "`rhiza session done`"},
 		"spawn":  {"never fix anything yourself", "you spawn no role"},
 	})
+	if strings.Contains(c.Body, "--no-push") {
+		t.Errorf("conduct-handback still names rhiza ship rebase --no-push")
+	}
+	rs := routes(c.Body)
+	for _, s := range []string{"pr-green", "rebase"} {
+		for _, role := range []string{"the conflict-fix role", "the gate-fix role"} {
+			if !strings.Contains(rs[s], role) {
+				t.Errorf("conduct-handback: the %s route names no %s", s, role)
+			}
+		}
+	}
+	if !strings.Contains(rs["pr-green"], "the ci-fix role") {
+		t.Errorf("conduct-handback: the pr-green route names no ci-fix role")
+	}
+	if !strings.Contains(rs["rebase"], "spawn no role") {
+		t.Errorf("conduct-handback: the rebase route has no no-role case")
+	}
 	if strings.Contains(c.Body+c.Description, "Claude") {
 		t.Errorf("conduct-handback names an agent product")
 	}
@@ -141,8 +175,9 @@ func TestConductReadsHandback(t *testing.T) {
 }
 
 // A hand-back step with no route, a gate command the topic does not name,
-// a route for a step that never hands back, and ci-fix on wait-ci are each
-// reported by name.
+// a route for a step that never hands back (merge included), a dropped
+// rebase route, ci-fix on wait-ci and a route running rhiza ship rebase are
+// each reported by name.
 func TestConductHandbackCatchesDrift(t *testing.T) {
 	c, _ := Lookup("conduct-handback")
 
@@ -162,15 +197,32 @@ func TestConductHandbackCatchesDrift(t *testing.T) {
 		t.Errorf("drift with a new gate command = %q", got)
 	}
 
-	for _, s := range []string{"main-ci", "close-out", "ship", "deploy-check"} {
-		broken := strings.Replace(c.Body, "\n- `merge`:", "\n- `"+s+"`: stop.\n- `merge`:", 1)
+	for _, s := range []string{"merge", "main-ci", "close-out", "ship", "deploy-check"} {
+		broken := strings.Replace(c.Body, "\n- `rebase`:", "\n- `"+s+"`: stop.\n- `rebase`:", 1)
 		want := []string{"route for step " + s + ", which never hands back"}
 		if got := handbackDrift(broken, shipChange(t)); !slices.Equal(got, want) {
 			t.Errorf("drift with a %s route = %q, want %q", s, got, want)
 		}
 	}
 
-	broken := strings.Replace(c.Body, "you spawn no role.", "you spawn the ci-fix role.", 1)
+	rs := routes(c.Body)
+	broken := strings.Replace(c.Body, rs["rebase"]+"\n", "", 1)
+	if broken == c.Body {
+		t.Fatal("the topic has no rebase route to drop")
+	}
+	if got := handbackDrift(broken, shipChange(t)); !slices.Equal(got, []string{"no route for hand-back step rebase"}) {
+		t.Errorf("drift with the rebase route dropped = %q", got)
+	}
+
+	broken = strings.Replace(c.Body, "Change nothing and finish.", "Run `rhiza ship rebase` and finish.", 1)
+	if broken == c.Body {
+		t.Fatal("the rebase route lost its change-nothing sentence")
+	}
+	if got := handbackDrift(broken, shipChange(t)); !slices.Equal(got, []string{"the rebase route tells the conductor to run rhiza ship rebase"}) {
+		t.Errorf("drift with a route running rhiza ship rebase = %q", got)
+	}
+
+	broken = strings.Replace(c.Body, "you spawn no role.", "you spawn the ci-fix role.", 1)
 	if broken == c.Body {
 		t.Fatal("the wait-ci route lost its no-role sentence")
 	}

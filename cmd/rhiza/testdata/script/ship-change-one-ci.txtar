@@ -9,10 +9,12 @@
 # plan, code and qa checks, builds the one leaf with a builder's commit,
 # writes the leaf's Evidence as the conductor's own actor (not the
 # commit's), lands the change set on the branch, renders and commits. On a
-# hand-back it only brings main in with rhiza ship rebase --no-push. origin
-# is a bare repo in $WORK whose pre-receive hook logs each push to the PR
-# branch. The fake gh is run-ship-change.txtar's, and the fake rex runs the
-# tab's command synchronously.
+# hand-back it resolves a merge of main left in progress and commits it.
+# origin is a bare repo in $WORK whose pre-receive hook logs each push to
+# the PR branch. The fake gh is run-ship-change.txtar's, and the fake rex
+# runs the tab's command synchronously. With ORIGIN set, the fake gh moves
+# main once during the merge step; with CONFLICT also set, the commit that
+# moves it adds first.txt, which the branch adds too.
 
 mkdir $HOME/.claude/projects/p
 chmod 755 bin/rex
@@ -52,9 +54,11 @@ stdout '^Run \S+ succeeded$'
 exec rhiza run status
 stdout '^- conduct \(visit 1\): pass, then gate'
 stdout '^- push \(visit 1\): pass, then wait-ci'
-stdout '^- wait-ci \(visit 1\): pass, then merge'
+stdout '^- wait-ci \(visit 1\): pass, then pr-green'
+stdout '^- pr-green \(visit 1\): pass, then merge'
 stdout '^- merge \(visit 1\): pass, then main-ci'
 ! stdout 'wait-ci \(visit 2\)'
+! stdout '^- rebase'
 ! stdout 'handback'
 ! stdout '^- land'
 exec sh -c 'grep -c "^cs/ship-it" $WORK/push.log'
@@ -68,9 +72,10 @@ stdout '^[1-9]'
 fold-ok
 
 # When main moves between the CI check and the merge, ship merge merges
-# nothing and the run hands back to conduct, which brings main in without
-# pushing; the gate, the sign-off, the push and a second CI wait on the new
-# head follow, then the merge. Nothing lands on the branch again.
+# nothing and fails; the rebase step brings main into the branch, pushes
+# the merge and goes back to wait-ci for a CI round on the new head, then
+# pr-green and the merge. No hand-back: conduct runs once, the sign-off is
+# not asked again, and nothing lands on the branch again.
 cd $WORK
 rm push.log
 rm gh.log
@@ -101,25 +106,89 @@ exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission
 stdout '"signoff_waiting": true'
 cd $WORK/repo2.ship-it
 exec sh -c 'rhiza run approve --foreground; echo exit=$?'
-stdout '^exit=0$'
-stdout '"signoff_waiting": true|stopped'
-exec sh -c 'rhiza run approve --foreground; echo exit=$?'
 cd $WORK/repo2
 stdout '^exit=0$'
 stdout '^Run \S+ succeeded$'
 exec rhiza run status
-stdout '^- merge \(visit 1\): fail'
-stdout '^- conduct \(visit 2\)'
-stdout '^- wait-ci \(visit 2\): pass, then merge'
+stdout '^- merge \(visit 1\): fail, then rebase'
+stdout '^- rebase \(visit 1\): pass, then wait-ci'
+stdout '^- wait-ci \(visit 2\): pass, then pr-green'
+stdout '^- pr-green \(visit 2\): pass, then merge'
 stdout '^- merge \(visit 2\): pass, then main-ci'
+stdout '^- conduct \(visit 1\)'
+! stdout 'conduct \(visit 2\)'
+! stdout 'signoff \(visit 2\)'
+! stdout 'handback'
+exec sh -c 'grep -c "^conduct" $WORK/claude.log'
+stdout '^1$'
+! exec grep handback $WORK/claude.log
 exec sh -c 'grep -c "^cs/ship-it" $WORK/push.log'
 stdout '^2$'
 exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
 stdout '^1$'
-exec sh -c 'grep -c "^handback" $WORK/claude.log'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+# (failure case) When the commit that moves main changes a file the branch
+# also changes, the rebase step's merge of main stops on a code conflict:
+# rebase fails and hands back to conduct with the merge left in progress.
+# The fake conductor resolves and commits it, and the run goes through the
+# gate, a second sign-off and the push to a merge.
+cd $WORK
+rm push.log
+rm gh.log
+rm pr.created
+rm built
+rm claude.log
+rm moved
+exec git init -q --bare origin3.git
+cp origin.git/hooks/pre-receive origin3.git/hooks/pre-receive
+env ORIGIN=$WORK/origin3.git
+env CONFLICT=1
+mkdir repo3
+cd repo3
+exec git init -q
+exec git remote add origin $WORK/origin3.git
+exec rhiza init
+exec rhiza project add $WORK/repo3
+mkdir .rhiza/workflows
+cp $WORK/ship.sh .rhiza/workflows/ship.sh
+exec rhiza change new 'Ship it' --title 'Ship it' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --json; echo exit=$?'
+stdout '"signoff_waiting": true'
+cd $WORK/repo3.ship-it
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+stdout '^exit=0$'
+stdout '"signoff_waiting": true|stopped'
+exec sh -c 'rhiza run approve --foreground; echo exit=$?'
+cd $WORK/repo3
+stdout '^exit=0$'
+stdout '^Run \S+ succeeded$'
+exec rhiza run status
+stdout '^- merge \(visit 1\): fail, then rebase'
+stdout '^- rebase \(visit 1\): fail, then conduct'
+stdout '^- conduct \(visit 2\): pass, then gate'
+stdout '^- gate \(visit 2\): pass, then signoff'
+stdout '^- signoff \(visit 2\): pass, then push'
+stdout '^- push \(visit 2\): pass, then wait-ci'
+stdout '^- merge \(visit 2\): pass, then main-ci'
+exec grep -c '^resolved' $WORK/claude.log
+stdout '^1$'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
 stdout '^1$'
 exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
 stdout '^- State: landed'
+exec sh -c 'git -C $WORK/origin3.git show main:first.txt'
+stdout '^first$'
 fold-ok
 
 -- origin.git/hooks/pre-receive --
@@ -135,7 +204,12 @@ echo "conduct" >> "$WORK/claude.log"
 echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
 if [ -e "$WORK/built" ]; then
 	echo handback >> "$WORK/claude.log"
-	rhiza ship rebase --no-push >&2 || exit 1
+	if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+		echo first > first.txt
+		git add first.txt
+		git commit -q --no-edit || exit 1
+		echo resolved >> "$WORK/claude.log"
+	fi
 	exit 0
 fi
 touch "$WORK/built"
@@ -178,7 +252,12 @@ o="${ORIGIN:-$WORK/origin.git}"
 case "$1 $2" in
 "pr view")
 	if [ "$RHIZA_STEP" = merge ] && [ ! -e "$WORK/moved" ] && [ -n "$ORIGIN" ]; then
-		sha=$(git -C "$o" commit-tree "refs/heads/main^{tree}" -p refs/heads/main -m 'Another change set')
+		tree="refs/heads/main^{tree}"
+		if [ -n "$CONFLICT" ]; then
+			blob=$(echo other | git -C "$o" hash-object -w --stdin)
+			tree=$( (git -C "$o" ls-tree refs/heads/main; printf '100644 blob %s\tfirst.txt\n' "$blob") | git -C "$o" mktree)
+		fi
+		sha=$(git -C "$o" commit-tree "$tree" -p refs/heads/main -m 'Another change set')
 		git -C "$o" update-ref refs/heads/main "$sha"
 		echo "$sha" > "$WORK/other.sha"
 		touch "$WORK/moved"

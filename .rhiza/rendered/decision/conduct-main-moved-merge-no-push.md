@@ -20,6 +20,10 @@ On a main-moved hand-back the conductor brings origin/main into the branch witho
 
 - answers [review-01m7ah6rayrzax6z6r63q0m2qk-r6-f4](../question/review-01m7ah6rayrzax6z6r63q0m2qk-r6-f4.md)
 
+### In
+
+- supersedes [ship-steps-rebase-clean-merge](ship-steps-rebase-clean-merge.md)
+
 ## History
 
 - `01M79KH59D0HEME6B85PXXB056` The builtin ship-change becomes the conductor default (conduct, gate, signoff, push, CI, merge, main CI, close-out; every red hands back to conduct) and the old one stays as ship-change-classic

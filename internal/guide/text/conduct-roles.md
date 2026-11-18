@@ -31,11 +31,12 @@ Each child follows `rhiza guide <role>` and the skill of the same name, `/rhiza-
   round has a blocker or major finding.
 - `fixer` (`rhiza guide fixer`): for the critic's confirmed findings, then the checks again;
   on a hand-back, for `rhiza check` output or the owner's requested changes.
-- `gate-fix` (`rhiza guide gate-fix`): on a hand-back from a failed `rhiza ship gate` or the
-  pre-push check of `rhiza ship open-pr`.
-- `ci-fix` (`rhiza guide ci-fix`): on a hand-back from a settled red CI at the merge.
-- `conflict-fix` (`rhiza guide conflict-fix`): for a code conflict that
-  `rhiza ship rebase --no-push` leaves in progress.
+- `gate-fix` (`rhiza guide gate-fix`): on a hand-back from a failed `rhiza ship gate`, the
+  pre-push check of `rhiza ship open-pr`, or the local gate or pre-push check failing on
+  a merged head (pr-green, rebase).
+- `ci-fix` (`rhiza guide ci-fix`): on a hand-back from a settled red CI at pr-green.
+- `conflict-fix` (`rhiza guide conflict-fix`): for a code conflict the ship steps leave in
+  progress when they merge origin/main into the branch (the CI wait, the rebase step).
 
 ## Check roles
 

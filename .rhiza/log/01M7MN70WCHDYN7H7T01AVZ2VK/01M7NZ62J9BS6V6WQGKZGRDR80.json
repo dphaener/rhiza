@@ -1,0 +1,40 @@
+{
+  "actor": "01M7NZ3NRV385VJVNVPC4JXK78",
+  "after": [
+    "01M7NYTH510GZNQE9E2KQRBTZC"
+  ],
+  "at": "2026-11-17T23:58:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at db1ea96d1 in a detached worktree (capped scopes, RHIZA_/SHIP_/REX_ unset for cmd/rhiza). go test -p 2 -trimpath ./internal/guide/... ok; -run 'TestConductHandback|TestConductReadsHandback|TestConductRoles|TestConductReadsRoles|TestWorkflowsText|TestList' -v: all PASS incl. TestConductHandbackCatchesDrift, which now covers a merge route, a dropped rebase route and a route running rhiza ship rebase, each reported by name. go test -p 2 -trimpath ./cmd/rhiza -run 'TestDocsPrimitives|TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/guide': ok (TestDocsBringYourOwnConductorSteps PASS). Failure case: changing conductor.toml's merge on.fail to handback:conduct makes TestDocsBringYourOwnConductorSteps fail naming step merge (restored). A scratch build's rhiza workflow check passes on docs/examples/byo/conductor.toml (only the expected uninstalled-skill warning); wait-ci uses rhiza ship check --settled, then pr-green, merge (on.fail rebase) and rebase. Greps: --no-rebase in conductor.toml/bring-your-own-agent.md/primitives.md, 'ten steps' in runs-and-daemon.md, 'ship rebase --no-push' in conduct-roles.md and 'failed merge' in bring-your-own-agent.md all find nothing; pr-green and rebase in workflows.md find the 12-step list at line 51; pr-green in primitives.md finds the Wait/Merge sections. The diff leaves ship-change.toml, internal/workflow, handback.md and the gate-fix/ci-fix/conflict-fix topics untouched, the TopicCap tests pass, and there are no TODOs. Its only files outside the leaf's list are tests (docs_examples_test.go, workflows_test.go, guide.txtar)."
+        },
+        "handle": "conduct-handback-ship-rebase-verified",
+        "id": "01M7NZ62FFZZGDEAGEYQYY0B3B",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7NZ62FFZZGDEAGEYPX5CVYG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NZ62FFZZGDEAGEYPX5CVYG",
+        "id": "01M7NZ62GPR7E8HZ5DM1YV21FG",
+        "link": "01M7NZ62GPR7E8HZ5DM11AGEYZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M7NYFGQ7YRNHQDCQSM0VM6SP",
+  "id": "01M7NZ62J9BS6V6WQGKZGRDR80",
+  "type": "ops",
+  "v": 1
+}

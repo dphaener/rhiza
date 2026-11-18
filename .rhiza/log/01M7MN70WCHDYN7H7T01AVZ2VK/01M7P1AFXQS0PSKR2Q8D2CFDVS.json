@@ -1,0 +1,86 @@
+{
+  "actor": "01M7P1691VYHRFXBV30JWB79DJ",
+  "after": [
+    "01M7P15KWJ0RVCKWVP7DWG90H4"
+  ],
+  "at": "2026-11-18T00:36:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with rhiza built from 3d2eb196f to a scratch path, in a throwaway repo, capped scope, RHIZA_/SHIP_/REX_ unset. Happy: workflow describe ship-change lists 12 steps conduct..deploy-check; merge on.fail->rebase, on.pass->main-ci; rebase on.fail->handback:conduct, on.pass->wait-ci; pr-green fail->handback:conduct; main-ci/close-out/ship/deploy-check no on.fail. workflow new --from ship-change copy shows wait-ci until 'rhiza ship check --settled' (no --no-rebase), merge run 'rhiza ship merge', rebase run 'rhiza ship rebase' stall 70m, max_visits 6 on wait-ci/pr-green/merge/rebase, handback_cap 3, conduct prompt without --no-push. In this repo ship-rhiza and bugfix describe/check valid with the same 12 included steps. describe --json repeated is byte-identical and equals api call workflow.describe. Failure: fork with [step.rebase] removed -> workflow check exit 1 'step merge: on.fail names \"rebase\", which is not a step'; workflow new onto an existing name refused exit 3; ship rebase with no change set exit 2 with next hint."
+        },
+        "handle": "ship-steps-rebase-clean-qa-2",
+        "id": "01M7P1AFJRPREY7801JCRBP5ZR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P1AFJRPREY7801JC9HF9ET",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P1AFJRPREY7801JC9HF9ET",
+        "id": "01M7P1AFM8A16R4243XYTNMZ2Z",
+        "link": "01M7P1AFM8A16R4243XX2Y5E1V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with the scratch build: guide conduct-handback has routes for pr-green and rebase, says the merge step never hands back and never to run rhiza ship rebase, no --no-push; guide conduct-roles gives conflict-fix for a conflict the ship steps leave in progress (CI wait, rebase step); guide workflows lists the 12 steps with pr-green and rebase. workflow check docs/examples/byo/conductor.toml valid (only the uninstalled /myteam:conduct warning); its steps from gate on are identical (comments stripped) to workflow new --from ship-change; pair workflow new --from <byo path> then workflow check valid. Failure: byo copy with handback:nope -> exit 1 naming gate, push, pr-green, rebase; guide with a typo name exit 4. Greps: no --no-rebase in the byo docs, no 'ten steps' in runs-and-daemon.md (12-step entry, failed merge goes to rebase), no 'ship rebase --no-push' in conduct-roles.md, pr-green in primitives.md."
+        },
+        "handle": "conduct-handback-ship-rebase-qa-2",
+        "id": "01M7P1AFNPJHRZMNKVCT1Q1TJ8",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P1AFNPJHRZMNKVCQGQ1QEE",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P1AFNPJHRZMNKVCQGQ1QEE",
+        "id": "01M7P1AFQRPS25Y5Y3A6WG5F92",
+        "link": "01M7P1AFQRPS25Y5Y3A6570HFF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test -p 2 -trimpath -count=1 -v ./cmd/rhiza -run 'TestScripts/(ship-change-one-ci|guide|workflow-new)$' (capped scope, env cleaned) PASS, ship-change-one-ci 4.99s: happy path one CI wait/merge, main-moved case merge(visit 1) fail then rebase pass then wait-ci/pr-green/merge visit 2 with conduct visited once and no handback; conflict case rebase fail then conduct (visit 2), gate, signoff, push, merge visit 2."
+        },
+        "handle": "ship-one-ci-rebase-in-steps-qa-2",
+        "id": "01M7P1AFSHMVDTMYH89C93PQ79",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P1AFSHMVDTMYH899KNS2T9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P1AFSHMVDTMYH899KNS2T9",
+        "id": "01M7P1AFVK5ZKERWMG3RPXM5WE",
+        "link": "01M7P1AFVK5ZKERWMG3NYY42M1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGTG0TSZM85WSJ79R55P3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M7NYFGQ7YRNHQDCQSM0VM6SP",
+  "id": "01M7P1AFXQS0PSKR2Q8D2CFDVS",
+  "type": "ops",
+  "v": 1
+}

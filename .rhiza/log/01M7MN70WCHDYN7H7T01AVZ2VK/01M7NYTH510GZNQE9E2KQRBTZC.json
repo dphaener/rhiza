@@ -1,0 +1,40 @@
+{
+  "actor": "01M7NYQNJYVNW2RBPCABXVKN98",
+  "after": [
+    "01M7NY2ZTGAYNR4MNWFENDXBJ3"
+  ],
+  "at": "2026-11-17T23:52:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 48b07ac34 (capped scope, RHIZA_/SHIP_/REX_ unset): go test -trimpath ./internal/workflow -run 'TestBuiltinShipChange|TestPlainRedLoopsShipChangeHasNone|TestMergeWithoutGate' exit 0; go test ./internal/workflow/... exit 0; go test ./cmd/rhiza -run TestScripts/workflow-new exit 0. Failure cases: TestBuiltinShipChange exits 1 with ship-change.toml mutated to merge on.fail handback:conduct, wait-ci until with --no-rebase, rebase on.fail wait-ci, rebase stall removed, and rebase stall 40m. Diff read: the test asserts the 12 steps in order, wait-ci until exactly rhiza ship check --settled with timeout to handback:conduct, pr-green running rhiza ship check (pass merge, fail handback), merge running exactly rhiza ship merge (only pass main-ci, fail rebase), rebase running rhiza ship rebase with stall 70m >= gate's (pass wait-ci, fail handback), max_visits 6 on the four steps, handback_cap 3, no fail route or hand-back after the merge, conduct prompt naming the conflict fixer without --no-push. No change to internal/api, ship-change-classic.toml, plan.toml, .rhiza/workflows or docs; no TODOs. rhiza ship generate and rhiza render (scratch build) exit 0 with a clean tree. ship-change-one-ci.txtar still asserts the old shape; that is leaf ship-one-ci-rebase-in-steps's file."
+        },
+        "handle": "ship-steps-rebase-clean-verified",
+        "id": "01M7NYTH2A4A9AWCPCZG2JQVXV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7NYTH2A4A9AWCPCZE6Q35X3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7NYTH2A4A9AWCPCZE6Q35X3",
+        "id": "01M7NYTH3F7FVHSHA76ZC9XQTG",
+        "link": "01M7NYTH3F7FVHSHA76Y5CCCRJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M7NYFGQ7YRNHQDCQSM0VM6SP",
+  "id": "01M7NYTH510GZNQE9E2KQRBTZC",
+  "type": "ops",
+  "v": 1
+}

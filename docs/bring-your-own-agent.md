@@ -92,7 +92,7 @@ The whole file is [conductor.toml](examples/byo/conductor.toml). Everything afte
 - `rhiza check` passes on the model and the code.
 - `rhiza ship gate` is the repo's local gate.
 
-A red there, a send-back at sign-off, a refused push, a CI timeout or a failed merge all hand back to `conduct`, up to `handback_cap` times. Your skill reads `{handback}`, fixes what it names and ends with `rhiza session done` again.
+A red there, a send-back at sign-off, a refused push, a CI timeout, a red `pr-green` (a red CI, a conflict left by merging main, or a gate that failed on the merged head) or a red `rebase` all hand back to `conduct`, up to `handback_cap` times. A merge that fails doesn't hand back: it goes to `rebase`, which brings `origin/main` into the branch, gates and pushes the merged head and waits on CI again, handing back only for a code conflict, a gate that fails on the merged head or another error. Your skill reads `{handback}`, fixes what it names (never running `rhiza ship rebase` itself; the run's own steps do) and ends with `rhiza session done` again.
 
 ## Level 3: a workflow
 

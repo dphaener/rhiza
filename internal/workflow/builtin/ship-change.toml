@@ -5,22 +5,25 @@ name = "ship-change"
 # qa checks, and lands the change set on the branch. The daemon owns the
 # rest: the gate (build-check, review-check, rhiza check and the local
 # gate), the owner's sign-off, the push and the PR, CI at that head, the
-# merge of the tested head, main's CI, close-out, the ship command and the
-# deploy check.
+# merge of the tested head (bringing origin/main into the branch and
+# waiting on CI again when main moved), main's CI, close-out, the ship
+# command and the deploy check.
 #
-# Every red result up to and including the merge hands back to conduct
-# (handback:conduct), at most handback_cap times, then the run parks
-# stopped with an inbox item. The steps after the merge have no on.fail
-# route and no hand-back: nothing on the branch can fix a merged change
-# set, so a red main CI, a failed close-out, ship or deploy-check stops
-# the run.
+# Every red result before the merge (conduct, gate, signoff, push, wait-ci
+# and pr-green) hands back to conduct (handback:conduct), at most
+# handback_cap times, then the run parks stopped with an inbox item. A
+# failed merge goes to the rebase step instead, which hands back only when
+# main cannot be brought in cleanly. The steps after the merge have no
+# on.fail route and no hand-back: nothing on the branch can fix a merged
+# change set, so a red main CI, a failed close-out, ship or deploy-check
+# stops the run.
 handback_cap = 3
 
 [step.conduct]
 kind = "agent"
 prompt = """/rhiza-conduct Conduct change set {change} in run {run}: follow rhiza guide conduct.
 
-When the hand-back is rhiza ship merge's main-moved output (origin/main moved past the tested head), bring main into the branch with rhiza ship rebase --no-push: it merges origin/main, settles rendered-only conflicts by rendering again, and pushes nothing. Never run plain rhiza ship rebase. If it leaves a code conflict in progress, have the conflict fixer resolve and commit it (never by hand), then finish: the gate, sign-off, push and a second CI wait on the new head follow."""
+The run's own steps bring origin/main into the branch (rhiza ship rebase and the CI wait); never run rhiza ship rebase yourself. When a hand-back names a code conflict left in progress by the merge of main, have the conflict fixer resolve and commit it (never by hand), then finish: the gate, sign-off, push and a fresh CI wait on the new head follow."""
 handback = """The run handed change set {change} back to you in run {run}: read {handback} for what failed and why, fix it the way rhiza guide conduct says (spawn the role, never fix it yourself), land and render again on the branch, then finish with rhiza session done."""
 until = "true"
 until_when = "done"
@@ -64,30 +67,57 @@ on.fail = "handback:conduct"
 
 # Waits for CI at the pushed head to settle, green or red, so a red CI
 # ends the wait as soon as it finishes rather than at the timeout. A PR
-# GitHub reports conflicting has no CI: --no-rebase settles the wait with
-# nothing merged or pushed, so the merge step's ship check fails on the
-# conflict and hands back to conduct, which brings main in with ship
-# rebase --no-push and goes through gate, signoff and push again. A
-# timeout hands back.
+# GitHub reports conflicting has no CI: the wait merges origin/main into
+# the branch, settling rendered-only conflicts by rendering again, pushes a
+# clean merge and waits on its CI; a code conflict is left in progress and
+# settles the wait, so pr-green fails on it and hands back to conduct (the
+# conflict fixer's). A timeout hands back.
 [step.wait-ci]
 kind = "wait"
-until = "rhiza ship check --settled --no-rebase"
+until = "rhiza ship check --settled"
 timeout = "2h"
 interval = "30s"
 max_interval = "2m"
-on.pass = "merge"
+max_visits = 6
+on.pass = "pr-green"
 on.timeout = "handback:conduct"
 
-# Only pass and fail. Ship check first: it passes only when every check is
-# green and records the head the merge tests against, so a settled red CI
-# (or a PR GitHub reports conflicting, which --no-rebase fails on without
-# merging main) fails here and hands back to conduct with its output. A draft or a merge GitHub refused stops the run
-# (the stop exit); main having moved past the tested head, or a gh, fetch
-# or git error, hands back to conduct with ship merge's output.
+# Passes only when every check is green and records the head the merge
+# tests against. A settled red CI, an unresolved merge of main left by the
+# wait, or a merged head the local gate or pre-push check failed on fails
+# here and hands back to conduct with its output.
+[step.pr-green]
+kind = "command"
+run = "rhiza ship check"
+max_visits = 6
+on.pass = "merge"
+on.fail = "handback:conduct"
+
+# Only pass and fail. A draft or a merge GitHub refused stops the run (the
+# stop exit). Main having moved past the tested head, or a gh, fetch or git
+# error, goes to rebase rather than handing back.
 [step.merge]
 kind = "command"
-run = "rhiza ship check --no-rebase && rhiza ship merge"
+run = "rhiza ship merge"
+max_visits = 6
 on.pass = "main-ci"
+on.fail = "rebase"
+
+# Merges origin/main into the branch, settles rendered-only conflicts by
+# rendering again, runs the local gate and the pre-push check on the merged
+# head and pushes it, then goes back to wait-ci for a CI round on the new
+# head (signoff is not asked again). When main has not moved it merges
+# nothing, so the wait, check and merge retry. It fails, handing back to
+# conduct, on a code conflict left in progress (the conflict fixer's) or
+# when the local gate or pre-push check fails on the merged head, kept
+# unpushed (the gate fixer's). The local gate can take an hour, so the
+# stall is the gate step's 70m, above the watchdog's 30m default.
+[step.rebase]
+kind = "command"
+run = "rhiza ship rebase"
+stall = "70m"
+max_visits = 6
+on.pass = "wait-ci"
 on.fail = "handback:conduct"
 
 # Main's CI is one step. When the merge commit's tree equals the tested
