@@ -18,6 +18,10 @@ package api
 // is written, the run's journal gets an accepted or rejected entry naming
 // the change set and the log entry, so the run lists its own gate moves.
 //
+// An accept or reject under rule owner of a change set with a live run
+// whose accept stage is not owner (the run does not wait for it) is a
+// person's intervention: that run's journal gets an approve intervention.
+//
 // Reopen moves a landed change set back to accepted, only while its land is
 // on its branch alone: none of its land entries is in the log at check's
 // base. Landed work on main is final. With no base to look at it refuses
@@ -284,7 +288,62 @@ func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
 			return nil, err
 		}
 	}
+	if v.decision && rule == defaultRule && !ctx.DryRun {
+		journalApprove(ctx, v.name, cs)
+	}
 	return resp, nil
+}
+
+// journalApprove journals an owner-rule accept or reject of change set cs
+// as an approve intervention on its live run, when that run is not waiting
+// for the owner's accept: its accept stage is not owner, so the run would
+// have moved past the gate on its own. The run waiting for that accept,
+// the workflow's own gate moves (rule autonomous or autonomy) and a change
+// set with no live run journal none. The move is written either way, so a
+// journal that cannot be read or written is only a warning on stderr.
+func journalApprove(ctx *Ctx, verb string, cs id.ID) {
+	common, err := gitCommonDir(ctx)
+	if err != nil {
+		return // no repository: no runs
+	}
+	rs := runStore(ctx, common)
+	j, live, err := rs.LiveOf(cs.String(), "")
+	if err != nil {
+		if ctx.Stderr != nil {
+			fmt.Fprintf(ctx.Stderr, "rhiza: warning: the runs of change set %s are not read, so none records the %s as an approve intervention: %v\n", cs, verb, err)
+		}
+		return
+	}
+	if !live {
+		return
+	}
+	err = func() error {
+		st := j.State()
+		mode, err := stateStageMode(ctx, st, "accept")
+		if err != nil {
+			return err
+		}
+		if mode == AutonomyOwner {
+			return nil // the run waits for this accept: not an intervention
+		}
+		from, err := messageSender(ctx)
+		if err != nil {
+			return err
+		}
+		done := "accepted"
+		if verb == "reject" {
+			done = "rejected"
+		}
+		detail := done + " change set " + cs.String()
+		if st.Current != "" {
+			detail += " at step " + st.Current
+		}
+		return rs.AppendIntervention(j.ID, run.Intervention{Kind: run.InterventionApprove, Actor: from.Handle,
+			Detail: detail, Step: st.Current, At: ctx.Now()})
+	}()
+	if err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: warning: run %s's journal does not record the %s as an approve intervention: %v\n", j.ID, verb, err)
+	}
 }
 
 // autonomousGate is the run an accept or reject under rule autonomous is

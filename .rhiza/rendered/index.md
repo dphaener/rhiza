@@ -1495,6 +1495,7 @@
 - [ci-unstable-gate-rules](decision/ci-unstable-gate-rules.md)
 - [ci-warns-on](decision/ci-warns-on.md)
 - [ci-yml-agent-built](decision/ci-yml-agent-built.md)
+- [claude-code-10fae664](actor/claude-code-10fae664.md)
 - [claude-code-7193e41e](actor/claude-code-7193e41e.md)
 - [claude-code-adapter](decision/claude-code-adapter.md)
 - [clean-repo](decision/clean-repo.md)
