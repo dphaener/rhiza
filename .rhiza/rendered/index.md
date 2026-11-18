@@ -6227,6 +6227,7 @@
 - [claude-code-12e7dc02](actor/claude-code-12e7dc02.md)
 - [claude-code-12fc4e0f](actor/claude-code-12fc4e0f.md)
 - [claude-code-1302d46f](actor/claude-code-1302d46f.md)
+- [claude-code-130a562f](actor/claude-code-130a562f.md)
 - [claude-code-130e8f97](actor/claude-code-130e8f97.md)
 - [claude-code-13180551](actor/claude-code-13180551.md)
 - [claude-code-1343f0ef](actor/claude-code-1343f0ef.md)
