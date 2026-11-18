@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RGBSSX77EAKBPQN49PCKJ8",
+  "after": [
+    "01M7RFWC8J55KBW4HP0YB14TPB"
+  ],
+  "at": "2026-11-18T23:42:12Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 60d5352f0 in a detached checkout, each go test inside systemd-run --user --scope -p MemoryMax=6G -p TasksMax=300 with -p 2 and RHIZA_/SHIP_/REX_ unset, one at a time. (1) go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous$': ok. (2) Scratch delays (time.Sleep(1500ms) after r.log step in internal/run/engine.go:772, sleep 0.8 after the fake planner's rhiza session done): with main f7313222e's txtar, -count=3 failed 3 of 3 at txtar:68 with 'unblocked tokens tokens ended tokens entered'; with the fix, -count=3 ok. (3) Tokens assertion's step changed to nosuch in scratch: exit 1, no match at txtar:72; reverted. (4) go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous' (with -left, -unapplied): ok. rhiza ship generate and rhiza render: exit 0, no diff. Diff read: only plan-workflow-autonomous.txtar changes (plus the builder's actor record); the order regex is unchanged except the tokens group, which now is filtered out with grep -vx tokens; no Go code, skip list or other script touched; all scratch edits reverted and the checkout removed."
+        },
+        "handle": "plan-autonomous-journal-order-ignores-tokens-verified",
+        "id": "01M7RGM5PDQRW95B6EKY0AGFAZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RGM5PDQRW95B6EKVTTA66J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RGM5PDQRW95B6EKVTTA66J",
+        "id": "01M7RGM5RHRMPFFMDC5S0F9JQZ",
+        "link": "01M7RGM5RHRMPFFMDC5NXBYZAF",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RFQFXB7SZSEMAB7X7X4M0W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RFDAZ53YZ3775D7SV70Z4G",
+  "for": "01M7RG230K2HBYN0PB8E5YT742",
+  "id": "01M7RGM5SVM5QQ7QB8ND8HKZ50",
+  "type": "ops",
+  "v": 1
+}

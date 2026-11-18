@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RGNTMG8YP571ZJHB1KNPT3",
+  "after": [
+    "01M7RGM5SVM5QQ7QB8ND8HKZ50"
+  ],
+  "at": "2026-11-18T23:47:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 60d5352f0, each go test in a systemd-run scope with -p 2: plan-workflow-autonomous -count=3 ok; with the two scratch delays (engine.go Sleep 1500ms after the step log, sleep 0.8 after the fake planner's session done) the fixed script passed 3/3 while main f7313222e's failed 3/3 at txtar:68 with 'unblocked tokens tokens ended tokens entered'; tokens step changed to nosuch failed at txtar:72 and no tokens entries at all failed at txtar:71; the -left and -unapplied scripts pass; all scratch edits discarded"
+        },
+        "handle": "plan-autonomous-journal-order-ignores-tokens-qa-1",
+        "id": "01M7RGY2BKAHCWY9E8PJEJDGKW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RGY2BKAHCWY9E8PHAF7XFY",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RGY2BKAHCWY9E8PHAF7XFY",
+        "id": "01M7RGY2F3HHDCF2Z7VR7WCBWW",
+        "link": "01M7RGY2F3HHDCF2Z7VMB3H57T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RFQFXB7SZSEMAB7X7X4M0W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RFDAZ53YZ3775D7SV70Z4G",
+  "for": "01M7RG230K2HBYN0PB8E5YT742",
+  "id": "01M7RGY2KF6RQNF7ZQYDSDHR43",
+  "type": "ops",
+  "v": 1
+}

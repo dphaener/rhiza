@@ -63,9 +63,13 @@ stdout '^- gate \(visit 1\): pass, then open-pr: exit 0$'
 
 # The journal: the planner's block, its question, the arbiter, its
 # verdict and the answer, then the planner's step ends and the review
-# begins.
-exec sh -c 'grep -o "\"type\":\"[a-z]*\"" .git/rhiza/runs/*.jsonl | sed "s/\"type\"://; s/\"//g" | tr "\n" " "'
-stdout '^started process entered session blocked asked arbiter arbitrated answered unblocked (tokens )*ended entered '
+# begins. A session's tokens entries may land anywhere around its step's
+# ended entry (the agent's own process writes its exit-time reading), so
+# the order leaves them out and they are checked on their own.
+exec sh -c 'grep -o "\"type\":\"[a-z]*\"" .git/rhiza/runs/*.jsonl | sed "s/\"type\"://; s/\"//g" | grep -vx tokens | tr "\n" " "'
+stdout '^started process entered session blocked asked arbiter arbitrated answered unblocked ended entered '
+exec sh -c 'grep "\"type\":\"tokens\"" .git/rhiza/runs/*.jsonl'
+stdout '"step":"interview"'
 exec sh -c 'grep "\"type\":\"answered\"" .git/rhiza/runs/*.jsonl'
 stdout '"step":"interview"'
 stdout '"decision":"assume-streaming"'
