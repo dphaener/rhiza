@@ -1,0 +1,68 @@
+{
+  "actor": "01M7PV8NYEZ22V7NHB6KJN6W7B",
+  "after": [
+    "01M7PV84V8EC37DMHK56FRRMC2"
+  ],
+  "at": "2026-11-18T08:10:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'RunStatus|CheckRound' passes with a new test in internal/api/run_test.go: a conductor run whose check journaled a round with two evidence lines shows both, with leaf handles, in run status --json and in the human output under that round; a round with no evidence has no evidence key in --json and prints no evidence lines, and a round with findings and no evidence lines prints its findings exactly as before; (failure case) an evidence line whose leaf no longer resolves (a leaf retired after the round was journaled) is still shown, with the leaf's ID and an empty leaf_handle in --json and the bare ID in the human output, and run status does not fail. go test -trimpath ./cmd/rhiza -run TestScripts/describe-golden passes after regenerating it with -update, and make self-check passes.",
+          "files": "internal/api/run.go, internal/api/run_test.go, cmd/rhiza/testdata/script/describe-golden.txtar, docs/reference/cli.md",
+          "must_not": "Change how findings, verdicts or plan-review rounds are shown; change run findings' validation.",
+          "statement": "rhiza run status shows each review check round's evidence lines: --json gives every RunCheckRound an evidence array of {leaf, leaf_handle, line}, absent when the round has none, and the human output lists them under the round with the leaf's handle."
+        },
+        "handle": "check-round-evidence-status",
+        "id": "01M7PTHCQDJX30S30ZZTXTANMN",
+        "key": "zzzw",
+        "kind": "capability",
+        "node": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide/... passes with new assertions in check_plan_test.go, check_code_test.go and check_qa_test.go that each guide's run findings --check example carries an \"evidence\" list with leaf and line, says one line per acceptance point, and says an uncovered leaf is refused; check_qa_test.go still asserts the Evidence node apply example.",
+          "failure_waiver": "Guide text only: no input path to refuse; the refusal itself is tested in check-round-leaf-coverage.",
+          "files": "internal/guide/text/check-plan.md, internal/guide/text/check-code.md, internal/guide/text/check-qa.md, internal/guide/check_plan_test.go, internal/guide/check_code_test.go, internal/guide/check_qa_test.go",
+          "must_not": "Change check-quality, check-model or check-compliance (internal/guide/text/check-compliance.md, internal/guide/check_compliance_test.go): classic checks steps keep evidence optional; change Go code outside internal/guide tests; drop the QA Evidence node instruction.",
+          "statement": "The check-plan, check-code and check-qa guides (the checks a conductor spawns) show the findings file with an evidence list and tell the check to write one evidence line per acceptance point of each leaf (what it ran or read, with the result), that a round leaving a leaf uncovered is refused in a conductor run, and check-qa still has the QA check write Evidence nodes on each leaf."
+        },
+        "handle": "check-guides-evidence-lines",
+        "id": "01M7PTHCYQHPSDSYPH4GSZHYXR",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "op": "node.create",
+        "parent": "01M5Z0EFR7RVGGDDPQF4B9TQN4"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "id": "01M7PV9F42MYX3X86GA176RR2X",
+        "link": "01M7PV9F42MYX3X86G9YKYDWZR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PV72H3AAJ1X3210EC5TKCS",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "id": "01M7PV9F7B48P9WGAFAQ73C070",
+        "link": "01M7PV9F7B48P9WGAFAM4W26B8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PV84S4P4F8W3T2H4ND8PQP",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PV9F8KMST4WMWKX3JSZ1GY",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,41 @@
+{
+  "actor": "01M7PV6BX9JJZM4B2F5J0RJPFC",
+  "after": [
+    "01M7PV685HK793KS5X7K7C3W4Q"
+  ],
+  "at": "2026-11-18T08:08:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "internal/guide/text/conduct.md:38 has the conductor spawn only --role check-plan, check-code and check-qa. check-compliance is spawned only by classic kind=checks steps (internal/workflow/builtin/review.toml:45, .rhiza/workflows/docs-review.toml:31), which shallow-round-needs-leaf-coverage leaves unchanged with evidence optional. Telling the compliance check a round is refused in a conductor run describes a refusal it never meets, so the guide would be wrong; keeping it unchanged also matches the leaf's existing treatment of the other classic checks (check-quality, check-model in must_not). The alternative (keep it and explain a conductor might run it) has no support in the code or conduct guide, and evidence remains accepted-but-optional in classic rounds, so nothing is lost by leaving its guide as is.",
+          "statement": "Drop check-compliance from leaf check-guides-evidence-lines: the evidence-list and uncovered-leaf-refusal guidance goes only into the guides of the checks a conductor spawns (check-plan, check-code, check-qa) and their tests. internal/guide/text/check-compliance.md and internal/guide/check_compliance_test.go are left unchanged and move to the leaf's must_not, beside check-quality and check-model. The phrase 'check-compliance guidance used by conductors' in Decision shallow-round-needs-leaf-coverage is read as the three conductor check guides only; the refusal itself stays name-independent in code as that Decision says.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "evidence-guides-conductor-checks-only",
+        "id": "01M7PV72H3AAJ1X3210GPTR9SK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7PV72H3AAJ1X3210EC5TKCS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PV72H3AAJ1X3210EC5TKCS",
+        "id": "01M7PV72JC3PM700XSATK8SC3Z",
+        "link": "01M7PV72JC3PM700XSAQVYZPTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PV67Z9271HEMW6WVBX719P",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PV72KAMY965QVRAD4Z4N1J",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,41 @@
+{
+  "actor": "01M7PV7ETDZW8HYVDSDP9CRSXD",
+  "after": [
+    "01M7PV72KAMY965QVRAD4Z4N1J"
+  ],
+  "at": "2026-11-18T08:09:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The finding and the critic agree the leaf's stated failure case is the absent-data display path, already covered by its 'no evidence key' clause. A real failure path exists: rounds are journaled before later plan edits, so an evidence line can name a leaf retired or removed since, and the handle lookup must degrade to the ID rather than error. Testing that is cheap (one more evidence line in the same run_test.go fixture), stays inside the leaf's files and must_not, and is more useful than a waiver, so the case is chosen over a failure_waiver.",
+          "statement": "check-round-evidence-status's failure case is an evidence line whose leaf no longer resolves (e.g. a leaf retired after the round was journaled): run status still shows that line, with the leaf's ID and an empty leaf_handle in --json and the bare ID in the human output, and does not fail. The current '(failure case)' (a round with findings and no evidence printing as before) stays as a regression clause, not as the failure case; no failure_waiver.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "evidence-status-unresolved-leaf-failure-case",
+        "id": "01M7PV84S4P4F8W3T2H6KNBM6D",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7PV84S4P4F8W3T2H4ND8PQP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PV84S4P4F8W3T2H4ND8PQP",
+        "id": "01M7PV84T6THV60T26EH8P6463",
+        "link": "01M7PV84T6THV60T26EE0CGF3B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PV681EVKB1B7PMSEDR9K20",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PV84V8EC37DMHK56FRRMC2",
+  "type": "ops",
+  "v": 1
+}
