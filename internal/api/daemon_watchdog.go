@@ -31,8 +31,10 @@ import (
 type watchdogDeps struct {
 	sessions *session.Store
 	// step is st's current step: its kind, stall limit and timeout.
-	step   func(st run.State) workflow.Step
-	send   func(sid, text string) error
+	step func(st run.State) workflow.Step
+	send func(sid, text string) error
+	// stop closes the panes of sessions, the step's stall sessions and the
+	// parents waiting on their spawns, and stops st's process.
 	stop   func(st run.State, sessions []string) error
 	resume func(runID string) error
 	// queued is whether a continue of the run is already queued: the
@@ -76,9 +78,11 @@ func (d watchdogDeps) charge(m *daemon.WatchdogRun, action string) {
 }
 
 // watchdogProgress is the latest sign of life of st's current step: the last
-// journal entry or the last report of one of the step's sessions. ok is
-// false when the step is not stalled-able: one of its sessions waits on an
-// answer, said it is done, paused at its usage limit or is gone.
+// journal entry or the last report of one of the step's stall sessions
+// (stallSessions: its open spawned children counted, a parent waiting on
+// one not, so the parent's progress is its child's). ok is false when the
+// step is not stalled-able: one of those sessions waits on an answer, said
+// it is done, paused at its usage limit or is gone.
 func watchdogProgress(j run.Journal, st run.State, d watchdogDeps) (at time.Time, sids []string, ok bool) {
 	if n := len(j.Entries); n > 0 {
 		at = j.Entries[n-1].At
@@ -86,7 +90,7 @@ func watchdogProgress(j run.Journal, st run.State, d watchdogDeps) (at time.Time
 	if len(st.Blocks) > 0 {
 		return at, nil, false
 	}
-	for _, sid := range stepSessions(st) {
+	for _, sid := range stallSessions(st) {
 		rec, err := d.sessions.Read(sid)
 		if err != nil {
 			continue
@@ -177,7 +181,13 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 			})
 			continue
 		}
-		if err := d.stop(st, sids); err != nil {
+		closing := slices.Clone(sids)
+		for _, sid := range spawnWaiting(st) {
+			if !slices.Contains(closing, sid) {
+				closing = append(closing, sid)
+			}
+		}
+		if err := d.stop(st, closing); err != nil {
 			fail(fmt.Errorf("stop run %s: %w", j.ID, err))
 			continue
 		}

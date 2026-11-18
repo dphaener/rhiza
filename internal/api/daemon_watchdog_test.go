@@ -117,6 +117,140 @@ func TestWatchdogStalled(t *testing.T) {
 	}
 }
 
+// TestWatchdogStalledSpawnedChild replays the 2026-11-16 stall: a conduct
+// run whose conductor spawned a fixer that went idle without saying done.
+// The fixer is nudged at the first limit, not the conductor blocked in its
+// spawn command; past the second the run is stopped with both panes closed
+// and resumed, charged once. A fixer that said done, or whose spawn ended,
+// is neither nudged nor counted, and a conductor waiting on a fixer that
+// reports is left alone however old its own report.
+func TestWatchdogStalledSpawnedChild(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2026, 11, 16, 0, 0, 0, 0, time.UTC)
+	pol := WatchdogPolicy{Enabled: true, AgentNudge: 20 * time.Minute, AgentRetry: 40 * time.Minute, CommandLimit: 30 * time.Minute, WaitLimit: 90 * time.Minute, RetryBudget: 1, AutonomousOnly: true}
+	type fixture struct {
+		sessions               *session.Store
+		sent, stopped, resumed []string
+		d                      watchdogDeps
+	}
+	setup := func(t *testing.T) *fixture {
+		f := &fixture{sessions: session.NewStore(t.TempDir())}
+		f.d = watchdogDeps{
+			sessions: f.sessions,
+			step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
+			send:     func(sid, _ string) error { f.sent = append(f.sent, sid); return nil },
+			stop: func(st run.State, sids []string) error {
+				f.stopped = append(f.stopped, st.ID+":"+strings.Join(sids, ","))
+				return nil
+			},
+			resume: func(id string) error { f.resumed = append(f.resumed, id); return nil },
+			log:    func(string, ...any) {},
+		}
+		return f
+	}
+	// The conductor works in its spawn command, its last report two hours
+	// old; the fixer is autonomous and idle by its hook.
+	report := func(t *testing.T, s *session.Store, id, state string, at time.Time, done bool) {
+		t.Helper()
+		rec := session.Record{ID: id, Autonomous: true}
+		rec.Status.Hook = &session.Report{State: state, At: at}
+		if done {
+			rec.Status.Done = &session.Report{State: session.StateDone, At: at}
+		}
+		if err := s.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	conduct := func(ended bool) []run.Journal {
+		es := []run.Entry{
+			{Type: run.TypeStarted, At: t0.Add(-3 * time.Hour), Started: &run.Started{Autonomous: true}},
+			{Type: run.TypeEntered, At: t0.Add(-3 * time.Hour), Step: "conduct", Visit: 1},
+			{Type: run.TypeSession, At: t0.Add(-3 * time.Hour), Step: "conduct", Session: "conductor"},
+			{Type: run.TypeSpawn, At: t0, Step: "conduct", Parent: "conductor", Session: "fixer", Role: "fixer"},
+		}
+		if ended {
+			es = append(es, run.Entry{Type: run.TypeSpawnEnded, At: t0, Step: "conduct", Parent: "conductor", Session: "fixer", Outcome: workflow.OutcomePass})
+		}
+		return []run.Journal{{ID: "R", Entries: es}}
+	}
+	poll := func(t *testing.T, f *fixture, js []run.Journal, mem []daemon.WatchdogRun, now time.Time) []daemon.WatchdogRun {
+		t.Helper()
+		mem, _, err := watchdogStalled(pol, js, now, mem, f.d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return mem
+	}
+
+	t.Run("idle child", func(t *testing.T) {
+		f := setup(t)
+		report(t, f.sessions, "conductor", session.StateWorking, t0.Add(-2*time.Hour), false)
+		report(t, f.sessions, "fixer", session.StateIdle, t0, false)
+		js := conduct(false)
+		var mem []daemon.WatchdogRun
+		mem = poll(t, f, js, mem, t0.Add(19*time.Minute))
+		if len(f.sent)+len(f.stopped) != 0 {
+			t.Fatalf("before the first limit: sent %v stopped %v", f.sent, f.stopped)
+		}
+		mem = poll(t, f, js, mem, t0.Add(21*time.Minute))
+		if !slices.Equal(f.sent, []string{"fixer"}) || len(f.stopped) != 0 {
+			t.Fatalf("first limit: sent %v stopped %v, want the fixer nudged", f.sent, f.stopped)
+		}
+		mem = poll(t, f, js, mem, t0.Add(41*time.Minute))
+		if !slices.Equal(f.stopped, []string{"R:fixer,conductor"}) || !slices.Equal(f.resumed, []string{"R"}) {
+			t.Fatalf("second limit: stopped %v resumed %v, want both panes closed and one resume", f.stopped, f.resumed)
+		}
+		if len(mem) != 1 || mem[0].Spent != 1 {
+			t.Errorf("memory %+v, want the budget charged once", mem)
+		}
+		if !slices.Equal(f.sent, []string{"fixer"}) {
+			t.Errorf("sent %v, want the fixer only", f.sent)
+		}
+	})
+	t.Run("child said done", func(t *testing.T) {
+		f := setup(t)
+		report(t, f.sessions, "conductor", session.StateWorking, t0.Add(-2*time.Hour), false)
+		report(t, f.sessions, "fixer", session.StateIdle, t0, true)
+		js := conduct(false)
+		var mem []daemon.WatchdogRun
+		for _, m := range []time.Duration{21, 41, 90} {
+			mem = poll(t, f, js, mem, t0.Add(m*time.Minute))
+		}
+		if len(f.sent)+len(f.stopped)+len(f.resumed) != 0 {
+			t.Fatalf("done child: sent %v stopped %v resumed %v", f.sent, f.stopped, f.resumed)
+		}
+	})
+	t.Run("spawn ended", func(t *testing.T) {
+		f := setup(t)
+		report(t, f.sessions, "conductor", session.StateWorking, t0, false)
+		report(t, f.sessions, "fixer", session.StateIdle, t0.Add(-2*time.Hour), false)
+		js := conduct(true)
+		poll(t, f, js, nil, t0.Add(21*time.Minute))
+		if slices.Contains(f.sent, "fixer") {
+			t.Fatalf("ended spawn's child was nudged: sent %v", f.sent)
+		}
+		// With its spawn ended the conductor waits on nothing: its own
+		// silence counts again.
+		if !slices.Equal(f.sent, []string{"conductor"}) {
+			t.Errorf("sent %v, want the conductor", f.sent)
+		}
+	})
+	t.Run("child reports", func(t *testing.T) {
+		f := setup(t)
+		report(t, f.sessions, "conductor", session.StateWorking, t0.Add(-5*time.Hour), false)
+		js := conduct(false)
+		var mem []daemon.WatchdogRun
+		for _, m := range []time.Duration{21, 41, 61, 81} {
+			now := t0.Add(m * time.Minute)
+			report(t, f.sessions, "fixer", session.StateWorking, now.Add(-time.Minute), false)
+			mem = poll(t, f, js, mem, now)
+		}
+		if len(f.sent)+len(f.stopped)+len(f.resumed) != 0 {
+			t.Fatalf("waiting conductor: sent %v stopped %v resumed %v", f.sent, f.stopped, f.resumed)
+		}
+	})
+}
+
 func slicesHoldFor(holds []daemon.WatchdogHold, id string) bool {
 	for _, h := range holds {
 		if h.Run == id {

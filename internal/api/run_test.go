@@ -997,6 +997,32 @@ func TestRunStalledNow(t *testing.T) {
 	}
 }
 
+// TestStepSessions checks the open spawned children of the current step
+// join its sessions, and that stallSessions drops a parent waiting on an
+// open spawn of its own while spawnWaiting names it.
+func TestStepSessions(t *testing.T) {
+	t.Parallel()
+	st := run.State{Current: "conduct", Session: map[string]string{"conduct": "conductor"}, Spawns: []run.Spawn{
+		{Step: "plan", Parent: "planner", Session: "old-child"},
+		{Step: "conduct", Parent: "conductor", Session: "builder", Ended: true},
+		{Step: "conduct", Parent: "conductor", Session: "fixer"},
+		{Step: "conduct", Parent: "fixer", Session: "grandchild"},
+	}}
+	if got, want := stepSessions(st), []string{"conductor", "fixer", "grandchild"}; !slices.Equal(got, want) {
+		t.Errorf("stepSessions = %v, want %v", got, want)
+	}
+	if got, want := spawnWaiting(st), []string{"conductor", "fixer"}; !slices.Equal(got, want) {
+		t.Errorf("spawnWaiting = %v, want %v", got, want)
+	}
+	if got, want := stallSessions(st), []string{"grandchild"}; !slices.Equal(got, want) {
+		t.Errorf("stallSessions = %v, want %v", got, want)
+	}
+	st.Spawns[2].Ended, st.Spawns[3].Ended = true, true
+	if got, want := stallSessions(st), []string{"conductor"}; !slices.Equal(got, want) {
+		t.Errorf("all spawns ended: stallSessions = %v, want %v", got, want)
+	}
+}
+
 // Without foreground, run start queues the run for the daemon: nothing is
 // opened, journaled or run, the start lands in the daemon's queue with the
 // request's options, the response says it waits for a daemon, and a second
