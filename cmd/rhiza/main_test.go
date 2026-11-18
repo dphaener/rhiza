@@ -678,6 +678,9 @@ const (
 	// ScaledClock): a wait's sleep of d takes d/1000 of real time, at
 	// least 50 ms.
 	testClockScale = "1000"
+	// testGoMaxProcs is the GOMAXPROCS of every Go process a script
+	// starts (setup).
+	testGoMaxProcs = "1"
 )
 
 func setup(env *testscript.Env) error {
@@ -706,6 +709,15 @@ func setup(env *testscript.Env) error {
 	// workflow's 30 s poll or 2 min backoff costs milliseconds. A script
 	// that wants RealClock clears it with `env RHIZA_TEST_CLOCK_SCALE=`.
 	env.Setenv(runpkg.ClockScaleEnv, testClockScale)
+	// Every Go process a script starts (the rhiza processes of exec rhiza,
+	// fake bin/ callbacks and workflow steps) runs on one P: a script's
+	// processes are many and short, and each one's scheduler and GC
+	// threads spinning across the host's cores cost more CPU than the
+	// parallelism saves (scripts already run side by side). It reaches
+	// them through the script's environment; the test process itself, and
+	// its in-process rhiza lines, keep their GOMAXPROCS. A script that
+	// wants another figure sets GOMAXPROCS itself.
+	env.Setenv("GOMAXPROCS", testGoMaxProcs)
 	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
 	// script can set PATH to it alone and hide the host's programs (e.g.
 	// systemctl) from rhiza.
@@ -982,7 +994,10 @@ func foldOK(ts *testscript.TestScript, neg bool, args []string) {
 	}
 }
 
-// testGitConfig is the global git config every script runs with.
+// testGitConfig is the global git config every script runs with. No
+// script asserts on git's own housekeeping, so its automatic maintenance
+// (a detached git maintenance run --auto after each commit, fetch and
+// merge) and gc are off.
 const testGitConfig = `[user]
 	name = Rhiza Test
 	email = test@rhiza.invalid
@@ -990,6 +1005,10 @@ const testGitConfig = `[user]
 	defaultBranch = main
 [commit]
 	gpgsign = false
+[maintenance]
+	auto = false
+[gc]
+	auto = 0
 `
 
 // hermeticGit points git at a sandboxed HOME and global config so scripts
