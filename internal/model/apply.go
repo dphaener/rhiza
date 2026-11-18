@@ -91,6 +91,10 @@ type builder struct {
 	// gave.
 	src    Source
 	srcErr error
+	// owned, when not nil, says b shares the records it did not create
+	// with a seed (see Seed.builder): it holds the IDs of the nodes and
+	// links whose fields, history and aspects b has copied and may write.
+	owned map[id.ID]struct{}
 }
 
 // newBuilder returns an empty builder whose links may name the change sets
@@ -149,6 +153,9 @@ func (b *builder) finishModel(clone bool) (Model, []Problem) {
 		kind   op.Kind
 		handle string
 	}
+	// first holds the first node seen at each place, and groups every node
+	// of a place that more than one holds.
+	first := make(map[place]id.ID, len(b.m.nodes))
 	groups := map[place][]id.ID{}
 	for k, r := range b.m.nodes {
 		n := r.v
@@ -158,6 +165,14 @@ func (b *builder) finishModel(clone bool) (Model, []Problem) {
 		p := place{parent: n.Parent, handle: n.Handle}
 		if !op.HasParent(n.Kind) {
 			p = place{kind: n.Kind, handle: n.Handle}
+		}
+		f, ok := first[p]
+		if !ok {
+			first[p] = k
+			continue
+		}
+		if groups[p] == nil {
+			groups[p] = []id.ID{f}
 		}
 		groups[p] = append(groups[p], k)
 	}
@@ -250,6 +265,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 			}
 		}
 		current := o.Base == r.v.Version
+		b.ownNode(r)
 		b.effect(r, ref, o)
 		r.v.History = append(r.v.History, ref)
 		r.aspects = append(r.aspects, aspects(o))
@@ -268,6 +284,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		if err != nil {
 			return err
 		}
+		b.ownLink(r)
 		r.v.Retired = true
 		r.v.History = append(r.v.History, ref)
 		r.aspects = append(r.aspects, aspects(o))
@@ -348,6 +365,7 @@ func (b *builder) createNode(ref Ref, o op.Op) error {
 			Version: o.ID, Created: ref.ChangeSet, History: []Ref{ref}},
 		aspects: [][]string{nil},
 	}
+	b.own(o.Node)
 	if op.HasParent(o.Kind) {
 		b.addChild(o.Parent, o.Node)
 	}
@@ -377,7 +395,40 @@ func (b *builder) createLink(ref Ref, o op.Op) error {
 			Version: o.ID, Created: ref.ChangeSet, History: []Ref{ref}},
 		aspects: [][]string{nil},
 	}
+	b.own(o.Link)
 	return nil
+}
+
+// own marks the node or link i as b's own, to write without copying.
+func (b *builder) own(i id.ID) {
+	if b.owned != nil {
+		b.owned[i] = struct{}{}
+	}
+}
+
+// ownNode copies node record r's fields, history and aspects before b
+// first writes it, when b shares them with a seed.
+func (b *builder) ownNode(r *record[Node]) {
+	if b.owned == nil {
+		return
+	}
+	if _, ok := b.owned[r.v.ID]; ok {
+		return
+	}
+	r.v, r.aspects = copyNode(r.v), slices.Clone(r.aspects)
+	b.owned[r.v.ID] = struct{}{}
+}
+
+// ownLink is ownNode for link record r.
+func (b *builder) ownLink(r *record[Link]) {
+	if b.owned == nil {
+		return
+	}
+	if _, ok := b.owned[r.v.ID]; ok {
+		return
+	}
+	r.v, r.aspects = copyLink(r.v), slices.Clone(r.aspects)
+	b.owned[r.v.ID] = struct{}{}
 }
 
 // checkMove checks a move of n: n sits in the tree, and its new parent can

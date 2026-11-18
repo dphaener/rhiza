@@ -150,7 +150,7 @@ type SeedLink struct {
 // landed change sets. With those it gives WhatIf's result over the whole
 // log whose as-is view is the seed.
 func WhatIfFrom(seed Seed, sets []changeset.ChangeSet, cs id.ID) (Model, []Problem) {
-	return whatIf(seed.builder(), sets, cs, false)
+	return whatIf(seed.builder(true), sets, cs, false)
 }
 
 // ToBeFrom is ToBe over a seed: the as-is view is the seed instead of the
@@ -158,28 +158,61 @@ func WhatIfFrom(seed Seed, sets []changeset.ChangeSet, cs id.ID) (Model, []Probl
 // layered on a copy of it. It gives ToBe's result over the whole log whose
 // as-is view is the seed, and shares nothing with the seed.
 func ToBeFrom(seed Seed, sets []changeset.ChangeSet) (Model, []Problem) {
-	b := seed.builder()
+	b := seed.builder(false)
 	layer(b, inState(sets, changeset.StateAccepted))
 	return b.finishModel(false)
 }
 
-// builder returns a builder holding a copy of the seed: the views built
-// from one seed never change it.
-func (s Seed) builder() *builder {
+// builder returns a builder over the seed: the views built from one seed
+// never change it. With shared false the builder holds a copy of every
+// node and link. With shared true it holds its own record of each, which
+// shares the seed's fields, history and aspects read-only, and copies them
+// for a node or link only when an operation writes it (see builder.own), so
+// building a view costs its operations rather than the whole seed. The
+// model of a shared builder shares those with the seed, so it is never
+// written once finished.
+func (s Seed) builder(shared bool) *builder {
 	b := newBuilder(s.Known)
 	b.seq = s.State.Seq
 	b.m.nodes = make(map[id.ID]*record[Node], len(s.Nodes))
 	b.m.links = make(map[id.ID]*record[Link], len(s.Links))
 	b.placed = make(map[id.ID]mark, len(s.Nodes))
+	if shared {
+		b.owned = map[id.ID]struct{}{}
+	}
+	// Each parent's set of children is made once at its size.
+	under := map[id.ID]int{}
 	for _, n := range s.Nodes {
-		b.m.nodes[n.Node.ID] = &record[Node]{v: copyNode(n.Node), aspects: slices.Clone(n.Aspects)}
+		if op.HasParent(n.Node.Kind) {
+			under[n.Node.Parent]++
+		}
+	}
+	for p, c := range under {
+		b.m.children[p] = make(map[id.ID]struct{}, c)
+	}
+	nodes := make([]record[Node], len(s.Nodes))
+	for i, n := range s.Nodes {
+		r := &nodes[i]
+		if shared {
+			r.v, r.aspects = n.Node, n.Aspects
+		} else {
+			r.v, r.aspects = copyNode(n.Node), slices.Clone(n.Aspects)
+		}
+		b.m.nodes[n.Node.ID] = r
 		if op.HasParent(n.Node.Kind) {
 			b.addChild(n.Node.Parent, n.Node.ID)
 		}
 		b.placed[n.Node.ID] = mark{seq: n.Placed.Seq, ref: n.Placed.Ref}
 	}
-	for _, l := range s.Links {
-		b.m.links[l.Link.ID] = &record[Link]{v: copyLink(l.Link), aspects: slices.Clone(l.Aspects)}
+	links := make([]record[Link], len(s.Links))
+	for i, l := range s.Links {
+		r := &links[i]
+		if shared {
+			r.v, r.aspects = l.Link, l.Aspects
+		} else {
+			r.v, r.aspects = copyLink(l.Link), slices.Clone(l.Aspects)
+		}
+		b.m.links[l.Link.ID] = r
 	}
 	b.problems = slices.Clone(s.Problems)
 	type key struct{ cs, op id.ID }
@@ -231,7 +264,7 @@ type Delta struct {
 // duplicate-handle problems are left out, as they need the whole view.
 // The error is src's.
 func WhatIfDelta(seed Seed, src Source, sets []changeset.ChangeSet, cs id.ID) (Delta, []Problem, error) {
-	b := seed.builder()
+	b := seed.builder(false)
 	b.src = src
 	whatIfLayer(b, sets, cs)
 	if b.srcErr != nil {
