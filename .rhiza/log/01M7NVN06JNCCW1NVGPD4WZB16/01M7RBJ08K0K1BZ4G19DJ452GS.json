@@ -1,0 +1,41 @@
+{
+  "actor": "01M7RBGZA0XNPN3F98YG7J42BA",
+  "after": [
+    "01M7RBGT7CHEN00X08YTBETKR3"
+  ],
+  "at": "2026-11-18T22:13:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "The change set's intent is that a bring-your-own workflow runs end to end under the daemon, and the owner's words (source byo-daemon-plan-research) ask that a BYO workflow run end to end. The leaf byo-workflow-daemon-e2e forbids changing docs/examples/byo/*.toml, which rules out (b), and the example is the documented level-3 team workflow, so making every team add a Rhiza review would contradict bring-your-own. (c) adds a new workflow field and file-format surface only to restate what the workflow already says by having no review step. The open-pr guard (ship-open-pr, decided by review-workflow-shape) exists so the built-in review workflow cannot be skipped before a PR; tying it to whether the workflow declares a review keeps that protection for every workflow that has one, and myteam-flow still has its own gate and owner sign-off before push. Deciding by declared step kinds rather than names honours the leaf's must_not on special-casing a workflow or step name.",
+          "statement": "Option (a): rhiza ship open-pr requires a journaled review only when the run's workflow declares one (a checks step, a workflow step running a review, or conduct checks). A workflow that declares no review, such as the BYO example myteam-flow, pushes after its own steps (gate, signoff) pass. A workflow that declares a review still refuses open-pr until it is journaled, so ship-change, bugfix and the other built-ins keep today's guard. The test is the workflow's declared shape, never its or a step's name. ship-open-pr's acceptance is reworded to match: a run whose workflow declares a review and has none journaled exits non-zero naming why; a run whose workflow declares none opens the PR.",
+          "wording": "(assumed, would have escalated)"
+        },
+        "handle": "open-pr-review-only-when-declared",
+        "id": "01M7RBJ05HVWR5VPAV1XY7JWCX",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RBJ05HVWR5VPAV1XQAZ8XQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RBJ05HVWR5VPAV1XQAZ8XQ",
+        "id": "01M7RBJ06XHFYEKJNPYX4NKRZW",
+        "link": "01M7RBJ06XHFYEKJNPYTF4YYBX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBGT79TXH5BTXQZM4NHY4T",
+        "type": "answers"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RBJ08K0K1BZ4G19DJ452GS",
+  "type": "ops",
+  "v": 1
+}

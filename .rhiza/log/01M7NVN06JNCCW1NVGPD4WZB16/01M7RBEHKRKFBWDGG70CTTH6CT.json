@@ -1,0 +1,29 @@
+{
+  "actor": "01M7RB9TM6WVPWHENQ9DSPFP92",
+  "after": [
+    "01M7RB62VB92WCG9XE9ZEJ14ZX"
+  ],
+  "at": "2026-11-18T22:11:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The BYO example myteam-flow (docs/examples/byo/workflow.toml) cannot push: its push step runs rhiza ship open-pr, which refuses a run with no review journaled (\"run <id> has no review journaled: ship open-pr opens the pull request once the review has run\", internal/api/ship_openpr.go reviewJournaled), and myteam-flow has no checks step and its /myteam:implement invoke never records findings. Shown by a testscript run of the example: services, work, gate (with a lint hand-back) and signoff pass, then push fails and hands back to work. Which fix? (a) open-pr requires a journaled review only when the run's workflow declares a review (a checks step or conduct checks), so a team workflow with no review pushes; (b) the BYO example gains a review (a checks step, or its invoke tells the skill to record a round with rhiza run findings), which this leaf's must_not forbids; (c) a workflow-level opt-out (e.g. review = false) open-pr honours. byo-workflow-daemon-e2e cannot pass as written until one lands."
+        },
+        "handle": "byo-open-pr-needs-review",
+        "id": "01M7RBEHJ5MRCPKYMZGVFVGJXY",
+        "key": null,
+        "kind": "question",
+        "node": "01M7RBEHJ5MRCPKYMZGTTA2XG3",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "id": "01M7RBEHKRKFBWDGG70CTTH6CT",
+  "type": "ops",
+  "v": 1
+}
