@@ -5,8 +5,10 @@
 # landed on main once the merge is in.
 #
 # The repo runs the built-in ship-change (the conductor default). Its
-# conductor is the fake bin/claude: it records an empty round for the
-# plan, code and qa checks, builds the one leaf with a builder's commit,
+# conductor is the fake bin/claude: it first records a clean plan round
+# with no evidence, which is refused for leaving the leaf first uncovered,
+# then records a clean round for the plan, code and qa checks, each with
+# an evidence line for first, builds the one leaf with a builder's commit,
 # writes the leaf's Evidence as the conductor's own actor (not the
 # commit's), lands the change set on the branch, renders and commits. On a
 # hand-back it resolves a merge of main left in progress and commits it.
@@ -70,6 +72,14 @@ stdout '^- State: landed'
 exec sh -c 'git show main:.rhiza/rendered/index.md | grep -c first'
 stdout '^[1-9]'
 fold-ok
+
+# (failure case) Before its covered rounds the fake conductor records a
+# clean plan round by hand with no evidence for the leaf first: it is
+# refused, naming first, and nothing is journaled, so the plan check has
+# its one covered round.
+exec grep 'leaves leaf first uncovered' $WORK/uncovered.err
+exec grep 'nothing was journaled' $WORK/uncovered.err
+! exec grep 'uncovered round accepted' $WORK/claude.log
 
 # When main moves between the CI check and the merge, ship merge merges
 # nothing and fails; the rebase step brings main into the branch, pushes
@@ -213,9 +223,15 @@ if [ -e "$WORK/built" ]; then
 	exit 0
 fi
 touch "$WORK/built"
+echo '{"findings":[]}' > "$WORK/empty-round.json"
+if RHIZA_CHECK=plan rhiza run findings --check plan "$WORK/empty-round.json" 2> "$WORK/uncovered.err"; then
+	echo 'uncovered round accepted' >> "$WORK/claude.log"
+	exit 1
+fi
+cat "$WORK/uncovered.err" >&2
 for c in plan code qa; do
-	echo '{"findings":[]}' > "$WORK/empty-round.json"
-	RHIZA_CHECK=$c rhiza run findings --check $c "$WORK/empty-round.json" >&2 || exit 1
+	printf '{"findings":[],"evidence":[{"leaf":"first","line":"%s check: read first.txt, it says first: pass"}]}\n' "$c" > "$WORK/covered-round.json"
+	RHIZA_CHECK=$c rhiza run findings --check $c "$WORK/covered-round.json" >&2 || exit 1
 done
 echo first > first.txt
 git add first.txt
