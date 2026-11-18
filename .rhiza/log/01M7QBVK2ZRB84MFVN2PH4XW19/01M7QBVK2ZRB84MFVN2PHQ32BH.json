@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QBPFZN7TAGDJBQXZJ0J9KV",
+  "after": [],
+  "at": "2026-11-18T12:59:38Z",
+  "body": {
+    "intent": "The daemon's stall detection tells an idle agent session with a live background job (a shell child of its agent process running a command, read portably through ps) from one with nothing running, and gives the former a longer bound before its nudge, reading the same process tree as the runaway check (planner notes m40-stalls, 2026-11-18)",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7QBVK2ZRB84MFVN2PH4XW19",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QBVK2ZRB84MFVN2PHQ32BH",
+  "type": "open",
+  "v": 1
+}

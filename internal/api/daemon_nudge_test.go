@@ -109,6 +109,55 @@ func TestDaemonNudgeStalled(t *testing.T) {
 	}
 }
 
+// TestDaemonNudgeStalledSpawnedChild checks the daemon's nudge of a
+// conduct run whose conductor spawned a fixer: the fixer, idle without
+// saying done, is nudged and the conductor waiting on it is not; a fixer
+// that said done or whose spawn ended is not nudged.
+func TestDaemonNudgeStalledSpawnedChild(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2026, 11, 16, 0, 0, 0, 0, time.UTC)
+	now := t0.Add(21 * time.Minute)
+	sessions := session.NewStore(t.TempDir())
+	write := func(id, state string, done bool) {
+		rec := session.Record{ID: id, Autonomous: true}
+		rec.Status.Hook = &session.Report{State: state, At: t0}
+		if done {
+			rec.Status.Done = &session.Report{State: session.StateDone, At: t0}
+		}
+		if err := sessions.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("conductor", session.StateWorking, false)
+	write("fixer", session.StateIdle, false)
+	write("finished", session.StateIdle, true)
+	write("ended", session.StateIdle, false)
+	st := func(id, child string, ended bool) run.State {
+		s := run.State{ID: id, Autonomous: true, Current: "conduct", Session: map[string]string{"conduct": "conductor"},
+			Spawns: []run.Spawn{{Step: "conduct", Parent: "conductor", Session: child, Role: "fixer", Ended: ended}}}
+		return s
+	}
+	cases := []struct {
+		name string
+		st   run.State
+		want []string
+	}{
+		{"idle child", st("A", "fixer", false), []string{"fixer"}},
+		{"child said done", st("B", "finished", false), nil},
+		{"spawn ended", st("C", "ended", true), []string{"conductor"}},
+	}
+	for _, c := range cases {
+		var sent []string
+		send := func(sid, _ string) error { sent = append(sent, sid); return nil }
+		if _, err := daemonNudgeStalled([]run.State{c.st}, sessions, now, nil, send); err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(sent, c.want) {
+			t.Errorf("%s: sent %v, want %v", c.name, sent, c.want)
+		}
+	}
+}
+
 type testErr string
 
 func (e testErr) Error() string { return string(e) }

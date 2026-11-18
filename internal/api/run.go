@@ -537,16 +537,18 @@ func runStalledNow(st run.State, live bool, sessions *session.Store, now time.Ti
 }
 
 // runStalledAll is every stalled session at now of the current step of a
-// live, unfinished run: an agent step's session, then the latest session of
-// each open leaf, of each check and of each unjudged change-set fixer of a
-// leaves or checks step. Only a live run's sessions stall: a stopped run has
-// no process holding it. A record that cannot be read is not stalled.
+// live, unfinished run, of those stallSessions lists: an agent step's
+// session, the latest session of each open leaf, of each check and of each
+// unjudged change-set fixer of a leaves or checks step, and each open spawned
+// child; a session waiting on an open spawn of its own is not counted. Only a
+// live run's sessions stall: a stopped run has no process holding it. A
+// record that cannot be read is not stalled.
 func runStalledAll(st run.State, live bool, sessions *session.Store, now time.Time) []RunStalled {
 	if !live || st.Ended || sessions == nil {
 		return nil
 	}
 	var out []RunStalled
-	for _, sid := range stepSessions(st) {
+	for _, sid := range stallSessions(st) {
 		rec, err := sessions.Read(sid)
 		if err != nil || !session.Stalled(rec, now) {
 			continue
@@ -621,9 +623,36 @@ func runAPIErrorAll(st run.State, live bool, sessions *session.Store) []RunAPIEr
 	return out
 }
 
+// stallSessions are the sessions of stepSessions whose silence counts
+// toward a stall: every one but a session waiting on an open spawn of its
+// own, whose progress is its child's (decision
+// stall-spawned-children-count). runStalledAll, and so the daemon's nudge,
+// and the watchdog's watchdogProgress read them.
+func stallSessions(st run.State) []string {
+	waiting := spawnWaiting(st)
+	return slices.DeleteFunc(stepSessions(st), func(sid string) bool { return slices.Contains(waiting, sid) })
+}
+
+// spawnWaiting are the sessions of the run's current step waiting on an open
+// spawn of their own: the parent of each child of run.State.Spawns of the
+// step not yet ended, in journal order.
+func spawnWaiting(st run.State) []string {
+	var out []string
+	for _, sp := range st.Spawns {
+		if sp.Step == st.Current && !sp.Ended && sp.Parent != "" && !slices.Contains(out, sp.Parent) {
+			out = append(out, sp.Parent)
+		}
+	}
+	return out
+}
+
 // stepSessions are the sessions of the run's current step that can still
-// be working, in the order runStalledAll checks them. A session whose pane
-// is closed is gone.
+// be working, in the order runStalledAll checks them: the step's own
+// session, the latest session of each open leaf and of each check, each
+// unjudged change-set fixer, then each child of an open spawn of the step
+// (rhiza run spawn's, until its spawn-ended entry). A session whose pane is
+// closed is gone. runPermissionAll and runAPIErrorAll read them all;
+// stallSessions drops the parents waiting on a spawn.
 func stepSessions(st run.State) []string {
 	var out []string
 	if sid := st.Session[st.Current]; sid != "" {
@@ -668,6 +697,11 @@ func stepSessions(st run.State) []string {
 	for _, f := range st.Fixes {
 		if f.Step == st.Current && !f.Judged && !f.PaneClosed && f.Session != "" {
 			out = append(out, f.Session)
+		}
+	}
+	for _, sp := range st.Spawns {
+		if sp.Step == st.Current && !sp.Ended && sp.Session != "" && !slices.Contains(out, sp.Session) {
+			out = append(out, sp.Session)
 		}
 	}
 	return out

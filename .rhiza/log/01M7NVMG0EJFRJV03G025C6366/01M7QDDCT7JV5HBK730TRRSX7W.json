@@ -1,0 +1,63 @@
+{
+  "actor": "01M7QD4HBK3XJS77BT23SH7ZH6",
+  "after": [
+    "01M7QCSBP9F0970V56QZV0W2VZ"
+  ],
+  "at": "2026-11-18T13:26:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build of ./cmd/rhiza (fake rex/claude, scratch root): a run whose session spawned a fixer that went idle with no done mark; rhiza daemon --once at 00:19 did nothing, at 00:21 nudged the fixer only (not the conductor), at 00:41 closed both sessions' panes, stopped the run and queued one --retry continue (spent 1 of 2), which the next poll resumed. A fixer re-reporting at 00:40 kept the 50-minute-silent conductor from being nudged or stopped; a fixer that said done (spawn-ended) was never nudged or counted. Scoped go test (TestWatchdogStalled|TestDaemonNudgeStalled|TestStepSessions|TestRunStalled) passes."
+        },
+        "handle": "stall-covers-spawned-children-qa-1",
+        "id": "01M7QDDCNFSEE6JTM03GRF1BN1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QDDCNFSEE6JTM03DT8KCZB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QDDCNFSEE6JTM03DT8KCZB",
+        "id": "01M7QDDCQ5YC852TQ73WH6X1VJ",
+        "link": "01M7QDDCQ5YC852TQ73T107Q5T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QBVD8Y319MBF5A5DA03TQH",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build of ./cmd/rhiza: the watchdog's stall retry of a spawned fixer appended one warning entry naming the fixer's session, role fixer, its parent session and its last report time; the charged attempt and the bug request name the same; rhiza run status --json lists it. With retryBudget 0 the hold detail and the rhiza inbox --json stalled item name the session and role. The nudge-only poll journalled no warning; a plain step session was named as the step's session with no parent. Minor: human rhiza run status text prints no warnings. Scoped go test TestWatchdogStalled passes."
+        },
+        "handle": "stall-reason-journaled-qa-1",
+        "id": "01M7QDDCR5CJ4149Y08K9JMKE1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QDDCR5CJ4149Y08JYWHME5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QDDCR5CJ4149Y08JYWHME5",
+        "id": "01M7QDDCSA7GPJECAKSJG1J6SK",
+        "link": "01M7QDDCSA7GPJECAKSH0M0GYT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QBVDARKZGFXHC5P2ARXQHF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMG0EJFRJV03G025C6366",
+  "for": "01M7QBPFZN7TAGDJBQXZJ0J9KV",
+  "id": "01M7QDDCT7JV5HBK730TRRSX7W",
+  "type": "ops",
+  "v": 1
+}
