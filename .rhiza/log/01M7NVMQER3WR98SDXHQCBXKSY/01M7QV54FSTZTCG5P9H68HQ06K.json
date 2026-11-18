@@ -1,0 +1,31 @@
+{
+  "actor": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "after": [
+    "01M7QV52M95V0GVJRFAAK9Z4TV"
+  ],
+  "at": "2026-11-18T17:26:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "brief.md is the file every step session already reads, and the plan run's ID ties it to its request with no new journal field",
+          "statement": "Every agent step session of a request's plan run (the run whose ID is the request's Run) gets a Request notes section in brief.md, right after the Change set section: one sentence saying the notes came with the request and are ideas to weigh against the code, then each note, oldest first, under its own '### Note <n>' heading, verbatim; a run that is no request's, or a request with no notes, renders no section. The notes are read from requests.json when the session's brief is written. Spawned children's briefs are their caller's and are not changed",
+          "wording": "(assumed, would have escalated) the conductor's ruling, not asked of the owner"
+        },
+        "handle": "request-notes-in-plan-brief",
+        "id": "01M7QV3N1YAQBJMZ732S6KM18K",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QV3N1YAQBJMZ732P5DPQ0S",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QV54FSTZTCG5P9H68HQ06K",
+  "type": "ops",
+  "v": 1
+}
