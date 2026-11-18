@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
+	"github.com/dphaener/rhiza/internal/workflow"
 )
 
 // openPRGH is a fake gh with one pull request that exists once pr create
@@ -79,6 +80,17 @@ func (g *openPRGH) run(name string, args []string, dir string, env []string) ([]
 // its start, and a fake gh.
 func openPRFixture(t *testing.T, review bool, ref ...string) (*Ctx, *openPRGH, string, func(...string) string) {
 	t.Helper()
+	def, ok := workflow.Builtin("review")
+	if !ok {
+		t.Fatal("no built-in review workflow")
+	}
+	return openPRFixtureWith(t, "review", string(def), review, ref...)
+}
+
+// openPRFixtureWith is openPRFixture for a run of workflow name whose
+// definition is def.
+func openPRFixtureWith(t *testing.T, name, def string, review bool, ref ...string) (*Ctx, *openPRGH, string, func(...string) string) {
+	t.Helper()
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "repo")
 	if err := os.MkdirAll(root, 0o755); err != nil {
@@ -126,7 +138,7 @@ func openPRFixture(t *testing.T, review bool, ref ...string) (*Ctx, *openPRGH, s
 	common := filepath.Join(root, ".git")
 	store := run.NewStore(run.Dir(common))
 	entries := []run.Entry{
-		{Type: run.TypeStarted, Started: &run.Started{Workflow: "review", Change: cs.String(), Title: "Ship it"}},
+		{Type: run.TypeStarted, Started: &run.Started{Workflow: name, Definition: def, Change: cs.String(), Title: "Ship it"}},
 	}
 	if review {
 		entries = append(entries,
@@ -395,5 +407,87 @@ func TestReviewJournaledConductorRounds(t *testing.T) {
 	st := run.State{Checks: []run.CheckState{{Rounds: []run.Round{{Number: 1}}}}}
 	if !reviewJournaled(st) {
 		t.Fatal("a check's recorded round does not count as reviewed")
+	}
+}
+
+// A run whose workflow declares no review, such as the BYO example
+// myteam-flow, opens its pull request with no review journaled, and a
+// review-less workflow written in the test does too; the run of a
+// workflow that declares one (review, in TestShipOpenPRRefusals) is still
+// refused.
+func TestShipOpenPRReviewless(t *testing.T) {
+	t.Parallel()
+	byo, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "byo", "workflow.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	plain := "name = \"plain\"\nstart = \"push\"\n[step.push]\nkind = \"command\"\nrun = \"rhiza ship open-pr\"\n"
+	for name, def := range map[string]string{"myteam-flow": string(byo), "plain": plain} {
+		ctx, g, origin, git := openPRFixtureWith(t, name, def, false)
+		resp, err := callOp(t, ctx, "ship.open-pr", `{}`)
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		r := resp.(ShipOpenPRResponse)
+		head := git("rev-parse", "HEAD")
+		out, _ := g.exec("git", []string{"--git-dir", origin, "rev-parse", "cs/ship-it"}, "", nil)
+		if !r.Created || !r.Pushed || r.PR != 7 || strings.TrimSpace(string(out)) != head {
+			t.Errorf("%s: open-pr = %+v, origin at %s, want created and pushed %s", name, r, out, head)
+		}
+	}
+}
+
+// reviewDeclared holds for the runs of every workflow that declares a
+// review (the built-ins and this repo's bugfix), for a plan run, and for a
+// run whose definition is missing or unreadable; not for myteam-flow or a
+// review-less workflow, whatever it is called.
+func TestReviewDeclared(t *testing.T) {
+	t.Parallel()
+	repo := filepath.Join("..", "..", ".rhiza", "workflows")
+	includes := func(names ...string) map[string]string {
+		m := map[string]string{}
+		for _, n := range names {
+			src, ok := workflow.Builtin(n)
+			if !ok {
+				t.Fatalf("no built-in %s", n)
+			}
+			m[n] = string(src)
+		}
+		return m
+	}
+	builtin := func(n string) string {
+		src, ok := workflow.Builtin(n)
+		if !ok {
+			t.Fatalf("no built-in %s", n)
+		}
+		return string(src)
+	}
+	read := func(path string) string {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(data)
+	}
+	byo := read(filepath.Join("..", "..", "docs", "examples", "byo", "workflow.toml"))
+	plain := "name = \"review\"\nstart = \"push\"\n[step.push]\nkind = \"command\"\nrun = \"rhiza ship open-pr\"\n"
+	for _, c := range []struct {
+		name string
+		st   run.State
+		want bool
+	}{
+		{"ship-change", run.State{Workflow: "ship-change", Definition: builtin("ship-change")}, true},
+		{"ship-change-classic", run.State{Workflow: "ship-change-classic", Definition: builtin("ship-change-classic"), Includes: includes("build", "review")}, true},
+		{"review", run.State{Workflow: "review", Definition: builtin("review")}, true},
+		{"bugfix", run.State{Workflow: "bugfix", Definition: read(filepath.Join(repo, "bugfix.toml")), Includes: includes("ship-change")}, true},
+		{"plan run", run.State{Workflow: "plan", Definition: builtin("plan")}, true},
+		{"no definition", run.State{Workflow: "myteam-flow"}, true},
+		{"unparsable", run.State{Workflow: "w", Definition: "kind = ["}, true},
+		{"myteam-flow", run.State{Workflow: "myteam-flow", Definition: byo}, false},
+		{"review-less named review", run.State{Workflow: "review", Definition: plain}, false},
+	} {
+		if got := reviewDeclared(c.st); got != c.want {
+			t.Errorf("%s: reviewDeclared = %v, want %v", c.name, got, c.want)
+		}
 	}
 }

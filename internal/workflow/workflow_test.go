@@ -3117,3 +3117,69 @@ func TestBuiltinPlanReviewLoopRetriesFromInterview(t *testing.T) {
 		}
 	}
 }
+
+// DeclaresReview is decided by the steps' kinds and shape: true for the
+// built-ins and repo workflows that review (ship-change's conduct checks,
+// ship-change-classic's included review, review's checks step, bugfix's
+// included ship-change), false for the BYO example myteam-flow and a
+// review-less workflow, whatever the workflow is called; an included
+// review whose checks step is skipped declares none.
+func TestDeclaresReview(t *testing.T) {
+	repo := filepath.Join("..", "..", ".rhiza", "workflows")
+	resolve := func(name string) ([]byte, error) {
+		if data, err := os.ReadFile(filepath.Join(repo, name+".toml")); err == nil {
+			return data, nil
+		}
+		return builtinResolver(name)
+	}
+	parse := func(name string, data []byte) *Definition {
+		t.Helper()
+		d, err := ParseWith(name, data, resolve)
+		if err != nil {
+			t.Fatalf("parse %s: %v", name, err)
+		}
+		return d
+	}
+	read := func(path string) []byte {
+		t.Helper()
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return data
+	}
+	for _, name := range []string{"ship-change", "ship-change-classic", "review"} {
+		data, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no built-in %s", name)
+		}
+		if !parse(name, data).DeclaresReview() {
+			t.Errorf("built-in %s declares no review", name)
+		}
+	}
+	for _, name := range []string{"bugfix", "ship-rhiza"} {
+		if !parse(name, read(filepath.Join(repo, name+".toml"))).DeclaresReview() {
+			t.Errorf("repo workflow %s declares no review", name)
+		}
+	}
+	byo := read(filepath.Join("..", "..", "docs", "examples", "byo", "workflow.toml"))
+	if parse("workflow", byo).DeclaresReview() {
+		t.Error("the BYO example myteam-flow declares a review")
+	}
+	// Named like a review, shaped like none: the name does not count.
+	plain := []byte("name = \"review\"\nstart = \"review\"\n[step.review]\nkind = \"command\"\nrun = \"true\"\n")
+	if parse("review", plain).DeclaresReview() {
+		t.Error("a workflow named review with only a command step declares a review")
+	}
+	// An agent step with no [[check]] tables is no conductor.
+	agent := []byte("name = \"w\"\nstart = \"work\"\n[step.work]\nkind = \"agent\"\nprompt = \"do it\"\n")
+	if parse("w", agent).DeclaresReview() {
+		t.Error("a plain agent step declares a review")
+	}
+	// The review workflow with its checks step (and the signoff that fixes
+	// through it) skipped: nothing reviews.
+	skipped := []byte("name = \"w\"\nstart = \"r\"\n[step.r]\nkind = \"workflow\"\nworkflow = \"review\"\nskip = [\"review\", \"signoff\"]\n")
+	if parse("w", skipped).DeclaresReview() {
+		t.Error("a review workflow with its checks step skipped declares a review")
+	}
+}
