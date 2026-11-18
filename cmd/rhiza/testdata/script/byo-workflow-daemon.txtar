@@ -1,0 +1,306 @@
+# The bring-your-own example workflow myteam-flow (docs/examples/byo/
+# workflow.toml; the archive's copy below is held byte-identical to it by
+# TestDocsExampleBYOWorkflowCopies) runs under the daemon end to end. The
+# repo's .rhiza/dispatch.toml names it in [ready], so the daemon's --once
+# start of an accepted change set names myteam-flow, and the run it logs is
+# run by hand: services, work, gate, signoff (by rule autonomous), push,
+# wait-ci, merge and close-out all pass, the stop-services cleanup runs,
+# and the run ends succeeded with no journalled intervention.
+#
+# (failure case) The first gate's make lint exits 1: the gate hands back to
+# work with a handback.md naming make lint, the team's skill fixes it, and
+# the second gate passes.
+#
+# Nothing here reaches docker, make, GitHub, Rex or Claude Code: all are
+# fakes on PATH. /myteam:implement is a stub skill under $HOME/.claude. The
+# fake claude is the team's skill: it builds, lands, renders and commits;
+# on a hand-back it copies the hand-back file it was given and fixes lint.
+# The fake rex runs the tab's command synchronously (under the daemon it
+# only answers). The fake gh is ship-change-one-ci.txtar's, on branch
+# cs/team-flow.
+
+mkdir $HOME/.claude/projects/p
+mkdir $HOME/.claude/skills/myteam/skills/implement
+cp $WORK/SKILL.md $HOME/.claude/skills/myteam/skills/implement/SKILL.md
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+chmod 755 bin/make
+chmod 755 bin/docker
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/myteam-flow.toml .rhiza/workflows/myteam-flow.toml
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+exec rhiza workflow check myteam-flow
+stdout 'is valid'
+
+# An accepted change set of one leaf, committed on main and pushed.
+exec rhiza change new 'Team flow' --title 'Team flow' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# The daemon picks myteam-flow by the [ready] rule, not the default.
+env FAKE_REX_DAEMON=1
+exec rhiza daemon --permission-mode manual --autonomous --once
+stdout '^Started a run of '
+exec grep -c -e 'run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --workflow myteam-flow --pick rule ready.feature --autonomous' $WORK/detach.log
+stdout '^1$'
+! exec grep 'ship-change' $WORK/detach.log
+env FAKE_REX_DAEMON=
+
+# The logged start, run by hand: every step passes in order, once lint is
+# fixed on the hand-back.
+exec sh -c 'rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --workflow myteam-flow --autonomous > $WORK/out 2> $WORK/err; echo exit=$?'
+stdout '^exit=0$'
+exec cat $WORK/out
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status
+stdout '^- services \(visit 1\): pass, then work'
+stdout '^- work \(visit 1\): pass, then gate'
+stdout '^- gate \(visit 1\): fail, then work'
+stdout '^- work \(visit 2\): pass, then gate'
+stdout '^- gate \(visit 2\): pass, then signoff'
+stdout '^- signoff \(visit 1\): pass, then push: approved by rule autonomous$'
+stdout '^- push \(visit 1\): pass, then wait-ci'
+stdout '^- wait-ci \(visit 1\): pass, then merge'
+stdout '^- merge \(visit 1\): pass, then close-out'
+stdout '^- close-out \(visit 1\): pass, then end'
+! stdout 'visit 3'
+exec rhiza run status --json
+stdout '"workflow": "myteam-flow"'
+stdout '"state": "succeeded"'
+stdout '"intervention_count": 0'
+
+# The services came up first and the cleanup took them down at the end.
+cmp $WORK/docker.log $WORK/want.docker
+exec sh -c 'grep -h "\"type\":\"cleanup\"" .git/rhiza/runs/*.jsonl'
+stdout '"step":"stop-services","outcome":"pass"'
+
+# (failure case) The first gate ran make lint, which failed (the gate still
+# runs every command); the hand-back file the skill was given names it, and
+# the second gate ran lint and test, both passing.
+cmp $WORK/make.log $WORK/want.make
+exec grep 'make lint' $WORK/handback.md
+exec cat $WORK/claude.log
+cmp $WORK/claude.log $WORK/want.claude
+
+# The change set landed and merged; the run's worktree and branch are gone.
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+exec sh -c 'grep -c "^pr merge" $WORK/gh.log'
+stdout '^1$'
+! exists $WORK/repo.team-flow
+exec sh -c 'git -C $WORK/origin.git show main:first.txt'
+stdout '^first$'
+fold-ok
+
+-- myteam-flow.toml --
+# Bring your own agent, level 3: a workflow.
+#
+# The team's own steps, put together from the primitives: a hook that
+# starts the services, one agent step running the team's skill, a gate
+# of the team's own commands that hands a red back to that agent, the
+# owner's sign-off, the push, a CI wait, the merge and close-out, and a
+# cleanup hook that stops the services however the run ends.
+name = "myteam-flow"
+handback_cap = 3
+
+[env]
+TMPDIR = "{run_tmp}"
+CI = "true"
+
+[step.services]
+kind = "command"
+run = "docker compose up -d --wait"
+on.pass = "work"
+
+[step.work]
+kind = "agent"
+invoke = "/myteam:implement Change set {change} ({title}). Your brief is {brief} and the model around it is {slice}. Build it, land it with rhiza land and rhiza render, commit, then run rhiza session done."
+handback = "/myteam:implement The run handed change set {change} back: read {handback}, fix what it names, land and render again, then run rhiza session done."
+permission_mode = "acceptEdits"
+until = "true"
+until_when = "done"
+on.pass = "gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check", "make lint", "make test"]
+on.pass = "signoff"
+on.fail = "handback:work"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "handback:work"
+
+[step.push]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-ci"
+on.fail = "handback:work"
+
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled --no-rebase"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "merge"
+on.timeout = "handback:work"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "close-out"
+on.fail = "handback:work"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+
+[[cleanup]]
+name = "stop-services"
+run = "docker compose down"
+-- dispatch.toml --
+[ready]
+feature = "myteam-flow"
+-- SKILL.md --
+---
+name: implement
+description: The team's own implement skill (a stub)
+---
+Build the change set.
+-- want.docker --
+compose up -d --wait
+compose down
+-- want.make --
+lint fail
+test pass
+lint pass
+test pass
+-- want.claude --
+implement
+handback
+-- bin/make --
+#!/bin/sh
+if [ "$1" = lint ] && [ ! -e lint.ok ]; then
+	echo "lint fail" >> "$WORK/make.log"
+	echo 'lint: first.txt: missing newline' >&2
+	exit 1
+fi
+echo "$1 pass" >> "$WORK/make.log"
+exit 0
+-- bin/docker --
+#!/bin/sh
+echo "$*" >> "$WORK/docker.log"
+exit 0
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+case "$last" in
+"/myteam:implement The run handed"*)
+	echo handback >> "$WORK/claude.log"
+	f=$(echo "$last" | sed -n 's/.*read \(.*\), fix what it names.*/\1/p')
+	cp "$f" "$WORK/handback.md" || exit 1
+	touch lint.ok
+	git add lint.ok
+	git commit -q -m 'Fix lint' -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR" || exit 1
+	rhiza session done >&2 || exit 1
+	;;
+"/myteam:implement Change set"*)
+	echo implement >> "$WORK/claude.log"
+	echo first > first.txt
+	git add first.txt
+	git commit -q -m "build first" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: first" -- first.txt || exit 1
+	rhiza add evidence first-verified --field 'statement=first works' --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link first-verified verifies first --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza land >&2 || exit 1
+	rhiza render >&2 || exit 1
+	git add -A -- .rhiza
+	git commit -q -m 'Land and render' -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR" || exit 1
+	rhiza session done >&2 || exit 1
+	;;
+*)
+	echo "fake claude: unexpected prompt: $last" >> "$WORK/claude.log"
+	exit 1
+	;;
+esac
+exit 0
+-- bin/rex --
+#!/bin/sh
+if [ -n "$FAKE_REX_DAEMON" ]; then
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && "$@") >&2 || true
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/team-flow)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Team flow (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/dphaener/rhiza/internal/workflow"
+	"github.com/rogpeppe/go-internal/txtar"
 )
 
 // byoExamples are the Bring your own agent page's worked examples, one per
@@ -103,5 +104,38 @@ func TestDocsBringYourOwnConductorSteps(t *testing.T) {
 		if !reflect.DeepEqual(byo.Steps[name], builtin.Steps[name]) {
 			t.Errorf("conductor.toml step %s = %+v, want the built-in's %+v", name, byo.Steps[name], builtin.Steps[name])
 		}
+	}
+}
+
+// Every script that runs the byo workflow example under the daemon archives
+// a copy of it as .rhiza/workflows/myteam-flow.toml (a script cannot read
+// repo files); each copy is byte-identical to docs/examples/byo/workflow.toml.
+func TestDocsExampleBYOWorkflowCopies(t *testing.T) {
+	want, err := os.ReadFile("../../docs/examples/byo/workflow.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scripts, err := filepath.Glob("testdata/script/*.txtar")
+	if err != nil {
+		t.Fatal(err)
+	}
+	copies := 0
+	for _, s := range scripts {
+		a, err := txtar.ParseFile(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range a.Files {
+			if f.Name != "myteam-flow.toml" {
+				continue
+			}
+			copies++
+			if !bytes.Equal(f.Data, want) {
+				t.Errorf("%s: archived myteam-flow.toml differs from docs/examples/byo/workflow.toml: copy the docs file into the archive", filepath.Base(s))
+			}
+		}
+	}
+	if copies == 0 {
+		t.Error("no script archives a copy of docs/examples/byo/workflow.toml as myteam-flow.toml")
 	}
 }

@@ -1,0 +1,15 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [],
+  "at": "2026-11-18T22:28:16Z",
+  "body": {
+    "intent": "Record agent actor claude-code-de4ff792 for session de4ff792-6449-4b13-bb2f-01a1f0c663ad",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7RCCSRP4S3QBT7R3E78EP19",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RCCSRP4S3QBT7R3H51AN65",
+  "type": "open",
+  "v": 1
+}
