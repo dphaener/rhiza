@@ -216,6 +216,63 @@ func TestStoreListDiskCacheIgnoresBadFile(t *testing.T) {
 	}
 }
 
+// A list cache file written by a binary whose Entry has another shape (a
+// field added, removed or retyped, here or in a type it holds) is ignored:
+// gob would decode its records leaving a new field zero, so every journal
+// is parsed again.
+func TestStoreListDiskCacheIgnoresOtherEntryShape(t *testing.T) {
+	isolateUserCache(t)
+	dir := writeJournals(t)
+	clearJournalCache()
+	shape := listCacheShape
+	listCacheShape = "an older Entry"
+	_, err := diskStore(dir).List()
+	listCacheShape = shape
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearJournalCache()
+	before := journalReads.Load()
+	got, err := diskStore(dir).List()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := journalReads.Load() - before; n != 3 {
+		t.Fatalf("parsed %d journals, want all 3", n)
+	}
+	if want := uncachedList(t, dir); !reflect.DeepEqual(got, want) {
+		t.Fatalf("List differs from uncached:\n%+v\n%+v", got, want)
+	}
+}
+
+// The Entry shape key changes with any field of Entry or of a type it
+// holds, however deep.
+func TestTypeShapeRecursive(t *testing.T) {
+	type inner struct{ A int }
+	type inner2 struct{ A string }
+	type outer struct {
+		X  string
+		In *inner
+	}
+	type outer2 struct {
+		X  string
+		In *inner2
+	}
+	type self struct {
+		Next *self
+		V    int
+	}
+	if typeShape(reflect.TypeOf(outer{})) == typeShape(reflect.TypeOf(outer2{})) {
+		t.Fatal("a nested field's type change kept the shape")
+	}
+	if typeShape(reflect.TypeOf(self{})) == "" {
+		t.Fatal("a self-referencing type has no shape")
+	}
+	if listCacheShape != typeShape(reflect.TypeOf(Entry{})) {
+		t.Fatal("listCacheShape is not Entry's shape")
+	}
+}
+
 // A store without DiskCache, or with no user cache folder, writes no list
 // cache.
 func TestStoreListNoDiskCacheWritesNothing(t *testing.T) {

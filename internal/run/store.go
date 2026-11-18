@@ -390,8 +390,8 @@ func (s *Store) LiveOf(change, except string) (Journal, bool, error) {
 }
 
 // The list cache's file starts with this header; a file with another
-// format or version, or one that does not decode, is ignored and replaced
-// on the next save.
+// format, version or Entry shape, or one that does not decode, is ignored
+// and replaced on the next save.
 const (
 	listCacheFormat  = "rhiza run list cache"
 	listCacheVersion = 1
@@ -400,6 +400,54 @@ const (
 type listCacheHeader struct {
 	Format  string
 	Version int
+	Shape   string
+}
+
+// listCacheShape keys the list cache to the Entry type it holds: a file
+// written by a binary whose Entry, or a type it holds, has other fields is
+// ignored, since gob would decode its records into this Entry leaving a
+// new field zero.
+var listCacheShape = typeShape(reflect.TypeOf(Entry{}))
+
+// typeShape is a hash of t's shape: its kind, and recursively each
+// exported field's name and shape, or its element's, key's and value's.
+func typeShape(t reflect.Type) string {
+	var b strings.Builder
+	writeTypeShape(&b, t, map[reflect.Type]bool{})
+	sum := sha256.Sum256([]byte(b.String()))
+	return hex.EncodeToString(sum[:])
+}
+
+func writeTypeShape(b *strings.Builder, t reflect.Type, seen map[reflect.Type]bool) {
+	b.WriteString(t.String())
+	switch t.Kind() {
+	case reflect.Pointer, reflect.Slice, reflect.Array:
+		b.WriteString("[")
+		writeTypeShape(b, t.Elem(), seen)
+		b.WriteString("]")
+	case reflect.Map:
+		b.WriteString("[")
+		writeTypeShape(b, t.Key(), seen)
+		b.WriteString("]")
+		writeTypeShape(b, t.Elem(), seen)
+	case reflect.Struct:
+		if seen[t] {
+			return
+		}
+		seen[t] = true
+		b.WriteString("{")
+		for i := range t.NumField() {
+			f := t.Field(i)
+			if !f.IsExported() {
+				continue
+			}
+			b.WriteString(f.Name)
+			b.WriteString(" ")
+			writeTypeShape(b, f.Type, seen)
+			b.WriteString(";")
+		}
+		b.WriteString("}")
+	}
 }
 
 // listCacheRecord is what List parsed of one journal: its entries, as the
@@ -457,7 +505,8 @@ func (s *Store) openDiskCache() *diskCache {
 	defer f.Close()
 	dec := gob.NewDecoder(bufio.NewReader(f))
 	var h listCacheHeader
-	if dec.Decode(&h) != nil || h.Format != listCacheFormat || h.Version != listCacheVersion {
+	if dec.Decode(&h) != nil || h.Format != listCacheFormat || h.Version != listCacheVersion ||
+		h.Shape != listCacheShape {
 		return d
 	}
 	var recs []listCacheRecord
@@ -555,7 +604,7 @@ func (d *diskCache) save() {
 	}
 	w := bufio.NewWriter(f)
 	enc := gob.NewEncoder(w)
-	err = enc.Encode(listCacheHeader{Format: listCacheFormat, Version: listCacheVersion})
+	err = enc.Encode(listCacheHeader{Format: listCacheFormat, Version: listCacheVersion, Shape: listCacheShape})
 	if err == nil {
 		err = enc.Encode(d.next)
 	}
