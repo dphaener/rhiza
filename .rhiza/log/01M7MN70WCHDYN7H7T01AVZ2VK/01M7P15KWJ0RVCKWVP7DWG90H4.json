@@ -1,0 +1,86 @@
+{
+  "actor": "01M7P11CFW79JMHWSQBGGS7H3W",
+  "after": [
+    "01M7NZDMR1XFJQGTRWG6YH9NE4"
+  ],
+  "at": "2026-11-18T00:33:38Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built ./cmd/rhiza to a scratch path; rhiza workflow describe ship-change lists the 12 steps with merge fail -> rebase, rebase pass -> wait-ci / fail -> handback:conduct, pr-green fail -> handback:conduct, wait-ci timeout -> handback:conduct, no on.fail on main-ci/close-out/ship/deploy-check; toml has wait-ci until 'rhiza ship check --settled' (no --no-rebase), rebase stall 70m, max_visits 6, handback_cap 3, conduct prompt without --no-push; go test ./internal/workflow -run 'TestBuiltinShipChange|TestPlainRedLoopsShipChangeHasNone|TestMergeWithoutGate' and TestScripts/workflow-new pass"
+        },
+        "handle": "ship-steps-rebase-clean-qa-1",
+        "id": "01M7P15KBW4V9MVKE8718MYTMD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P15KBW4V9MVKE86Z8YTP3F",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P15KBW4V9MVKE86Z8YTP3F",
+        "id": "01M7P15KF0C6DGGPK6RYXFVCCX",
+        "link": "01M7P15KF0C6DGGPK6RWZZNA5B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGT7KV1QW8BA3VVXX1DVW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built binary's rhiza guide conduct-handback has pr-green and rebase routes, none for merge, says never run rhiza ship rebase; conduct-roles conflict-fix names a conflict the ship steps leave in progress; workflows lists the 12 steps; docs/examples/byo/conductor.toml passes rhiza workflow check in a scratch repo with wait-ci/pr-green/merge/rebase routed as ship-change's, and a broken copy fails with named steps (exit 1); greps for --no-rebase, 'ten steps', 'ship rebase --no-push' find nothing; go test ./internal/guide and TestDocsPrimitives|TestDocsExampleWorkflows|TestDocsBringYourOwn|TestScripts/guide pass"
+        },
+        "handle": "conduct-handback-ship-rebase-qa-1",
+        "id": "01M7P15KJ8R8FB9YPRSW8D109F",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P15KJ8R8FB9YPRSTQ4VJMC",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P15KJ8R8FB9YPRSTQ4VJMC",
+        "id": "01M7P15KNXNT1W0QDR4HW42CPE",
+        "link": "01M7P15KNXNT1W0QDR4H42WQ97",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGTBKNAMKGF3847C1EP3A",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: TestScripts/ship-change-one-ci passes; its assertions cover merge fail -> rebase pass -> wait-ci/pr-green/merge visit 2 with conduct once, no handback, two pushes and one pr merge, and the conflict case rebase fail -> conduct visit 2 -> gate, signoff, push, merge; rhiza check in a clean detached checkout at HEAD exits 0 and rhiza render leaves the tree clean (fixer's rendered index order holds)"
+        },
+        "handle": "ship-one-ci-rebase-in-steps-qa-1",
+        "id": "01M7P15KQZSRBHKDT3HB39S1XB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P15KQZSRBHKDT3H7QNXKEP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P15KQZSRBHKDT3H7QNXKEP",
+        "id": "01M7P15KTMVAQRSYQED2J9729M",
+        "link": "01M7P15KTMVAQRSYQECZH2F9FP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7MNGTG0TSZM85WSJ79R55P3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7MN70WCHDYN7H7T01AVZ2VK",
+  "for": "01M7NYFGQ7YRNHQDCQSM0VM6SP",
+  "id": "01M7P15KWJ0RVCKWVP7DWG90H4",
+  "type": "ops",
+  "v": 1
+}

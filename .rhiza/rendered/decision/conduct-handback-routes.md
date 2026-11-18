@@ -23,6 +23,7 @@ Hand-back routes as ship-change and the fixer role topics give them (derived fro
 ### In
 
 - decided-by [conduct-handback-topic](../capability/rhiza/guide/agent-guide/conduct-handback-topic.md)
+- supersedes [conduct-handback-routes-ship-rebase](conduct-handback-routes-ship-rebase.md)
 
 ## History
 

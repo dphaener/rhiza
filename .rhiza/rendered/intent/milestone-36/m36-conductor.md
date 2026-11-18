@@ -21,6 +21,7 @@ One conductor session conducts a change set end to end: it plans the leaves when
 - serves change set `01M7M51W2S30H06K0BFZ6MK7PF` (Fix In a conductor run, the conductor's planning questions go through AskUserQuestion and block the run: the engine spawns an advisor (which only recommends to the owner) and no arbiter decides, so an autonomous run with no owner at the pane stalls until someone answers by hand)
 - serves change set `01M7MD2K2BE981QPPF5HE8M551` (Fix A rejoined conductor session keeps its first visit's done mark, so after a gate hand-back the session reads as done before it has worked the hand-back (anything closing done sessions closes it mid-visit))
 - serves change set `01M7MJN83Y6EF727C2T0AF3Y5D` (The rhiza-conduct skill and its guide topics are enough on their own: a conductor outside this repo has no Rhiza source to read, so everything a conductor looked up in the code here (step roles, handback routes, workflow-new defaults, check roles) is in the guide)
+- serves change set `01M7MN70WCHDYN7H7T01AVZ2VK` (Fix When a PR's merge is refused because origin/main moved past the checked head, or GitHub reports a conflict, the ship-change merge step hands the whole change set back to the conductor (a rejoin) instead of rebasing in the ship steps themselves: in milestone 38 every PR (#588, #590, #591, #593) took an extra conductor visit, gate and CI round for a clean rebase. Rebase (rhiza ship rebase) and re-check in the ship steps when the merge of main is clean, and hand back only on a real conflict)
 
 ## History
 

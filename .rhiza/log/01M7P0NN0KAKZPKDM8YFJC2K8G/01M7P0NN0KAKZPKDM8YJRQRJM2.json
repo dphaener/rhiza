@@ -1,0 +1,15 @@
+{
+  "actor": "01M7NYFGQ7YRNHQDCQSM0VM6SP",
+  "after": [],
+  "at": "2026-11-18T00:24:55Z",
+  "body": {
+    "intent": "Record agent actor claude-code-fca17666 for session fca17666-28ba-4925-9fba-01a1ec0ad0f7",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7P0NN0KAKZPKDM8YFJC2K8G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7P0NN0KAKZPKDM8YJRQRJM2",
+  "type": "open",
+  "v": 1
+}
