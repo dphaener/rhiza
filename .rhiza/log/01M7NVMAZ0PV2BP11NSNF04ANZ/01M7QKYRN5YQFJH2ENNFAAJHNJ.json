@@ -1,0 +1,109 @@
+{
+  "actor": "01M7QKR1HT2ZKZHH375HBJFJ5S",
+  "after": [
+    "01M7QK1V7T869XBX6R0EMT6PRZ"
+  ],
+  "at": "2026-11-18T15:21:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build of 13a633dfe in a hermetic repo (RHIZA_TEST_NOW stand-ins, fake rex): RHIZA_TEST_TMP_FREE_BYTES=1GiB under the 2G default made daemon --once skip the ready change set as tmp-low ('1.0 GiB free in the temp directory, under the minimum of 2.0 GiB'), saved tmp_low in daemon.state.json, wrote a tmp-low queue-wait line and one tmp-low inbox item; 2147483647 bytes held, exactly 2G started; minTmpFree 0 started even at 1 byte and cleared the item and state; daemon set minTmpFree banana and 2Q and --min-tmp-free banana refused as not a size (exit 2)"
+        },
+        "handle": "daemon-tmp-hold-qa-2",
+        "id": "01M7QKYRB7YT1JBSWS36QTWTZ3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QKYRB7YT1JBSWS34V3XFBD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QKYRB7YT1JBSWS34V3XFBD",
+        "id": "01M7QKYRCANZ2CAV9TWCM6Y1ZX",
+        "link": "01M7QKYRCANZ2CAV9TW90MY293",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6K1VD821JQCCKK11KB5",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build: inside a live run's fake step session, a memory-low, then tmp-low, then disk-low hold saved by daemon --once made rhiza run spawn wait (killed by timeout after 3s, no child started) and journal exactly one spawn-held entry with role verifier and the reading and limit in its detail; after daemon --once released the hold, the spawn started the child (outcome pass) and its spawn entry released the hold; with no hold saved the spawn journaled no spawn-held entry and its response had no held"
+        },
+        "handle": "spawn-waits-every-hold-qa-2",
+        "id": "01M7QKYRD80MH3MX83PMQ4YWFA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QKYRD80MH3MX83PJQGG1EF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QKYRD80MH3MX83PJQGG1EF",
+        "id": "01M7QKYRE8KE06FJ2M6BC91B7F",
+        "link": "01M7QKYRE8KE06FJ2M687VWPQS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build: with a memory-low hold saved, rhiza run start --foreground of a one-agent-step workflow journaled one spawn-held entry for the step with no parent and never called the agent (no claude invocation); run resume while still held added no second entry; after the hold was released, resume started the step's session, whose session entry released the hold, and the run succeeded"
+        },
+        "handle": "step-session-waits-holds-qa-2",
+        "id": "01M7QKYRF83M1DQQ3BQ48HRJQ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QKYRF83M1DQQ3BQ3DC84J0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QKYRF83M1DQQ3BQ3DC84J0",
+        "id": "01M7QKYRG9FMFDBV1627ZTJ2B7",
+        "link": "01M7QKYRG9FMFDBV1626D96NHC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6QF8M2EWE3TNYRA3NKD",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2, scratch build: a live run's held verifier spawn showed one spawn-held item in rhiza inbox and --json naming change set, title, step, parent session, role and 'machine hold: memory-low: 1.0 GiB available, under the minimum of 2.0 GiB'; rhiza inbox open on it (f1 fix 13a633dfe) focused the run's journalled tab block:qa1 (opened true) when the run had one, and without a tab was refused as usage naming the held session and run; a bogus ID says no inbox item; the item was gone after the spawn started and after the run ended"
+        },
+        "handle": "inbox-held-spawns-qa-2",
+        "id": "01M7QKYRHJ78B6RYVY7WVDHQKQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QKYRHJ78B6RYVY7TE4WQ5Q",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QKYRHJ78B6RYVY7TE4WQ5Q",
+        "id": "01M7QKYRJPKZ0MBA65N16GV38A",
+        "link": "01M7QKYRJPKZ0MBA65MXE4T84F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QKYRN5YQFJH2ENNFAAJHNJ",
+  "type": "ops",
+  "v": 1
+}
