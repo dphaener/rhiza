@@ -135,6 +135,7 @@ func runSessionMessage(ctx *Ctx, req any) (any, error) {
 	if queued, err := queuePointer(st, rec.ID, resp.Pointer); err != nil {
 		return nil, withNote(err, "the message is in "+resp.File)
 	} else if queued {
+		journalMessage(ctx, st, rec, from, r.Text)
 		return resp, nil
 	}
 	waited, err := typePointer(ctx, st, rec.ID, resp.Pointer, timeout)
@@ -142,7 +143,53 @@ func runSessionMessage(ctx *Ctx, req any) (any, error) {
 		return nil, withNote(err, "the message is in "+resp.File)
 	}
 	resp.Waited = roundWait(waited)
+	journalMessage(ctx, st, rec, from, r.Text)
 	return resp, nil
+}
+
+// journalMessage records a sent message as a message intervention on the
+// run of the session it went to: the sender, the target session and the
+// text's first line. A session of no run, or a sender that is itself a
+// session of that run, journals nothing. The message is already sent, so a
+// journal that cannot be written is only a warning on stderr.
+func journalMessage(ctx *Ctx, st *session.Store, rec session.Record, from sender, text string) {
+	if rec.Run == "" || messageFromOwnRun(ctx, st, rec.Run) {
+		return
+	}
+	first, _, _ := strings.Cut(strings.TrimLeft(text, "\r\n"), "\n")
+	iv := run.Intervention{
+		Kind:   "message",
+		Actor:  from.Handle,
+		Detail: "session " + rec.ID + ": " + oneLine(strings.TrimSpace(first)),
+		Step:   rec.Step,
+		At:     ctx.Now(),
+	}
+	err := func() error {
+		common, err := gitCommonDir(ctx)
+		if err != nil {
+			return err
+		}
+		return runStore(ctx, common).AppendIntervention(rec.Run, iv)
+	}()
+	if err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: warning: the message was sent, but run %s's journal does not record it: %v\n", rec.Run, err)
+	}
+}
+
+// messageFromOwnRun reports whether the caller is an agent session of run
+// id: its RHIZA_SESSION is set and its RHIZA_RUN, or else its session
+// record's run, names id.
+func messageFromOwnRun(ctx *Ctx, st *session.Store, id string) bool {
+	getenv := ctxGetenv(ctx)
+	sid := strings.TrimSpace(getenv(envSession))
+	if sid == "" {
+		return false
+	}
+	if strings.TrimSpace(getenv(envRun)) == id {
+		return true
+	}
+	caller, err := st.Read(sid)
+	return err == nil && caller.Run == id
 }
 
 // queuePointer keeps line in the session's record for its next tool-call

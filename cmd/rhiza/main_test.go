@@ -309,6 +309,7 @@ var processScripts = map[string]string{
 	"run-end-removes-leftovers":            "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza",
 	"run-gate":                             "starts rhiza through sh -c",
 	"run-handback":                         "a fake bin/ rex that runs its tab's rhiza command; starts rhiza through sh -c",
+	"run-intervention-message":             "a stdin feed",
 	"run-log":                              "starts rhiza through sh -c; rhiza daemon starts its run as a detached ctx.Self process",
 	"run-ls":                               "starts rhiza through sh -c",
 	"run-max-visits":                       "starts rhiza through sh -c",
