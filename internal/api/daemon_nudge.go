@@ -19,10 +19,10 @@ const daemonNudgeText = "You have been idle for over 20 minutes without finishin
 // so one session cannot hold up a poll.
 const daemonNudgeTimeout = "30s"
 
-// daemonSend sends a session a message; tests replace it.
+// daemonSend sends a session a message, journalling no intervention: a
+// nudge is the daemon's own action. Tests replace it.
 var daemonSend = func(ctx *Ctx, sid, text string) error {
-	_, err := runSessionMessage(ctx, SessionMessageRequest{Session: sid, Text: text, Timeout: daemonNudgeTimeout})
-	return err
+	return deliverSessionMessage(ctx, SessionMessageRequest{Session: sid, Text: text, Timeout: daemonNudgeTimeout})
 }
 
 // daemonNudge nudges each stalled session of the live runs, once per stall.

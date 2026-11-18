@@ -1,0 +1,16 @@
+{
+  "actor": "01M7R52YYAHXYFDJ0GV187F4AZ",
+  "after": [],
+  "at": "2026-11-18T20:32:29Z",
+  "body": {
+    "intent": "A conductor's own commits (its plan commit, landing and render commits) carry an Actor: trailer naming its session's actor, so a run's hand-commit scan counts them as the run's and never journals them as hand commits",
+    "kind": "intention",
+    "sources": [],
+    "title": "Conductor commits carry Actor:"
+  },
+  "change_set": "01M7R5RSP80Z7YPE6HYD33AXPB",
+  "for": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "id": "01M7R5RSP80Z7YPE6HYG7E5NJD",
+  "type": "open",
+  "v": 2
+}

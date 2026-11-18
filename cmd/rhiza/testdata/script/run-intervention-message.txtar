@@ -1,0 +1,88 @@
+# session message to a session of a run journals a message intervention on
+# that run: the sender's actor, the target session and the text's first
+# line, shown by run status. A sender that is itself a session of the same
+# run (RHIZA_RUN and RHIZA_SESSION) journals nothing, nor does a message to
+# a session of no run, which is still sent. The sessions are working, so
+# each message is handed over at the next tool call and nothing waits.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+rhiza change new 'Pick a palette for the dashboard' --title Palette --json
+exec git add -A
+exec git commit -qm init
+mkdir .git/rhiza/runs
+cp ../r1.jsonl .git/rhiza/runs/R1.jsonl
+
+# Two sessions of run R1 and one of no run, all working.
+rhiza session start --run R1 --permission-mode manual --json
+stdout '"id": "158fe87f-5cf3-4ff0-ae50-01a16dc84988"'
+rhiza session start --run R1 --step check --permission-mode manual --json
+stdout '"id": "f3ff4d45-1e42-4e18-a215-01a16dc84d70"'
+rhiza session start --permission-mode manual --json
+stdout '"id": "5079832d-a0a3-4e4f-9cd6-01a16dc85158"'
+stdin $WORK/a.json
+exec rhiza session hook PostToolUse
+stdin $WORK/b.json
+exec rhiza session hook PostToolUse
+stdin $WORK/c.json
+exec rhiza session hook PostToolUse
+
+# From outside any run: one message intervention, naming the sender and
+# the target session with the text.
+rhiza session message 158fe87f 'Use the blue palette' --timeout 1s
+stdout '^Sent session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+rhiza run status R1 --json
+stdout '"intervention_count": 1'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "session 158fe87f-5cf3-4ff0-ae50-01a16dc84988: Use the blue palette",\n\s+"kind": "message",\n\s+"step": "build"'
+rhiza run status R1
+stdout '^- Interventions: 1 \(message 1\)$'
+
+# (failure case) From session f3ff4d45 of the same run: sent, not journalled.
+env RHIZA_RUN=R1
+env RHIZA_SESSION=f3ff4d45-1e42-4e18-a215-01a16dc84d70
+rhiza session message 158fe87f 'Second opinion: green' --timeout 1s
+stdout '^Sent session 158fe87f-5cf3-4ff0-ae50-01a16dc84988 a message from test$'
+exists $WORK/repo.palette/.rhiza/local/messages/158fe87f-5cf3-4ff0-ae50-01a16dc84988/0002.md
+rhiza run status R1 --json
+stdout '"intervention_count": 1'
+! stdout 'Second opinion'
+
+# The same session without RHIZA_RUN: its record's run is R1, still none.
+env RHIZA_RUN=
+rhiza session message 158fe87f 'Third: teal' --timeout 1s
+rhiza run status R1 --json
+stdout '"intervention_count": 1'
+env RHIZA_SESSION=
+
+# (failure case) To a session of no run: sent, nothing journalled.
+rhiza session message 5079832d 'No run here' --timeout 1s
+stdout '^Sent session 5079832d-a0a3-4e4f-9cd6-01a16dc85158 a message from test$'
+exists $WORK/repo.palette/.rhiza/local/messages/5079832d-a0a3-4e4f-9cd6-01a16dc85158/0001.md
+rhiza run status R1 --json
+stdout '"intervention_count": 1'
+! stdout 'No run here'
+
+# A dry run journals nothing.
+rhiza session message 158fe87f 'Dry' --dry-run
+rhiza run status R1 --json
+stdout '"intervention_count": 1'
+
+-- r1.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","started":{"workflow":"one","definition":"","change":"01M5PWGEF85Y185JZ2ZGCNH40N"}}
+{"type":"entered","at":"2026-01-01T00:00:01Z","step":"build","visit":1}
+-- a.json --
+{"session_id":"158fe87f-5cf3-4ff0-ae50-01a16dc84988","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}
+-- b.json --
+{"session_id":"f3ff4d45-1e42-4e18-a215-01a16dc84d70","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}
+-- c.json --
+{"session_id":"5079832d-a0a3-4e4f-9cd6-01a16dc85158","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}
+-- bin/rex --
+#!/bin/sh
+echo "$@" >> "$WORK/rex.log"
+case "$1 $2" in
+"window new") echo '{"window_id":"window:w1","block_ids":["block:b1"]}' ;;
+esac

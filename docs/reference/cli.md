@@ -581,7 +581,10 @@ Arguments and flags:
 Output (`--json` fields):
 
 - `autonomous` (boolean): True when it starts each run with --autonomous
+- `clean_streak` (integer): How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time; 0 when status covers several projects
 - `commit` (string): The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none
+- `finished` (integer): How many of the project's runs have finished, read from its run journals; 0 when status covers several projects, each part then counting its own
+- `finished_clean` (integer): How many of the project's finished runs had zero interventions; 0 when status covers several projects
 - `hold` (object): Set while new runs are held for load or memory; absent when they are not
 - `hooks` (array of object): The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset
 - `last_poll` (string): When it last polled, RFC 3339 UTC
@@ -2005,6 +2008,8 @@ Output (`--json` fields):
 - `detail` (string): Why it stopped or failed
 - `fixes` (array of object): The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none
 - `id` (string): The run ID
+- `intervention_count` (integer): How many interventions the run has: 0 when none
+- `interventions` (array of object): The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order
 - `leaves` (array of object): The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none
 - `messages` (array of object): The messages its sessions sent each other, in order
 - `milestone_number` (integer): The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none

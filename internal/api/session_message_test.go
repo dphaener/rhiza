@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
 
@@ -450,5 +451,125 @@ func TestSessionMessageInSessionCheckout(t *testing.T) {
 	}
 	if _, err := os.Stat(f.messageFile("0001.md")); !errors.Is(err, os.ErrNotExist) {
 		t.Errorf("a message was written under the worktree: %v", err)
+	}
+}
+
+// A message typed at the prompt of a run's session journals one message
+// intervention: the sender, the session and the text's first line. One
+// sent by a session of the same run journals none, and a run whose journal
+// cannot be written still gets the message, with a warning.
+func TestSessionMessageJournalsIntervention(t *testing.T) {
+	t.Parallel()
+	f := newMessageFixture(t)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R1", run.Entry{
+		Type: run.TypeStarted, Step: "build", At: time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC),
+		Started: &run.Started{Workflow: "conduct", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Notes"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Run = "R1" }); err != nil {
+		t.Fatal(err)
+	}
+	env := map[string]string{}
+	f.ctx.Getenv = func(k string) string { return env[k] }
+	interventions := func() []run.Intervention {
+		t.Helper()
+		j, err := store.Read("R1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return j.State().Interventions
+	}
+
+	f.setHook(t, session.StateIdle, "")
+	if _, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"\n  Use the blue palette\nand rounder corners\n"}`); err != nil {
+		t.Fatal(err)
+	}
+	ivs := interventions()
+	if len(ivs) != 1 {
+		t.Fatalf("interventions %+v, want one", ivs)
+	}
+	if iv := ivs[0]; iv.Kind != "message" || iv.Actor == "" || iv.Step != "build" ||
+		iv.Detail != "session "+f.sid+": Use the blue palette" {
+		t.Errorf("intervention %+v", iv)
+	}
+
+	env[envSession] = "other-session"
+	env[envRun] = "R1"
+	f.setHook(t, session.StateIdle, "")
+	if _, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"from inside"}`); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(interventions()); n != 1 {
+		t.Errorf("a message from a session of the same run journalled: %d interventions", n)
+	}
+
+	// A session of another run is outside this one.
+	env[envRun] = "R2"
+	f.setHook(t, session.StateIdle, "")
+	if _, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"from R2"}`); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(interventions()); n != 2 {
+		t.Errorf("a message from another run's session: %d interventions, want 2", n)
+	}
+
+	// The journal is gone: the message is still sent, with a warning.
+	delete(env, envSession)
+	delete(env, envRun)
+	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Run = "R9" }); err != nil {
+		t.Fatal(err)
+	}
+	var stderr strings.Builder
+	f.ctx.Stderr = &stderr
+	f.setHook(t, session.StateIdle, "")
+	if _, err := callOp(t, f.ctx, "session.message", `{"session":"`+f.sid+`","text":"no journal"}`); err != nil {
+		t.Fatalf("a missing journal failed the message: %v", err)
+	}
+	if !strings.Contains(stderr.String(), "run R9's journal does not record it") {
+		t.Errorf("stderr %q", stderr.String())
+	}
+}
+
+// The daemon's nudge and an API-error re-prompt deliver a message to a
+// run's session as session.message does, from a caller with no
+// RHIZA_SESSION, yet journal no intervention: both are Rhiza's own actions.
+// Not parallel: other tests replace daemonSend and sendAPIErrorMessage.
+func TestSessionMessageRhizaSendsJournalNothing(t *testing.T) {
+	f := newMessageFixture(t)
+	store := run.NewStore(run.Dir(f.common))
+	if err := store.Create("R1", run.Entry{
+		Type: run.TypeStarted, Step: "build", At: time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC),
+		Started: &run.Started{Workflow: "conduct", Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Notes"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.st.Update(f.sid, func(r *session.Record) { r.Run = "R1" }); err != nil {
+		t.Fatal(err)
+	}
+	f.ctx.Getenv = func(string) string { return "" }
+
+	for _, c := range []struct {
+		name string
+		send func(*Ctx, string, string) error
+	}{
+		{"daemon nudge", daemonSend},
+		{"API-error re-prompt", sendAPIErrorMessage},
+	} {
+		f.setHook(t, session.StateIdle, "")
+		if err := c.send(f.ctx, f.sid, "carry on"); err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		j, err := store.Read("R1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if ivs := j.State().Interventions; len(ivs) != 0 {
+			t.Errorf("%s journalled %+v", c.name, ivs)
+		}
+	}
+	if _, err := os.Stat(f.messageFile("0002.md")); err != nil {
+		t.Errorf("both messages not delivered: %v", err)
 	}
 }

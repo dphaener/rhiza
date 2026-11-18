@@ -1,0 +1,143 @@
+# An accept or reject under rule owner of a change set whose live run is
+# not waiting for it (its accept stage is auto) journals an approve
+# intervention on that run, shown by run status. (failure case) An owner
+# accept the run waits for (accept stage owner), an accept of a change set
+# with no live run and rhiza run approve at a signoff step the run waits
+# on journal none.
+
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec git add -A
+exec git commit -qm init
+mkdir .rhiza/workflows
+cp ../hold.toml .rhiza/workflows/hold.toml
+cp ../owner-accept.toml .rhiza/workflows/owner-accept.toml
+cp ../signoff.toml .rhiza/workflows/signoff.toml
+
+# A run of change set Hold, stopped at its wait, under auto accept.
+rhiza change new 'Hold a run' --title Hold --json
+rhiza add capability held
+rhiza run start --foreground --workflow hold --no-wait
+stdout '^Run 01M5PWGKBGYFZMTH8Y8AF1G8GN stopped$'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 0'
+
+# A dry run of the owner's accept journals nothing.
+rhiza propose
+rhiza accept --dry-run
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 0'
+
+# The owner's accept: one approve intervention.
+rhiza accept --reason 'looks right'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 1'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "accepted change set [0-9A-Z]{26} at step hold",\n\s+"kind": "approve",\n\s+"step": "hold"'
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN
+stdout '^- Interventions: 1 \(approve 1\)$'
+
+# The owner's reject of a change set whose run is live: an approve
+# intervention too.
+rhiza change new 'Reject a run' --title Reject --json
+rhiza add capability rejected
+rhiza run start --foreground --workflow hold --no-wait
+stdout '^Run 01M5PWGQ8GB4618G4RH2TV0ZAH stopped$'
+rhiza propose
+rhiza reject --reason 'not now'
+rhiza run status 01M5PWGQ8GB4618G4RH2TV0ZAH --json
+stdout '"intervention_count": 1'
+stdout '"detail": "rejected change set [0-9A-Z]{26} at step hold",\n\s+"kind": "approve"'
+
+# (failure case) The run waits for the owner's accept (its workflow
+# declares accept owner): that accept journals none.
+rhiza change new 'Owner accepts' --title Owner --json
+rhiza add capability owned
+rhiza run start --foreground --workflow owner-accept --no-wait
+stdout '^Run 01M5PWGV5G8W2RPXNBFMN118QF stopped$'
+rhiza propose
+rhiza accept
+rhiza run status 01M5PWGV5G8W2RPXNBFMN118QF --json
+stdout '"intervention_count": 0'
+
+# (failure case) An accept of a change set with no live run journals
+# nothing: no run's count changes.
+rhiza change new 'No run' --title Norun --json
+rhiza add capability norun
+rhiza propose
+rhiza accept
+rhiza run status 01M5PWGKBGYFZMTH8Y8AF1G8GN --json
+stdout '"intervention_count": 1'
+rhiza run status 01M5PWGQ8GB4618G4RH2TV0ZAH --json
+stdout '"intervention_count": 1'
+rhiza run status 01M5PWGV5G8W2RPXNBFMN118QF --json
+stdout '"intervention_count": 0'
+
+# (failure case) rhiza run approve at the signoff step the run waits on
+# journals no intervention.
+rhiza change new 'Sign it off' --title Signoff --json
+rhiza add capability signed
+rhiza run start --foreground --workflow signoff --no-wait --permission-mode manual
+stdout '^Run 01M5PWH2ZG3C3FFDB7RZS336ZK stopped$'
+rhiza run status 01M5PWH2ZG3C3FFDB7RZS336ZK --json
+stdout '"signoff_waiting": true'
+rhiza run approve --foreground 01M5PWH2ZG3C3FFDB7RZS336ZK
+stdout '^Run 01M5PWH2ZG3C3FFDB7RZS336ZK succeeded$'
+rhiza run status 01M5PWH2ZG3C3FFDB7RZS336ZK --json
+stdout '"state": "succeeded"'
+stdout '"intervention_count": 0'
+
+fold-ok
+
+-- hold.toml --
+name = "hold"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- owner-accept.toml --
+name = "owner-accept"
+
+[autonomy]
+accept = "owner"
+
+[step.hold]
+kind = "wait"
+until = "test -f ../go"
+timeout = "30s"
+interval = "50ms"
+on.pass = "done"
+on.timeout = "failed"
+-- signoff.toml --
+name = "signoff"
+
+[autonomy]
+signoff = "owner"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "done"
+on.changes = "review"
+
+# Never entered: the owner approves.
+[step.review]
+kind = "checks"
+on.pass = "signoff"
+
+[[step.review.check]]
+name = "alpha"
+prompt = "Review change set {change} as check {check}"
+
+[step.review.critic]
+prompt = "Criticise {check}"
+
+[step.review.fixer]
+prompt = "Fix {leaf}"
+
+[step.review.verifier]
+prompt = "Verify {leaf}"

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7R3DJBRNGHVG2KQ496JHQAS",
+  "after": [
+    "01M7R2V8PA30WF8CRZAD4S6YSR"
+  ],
+  "at": "2026-11-18T19:52:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 8cb6bf045 (with 1953d890a), capped scope, RHIZA_/SHIP_/REX_ unset: go test -trimpath -count=1 -p 2 ./internal/api -run 'SessionMessage|TypePointer|QueuePointer|APIError|DaemonNudge' ok; go test ./cmd/rhiza -run 'TestScripts/(session-message.*|run-intervention-message|session-run-api-error.*|daemon-nudge.*|run-status-interventions)$' ok (run-intervention-message PASS); TestProcessScripts|TestInProcess|TestProcessListConverted|TestScriptEnv|TestProcessRefusedFailsFast ok; go vet ./internal/api ./cmd/rhiza exit 0; rhiza ship generate exit 0; rhiza render exit 0. The script covers all three acceptance points: an outside message gives intervention_count 1 with actor, session and first line in run status --json; a message with RHIZA_RUN+RHIZA_SESSION of the same run (and with only RHIZA_SESSION, the record naming the run) adds none; a message to a no-run session is still sent (0001.md exists) and journals nothing. The earlier findings are fixed: daemonSend and sendAPIErrorMessage now call deliverSessionMessage (journal=false), so only the session.message op (runSessionMessage) journals. TestSessionMessageRhizaSendsJournalNothing sends through both and finds the journal empty. Delivery code is unchanged apart from the journal hook placed after a successful queue or type. A failed journal write only warns on stderr. typePointer/queuePointer callers (hand-back, amend, lost-session, API-error pointers) never journal. No TODOs. Files outside the leaf's list (main_test.go processScripts entry, daemon_nudge.go, session_run_apierror.go) are the required stdin-feed registration and the fix for the earlier findings."
+        },
+        "handle": "run-intervention-message-verified",
+        "id": "01M7R3FHJ7GVZK2DYZXZNC3B43",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R3FHJ7GVZK2DYZXW803KAB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R3FHJ7GVZK2DYZXW803KAB",
+        "id": "01M7R3FHKC85CCM15TVS0PCGMY",
+        "link": "01M7R3FHKC85CCM15TVN425TP4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFV54PDK3XDSGH07HK0K7",
+  "for": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "id": "01M7R3FHN83X5759RB0AGP8A7W",
+  "type": "ops",
+  "v": 1
+}

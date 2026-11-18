@@ -153,6 +153,19 @@ func (s *Store) Append(id string, e Entry) error {
 	return err
 }
 
+// AppendIntervention journals iv on run id as an intervention entry, or
+// refuses it with an error when InterventionProblem finds one: an unknown
+// kind is never journalled.
+func (s *Store) AppendIntervention(id string, iv Intervention) error {
+	if p := InterventionProblem(iv); p != "" {
+		return fmt.Errorf("run %s: %s", id, p)
+	}
+	return s.Append(id, Entry{
+		Type: TypeIntervention, At: iv.At, Step: iv.Step,
+		Kind: iv.Kind, Actor: iv.Actor, Detail: iv.Detail, Commit: iv.Commit,
+	})
+}
+
 // AppendSpawnEnded adds a spawn-ended entry unless the run's journal already
 // records that child's end, and reports whether it added one. The spawn
 // process and a restarted driver both record a child's end; whichever comes

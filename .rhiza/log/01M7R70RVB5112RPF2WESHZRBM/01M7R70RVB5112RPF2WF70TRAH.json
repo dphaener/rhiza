@@ -1,0 +1,15 @@
+{
+  "actor": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "after": [],
+  "at": "2026-11-18T20:54:19Z",
+  "body": {
+    "intent": "Record agent actor claude-code-de477e91 for session de477e91-3c95-45d6-846e-01a1f0705fdd",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7R70RVB5112RPF2WESHZRBM",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7R70RVB5112RPF2WF70TRAH",
+  "type": "open",
+  "v": 1
+}

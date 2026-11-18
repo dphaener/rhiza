@@ -1,0 +1,155 @@
+{
+  "actor": "01M7R8J211YWHYZVCATMN262QQ",
+  "after": [
+    "01M7R7M2SJWWASAHAZ2RPB8SCJ"
+  ],
+  "at": "2026-11-18T21:26:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build in a $TMPDIR root: run status --json shows interventions [] and intervention_count 0 for a clean run, the list in journal order and the count for one with interventions, and text '- Interventions: 3 (resume 2, abandon 1)' plus an Interventions list; a hand-appended entry of kind bogus is not counted and run status warns 'unknown kind \"bogus\": not counted'."
+        },
+        "handle": "run-intervention-journal-qa-1",
+        "id": "01M7R8VWHXYZYH7NY4GFJNN570",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VWHXYZYH7NY4GDXHEN44",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VWHXYZYH7NY4GDXHEN44",
+        "id": "01M7R8VWKPA0BX62GYWFNTF6HY",
+        "link": "01M7R8VWKPA0BX62GYWDK8F2CJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: session message from outside any run to a run's session journals one message intervention (actor, session, first line); from a session of the same run (RHIZA_RUN+RHIZA_SESSION or RHIZA_SESSION alone) none; to a session of no run sent, none; dry run and blank text none. Rough edge (minor finding): a message to a finished run's session still journals on that run."
+        },
+        "handle": "run-intervention-message-qa-1",
+        "id": "01M7R8VWMZNPN2N643X0023HXW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VWMZNPN2N643WW9T4WBJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VWMZNPN2N643WW9T4WBJ",
+        "id": "01M7R8VWPA06CGCJP75TCRXYKD",
+        "link": "01M7R8VWPA06CGCJP75QASEC9P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA with a scratch build: person's queued and foreground resume, resume --retry and abandon each journal the matching intervention with actor and step; dry runs, refused resumes/abandons and RHIZA_DAEMON_RESUME (daemon/watchdog) journal none. Major finding: a person's rhiza run start of a change set with a failed run starts a new run and journals no retry intervention, contrary to the statement."
+        },
+        "handle": "run-intervention-resume-qa-1",
+        "id": "01M7R8VWQMWT9NQAV5FDA9K442",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VWQMWT9NQAV5FBXW2227",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VWQMWT9NQAV5FBXW2227",
+        "id": "01M7R8VWTNW3NS0FD416HZ8D9B",
+        "link": "01M7R8VWTNW3NS0FD415P20WZ7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY1KB5VKZZYS1XGDHRBC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: owner rhiza accept of a change set whose live run has accept auto journals one approve ('accepted change set <id> at step hold'); an accept the run waits on (rhiza.autonomy.accept owner), an accept of a change set whose run is finished, a refused second accept and a refused --rule autonomous journal none."
+        },
+        "handle": "run-intervention-approve-qa-1",
+        "id": "01M7R8VWXAB2FTS9G7RMBX95BZ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VWXAB2FTS9G7RM7JJMPN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VWXAB2FTS9G7RM7JJMPN",
+        "id": "01M7R8VWZ47WAQW42RF6628E30",
+        "link": "01M7R8VWZ47WAQW42RF2R9ND01",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY5HR9X0ZJRR595VFVPE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "FAIL",
+          "statement": "QA with a scratch build, two-wait workflow: Review: this run, Leaf: of the change set and a merge of main are not counted; plain, Review: other run and unknown Leaf: commits are journalled once each on entering the next step, a later one once at finish, no duplicates, run result unchanged. Major finding: the run's own 'Merge origin/<branch> into <branch>' (ship divergence merge) is counted as a hand commit; minors: a rebase onto main counts main's commits, an Actor: trailer naming the process's owner actor is excused."
+        },
+        "handle": "run-intervention-hand-commit-qa-1",
+        "id": "01M7R8VX0ZMN8X6KN49WZKWYFB",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VX0ZMN8X6KN49TV154JM",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VX0ZMN8X6KN49TV154JM",
+        "id": "01M7R8VX2K6G5JC3ARQDA15SRC",
+        "link": "01M7R8VX2K6G5JC3ARQCG5765W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY8VC5AK2F7BWWFFHW55",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: daemon status --json and text show finished/finished_clean/clean_streak matching each run's status (9/3/0, then 10/4/1 after a clean newest finish); after rhiza daemon --once with detach faked, live rows carry intervention_count and text ', N interventions'; a fresh project shows 0/0/0 without error."
+        },
+        "handle": "daemon-status-interventions-qa-1",
+        "id": "01M7R8VX3R6WQ2Z2HW1Q6A3GHE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R8VX3R6WQ2Z2HW1NW9JXJV",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R8VX3R6WQ2Z2HW1NW9JXJV",
+        "id": "01M7R8VX5658YXDRMHZYWBKA2G",
+        "link": "01M7R8VX5658YXDRMHZYC7BV7J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FYDRQGC4KBP7G5SXJ8XB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFV54PDK3XDSGH07HK0K7",
+  "for": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "id": "01M7R8VX6KR6XKKJNND94STM19",
+  "type": "ops",
+  "v": 1
+}

@@ -2010,9 +2010,21 @@ cmp stdout describe.golden.json
             "description": "True when it starts each run with --autonomous",
             "type": "boolean"
           },
+          "clean_streak": {
+            "description": "How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time; 0 when status covers several projects",
+            "type": "integer"
+          },
           "commit": {
             "description": "The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none",
             "type": "string"
+          },
+          "finished": {
+            "description": "How many of the project's runs have finished, read from its run journals; 0 when status covers several projects, each part then counting its own",
+            "type": "integer"
+          },
+          "finished_clean": {
+            "description": "How many of the project's finished runs had zero interventions; 0 when status covers several projects",
+            "type": "integer"
           },
           "hold": {
             "additionalProperties": false,
@@ -2197,6 +2209,18 @@ cmp stdout describe.golden.json
             "items": {
               "additionalProperties": false,
               "properties": {
+                "clean_streak": {
+                  "description": "How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time",
+                  "type": "integer"
+                },
+                "finished": {
+                  "description": "How many of the project's runs have finished, read from its run journals",
+                  "type": "integer"
+                },
+                "finished_clean": {
+                  "description": "How many of the project's finished runs had zero interventions",
+                  "type": "integer"
+                },
                 "last_resumed": {
                   "additionalProperties": false,
                   "description": "The run the daemon last resumed in the project; absent if none",
@@ -2258,6 +2282,10 @@ cmp stdout describe.golden.json
                         "description": "The run ID",
                         "type": "string"
                       },
+                      "intervention_count": {
+                        "description": "How many interventions the run's journal records: 0 when none, or when the journal cannot be read",
+                        "type": "integer"
+                      },
                       "queued": {
                         "description": "For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise",
                         "type": "integer"
@@ -2270,6 +2298,7 @@ cmp stdout describe.golden.json
                     "required": [
                       "change",
                       "id",
+                      "intervention_count",
                       "state"
                     ],
                     "type": "object"
@@ -2346,6 +2375,9 @@ cmp stdout describe.golden.json
                 }
               },
               "required": [
+                "clean_streak",
+                "finished",
+                "finished_clean",
                 "project",
                 "runs",
                 "skipped",
@@ -2372,6 +2404,10 @@ cmp stdout describe.golden.json
                   "description": "The run ID",
                   "type": "string"
                 },
+                "intervention_count": {
+                  "description": "How many interventions the run's journal records: 0 when none, or when the journal cannot be read",
+                  "type": "integer"
+                },
                 "queued": {
                   "description": "For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise",
                   "type": "integer"
@@ -2384,6 +2420,7 @@ cmp stdout describe.golden.json
               "required": [
                 "change",
                 "id",
+                "intervention_count",
                 "state"
               ],
               "type": "object"
@@ -2547,6 +2584,9 @@ cmp stdout describe.golden.json
         },
         "required": [
           "autonomous",
+          "clean_streak",
+          "finished",
+          "finished_clean",
           "hooks",
           "live",
           "max",
@@ -4097,6 +4137,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -5142,6 +5225,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -6109,6 +6194,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -7154,6 +7282,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -10328,6 +10458,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -11373,6 +11546,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -12176,6 +12351,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -13221,6 +13439,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -15208,6 +15428,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -16253,6 +16516,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -17100,6 +17365,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -18145,6 +18453,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -19100,6 +19410,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -20145,6 +20498,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -21136,6 +21491,49 @@ cmp stdout describe.golden.json
                 "description": "The run ID",
                 "type": "string"
               },
+              "intervention_count": {
+                "description": "How many interventions the run has: 0 when none",
+                "type": "integer"
+              },
+              "interventions": {
+                "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "Who made it",
+                      "type": "string"
+                    },
+                    "at": {
+                      "description": "When it was journalled, RFC 3339 UTC",
+                      "type": "string"
+                    },
+                    "commit": {
+                      "description": "A hand commit's commit; absent for other kinds",
+                      "type": "string"
+                    },
+                    "detail": {
+                      "description": "What it was; absent when not recorded",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "message, resume, retry, abandon, approve or hand-commit",
+                      "type": "string"
+                    },
+                    "step": {
+                      "description": "The step the run was at; absent when it was at none",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "at",
+                    "kind"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "leaves": {
                 "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
                 "items": {
@@ -22181,6 +22579,8 @@ cmp stdout describe.golden.json
               "amendments",
               "change",
               "id",
+              "intervention_count",
+              "interventions",
               "messages",
               "sessions",
               "started_at",
@@ -22872,6 +23272,49 @@ cmp stdout describe.golden.json
           "id": {
             "description": "The run ID",
             "type": "string"
+          },
+          "intervention_count": {
+            "description": "How many interventions the run has: 0 when none",
+            "type": "integer"
+          },
+          "interventions": {
+            "description": "The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "actor": {
+                  "description": "Who made it",
+                  "type": "string"
+                },
+                "at": {
+                  "description": "When it was journalled, RFC 3339 UTC",
+                  "type": "string"
+                },
+                "commit": {
+                  "description": "A hand commit's commit; absent for other kinds",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "What it was; absent when not recorded",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "message, resume, retry, abandon, approve or hand-commit",
+                  "type": "string"
+                },
+                "step": {
+                  "description": "The step the run was at; absent when it was at none",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "actor",
+                "at",
+                "kind"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           },
           "leaves": {
             "description": "The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none",
@@ -23918,6 +24361,8 @@ cmp stdout describe.golden.json
           "amendments",
           "change",
           "id",
+          "intervention_count",
+          "interventions",
           "messages",
           "sessions",
           "started_at",

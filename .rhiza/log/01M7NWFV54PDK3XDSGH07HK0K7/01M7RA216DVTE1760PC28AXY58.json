@@ -1,0 +1,30 @@
+{
+  "actor": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "after": [
+    "01M7R8VX6KR6XKKJNND94STM19"
+  ],
+  "at": "2026-11-18T21:47:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A commit on a run's branch is the run's when it is a merge of the base branch or already on the base branch, carries a Leaf: trailer naming a leaf of the run's change set, a Review: trailer naming the run, or an Actor: trailer naming the actor of one of the run's sessions or the actor the run's own process commits as (its command steps' render and land commits); any other commit added to the branch after the run started is a hand commit, journalled once per commit",
+          "wording": "(assumed, would have escalated) attribution by the trailers the run's roles already write"
+        },
+        "handle": "hand-commit-by-trailer",
+        "id": "01M7R2FXRAMCY0W76S1S9MN07M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7R2FXRAMCY0W76S1QG78Z7Y",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NWFV54PDK3XDSGH07HK0K7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RA216DVTE1760PC28AXY58",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,86 @@
+# rhiza daemon status counts interventions from the run journals: each live
+# run row carries its intervention count, and over the project's finished
+# runs it shows how many finished, how many with zero interventions and the
+# streak of zero-intervention runs from the newest by finish time, in --json
+# and as a text line. A project with no finished runs shows 0 for all three.
+# Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
+exec git add -A
+exec git commit -qm init
+
+# (failure case) No finished runs, no daemon ever: 0 for all three, no error.
+rhiza daemon status --json
+stdout '"finished": 0,'
+stdout '"finished_clean": 0,'
+stdout '"clean_streak": 0,'
+rhiza daemon status
+stdout '^Daemon not running$'
+stdout '^Finished runs: 0, 0 with no interventions, clean streak 0$'
+
+# A live run (a fixture journal naming a dead process, on a change set the
+# daemon does not resume) with two interventions, and still no finished
+# run: the row carries 2, the counts stay 0.
+mkdir .git/rhiza/runs
+exec sh -c 'sed "s/nohost/$(hostname)/" ../live.jsonl > .git/rhiza/runs/LIVERUN0001.jsonl'
+rhiza daemon --permission-mode manual --once
+rhiza daemon status --json
+stdout '"id": "LIVERUN0001",\n *"intervention_count": 2,\n *"state": "interrupted"'
+stdout '"finished": 0,'
+stdout '"clean_streak": 0,'
+rhiza daemon status
+stdout '^- LIVERUN0001 interrupted, 2 interventions \(change set CHANGELIVE\)$'
+stdout '^Finished runs: 0, 0 with no interventions, clean streak 0$'
+
+# Three finished runs, oldest to newest by finish time: intervened, clean,
+# clean. Their IDs run the other way, so the order is the finish time's.
+cp ../intervened.jsonl .git/rhiza/runs/FINISHED003.jsonl
+cp ../clean1.jsonl .git/rhiza/runs/FINISHED002.jsonl
+cp ../clean2.jsonl .git/rhiza/runs/FINISHED001.jsonl
+rhiza daemon status --json
+stdout '"finished": 3,'
+stdout '"finished_clean": 2,'
+stdout '"clean_streak": 2,'
+stdout '"id": "LIVERUN0001",\n *"intervention_count": 2,'
+rhiza daemon status
+stdout '^Finished runs: 3, 2 with no interventions, clean streak 2$'
+
+# A newer intervened run ends the streak; the clean count stays.
+cp ../intervened2.jsonl .git/rhiza/runs/FINISHED004.jsonl
+rhiza daemon status --json
+stdout '"finished": 4,'
+stdout '"finished_clean": 2,'
+stdout '"clean_streak": 0,'
+rhiza daemon status
+stdout '^Finished runs: 4, 2 with no interventions, clean streak 0$'
+
+-- live.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","started":{"workflow":"ship-change","definition":"","change":"CHANGELIVE"}}
+{"type":"process","at":"2026-01-01T00:00:01Z","process":{"host":"nohost","pid":999999}}
+{"type":"intervention","at":"2026-01-01T00:00:02Z","kind":"message","actor":"owner","detail":"look again"}
+{"type":"intervention","at":"2026-01-01T00:00:03Z","kind":"resume","actor":"owner"}
+-- intervened.jsonl --
+{"type":"started","at":"2026-01-02T00:00:00Z","started":{"workflow":"ship-change","definition":"","change":"CHANGEOLD"}}
+{"type":"intervention","at":"2026-01-02T00:00:01Z","kind":"message","actor":"owner","detail":"stop"}
+{"type":"finished","at":"2026-01-02T00:00:02Z","end":"succeeded"}
+-- clean1.jsonl --
+{"type":"started","at":"2026-01-03T00:00:00Z","started":{"workflow":"ship-change","definition":"","change":"CHANGEMID"}}
+{"type":"finished","at":"2026-01-03T00:00:02Z","end":"succeeded"}
+-- clean2.jsonl --
+{"type":"started","at":"2026-01-04T00:00:00Z","started":{"workflow":"ship-change","definition":"","change":"CHANGENEW"}}
+{"type":"finished","at":"2026-01-04T00:00:02Z","end":"failed"}
+-- intervened2.jsonl --
+{"type":"started","at":"2026-01-05T00:00:00Z","started":{"workflow":"ship-change","definition":"","change":"CHANGELAST"}}
+{"type":"intervention","at":"2026-01-05T00:00:01Z","kind":"abandon","actor":"owner"}
+{"type":"finished","at":"2026-01-05T00:00:02Z","end":"failed"}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
