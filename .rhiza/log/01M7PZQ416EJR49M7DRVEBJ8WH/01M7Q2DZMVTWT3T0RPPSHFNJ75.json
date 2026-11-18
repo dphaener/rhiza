@@ -1,0 +1,63 @@
+{
+  "actor": "01M7Q2A528V8FA0FG01KMY6PJF",
+  "after": [
+    "01M7Q1WHYFA10T7ET49GY1XF8V"
+  ],
+  "at": "2026-11-18T10:14:55Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: scoped ./internal/api tests (TestProjection|TestWorkspace|TestWritesThroughIndexMatchFold|TestCarve|TestLogCarve|TestReviewCheckQuestionInNodeChangeSet|TestOtherRoot, incl. TestProjectionNoneGiven) pass with TMPDIR a fresh scratch; 0 new /tmp/rhiza-projection-* (96 before and after); built rhiza status/slice/check behave as the base build's, no projection folders left"
+        },
+        "handle": "workspace-projection-no-bare-ctx-qa-1",
+        "id": "01M7Q2DZERQTWPSDFD48MN43D3",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q2DZERQTWPSDFD44XAX9EK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q2DZERQTWPSDFD44XAX9EK",
+        "id": "01M7Q2DZFT9GG0RRJQY268H8AP",
+        "link": "01M7Q2DZFT9GG0RRJQY1D2R9JE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q028AA08ZP6HAFHHVHHF15",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: acceptance go test passes, scratch TMPDIR empty after (no rhiza-api-tmp- left), 0 new /tmp/rhiza-projection-*; an injected rhiza-projection-qa in testTmp makes the binary print its name and exit 1, folder still removed; a 2h-old rhiza-api-tmp- folder is swept, a fresh one kept"
+        },
+        "handle": "api-tests-tmp-leak-guard-qa-1",
+        "id": "01M7Q2DZGY9KDZC540BBCJ2E1Y",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q2DZGY9KDZC540BA875J04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q2DZGY9KDZC540BA875J04",
+        "id": "01M7Q2DZJV4JQQ10W94AHZNWBA",
+        "link": "01M7Q2DZJV4JQQ10W94AGQZD30",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q028CFJFVMEDZAKVXVRPNF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M7Q0S6PVGBF6T5TM48H4NSVZ",
+  "id": "01M7Q2DZMVTWT3T0RPPSHFNJ75",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7Q121YVVJRSTB5A6GRNK1GC",
+  "after": [
+    "01M7Q0KRSXEQA6WJ8QB7JAGFMW"
+  ],
+  "at": "2026-11-18T09:55:09Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verifier at 9da2b3af8: with TMPDIR set to a fresh scratch folder, go test -trimpath -count=1 -p 2 ./internal/api -run 'TestProjection|TestWorkspace|TestWritesThroughIndexMatchFold$|TestCarve$|TestLogCarve$|TestReviewCheckQuestionInNodeChangeSet$|TestOtherRoot' exits 0 (incl. new TestProjectionNoneGiven: no changeSets, projectionFailure names the missing projection, no rhiza-projection-* in its TMPDIR). /tmp/rhiza-projection-* count 616 before and 616 after the run, none of them with an index.db-wal naming the scratch TMPDIR. Whole go test ./internal/api exits 0 (174s), and afterwards no /tmp/rhiza-projection-* names the scratch folder. go vet ./internal/api exits 0. Diff: projection() with none given answers failedProjection{errNoProjection} and opens no index. ctxWorkspace adds useProjection(ctx) and registers t.Cleanup(closeProjection) after guardProjections's, so its projection closes before guardProjections checks for open ones. landNodeOn uses its Ctx's projection and closes it. testWorkspace uses a Ctx whose TMPDIR is t.TempDir(). TestOtherRootGateAnswer uses openRootWorkspace and defers closeProjection. openWriteIndex, the production openWorkspace callers (which already set a projection) and cmd/rhiza are unchanged. No test is deleted or skipped."
+        },
+        "handle": "workspace-projection-no-bare-ctx-verified",
+        "id": "01M7Q19SM4KBTBDET7BN87E0KP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q19SM4KBTBDET7BM7B44KZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q19SM4KBTBDET7BM7B44KZ",
+        "id": "01M7Q19SN36W45NN15BNT1YJ2N",
+        "link": "01M7Q19SN36W45NN15BN19VC8M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q028AA08ZP6HAFHHVHHF15",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M7Q0S6PVGBF6T5TM48H4NSVZ",
+  "id": "01M7Q19SP5Y6E31Y2YVCP3CDMG",
+  "type": "ops",
+  "v": 1
+}

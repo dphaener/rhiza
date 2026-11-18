@@ -1,0 +1,40 @@
+{
+  "actor": "01M7Q1KXW5FTEKEJ8942T5E88E",
+  "after": [
+    "01M7Q19SP5Y6E31Y2YVCP3CDMG"
+  ],
+  "at": "2026-11-18T10:05:24Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at b2a1225f9 in a detached worktree. Acceptance: TMPDIR=<fresh scratch> go test -trimpath -count=1 -p 2 ./internal/api -run 'TestProjection|TestSnapshot|TestShipCheckModelConflictClosesProjection|TestRunStatusGatedClosesProjection|TestWorktreeWorkspaceClosesReplacedProjection|TestSessionWorkspaceMissClosesProjection|TestTmpLeak' exit 0; /tmp/rhiza-projection-* 96 before and 96 after, none new; scratch TMPDIR empty afterwards (no rhiza-api-tmp- left). -v shows TestTmpLeakReportsLeftProjection (rhiza-projection-x folder named on output, tmpLeakCode non-zero; a file and rhiza-run-1 ignored), TestTmpLeakEmptyFolderPasses (0, no output, failed code kept) and TestTmpLeakTestCacheAnswersPackageTmp (TMPDIR -> testTmp, XDG_CACHE_HOME unchanged, testCtxNoIndex's Getenv TMPDIR -> testTmp) passing. Checks block re-run: full TMPDIR=<scratch> go test -trimpath -count=1 -p 2 ./internal/api exit 0 (175.6s), no new /tmp projection, no rhiza-api-tmp- left; go vet ./internal/api exit 0; rhiza ship generate and rhiza render exit 0 (render drift only the conductor's uncommitted actor record, not this leaf). Diff: only internal/api/budget_test.go, init_test.go, projection_leak_test.go plus model records; no production code, guardProjections and its per-test TMPDIR unchanged, TestMain adds tmpsweep.StaleTemp(rhiza-api-tmp-), no TODOs."
+        },
+        "handle": "api-tests-tmp-leak-guard-verified",
+        "id": "01M7Q1WHWQXQKQ6F4AE3FX779K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q1WHWQXQKQ6F4AE1TXYSNR",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q1WHWQXQKQ6F4AE1TXYSNR",
+        "id": "01M7Q1WHXGZPHD5TCZ3Y8X67GV",
+        "link": "01M7Q1WHXGZPHD5TCZ3VCMAS19",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q028CFJFVMEDZAKVXVRPNF",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M7Q0S6PVGBF6T5TM48H4NSVZ",
+  "id": "01M7Q1WHYFA10T7ET49GY1XF8V",
+  "type": "ops",
+  "v": 1
+}
