@@ -576,6 +576,12 @@ func daemonNotify(ctx *Ctx, rs *run.Store, state *daemon.State, notifyCmd string
 		blocked, apiErrored, tabOf = inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common)
 	}
 	items := inboxItems(runs, host, nil, rs.Live, stateOf, nil, blocked, apiErrored, tabOf)
+	// A failed run the watchdog will still retry is no item yet.
+	pol, perr := WatchdogPolicyOf(ctx)
+	if perr != nil {
+		pol = defaultWatchdogPolicy()
+	}
+	items = failedRetryItems(items, runs, pol, state.Watchdog, true)
 	items = append(items, overlaps...)
 	// This poll's disk-low state, not the one saved after the last poll.
 	items = append(items, diskLowItems(state.DiskLow)...)

@@ -3,6 +3,9 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -830,5 +833,320 @@ func TestWatchdogStepHoldNotStalled(t *testing.T) {
 	}
 	if strings.Join(stopped, ",") != "H" {
 		t.Fatalf("released step: stopped %v", stopped)
+	}
+}
+
+// failedRun is a run of change set id that failed at step build with out,
+// autonomous or not; at is when it failed.
+func failedRun(id, out string, auto bool, at time.Time) run.Journal {
+	return run.Journal{ID: id, Entries: []run.Entry{
+		{Type: run.TypeStarted, At: at, Started: &run.Started{Autonomous: auto, Change: "cs-" + id}},
+		{Type: run.TypeEntered, At: at, Step: "build", Visit: 1},
+		{Type: run.TypeEnded, At: at, Step: "build", Visit: 1, Outcome: "fail", Detail: "exit 1\n" + out},
+		{Type: run.TypeFinished, At: at, Step: "build", End: "failed", Detail: "step build failed"},
+	}}
+}
+
+// failAgain appends a new failure of step build to j at at, as a retry
+// that failed again leaves it.
+func failAgain(j *run.Journal, out string, at time.Time) {
+	j.Entries = append(j.Entries,
+		run.Entry{Type: run.TypeEntered, At: at, Step: "build", Visit: 2},
+		run.Entry{Type: run.TypeEnded, At: at, Step: "build", Visit: 2, Outcome: "fail", Detail: "exit 1\n" + out},
+		run.Entry{Type: run.TypeFinished, At: at, Step: "build", End: "failed", Detail: "step build failed"})
+}
+
+// failedItems are the failed items the inbox lists over runs, given the
+// watchdog's policy and memory with a daemon up.
+func failedItems(runs []run.Journal, pol WatchdogPolicy, mem []daemon.WatchdogRun) []InboxItem {
+	items := inboxItems(runs, "", nil, func(string) bool { return false }, func(string) (string, bool) { return "", false }, nil, nil, nil, nil)
+	return slices.DeleteFunc(failedRetryItems(items, runs, pol, mem, true), func(it InboxItem) bool { return it.Kind != InboxFailed })
+}
+
+// TestWatchdogFailedRetries: a failed autonomous run whose failure is real
+// is resumed with --retry once, charged as an attempt apart from the retry
+// budget, and is no inbox item while that retry is due; failing again, it
+// is left unretried and listed with the retry named. No budget hold comes
+// of it.
+func TestWatchdogFailedRetries(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	js := []run.Journal{failedRun("real", "FAIL: TestThing expected 1 got 2", true, t0)}
+	var resumed, log []string
+	d := watchdogDeps{
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		now:      func() time.Time { return t0.Add(time.Minute) },
+		log:      func(f string, a ...any) { log = append(log, fmt.Sprintf(f, a...)) },
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 2, FailedRetries: 1, AutonomousOnly: true}
+	nolive := func(string) bool { return false }
+	if got := failedItems(js, pol, nil); len(got) != 0 {
+		t.Fatalf("a failed run with a retry due is listed: %+v", got)
+	}
+	mem, holds, err := watchdogPasses(pol, js, nolive, t0.Add(time.Minute), nil, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(resumed, ",") != "real" {
+		t.Fatalf("resumed %v, want real once", resumed)
+	}
+	if len(mem) != 1 || mem[0].FailedRetries != 1 || mem[0].Spent != 0 || len(mem[0].Attempts) != 1 ||
+		!strings.Contains(mem[0].Attempts[0].Action, "step build failed (the test is failing): resumed with --retry") {
+		t.Fatalf("memory %+v, want one failed retry charged as an attempt, the budget untouched", mem)
+	}
+	if len(log) != 1 || !strings.Contains(log[0], "failed retry 1 of 1") {
+		t.Errorf("log %q", log)
+	}
+	if len(holds) != 0 {
+		t.Errorf("holds %+v", holds)
+	}
+	// The retry fails again: no second retry, the run is left to the inbox.
+	failAgain(&js[0], "FAIL: TestThing expected 1 got 2", t0.Add(time.Hour))
+	for range 2 {
+		if mem, holds, err = watchdogPasses(pol, js, nolive, t0.Add(2*time.Hour), mem, d); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(resumed) != 1 || mem[0].FailedRetries != 1 || len(holds) != 0 {
+		t.Fatalf("second failure: resumed %v, memory %+v, holds %+v", resumed, mem, holds)
+	}
+	if len(log) != 2 || !strings.Contains(log[1], "left to the inbox") {
+		t.Errorf("log %q", log)
+	}
+	got := failedItems(js, pol, mem)
+	if len(got) != 1 || !strings.Contains(got[0].Detail, "the watchdog retried it 1 of 1 times (failedRetries) and leaves it to you; it tried: step build failed (the test is failing): resumed with --retry at 2030-01-01T00:01:00Z") {
+		t.Fatalf("inbox %+v, want the failed run with its retry named", got)
+	}
+	// With no daemon up nothing is due: the failed run is listed at once.
+	fresh := []run.Journal{failedRun("fresh", "FAIL", true, t0)}
+	all := inboxItems(fresh, "", nil, func(string) bool { return false }, func(string) (string, bool) { return "", false }, nil, nil, nil, nil)
+	if got := failedRetryItems(all, fresh, pol, nil, false); len(got) != 1 {
+		t.Errorf("no daemon up: items %+v, want the failed run", got)
+	}
+}
+
+// TestWatchdogFailedRetriesNever: (failure case) failedRetries 0, an
+// attended run under autonomousOnly, a live or abandoned run and a
+// disabled watchdog are never retried, and each failed one is listed at
+// once.
+func TestWatchdogFailedRetriesNever(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	on := WatchdogPolicy{Enabled: true, RetryBudget: 2, FailedRetries: 1, AutonomousOnly: true}
+	abandoned := failedRun("abandoned", "FAIL", true, t0)
+	abandoned.Entries[len(abandoned.Entries)-1].Detail = run.AbandonedPrefix + "the owner"
+	off := on
+	off.Enabled = false
+	zero := on
+	zero.FailedRetries = 0
+	for name, tc := range map[string]struct {
+		pol    WatchdogPolicy
+		j      run.Journal
+		live   bool
+		listed bool
+	}{
+		"failedRetries 0": {pol: zero, j: failedRun("r", "FAIL", true, t0), listed: true},
+		"attended":        {pol: on, j: failedRun("r", "FAIL", false, t0), listed: true},
+		// A failed run whose process lingers is retried once it is gone.
+		"live":      {pol: on, j: failedRun("r", "FAIL", true, t0), live: true},
+		"abandoned": {pol: on, j: abandoned},
+		"disabled":  {pol: off, j: failedRun("r", "FAIL", true, t0), listed: true},
+	} {
+		js := []run.Journal{tc.j}
+		d := watchdogDeps{
+			classify: fakeClassify,
+			resume:   func(string) error { t.Errorf("%s: resumed", name); return nil },
+			log:      func(string, ...any) {},
+		}
+		// A disabled watchdog's passes never run (the daemon nudges only);
+		// the inbox still reads its policy.
+		if tc.pol.Enabled {
+			if _, _, err := watchdogPasses(tc.pol, js, func(string) bool { return tc.live }, t0.Add(time.Hour), nil, d); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if got := failedItems(js, tc.pol, nil); (len(got) == 1) != tc.listed {
+			t.Errorf("%s: inbox %+v, listed want %v", name, got, tc.listed)
+		}
+	}
+}
+
+// TestWatchdogFailedRetriesTransientKeepsBudget: a transient failure is
+// retried by retryBudget, never by failedRetries: with the budget spent,
+// another transient failure is left to the inbox though a failed retry is
+// left.
+func TestWatchdogFailedRetriesTransientKeepsBudget(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	js := []run.Journal{failedRun("gh", "gh: HTTP 502 Bad Gateway", true, t0)}
+	var resumed []string
+	d := watchdogDeps{
+		classify: fakeClassify,
+		resume:   func(id string) error { resumed = append(resumed, id); return nil },
+		log:      func(string, ...any) {},
+	}
+	pol := WatchdogPolicy{Enabled: true, RetryBudget: 1, FailedRetries: 1, AutonomousOnly: true}
+	mem, err := watchdogTransient(pol, js, func(string) bool { return false }, nil, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resumed) != 1 || mem[0].Spent != 1 || mem[0].FailedRetries != 0 {
+		t.Fatalf("resumed %v, memory %+v: want the retry budget charged", resumed, mem)
+	}
+	failAgain(&js[0], "gh: HTTP 503", t0.Add(time.Hour))
+	for range 2 {
+		if mem, err = watchdogTransient(pol, js, func(string) bool { return false }, mem, d); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(resumed) != 1 || mem[0].FailedRetries != 0 {
+		t.Fatalf("budget spent: resumed %v, memory %+v", resumed, mem)
+	}
+	if got := failedItems(js, pol, mem); len(got) != 1 {
+		t.Errorf("inbox %+v, want the failed run", got)
+	}
+}
+
+// planRetryWorkflow is a plan-shaped project workflow: its interview agent
+// step is followed by a review-check that, failing, retries the run from
+// the interview, as the built-in plan's review loop does.
+const planRetryWorkflow = `
+[step.interview]
+kind = "agent"
+prompt = "plan {change}"
+on.pass = "review-check"
+
+[step.review-check]
+kind = "command"
+run = "rhiza run review-check"
+retry_from = "interview"
+`
+
+// TestWatchdogFailedRetryMeasure is the measure of the failed-run retry: a
+// plan run fails at review-check; the daemon's watchdog, the failure judged
+// real, retries it, the run restarts at interview with review-check's
+// refusal in the new session's brief, and the run's second failure is left
+// to the inbox, its item naming the retry tried.
+func TestWatchdogFailedRetryMeasure(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "x")
+	newChange(t, f.ctx, `{"intent":"X","title":"X"}`)
+	writeWorkflow(t, f.ctx.Root, run.PlanWorkflow, planRetryWorkflow)
+	const refusal = "review-check: refused, 1 major finding is open"
+	f.ctx.Stderr = io.Discard
+	f.ctx.Start = func(p Program) (Process, error) {
+		if len(p.Args) == 2 && strings.TrimPrefix(p.Args[1], "exec 2>&1\n") == "rhiza run review-check" {
+			return &fakeProcess{out: strings.NewReader(refusal + "\n"), code: 1}, nil
+		}
+		return &fakeProcess{out: strings.NewReader("")}, nil
+	}
+	runs := run.NewStore(run.Dir(f.common))
+	sessions := session.NewStore(session.Dir(f.common))
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		f.rex.run(name, args, dir, env)
+		if len(args) > 1 && args[0] == "block" && args[1] == "close" {
+			return nil, nil
+		}
+		code := 0
+		if _, err := sessions.Update(args[len(args)-1], func(r *session.Record) {
+			r.Status.Exit = &session.Report{State: session.StateExited, Code: &code}
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return []byte(rexWindowJSON), nil
+	}
+	f.ctx.repoSession = true
+	resp, err := callOp(t, f.ctx, "run.start", `{"foreground":true,"workflow":"plan","permission_mode":"manual"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := resp.(RunResponse).Run
+	if info.State != run.Failed {
+		t.Fatalf("first attempt = %+v", info)
+	}
+	var retries []string
+	d := watchdogDeps{
+		classify: fakeClassify,
+		resume: func(id string) error {
+			resp, err := callOp(t, f.ctx, "run.resume", `{"foreground":true,"run":"`+id+`","retry":true}`)
+			if err == nil {
+				retries = append(retries, resp.(RunResponse).Retry)
+			}
+			return err
+		},
+		now: f.ctx.Now,
+		log: func(string, ...any) {},
+	}
+	// The project's own policy, as rhiza inbox reads it: the run is
+	// attended, so autonomousOnly is off.
+	f.git.out["config --get rhiza.project.watchdog.autonomousOnly"] = "false\n"
+	pol, err := WatchdogPolicyOf(f.ctx)
+	if err != nil || pol.FailedRetries != 1 || pol.AutonomousOnly {
+		t.Fatalf("policy %+v, %v", pol, err)
+	}
+	var mem []daemon.WatchdogRun
+	poll := func() []run.Journal {
+		t.Helper()
+		all, err := runs.List()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if mem, _, err = watchdogPasses(pol, all, runs.Live, f.ctx.Now(), mem, d); err != nil {
+			t.Fatal(err)
+		}
+		return all
+	}
+	all, err := runs.List()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 1 || !all[0].State().IsPlanRun() {
+		t.Fatalf("runs %+v, want one plan run", all)
+	}
+	// rhiza inbox, with a daemon up that has not retried the run yet,
+	// lists no failed run.
+	lock, err := daemon.TryLock(f.common, f.ctx.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Unlock()
+	inbox := func() []InboxItem {
+		t.Helper()
+		daemon.WriteState(f.common, daemon.State{Watchdog: mem})
+		items, err := inboxOne(f.ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return slices.DeleteFunc(items, func(it InboxItem) bool { return it.Kind != InboxFailed })
+	}
+	if got := inbox(); len(got) != 0 {
+		t.Fatalf("the failed plan run is listed while its retry is due: %+v", got)
+	}
+	poll()
+	if strings.Join(retries, ",") != "interview" {
+		t.Fatalf("watchdog retries restarted at %v, want interview once", retries)
+	}
+	b, err := os.ReadFile(filepath.Join(run.SessionDir(f.common, info.ID, "interview", 2, run.AgentSessionName()), briefFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, w := range []string{"## Previous attempt\n", "- Failed step: review-check\n", refusal} {
+		if !strings.Contains(string(b), w) {
+			t.Errorf("the restarted interview's brief.md lacks %q:\n%s", w, b)
+		}
+	}
+	// The retry failed at review-check again: the watchdog leaves it, and
+	// the inbox lists it with the retry named.
+	all = poll()
+	all = poll()
+	if len(retries) != 1 {
+		t.Fatalf("second failure retried: %v", retries)
+	}
+	got := inbox()
+	if len(got) != 1 || got[0].Run != info.ID || got[0].Step != "review-check" ||
+		!strings.Contains(got[0].Detail, "the watchdog retried it 1 of 1 times (failedRetries)") ||
+		!strings.Contains(got[0].Detail, "step review-check failed (the test is failing): resumed with --retry") {
+		t.Fatalf("inbox %+v, want the plan run failed at review-check with its retry named", got)
 	}
 }
