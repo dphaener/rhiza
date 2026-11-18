@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QJ7FXAK47C5HXE5CZT632J",
+  "after": [
+    "01M7QHYXCDDPA7JC626KF82NYA"
+  ],
+  "at": "2026-11-18T14:51:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c9080a8cc, re-ran the Checks: block under a capped scope: go test -trimpath -p 2 ./internal/api -run 'Inbox|NeedsYou|SpawnHeld' exit 0 (TestInboxSpawnHeldItems covers child and step-session holds, release by spawn, ended and unheld runs, a stable ID and the human output); go test -count=1 -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(describe-golden|inbox-spawn-held)$' PASS for both (inbox-spawn-held checks --json and human output with the detail, a step-session hold, release by spawn and session entries, ended and unlocked runs); go vet ./internal/api exit 0; rhiza ship generate exit 0 with 0 changed files; rhiza render exit 0, its only drift being the verifier's own actor. The diff adds spawnHeldItems in inboxOne only, so the daemon notices and needs-you count skip it, and leaves the load-high, memory-low, disk-low and tmp-low items unchanged. Each hold gets one ID hashed from the run, step, parent and start time. describe-golden is regenerated. No stubs or TODOs."
+        },
+        "handle": "inbox-held-spawns-verified",
+        "id": "01M7QJ90CRSFP9TKF8CDVZTSB9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QJ90CRSFP9TKF8CAHWSHSX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QJ90CRSFP9TKF8CAHWSHSX",
+        "id": "01M7QJ90DW73FM94417AY6ZYW4",
+        "link": "01M7QJ90DW73FM944177M6TCKZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6T7SB7NWYPE3NN8DYKS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QJ90EYR9B47YX08WGK8WTD",
+  "type": "ops",
+  "v": 1
+}
