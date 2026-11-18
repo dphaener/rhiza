@@ -276,6 +276,7 @@ var processScripts = map[string]string{
 	"render":                               "starts rhiza through sh -c",
 	"render-generate":                      "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c; a workflow step runs rhiza",
 	"reopen-base":                          "starts rhiza through sh -c",
+	"request-notes-brief":                  "a fake bin/ rex that runs its tab's rhiza command; starts rhiza through sh -c",
 	"request-ref":                          "starts rhiza through sh -c",
 	"review-check-worktree":                "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c",
 	"review-checks-step":                   "a fake bin/ rex that runs its tab's rhiza command; a fake bin/ claude that calls rhiza; starts rhiza through sh -c",

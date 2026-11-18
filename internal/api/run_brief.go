@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/dphaener/rhiza/internal/canon"
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/op"
 	"github.com/dphaener/rhiza/internal/run"
@@ -71,8 +72,9 @@ func (r *stepRunner) prepareKeyed(req *SessionStartRequest, kind string) {
 }
 
 // fillSession writes brief.md and slice.json into dir for the run's change
-// set, brief.md with prev's Previous attempt section when prev is not nil.
-// A dry run writes nothing.
+// set, brief.md with the notes of the request whose run this is and with
+// prev's Previous attempt section when prev is not nil. A dry run writes
+// nothing.
 func (r *stepRunner) fillSession(dir string, prev *run.PreviousAttempt) error {
 	if r.ctx.DryRun {
 		return nil
@@ -129,8 +131,33 @@ func (r *stepRunner) fillSession(dir string, prev *run.PreviousAttempt) error {
 	if err != nil {
 		return err
 	}
+	in.RequestNotes = r.requestNotes()
 	in.Previous = prev
 	return run.WriteSessionFiles(dir, run.RenderBrief(in), js)
+}
+
+// requestNotes are the notes of the queued request whose Run is this run,
+// oldest first; none when the run is no request's or the request has none.
+// The queue is optional to a brief: one that cannot be read starts the
+// session without the notes and says so on stderr, rather than failing the
+// start or dropping them silently.
+func (r *stepRunner) requestNotes() []string {
+	common, err := gitCommonDir(r.ctx)
+	if err == nil {
+		var reqs []daemon.Request
+		if reqs, err = daemon.ReadRequests(common); err == nil {
+			for _, q := range reqs {
+				if q.Run != "" && q.Run == r.run {
+					return q.Notes
+				}
+			}
+			return nil
+		}
+	}
+	if r.ctx.Stderr != nil {
+		fmt.Fprintf(r.ctx.Stderr, "rhiza: warning: run %s: brief.md has no request notes: read the request queue: %v\n", r.run, err)
+	}
+	return nil
 }
 
 // unboundedSliceBudget is a token budget no slice reaches, so no section

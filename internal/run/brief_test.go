@@ -310,3 +310,43 @@ func TestJournalPreviousAttemptCheckRounds(t *testing.T) {
 		t.Errorf("previous attempt = %+v\nwant %+v", got, want)
 	}
 }
+
+// A request's notes render in a Request notes section right after the
+// Change set section, each verbatim under its own heading, oldest first; a
+// brief with no notes renders the bytes it did before notes existed.
+func TestBriefRequestNotes(t *testing.T) {
+	in := briefInput()
+	plain := RenderBrief(in)
+	want := "# Brief\n\n## Change set\n\n- Title: Every agent session a run\n- ID: 01ABC\n- Intent: files\n" +
+		"\n## Leaves\n\n### a\n\ndoes a\n\nAcceptance: go test a\n\n### b\n\ndoes b\n\nAcceptance: go test b\n" +
+		"\n## Decisions\n\n- d1\n\n## Constraints\n\n- c1\n- c2\n" +
+		"\n## Check commands\n\n- rhiza.ship.localGate: make gate\n" +
+		"\n## Contract\n\n" + contractSection
+	if plain != want {
+		t.Fatalf("brief with no notes changed:\n%s", plain)
+	}
+	if strings.Contains(plain, "Request notes") {
+		t.Fatalf("brief with no notes has a Request notes section:\n%s", plain)
+	}
+
+	in.RequestNotes = []string{"Look at the cache first.", "Two ideas:\n\n- keep the old flag\n  indented line\n- drop it later"}
+	got := RenderBrief(in)
+	section := "\n## Request notes\n\n" + RequestNotesLead + "\n" +
+		"\n### Note 1\n\nLook at the cache first.\n" +
+		"\n### Note 2\n\nTwo ideas:\n\n- keep the old flag\n  indented line\n- drop it later\n"
+	head := "# Brief\n\n## Change set\n\n- Title: Every agent session a run\n- ID: 01ABC\n- Intent: files\n"
+	if !strings.HasPrefix(got, head+section+"\n## Leaves\n") {
+		t.Fatalf("Request notes section missing or misplaced:\n%s", got)
+	}
+	if strings.Replace(got, section, "", 1) != plain {
+		t.Errorf("notes changed the rest of the brief:\n%s", got)
+	}
+
+	// With a previous attempt, the notes still come first, after the
+	// Change set section.
+	in.Previous = &PreviousAttempt{Cause: HandbackCause{Step: "build", Outcome: "fail"}}
+	got = RenderBrief(in)
+	if i, j := strings.Index(got, "## Request notes"), strings.Index(got, "## Previous attempt"); i < 0 || j < i {
+		t.Errorf("Request notes not before Previous attempt:\n%s", got)
+	}
+}
