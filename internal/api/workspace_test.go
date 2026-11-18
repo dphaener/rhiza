@@ -33,6 +33,16 @@ func testWorkspace(t *testing.T, dryRun bool) *workspace {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// No Ctx here: one over the root, clock and IDs whose TMPDIR is t's
+	// own, so the throwaway index lands under t and is closed with it.
+	tmp := t.TempDir()
+	w.useProjection(&Ctx{Root: root, Now: w.now, IDs: gen, Getenv: func(k string) string {
+		if k == "TMPDIR" {
+			return tmp
+		}
+		return testCache(k)
+	}})
+	t.Cleanup(w.closeProjection)
 	return w
 }
 
