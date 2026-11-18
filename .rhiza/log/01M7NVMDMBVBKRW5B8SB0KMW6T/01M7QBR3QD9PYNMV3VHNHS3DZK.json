@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7NWSG198CMCFC2A9P8Q5YKE"
+  ],
+  "at": "2026-11-18T12:57:44Z",
+  "body": {
+    "reason": "Accepted by the orchestrator under the owner's grant (2026-11-18: \"You can handle acceptance and sign off.\"); milestone 40 plan reviewed",
+    "rule": "owner"
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QBR3QD9PYNMV3VHNHS3DZK",
+  "type": "accept",
+  "v": 1
+}
