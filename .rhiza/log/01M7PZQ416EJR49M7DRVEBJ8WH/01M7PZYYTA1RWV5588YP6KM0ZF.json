@@ -1,0 +1,30 @@
+{
+  "actor": "01M7PZQJ8Y9KESF541ZEJQJZ8D",
+  "after": [
+    "01M7PZQ416EJR49M7DRYY4V7FP"
+  ],
+  "at": "2026-11-18T09:31:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "f4c81b9f-379e-416c-9e48-01a1edfbc5f3",
+          "statement": "Change set 01M7PZQ4 (throwaway projections leak): the /tmp leak's cause is found (workspace.projection() falls back to a bare Ctx with no Getenv, so the throwaway index goes to the real /tmp untracked by the test guard, and the test helper ctxWorkspace never closes it; reproduced on current code: 29 folders from 4 tests). The intent also says 'look at why rhiza ship open-pr needs 2.2 GB RSS'. What I found: open-pr's pre-push check runs rhiza check in-process over a fresh checkout (ship_prepush.go prePushRhizaCheck); rhiza check alone on this repo (7,298 log entries) peaks at 832 MB RSS. Cutting that needs profiling of the check/fold path, unrelated to the leak's files. Where should the open-pr memory work go?"
+        },
+        "handle": "question-f4c81b9f-1",
+        "id": "01M7PZYYT99GN2EXD6AY9RBSBJ",
+        "key": null,
+        "kind": "question",
+        "node": "01M7PZYYT99GN2EXD6AVFB427X",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PZYYTA1RWV5588YP6KM0ZF",
+  "type": "ops",
+  "v": 1
+}

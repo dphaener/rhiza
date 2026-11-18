@@ -1,0 +1,39 @@
+{
+  "actor": "01M7PZQJ8Y9KESF541ZEJQJZ8D",
+  "after": [
+    "01M7Q02FJXYCMC8YB8S87ZYNFA"
+  ],
+  "at": "2026-11-18T09:34:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The intent's open-pr RSS clause was investigated in planning (pre-push rhiza check in-process; rhiza check alone 832 MB RSS on this repo); per Decision open-pr-memory-separate the fix is draft change set 01M7Q02N, discovered from this one."
+        },
+        "handle": "note-01m7q033bq8t4h",
+        "id": "01M7Q033BRPJE6HXQ4NTCVMZ2J",
+        "key": null,
+        "kind": "note",
+        "node": "01M7Q033BQ8T4HB13X287FWK50",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q033BQ8T4HB13X287FWK50",
+        "id": "01M7Q033EGFARMYATPWES0NMQR",
+        "link": "01M7Q033EGFARMYATPWDJDBHH7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PZQ416EJR49M7DRVEBJ8WH",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7PZQ416EJR49M7DRVEBJ8WH",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q033H71JRRQ94F8VXTS2NY",
+  "type": "ops",
+  "v": 1
+}
