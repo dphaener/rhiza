@@ -5,17 +5,23 @@ Every role a conductor spawns, the flags each takes and how check roles work.
 ## Spawning
 
 ```
-rhiza run spawn --role <role> --brief <file> [--leaf <leaf>] [--check <check>] [--model <model>]
+rhiza run spawn --role <role> --brief <file> [--leaf <leaf>] [--check <check>] [--model <model>] [--no-wait]
 ```
 
 - `--brief <file>` always: the child's brief.md holds the contract section, then this file.
 - `--leaf <leaf>` for a builder and a verifier: the leaf, by handle.
 - `--check <check>` for a critic: the check whose latest round it judges.
 - `--model <model>` optional: the model the child's agent starts on; default the agent's.
+- `--no-wait` for a conductor: return once the child is started, with its session and
+  no outcome.
 
-The spawn waits for the child (held while a usage or machine hold is on) and prints
-`pass` when it said done or exited 0, else `fail`. Only a builder's and a verifier's
-brief.md carry the run's notes.
+Without `--no-wait` the spawn waits for the child (held while a usage or machine hold
+is on) and prints `pass` when it said done or exited 0, else `fail`; that default is for
+other callers. Under `--no-wait` the run's engine records the child's end, closes its
+pane if it said done and wakes the parent session with a message: `Your spawned child
+session <session> ended.`, then its role, leaf, outcome and detail and a pointer to
+`rhiza run status <run> --json`. A conductor ends its turn after spawning and acts on
+each such message. Only a builder's and a verifier's brief.md carry the run's notes.
 
 ## Roles
 

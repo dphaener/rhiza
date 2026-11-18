@@ -162,3 +162,38 @@ func TestGuideReadsLogSafely(t *testing.T) {
 		}
 	}
 }
+
+// A conductor spawns with --no-wait and ends its turn: conduct-roles
+// documents the flag and the wake-up message a no-wait child's end sends,
+// beside the default waiting spawn, and conduct tells the conductor to end
+// its turn, never to sleep or poll, and to act on each wake-up.
+func TestConductNoWait(t *testing.T) {
+	checkPhrases(t, "conduct-roles", map[string][]string{
+		"no-wait": {
+			"[--no-wait]", "`--no-wait` for a conductor",
+			"Without `--no-wait` the spawn waits for the child", "for\nother callers",
+		},
+		"wake-up": {
+			"wakes the parent session with a message", "`Your spawned child\nsession <session> ended.`",
+			"role, leaf, outcome and detail", "`rhiza run status <run> --json`",
+			"A conductor ends its turn after spawning",
+		},
+	})
+	c, _ := Lookup("conduct")
+	must := sectionOf(c.Body, "## Must do")
+	for _, p := range []string{
+		"Spawn every child with `--no-wait`", "start independent children together",
+		"then end your turn: no sleep, no poll", "Each child's end wakes you with a\nsession message",
+		"read\n`rhiza run status --json` for the outcomes",
+	} {
+		if !strings.Contains(must, p) {
+			t.Errorf("conduct: Must do lacks %q", p)
+		}
+	}
+	if !strings.Contains(c.Body, "Never sleep and never poll.") {
+		t.Errorf("conduct: lost the rule that the conductor never sleeps or polls")
+	}
+	if strings.Contains(c.Body, "poll `rhiza run status") || strings.Contains(c.Body, "poll rhiza run status") {
+		t.Errorf("conduct: tells the conductor to poll run status")
+	}
+}

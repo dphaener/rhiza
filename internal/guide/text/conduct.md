@@ -28,6 +28,12 @@ through: read what is done and carry on from there.
 
 Run these phases in order.
 
+Spawn every child with `--no-wait`, start independent children together (such as the
+three checks), then end your turn: no sleep, no poll. Each child's end wakes you with a
+session message naming the child, its role, leaf, outcome and detail; on it, read
+`rhiza run status --json` for the outcomes and go on. A child's question goes to the
+arbiter and wakes no one.
+
 - Plan: when the slice has no leaves, write them with `rhiza apply` under the autonomous
   rules: no owner is there to ask, so a question goes to the arbiter and its Decision
   stands. Load `rhiza guide planner`.

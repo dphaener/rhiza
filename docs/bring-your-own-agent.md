@@ -63,7 +63,7 @@ Why not `ship-change`? Its conductor starts every child with `rhiza run spawn`, 
 
 ## Level 2: a conductor
 
-`ship-change` runs one conduct session that plans the leaves if there are none, builds and verifies each through spawns, runs the plan, code and QA checks, and lands the change set on its branch. The daemon owns the rest. To bring your own conductor, fork it and change the conduct step's prompt:
+`ship-change` runs one conduct session that plans the leaves if there are none, builds and verifies each through spawns, runs the plan, code and QA checks, and lands the change set on its branch. It spawns each child with `rhiza run spawn --no-wait` and ends its turn; each child's end wakes it with a session message, so your conductor needs an agent that takes messages between turns, or it can call `rhiza run spawn` without `--no-wait`, which blocks and prints the child's outcome. The daemon owns the rest. To bring your own conductor, fork it and change the conduct step's prompt:
 
 ```text
 rhiza workflow new myteam-conduct --from ship-change
