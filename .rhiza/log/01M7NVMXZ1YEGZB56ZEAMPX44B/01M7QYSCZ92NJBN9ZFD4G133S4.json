@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QYQD8ZD63M63V6T3YKPMQR",
+  "after": [
+    "01M7QYCZYMDBAPRX9PBRPYF90Z"
+  ],
+  "at": "2026-11-18T18:30:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified b48a3b310 (diff vs 8eea0ef15). Re-ran every Checks: command, each exit 0: describe-golden -update (no golden diff); go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(daemon-status|health-runs-cap|describe-golden)$' -count=1 ok; go vet ./internal/api ok; go test -p 2 ./internal/api -run 'Health|DaemonStatus' ok; rhiza ship generate (0 changed); rhiza render (only this verifier's own actor). Acceptance: daemon-status.txtar adds an auto case asserting 'Max runs: auto (3 this poll)', 'runs: N live (auto cap 3)' and '\"max_runs_auto\": true', and the numeric case still asserts '^Max runs: 3$' and no max_runs_auto; health-runs-cap.txtar adds an auto case (ok, 'runs: 3 live (auto cap 2), 1 starting', no 'over rhiza.daemon.maxRuns') while the existing over-cap case still goes bad; describe-golden carries max_runs_auto. Diff: DaemonStatusResponse.MaxRunsAuto from daemon state, shared runsAgainstCap line, health bad only when !MaxRunsAuto. No JSON field dropped or renamed, no web/Rex app change, no TODOs."
+        },
+        "handle": "maxruns-auto-shown-verified",
+        "id": "01M7QYSCWAAQYK9WQCYA141GRM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QYSCWAAQYK9WQCY7FY9BG0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QYSCWAAQYK9WQCY7FY9BG0",
+        "id": "01M7QYSCXT6R0ZJFJN9X93VTEN",
+        "link": "01M7QYSCXT6R0ZJFJN9S9P1R9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK34ZQT66CGBGZ180M4EJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M7QXFGFM5DQXY4GC23G663TX",
+  "id": "01M7QYSCZ92NJBN9ZFD4G133S4",
+  "type": "ops",
+  "v": 1
+}
