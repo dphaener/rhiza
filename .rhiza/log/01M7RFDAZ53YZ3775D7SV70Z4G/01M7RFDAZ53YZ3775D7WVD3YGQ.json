@@ -1,0 +1,16 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [],
+  "at": "2026-11-18T23:21:00Z",
+  "body": {
+    "intent": "Fix flaky test TestScripts/plan-workflow-autonomous: failed then passed on a rerun in PR #655 at head 1be14770b82366ab1535a1b38a36a890e8b75939; reproduce it locally, repeatedly, then fix it or quarantine it",
+    "kind": "intention",
+    "request_kind": "bug",
+    "sources": []
+  },
+  "change_set": "01M7RFDAZ53YZ3775D7SV70Z4G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RFDAZ53YZ3775D7WVD3YGQ",
+  "type": "open",
+  "v": 4
+}
