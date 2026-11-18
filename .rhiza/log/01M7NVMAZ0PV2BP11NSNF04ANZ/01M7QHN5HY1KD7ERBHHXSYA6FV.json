@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QHK6FDY9NB5TEGJY0KNFP4",
+  "after": [
+    "01M7QHBJHH701989ZQAKGVG2T2"
+  ],
+  "at": "2026-11-18T14:40:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Re-ran b4bc38687's Checks in capped scopes: go test -trimpath -p 2 ./internal/api -run Spawn (exit 0; TestRunSpawnHolds/MemoryLow, TmpLow, DiskLow and NoHold pass), go test ./internal/run (exit 0), go vet ./internal/api ./internal/run (exit 0), TestScripts/(run-spawn|describe-golden)$ (exit 0, golden current without -update), rhiza ship generate and rhiza render (exit 0, no diff beyond this verifier's own actor). Diff read: spawnHoldDetail now holds on MachineHold (prefixed with its reason), DiskLow and TmpLow from the saved daemon state, naming reading and limit; the test saves each hold with daemon.WriteState, clears it on the ctx sleep's second call, asserts no child starts while held, exactly one spawn-held entry with role verifier and the reading/limit in its detail, the hold released in run state with SpawnHold.Role, and one child spawned; NoHold journals no entry and held is false. maxRuns, --no-wait and child-end recording untouched; no host reads, no TODOs."
+        },
+        "handle": "spawn-waits-every-hold-verified",
+        "id": "01M7QHN5FPG30ZTE3XRF60AJ1R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QHN5FPG30ZTE3XRDZDY1KB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QHN5FPG30ZTE3XRDZDY1KB",
+        "id": "01M7QHN5GVFPBJ3KRGJ94M8S1W",
+        "link": "01M7QHN5GVFPBJ3KRGJ720ZQ8N",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QGA6MTJS6AMR4V34MR7H2W",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+  "for": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "id": "01M7QHN5HY1KD7ERBHHXSYA6FV",
+  "type": "ops",
+  "v": 1
+}
