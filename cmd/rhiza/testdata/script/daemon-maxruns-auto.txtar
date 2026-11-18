@@ -1,0 +1,102 @@
+# rhiza.daemon.maxRuns=auto: each poll's machine-wide cap is the runs running
+# plus one while every pre-start check has room, and the runs running while
+# one holds, so a poll starts at most one run and the next waits for fresh
+# readings. The saved state records max_runs_auto beside max_runs. A started
+# run is faked by a journal from another host, so the next poll counts it
+# running. Rex is faked and only logs.
+
+chmod 755 bin/rex
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+mkdir repo
+cd repo
+exec git init -q
+rhiza init
+exec sh -c 'printf "[schedule]\nbacklog = \"skip\"\n" > .rhiza/policy.toml'
+rhiza add intent m --field milestone=1 --record
+exec git add -A
+exec git commit -qm init
+
+rhiza change new One --title One --json
+stdout '"change_set": "01M5PWGMARA1WR6BD0MEF4Y76P"'
+rhiza link 01M5PWGMARA1WR6BD0MEF4Y76P serves m
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Two --title Two --json
+stdout '"change_set": "01M5PWGR7R6T3BKSK9V4MCGPCP"'
+rhiza link 01M5PWGR7R6T3BKSK9V4MCGPCP serves m
+rhiza propose
+rhiza accept --reason ok
+rhiza change new Three --title Three --json
+stdout '"change_set": "01M5PWGW4RMJ580CPWEPP3158J"'
+rhiza link 01M5PWGW4RMJ580CPWEPP3158J serves m
+rhiza propose
+rhiza accept --reason ok
+
+rhiza daemon set rhiza.daemon.maxRuns auto
+
+# Idle readings: the first poll starts one run, not three.
+rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of '
+stdout '^Started a run of 01M5PWGMARA1WR6BD0MEF4Y76P'
+exec cat .git/rhiza/daemon.state.json
+stdout '"max_runs_auto":true'
+stdout '"max_runs":1'
+mkdir .git/rhiza/runs
+cp $WORK/one.jsonl .git/rhiza/runs/01M5PWGZZZZZZZZZZZZZZZZZZ1.jsonl
+
+# The readings still have room: the next poll starts a second.
+rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of 01M5PWGR7R6T3BKSK9V4MCGPCP'
+cp $WORK/two.jsonl .git/rhiza/runs/01M5PWGZZZZZZZZZZZZZZZZZZ2.jsonl
+exec cat .git/rhiza/daemon.state.json
+stdout '"max_runs_auto":true'
+stdout '"max_runs":2'
+
+# A number pins the cap: with 1, two running start nothing more.
+rhiza daemon set rhiza.daemon.maxRuns 1
+rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+exec cat .git/rhiza/daemon.state.json
+! stdout 'max_runs_auto'
+stdout '"max_runs":1'
+
+# Back to auto, load over rhiza.daemon.maxLoad: the cap is the runs running,
+# so the third change set waits.
+rhiza daemon set rhiza.daemon.maxRuns auto
+env RHIZA_TEST_LOAD1=3.5
+env RHIZA_TEST_LOAD5=3.5
+rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+exec cat .git/rhiza/daemon.state.json
+stdout '"max_runs_auto":true'
+stdout '"max_runs":2'
+
+# The load back down, temp space low: the tmp-low hold stops it too.
+env RHIZA_TEST_LOAD1=0
+env RHIZA_TEST_LOAD5=0
+env RHIZA_TEST_TMP_FREE_BYTES=1073741824
+rhiza daemon --permission-mode manual --once
+! stdout 'Started'
+exec cat .git/rhiza/daemon.state.json
+stdout '"max_runs":2'
+
+# Every check has room again: the third starts.
+env RHIZA_TEST_TMP_FREE_BYTES=1099511627776
+rhiza daemon --permission-mode manual --once
+stdout -count=1 '^Started a run of 01M5PWGW4RMJ580CPWEPP3158J'
+exec cat .git/rhiza/daemon.state.json
+stdout '"max_runs":3'
+
+fold-ok
+
+-- one.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"01M5PWGMARA1WR6BD0MEF4Y76P"}}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
+-- two.jsonl --
+{"type":"started","at":"2026-01-01T00:00:00Z","step":"build","started":{"workflow":"ship-change","definition":"","change":"01M5PWGR7R6T3BKSK9V4MCGPCP"}}
+{"type":"process","at":"2026-01-01T00:00:02Z","process":{"host":"elsewhere","pid":999999}}
+-- bin/rex --
+#!/bin/sh
+echo "rex $*" >> "$WORK/rex.log"
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'

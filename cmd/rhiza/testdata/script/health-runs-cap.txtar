@@ -1,7 +1,8 @@
 # rhiza health's daemon part shows the runs against rhiza.daemon.maxRuns,
 # summed across the daemon's projects: live runs and starts not yet
 # journaled. It is ok while they fit the cap and bad, naming each live run,
-# when they exceed it. Rex is never dialled.
+# when they exceed a numeric cap; under auto it names the auto cap and is
+# never bad for it. Rex is never dialled.
 
 env REX_SESSION=
 env REX_SERVER=
@@ -48,9 +49,23 @@ stdout 'live run: alpha, RUNA1'
 stdout 'live run: alpha, RUNA2'
 stdout 'live run: beta, RUNB1'
 
+# Under rhiza.daemon.maxRuns=auto the last poll's cap is named as the auto
+# cap, and runs over it never make the part bad.
+cp alpha-auto.json alpha/.git/rhiza/daemon.state.json
+cp beta-ok.json beta/.git/rhiza/daemon.state.json
+rhiza health
+stdout '^ok   daemon +running'
+stdout 'runs: 3 live \(auto cap 2\), 1 starting'
+! stdout 'over rhiza.daemon.maxRuns'
+! stdout 'live run:'
+rhiza health --json
+stdout '"max": 2'
+
 -- alpha-ok.json --
 {"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":4,"autonomous":false,"runs":[{"id":"RUNA1","change":"CSA","state":"building"},{"id":"RUNA2","change":"CSB","state":"building"}],"starting":1}
 -- alpha-over.json --
 {"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"autonomous":false,"runs":[{"id":"RUNA1","change":"CSA","state":"building"},{"id":"RUNA2","change":"CSB","state":"building"}],"starting":1}
 -- beta-ok.json --
 {"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":4,"autonomous":false,"runs":[{"id":"RUNB1","change":"CSC","state":"building"}]}
+-- alpha-auto.json --
+{"process":{},"last_poll":"2030-01-01T00:10:00Z","max_runs":2,"max_runs_auto":true,"autonomous":false,"runs":[{"id":"RUNA1","change":"CSA","state":"building"},{"id":"RUNA2","change":"CSB","state":"building"}],"starting":1}

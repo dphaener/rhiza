@@ -3,9 +3,10 @@
 // Confirm, prefilled from daemon.settings; submitting a change writes
 // rhiza.daemon.paused through daemon.set and closes the app. Submitting
 // unchanged, or Esc, writes nothing. A Text field below it holds the run
-// limit, prefilled from rhiza.daemon.maxRuns; a valid new limit is written
-// through daemon.set the same way, and a non-number or 0 is refused by the
-// field's validator, so nothing is called.
+// limit, prefilled from rhiza.daemon.maxRuns; a valid new limit (a whole
+// number of at least 1, or auto) is written through daemon.set the same
+// way, and anything else is refused by the field's validator, so nothing is
+// called.
 package daemonapp
 
 import (
@@ -87,8 +88,16 @@ type App struct {
 // RunsLine is the runs-against-cap line the app's subtitle carries.
 func (a *App) RunsLine() string { return a.runs }
 
-// validateMaxRuns accepts a whole number of at least 1.
-func validateMaxRuns(v string) error {
+// validateMaxRuns accepts the daemon's run limit: a whole number of at
+// least 1, or auto.
+func validateMaxRuns(v string) error { return api.ValidateDaemonMaxRuns(v) }
+
+// validateProjectMaxRuns accepts the project's run limit: empty for none,
+// else a whole number of at least 1 (never auto).
+func validateProjectMaxRuns(v string) error {
+	if v == "" {
+		return nil
+	}
 	n, err := strconv.Atoi(v)
 	if err != nil || n < 1 {
 		return fmt.Errorf("must be a whole number of at least 1")
@@ -134,12 +143,7 @@ func NewIn(run Runner, t theme.Theme, profile colorprofile.Profile, project stri
 	if project != "" {
 		fields = append(fields,
 			ui.NewConfirm(projPaused, "Pause project "+project+"?").Default(pPause),
-			ui.NewText(projMaxRuns, "Project run limit").Default(pMax).Validator(func(v string) error {
-				if v == "" {
-					return nil
-				}
-				return validateMaxRuns(v)
-			}))
+			ui.NewText(projMaxRuns, "Project run limit").Default(pMax).Validator(validateProjectMaxRuns))
 	}
 	runs := ""
 	if out, err := run("daemon.status", nil); err == nil {

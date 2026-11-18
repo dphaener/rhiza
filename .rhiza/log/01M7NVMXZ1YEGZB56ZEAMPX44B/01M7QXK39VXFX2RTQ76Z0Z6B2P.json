@@ -1,0 +1,158 @@
+{
+  "actor": "01M7QXFGFM5DQXY4GC23G663TX",
+  "after": [
+    "01M7QXHYG0ET00W5F6Y0748X11"
+  ],
+  "at": "2026-11-18T18:09:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "With rhiza.daemon.maxRuns=auto each poll's machine-wide cap is the runs running plus one when every pre-start check (load and memory machine hold, tmp-low hold, the home project's disk-low check) has room, and the runs running when any holds, so each further start waits for the next poll's fresh readings",
+          "wording": "(planner ruling, derived from the intent and the daemon's pre-start checks; would have escalated)"
+        },
+        "handle": "maxruns-auto-one-per-poll",
+        "id": "01M7QXK2V41VD09860J5PM8XN5",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QXK2V41VD09860J5HJDD60",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK2V41VD09860J5HJDD60",
+        "id": "01M7QXK2W449RBHJSCGXMKY23N",
+        "link": "01M7QXK2W449RBHJSCGX0ZGRXB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXHYF3RV8KE2R6EPJCXMTW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "auto is a value of rhiza.daemon.maxRuns only: the default stays 2, a number still pins the cap, and rhiza.project.maxRuns and the daemon's --max-runs flag stay whole numbers",
+          "wording": "(planner ruling, derived from the intent's 'a number still pins the limit'; would have escalated)"
+        },
+        "handle": "maxruns-auto-scope",
+        "id": "01M7QXK2X24GT08P4VPB580D7M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QXK2X24GT08P4VP8E709NH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK2X24GT08P4VP8E709NH",
+        "id": "01M7QXK2Y849QDR4HMVJWPRSA7",
+        "link": "01M7QXK2Y849QDR4HMVG9MVA44",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXHYF3RV8KE2R6EPJCXMTW",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run 'MaxRuns' and go test -trimpath ./internal/tui/daemonapp/...: a test sets rhiza.daemon.maxRuns to auto and reads auto back with daemonConf marked auto, a test sets 3 and gets a pinned cap of 3, and the daemon app accepts auto in its run-limit field; (failure case) 0, -1 and autox are refused for rhiza.daemon.maxRuns with an error naming 'a whole number of at least 1 or auto', and auto is refused for rhiza.project.maxRuns",
+          "files": "internal/api/daemon_settings.go, internal/api/daemon_settings_test.go, internal/tui/daemonapp/daemonapp.go, internal/tui/daemonapp/daemonapp_test.go",
+          "must_not": "Change the default of 2, the --max-runs flag's whole-number type, or rhiza.project.maxRuns; change how the poll starts runs (leaf maxruns-auto-poll)",
+          "statement": "rhiza.daemon.maxRuns accepts auto beside a whole number of at least 1 (rhiza daemon set, rhiza daemon settings, rhiza.toml and the Rex daemon app's run-limit field), its type and description say so, and the daemon's resolved settings (daemonConf) carry whether it is auto"
+        },
+        "handle": "maxruns-auto-setting",
+        "id": "01M7QXK2Z9E3VYWJRD33EQG6Q7",
+        "key": "w",
+        "kind": "capability",
+        "node": "01M7QXK2Z9E3VYWJRD30PF1514",
+        "op": "node.create",
+        "parent": "01M6CS1WF6WPPJTPC8X1DHYGD8"
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK2Z9E3VYWJRD30PF1514",
+        "id": "01M7QXK30A8AFJEPBG1DBG4204",
+        "link": "01M7QXK30A8AFJEPBG1A6MZSR0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2X24GT08P4VP8E709NH",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run TestScripts/daemon-maxruns-auto: a new script with three accepted change sets, rhiza.daemon.maxRuns=auto and idle readings starts one run on the first --once poll and a second on the next (readings with room start a second run), and the saved state has max_runs_auto true; with maxRuns set to 1 a further poll starts none; (failure case) with RHIZA_TEST_LOAD1 and RHIZA_TEST_LOAD5 over rhiza.daemon.maxLoad, and again with the tmp-low hold on, an auto poll starts none; go test -trimpath ./internal/api/... and ./internal/daemon/... pass",
+          "files": "internal/api/daemon.go, internal/api/daemon_settings.go, internal/daemon/state.go, cmd/rhiza/testdata/script/daemon-maxruns-auto.txtar",
+          "must_not": "Read the host's load, memory or free space anew for the cap (use the poll's own pre-start readings); start more than one run per poll in auto; change a numeric maxRuns' behaviour; change rhiza run spawn's holds",
+          "statement": "With rhiza.daemon.maxRuns=auto the root daemon's poll sets the machine-wide cap it fills round-robin to the runs running plus one while every pre-start check has room, and to the runs running while any holds; the saved daemon state records max_runs_auto true beside max_runs, the cap that poll used; a number set for maxRuns pins the cap as before"
+        },
+        "handle": "maxruns-auto-poll",
+        "id": "01M7QXK319H58FEFW7GQQ06S7B",
+        "key": "zzy",
+        "kind": "capability",
+        "node": "01M7QXK319H58FEFW7GQ2B3ZWY",
+        "op": "node.create",
+        "parent": "01M61R7K5W91SXWWX8AGDZ01HC"
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK319H58FEFW7GQ2B3ZWY",
+        "id": "01M7QXK32C8AMNJPKYCWY8MK4F",
+        "link": "01M7QXK32C8AMNJPKYCTTWRZAA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2V41VD09860J5HJDD60",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK319H58FEFW7GQ2B3ZWY",
+        "id": "01M7QXK33VAQF9VKW7XCV582F1",
+        "link": "01M7QXK33VAQF9VKW7X9XXB92Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2Z9E3VYWJRD30PF1514",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(daemon-status|health-runs-cap|describe-golden)': daemon-status gains a case whose saved state has max_runs_auto true and prints 'Max runs: auto (3 this poll)' and '\"max_runs_auto\": true'; health-runs-cap gains an auto case whose detail names the auto cap; describe-golden regenerated; (failure case) a state without max_runs_auto still prints 'Max runs: 3' and health still goes bad over a numeric cap",
+          "files": "internal/api/daemon.go, internal/api/health.go, cmd/rhiza/testdata/script/daemon-status.txtar, cmd/rhiza/testdata/script/health-runs-cap.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change the web UI or the Rex apps' display; drop or rename an existing --json field",
+          "statement": "rhiza daemon status says 'Max runs: auto (N this poll)' and its --json carries max_runs_auto when the last poll ran under auto, and rhiza health's daemon part writes 'runs: L live (auto cap N), S starting' and is never bad for being over the cap under auto"
+        },
+        "handle": "maxruns-auto-shown",
+        "id": "01M7QXK34ZQT66CGBGZ1D1P5VB",
+        "key": "zi",
+        "kind": "capability",
+        "node": "01M7QXK34ZQT66CGBGZ180M4EJ",
+        "op": "node.create",
+        "parent": "01M61R7NEEK19RP2QEHFRQ6W8S"
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK34ZQT66CGBGZ180M4EJ",
+        "id": "01M7QXK36774QTHCNCRPMXDQA7",
+        "link": "01M7QXK36774QTHCNCRMJ7NX73",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2V41VD09860J5HJDD60",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QXK34ZQT66CGBGZ180M4EJ",
+        "id": "01M7QXK37EKC4A05F57R7NVA6P",
+        "link": "01M7QXK37EKC4A05F57N2YFSPJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK319H58FEFW7GQ2B3ZWY",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QXK39VXFX2RTQ76Z0Z6B2P",
+  "type": "ops",
+  "v": 1
+}

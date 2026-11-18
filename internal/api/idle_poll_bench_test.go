@@ -238,7 +238,7 @@ func (f *idleFix) rootPoll(b testing.TB) {
 	}
 	var resp DaemonResponse
 	for i, p := range f.projs {
-		if err := p.poll(f.r, &resp, turns[i], daemon.DefaultMaxRuns, share[p.name]); err != nil {
+		if err := p.poll(f.r, &resp, turns[i], daemon.DefaultMaxRuns, false, share[p.name]); err != nil {
 			b.Fatal(err)
 		}
 	}

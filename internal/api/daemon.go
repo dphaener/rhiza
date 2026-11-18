@@ -322,8 +322,11 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 		// Every project's demand is read before any starts: the run slots
 		// are machine-wide, filled round-robin across the projects (see
 		// daemon.RoundRobin), each under its own rhiza.project.maxRuns.
-		// The home project's settings give the machine-wide maxRuns.
+		// The home project's settings give the machine-wide maxRuns; under
+		// auto, its pre-start readings do (daemonConf.autoMaxRuns).
 		maxRuns := daemon.DefaultMaxRuns
+		maxRunsAuto := false
+		var homeConf daemonConf
 		if r.MaxRuns > 0 {
 			maxRuns = r.MaxRuns
 		}
@@ -342,9 +345,14 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			}
 			if name == homeName {
 				maxRuns = turns[i].conf.maxRuns
+				maxRunsAuto = turns[i].conf.maxRunsAuto
+				homeConf = turns[i].conf
 			}
 			picks = append(picks, turns[i].pick)
 			running += turns[i].pick.Running
+		}
+		if maxRunsAuto {
+			maxRuns = homeConf.autoMaxRuns(running)
 		}
 		share := map[string]int{}
 		picked := daemon.RoundRobin(picks, running, maxRuns, lastTurn)
@@ -353,7 +361,7 @@ func runDaemon(ctx *Ctx, req any) (any, error) {
 			share[pk.Project]++
 		}
 		for i, name := range polled {
-			if err := projs[name].poll(r, &resp, turns[i], maxRuns, share[name]); err != nil && firstErr == nil {
+			if err := projs[name].poll(r, &resp, turns[i], maxRuns, maxRunsAuto, share[name]); err != nil && firstErr == nil {
 				firstErr = err
 			}
 		}
@@ -1806,7 +1814,8 @@ type DaemonStatusResponse struct {
 	WatchdogActions []string              `json:"watchdog_actions,omitempty" desc:"The watchdog's last actions, newest first, each as its time and the log line: what it saw, what it did, the run or request; absent when it has done none"`
 	PollBehind      string                `json:"poll_behind,omitempty" desc:"Set while its last poll took longer than the watchdog's pollBehind multiple of the poll interval: how long it took and the limit; absent when polls keep up"`
 	Stopped         string                `json:"stopped,omitempty" desc:"When the last daemon stopped, RFC 3339 UTC; absent while it runs"`
-	MaxRuns         int                   `json:"max_runs,omitempty" desc:"How many runs it keeps running at once"`
+	MaxRuns         int                   `json:"max_runs,omitempty" desc:"How many runs it keeps running at once; under auto, the cap its last poll worked out"`
+	MaxRunsAuto     bool                  `json:"max_runs_auto,omitempty" desc:"True when its last poll ran under rhiza.daemon.maxRuns=auto: max_runs and max are then the cap that poll worked out from its pre-start checks"`
 	Autonomous      bool                  `json:"autonomous" desc:"True when it starts each run with --autonomous"`
 	Web             string                `json:"web,omitempty" desc:"The web UI as the daemon's last poll recorded it from rhiza.web.port: its URL (http://127.0.0.1:<port>), or off; it is the recorded setting, the listener is not probed; absent when none was recorded"`
 	Settings        []Setting             `json:"settings" desc:"The settings as its last poll read them, each with its source: default, git config or flag"`
@@ -1879,7 +1888,11 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	if r.Commit != "" {
 		fmt.Fprintf(w, "Commit: %s\n", r.Commit)
 	}
-	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %d\nAutonomous: %t\n", r.Started, r.LastPoll, r.MaxRuns, r.Autonomous)
+	maxRuns := strconv.Itoa(r.MaxRuns)
+	if r.MaxRunsAuto {
+		maxRuns = fmt.Sprintf("auto (%d this poll)", r.MaxRuns)
+	}
+	fmt.Fprintf(w, "Started: %s\nLast poll: %s\nMax runs: %s\nAutonomous: %t\n", r.Started, r.LastPoll, maxRuns, r.Autonomous)
 	if r.Web != "" {
 		fmt.Fprintf(w, "Web UI: %s\n", r.Web)
 	}
@@ -1917,7 +1930,7 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintln(w, "New runs held: no")
 	}
 	if r.Max > 0 {
-		fmt.Fprintf(w, "runs: %d/%d live, %d starting\n", r.Live, r.Max, r.Starting)
+		fmt.Fprintln(w, runsAgainstCap(r.Live, r.Starting, r.Max, r.MaxRunsAuto))
 	}
 	humanPart(w, "", r.Runs, r.LastStarted, r.LastResumed, r.Skipped)
 	for _, k := range r.SkippedProjects {
@@ -2148,7 +2161,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 	if !st.Stopped.IsZero() && !resp.Running {
 		resp.Stopped = st.Stopped.UTC().Format(time.RFC3339)
 	}
-	resp.MaxRuns, resp.Max, resp.Autonomous = st.MaxRuns, st.MaxRuns, st.Autonomous
+	resp.MaxRuns, resp.Max, resp.MaxRunsAuto, resp.Autonomous = st.MaxRuns, st.MaxRuns, st.MaxRunsAuto, st.Autonomous
 	for _, v := range st.Settings {
 		resp.Settings = append(resp.Settings, Setting{Key: v.Key, Value: v.Value, Source: v.Source, Default: settingDefault(v.Key), Scope: settingScope(v.Key)})
 	}

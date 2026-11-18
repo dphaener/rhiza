@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/web"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -258,6 +259,110 @@ func TestCanonicalConfigKey(t *testing.T) {
 	} {
 		if got := canonicalConfigKey(in); got != want {
 			t.Errorf("canonicalConfigKey(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+// TestDaemonMaxRunsAuto shows rhiza.daemon.maxRuns taking auto beside a
+// whole number: daemon set writes it, daemon settings reads it back, and
+// daemonConf is marked auto with the default cap kept for its readers; a
+// number pins the cap. 0, -1 and autox are refused, and auto is refused for
+// rhiza.project.maxRuns.
+func TestDaemonMaxRunsAuto(t *testing.T) {
+	t.Parallel()
+	cfg := map[string]string{}
+	ctx := &Ctx{Git: func(args ...string) (string, error) {
+		if len(args) == 3 && args[0] == "config" && args[1] != "--get" && args[1] != "-z" {
+			cfg[args[1]] = args[2]
+			return "", nil
+		}
+		out, err, ok := gitConfigFake(cfg, args)
+		if !ok {
+			t.Fatalf("unexpected git %v", args)
+		}
+		return out, err
+	}}
+	set := func(key, v string) error {
+		_, err := runDaemonSet(ctx, DaemonSetRequest{Key: key, Value: v})
+		return err
+	}
+
+	if err := set("rhiza.daemon.maxRuns", "auto"); err != nil {
+		t.Fatal(err)
+	}
+	out, err := runDaemonSettings(ctx, DaemonSettingsRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := settingValue(out.(DaemonSettingsResponse).Settings, "rhiza.daemon.maxRuns"); v != "auto" {
+		t.Fatalf("daemon settings read maxRuns %q, want auto", v)
+	}
+	c, err := daemonConfOf(ctx, DaemonRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !c.maxRunsAuto || c.maxRuns != daemon.DefaultMaxRuns {
+		t.Fatalf("auto: maxRunsAuto %v maxRuns %d, want true and %d", c.maxRunsAuto, c.maxRuns, daemon.DefaultMaxRuns)
+	}
+
+	if err := set("rhiza.daemon.maxRuns", "3"); err != nil {
+		t.Fatal(err)
+	}
+	if c, err = daemonConfOf(ctx, DaemonRequest{}); err != nil {
+		t.Fatal(err)
+	}
+	if c.maxRunsAuto || c.maxRuns != 3 {
+		t.Fatalf("3: maxRunsAuto %v maxRuns %d, want false and 3", c.maxRunsAuto, c.maxRuns)
+	}
+	// --max-runs still pins over auto in config.
+	cfg["rhiza.daemon.maxRuns"] = "auto"
+	if c, err = daemonConfOf(ctx, DaemonRequest{MaxRuns: 4}); err != nil {
+		t.Fatal(err)
+	}
+	if c.maxRunsAuto || c.maxRuns != 4 {
+		t.Fatalf("--max-runs 4 over auto: maxRunsAuto %v maxRuns %d", c.maxRunsAuto, c.maxRuns)
+	}
+
+	for _, v := range []string{"0", "-1", "autox"} {
+		err := set("rhiza.daemon.maxRuns", v)
+		if err == nil || !strings.Contains(err.Error(), "a whole number of at least 1 or auto") {
+			t.Errorf("maxRuns %q: error %v, want one naming 'a whole number of at least 1 or auto'", v, err)
+		}
+	}
+	if cfg["rhiza.daemon.maxRuns"] != "auto" {
+		t.Errorf("a refused value was written: %q", cfg["rhiza.daemon.maxRuns"])
+	}
+	if err := set("rhiza.project.maxRuns", "auto"); err == nil || !strings.Contains(err.Error(), "must be a whole number of at least 1") || strings.Contains(err.Error(), "or auto") {
+		t.Errorf("project maxRuns auto: error %v, want a whole-number refusal", err)
+	}
+}
+
+// TestDaemonMaxRunsAutoCap checks the cap under rhiza.daemon.maxRuns=auto:
+// one over the runs running while every pre-start check has room, the runs
+// running while the load or memory hold, the tmp-low hold or the disk-low
+// check holds.
+func TestDaemonMaxRunsAutoCap(t *testing.T) {
+	room := daemonConf{maxRunsAuto: true}
+	machine := room
+	machine.machine = &daemon.MachineHold{Reason: daemon.SkipLoadHigh}
+	tmp := room
+	tmp.tmpLow = &daemon.DiskLow{Free: 1, Min: 2}
+	disk := room
+	disk.diskLow = true
+	for _, c := range []struct {
+		name    string
+		conf    daemonConf
+		running int
+		want    int
+	}{
+		{"room, none running", room, 0, 1},
+		{"room, two running", room, 2, 3},
+		{"machine hold", machine, 2, 2},
+		{"tmp low", tmp, 1, 1},
+		{"disk low", disk, 0, 0},
+	} {
+		if got := c.conf.autoMaxRuns(c.running); got != c.want {
+			t.Errorf("%s: autoMaxRuns(%d) = %d, want %d", c.name, c.running, got, c.want)
 		}
 	}
 }

@@ -1,0 +1,86 @@
+{
+  "actor": "01M7QZ8W3ZNEXQ1NWA9VY074D8",
+  "after": [
+    "01M7QYSCZ92NJBN9ZFD4G133S4"
+  ],
+  "at": "2026-11-18T18:42:03Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with a fresh build at 009d74d2c (go build -trimpath to $TMPDIR/rhiza-qa) in a scratch root: rhiza daemon set rhiza.daemon.maxRuns auto exits 0 and daemon settings shows 'auto (rhiza.toml, machine)'; 0, -1, autox, AUTO, 1.5 and empty are refused exit 2 with 'must be a whole number of at least 1 or auto'; rhiza.project.maxRuns auto is refused ('must be a whole number of at least 1'); a hand-edited rhiza.toml with autox makes daemon settings fail naming the same rule; the daemon app's run-limit field (not drivable by pty) passes go test ./internal/tui/daemonapp/... (TestAutoLimitSetsAndQuits, TestLimitValidators) and go test ./internal/api -run MaxRuns passes."
+        },
+        "handle": "maxruns-auto-setting-qa-1",
+        "id": "01M7QZEJ3E6BH8CP5SJG5YXQMQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QZEJ3E6BH8CP5SJD8Z2YAT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QZEJ3E6BH8CP5SJD8Z2YAT",
+        "id": "01M7QZEJ5N05WM9TVZWJ32WMGQ",
+        "link": "01M7QZEJ5N05WM9TVZWEQ27JEH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK2Z9E3VYWJRD30PF1514",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand with the built binary, three accepted change sets, fake rex and RHIZA_TEST_DETACH_LOG: under auto the first daemon --once started exactly one run (state max_runs 1, max_runs_auto true); with one run journaled the next poll started one more (max_runs 2); with two running, each of load high (RHIZA_TEST_LOAD1/5=3.5), memory low (MEM_AVAILABLE=1000), tmp low (TMP_FREE_BYTES=1000) and disk low (FREE_BYTES=1000) started none with the cap held at 2; maxRuns 2 pinned started none and dropped max_runs_auto; auto with --max-runs 2 pinned 2 (no auto); room again started the third (max_runs 3). TestScripts/daemon-maxruns-auto passes."
+        },
+        "handle": "maxruns-auto-poll-qa-1",
+        "id": "01M7QZEJ7DYM3VS9V12N968F5S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QZEJ7DYM3VS9V12N1A8703",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QZEJ7DYM3VS9V12N1A8703",
+        "id": "01M7QZEJA6X753DJQ577GV5FSV",
+        "link": "01M7QZEJA6X753DJQ575SVRTW1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK319H58FEFW7GQ2B3ZWY",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA by hand holding the root daemon lock with flock over a saved state of 2 live runs and 1 starting: max_runs 1 with max_runs_auto true gives daemon status 'Max runs: auto (1 this poll)' and 'runs: 2 live (auto cap 1), 1 starting', --json max_runs_auto true, and health 'ok daemon' with 'runs: 2 live (auto cap 1), 1 starting'; the same state without auto gives 'Max runs: 1', health bad 'over rhiza.daemon.maxRuns 1' naming each live run, and --json has no max_runs_auto; a state with no field and max_runs 3 prints 'Max runs: 3', 'runs: 2/3 live'. TestScripts daemon-status, health-runs-cap, describe-golden pass."
+        },
+        "handle": "maxruns-auto-shown-qa-1",
+        "id": "01M7QZEJEFHT2G6141JSNHSVXK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QZEJEFHT2G6141JPQ9AJ7G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QZEJEFHT2G6141JPQ9AJ7G",
+        "id": "01M7QZEJGRQ93DAE362MEDFSZG",
+        "link": "01M7QZEJGRQ93DAE362K3JDX1K",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QXK34ZQT66CGBGZ180M4EJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M7QXFGFM5DQXY4GC23G663TX",
+  "id": "01M7QZEJK3EE2WEEW3QAHXNWCY",
+  "type": "ops",
+  "v": 1
+}

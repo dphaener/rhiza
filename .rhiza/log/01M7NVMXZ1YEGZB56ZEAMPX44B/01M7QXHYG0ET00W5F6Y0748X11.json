@@ -1,0 +1,33 @@
+{
+  "actor": "01M7QXFGFM5DQXY4GC23G663TX",
+  "after": [
+    "01M7QBVBQS18ZPRKGF6PNYS4SW"
+  ],
+  "at": "2026-11-18T18:08:56Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "quotes": [],
+          "raw_sha256": "182c5f0fb1679dc92044f83d9537963cf9a72b1e71585ee0fa29799ecfb37701",
+          "session": "8998de87-2263-4df3-b045-01a1efd7be98",
+          "summary": "Autonomous plan of change set 01M7NVMX (rhiza.daemon.maxRuns=auto) by the conductor of run 01M7QXF341135P9DZCYWE4XJVE; no owner was present. The owner's choice of an auto setting is milestone 40's Decision m40-maxruns-auto. Research: the daemon reads rhiza.daemon.maxRuns as a whole number (daemonConfOf, internal/api/daemon_settings.go), fills the machine-wide slots round-robin up to it (daemon.RoundRobin, internal/api/daemon.go), and its pre-start checks are the load/memory machine hold, the tmp-low hold and the repo's disk-low check, which already stop every start while one holds. The conductor ruled, by derivation from the intent and the code: auto lets the poll start one more run than are running when every pre-start check has room and none when any holds, so each further start waits for the next poll's readings; the default stays 2 and a number still pins the cap; rhiza.project.maxRuns and the --max-runs flag stay whole numbers; daemon status and health name auto instead of a fixed cap. Three leaves: the setting accepts auto, the poll applies it, status and health show it.",
+          "title": "maxRuns=auto leaves, planned by the conductor"
+        },
+        "handle": "maxruns-auto-plan",
+        "id": "01M7QXHYF3RV8KE2R6EQSEN3S0",
+        "key": null,
+        "kind": "source",
+        "node": "01M7QXHYF3RV8KE2R6EPJCXMTW",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVMXZ1YEGZB56ZEAMPX44B",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QXHYG0ET00W5F6Y0748X11",
+  "type": "ops",
+  "v": 1
+}
