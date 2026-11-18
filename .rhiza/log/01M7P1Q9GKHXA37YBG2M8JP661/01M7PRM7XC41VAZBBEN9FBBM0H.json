@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7PRM4HGGE7PX4ENCZHHF3VJ"
+  ],
+  "at": "2026-11-18T07:23:34Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "qa note 3"
+        },
+        "handle": "note-01m7prm7t31ve4",
+        "id": "01M7PRM7T31VE48N9DF3KMMK8E",
+        "key": null,
+        "kind": "note",
+        "node": "01M7PRM7T31VE48N9DF1DWEQ2A",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRM7T31VE48N9DF1DWEQ2A",
+        "id": "01M7PRM7VYY835EDK1VJY8ASQ4",
+        "link": "01M7PRM7VYY835EDK1VHY2GAPP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMAZ0PV2BP11NSNF04ANZ",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PRM7XC41VAZBBEN9FBBM0H",
+  "type": "ops",
+  "v": 1
+}

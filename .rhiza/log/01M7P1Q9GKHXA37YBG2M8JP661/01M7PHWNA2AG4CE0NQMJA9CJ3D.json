@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PHNV43WVT4F0FFNQ4PV3RE",
+  "after": [
+    "01M7PH9493J6FETZ0BA4HNW4HA"
+  ],
+  "at": "2026-11-18T05:25:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at e96d08bb7 (all under systemd-run caps, -p 2). go test -trimpath -count=1 ./internal/model/... ./internal/check/... ./internal/index/...: ok (model 0.41s, check 0.14s, index 39.7s). go test ./internal/api -run 'Parity|Projection|WhatIf': ok 17.8s. BenchmarkWhatIfFrom -benchmem (3000 nodes, one-op draft): base f865e9a2c (bench copied into a detached worktree) 39727 allocs/op 4433249 B/op 10.18 ms/op; leaf 1321 allocs/op 2038661 B/op 8.18 ms/op, allocations fell 96.7% (>=80%). TestWhatIfFromAllocs AllocsPerRun deep 30711 vs shared 1321, 95.7% fewer. Failure case TestWhatIfFromSharedSeedUnchanged (two views from one seed updating one node's fields, handle, place, history and aspects, retiring one link; asserts seed and first view unchanged) passes, and fails with seed changed when builder.ownNode's call in applyOp is removed in a scratch worktree. In ~/code/rhiza, RHIZA_CPUPROFILE + /usr/bin/time rhiza check, back to back at load ~5.8: before 21.11 s, WhatIfFrom 8.28s 31.63% cum; after 13.15 s, WhatIfFrom 2.94s 19.07% cum; output bytes identical, both exit 0. Diff touches only internal/model (seed.go, apply.go, new seed_cow_test.go) plus actor records; Seed's exported shape, internal/check and index format unchanged; no TODOs."
+        },
+        "handle": "whatif-copies-only-written-verified",
+        "id": "01M7PHWN36Z14DA5QVQ7W1Z71G",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PHWN36Z14DA5QVQ5PFG3YS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PHWN36Z14DA5QVQ5PFG3YS",
+        "id": "01M7PHWN6PWKPWZZW7A4Q5XJDD",
+        "link": "01M7PHWN6PWKPWZZW7A3K08MBC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XK14P9JE95J3GQVS36H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PHWNA2AG4CE0NQMJA9CJ3D",
+  "type": "ops",
+  "v": 1
+}

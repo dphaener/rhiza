@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PK85DTEN9YX61FRWPDQ45T",
+  "after": [
+    "01M7PHWNA2AG4CE0NQMJA9CJ3D"
+  ],
+  "at": "2026-11-18T05:53:33Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at b7a419cbe + a7e6ab696 in a clean detached worktree: go test -trimpath -count=1 -p 2 ./internal/model/... ./internal/check/... exit 0; TestWhatIfRefusedOpSameProblem passes at the commit and with the new view_test.go on the parent e96d08bb7 (same problems); make self-check exit 0; rhiza render 0 written. Main checkout: parent vs commit rhiza check --json same bytes (2614), both exit 0. RHIZA_CPUPROFILE check parent->commit: model.whatIf 13.51%->8.96%, whatIfLayer 8.71%->6.12%, (*builder).finishModel 5.26%->3.43%. Five alternating runs after a warm call each, user+sys: base 5d2596d 15.98, 15.49, 14.89, 14.58, 15.16 (median 15.16 s); commit 8.75, 6.40, 6.25, 6.42, 7.70 (median 6.42 s) = 42.3% of base, target <= 59%, load ~5. Diff touches only view.go, apply.go finishModel and view_test.go; Closure output is sorted so the BinarySearch is sound"
+        },
+        "handle": "check-whatif-finish-cheaper-verified",
+        "id": "01M7PKFCZ1YYXCSDJ90WGSCHYA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PKFCZ1YYXCSDJ90TGXN13T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PKFCZ1YYXCSDJ90TGXN13T",
+        "id": "01M7PKFD0KTVR17KAQC4XRA78P",
+        "link": "01M7PKFD0KTVR17KAQC14MPNS1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PKFD2915R0RHKJMW4EBWGT",
+  "type": "ops",
+  "v": 1
+}

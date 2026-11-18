@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PMYHCY8ERFQ7CCSC1Z50MA",
+  "after": [
+    "01M7PMF8SGH1HENNB2MND44ACD"
+  ],
+  "at": "2026-11-18T06:21:44Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At d97acc451: go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Plan' ok 13.8s (incl. new TestInboxBlockersListProposedNotDraft: proposed set's store-q/own-q listed with their text, draft's cache-q unlisted); -run 'Ready|Roadmap|Question' ok; cmd/rhiza TestScripts/(inbox-blocking-questions|inbox-blocker-advice) ok with RHIZA_/SHIP_/REX_ unset; go vet and gofmt clean. Warm RHIZA_CPUPROFILE of $TMPDIR rhiza inbox --json in the main checkout, parent 493aa35f7 then commit, back to back, 6 runs each merged, load ~4.6: pair 1 inboxBlockers 14.29%->5.24%, planGather 9.41%->planGatherWith 4.80%, planCore 0 samples both; pair 2 inboxBlockers 16.54%->6.17%, planGather 10.90%->5.76%, planCore 0.75%->0 (planBlockersOnly 0 samples); Analysis.graph/Closure 0.7-1.1% -> none. Parent and commit binaries' rhiza inbox --json byte-identical (cmp) in the main checkout and in the run worktree. Diff touches only the leaf's files plus its actor record; no stubs."
+        },
+        "handle": "inbox-blockers-cheaper-verified",
+        "id": "01M7PN30KG9CD21MNA9J9S73RN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PN30KG9CD21MNA9HGA5NC5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PN30KG9CD21MNA9HGA5NC5",
+        "id": "01M7PN30NDD4SSRBSZYT854PVW",
+        "link": "01M7PN30NDD4SSRBSZYQZNSSJA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PN30Q71FZ10TF71HDDT26S",
+  "type": "ops",
+  "v": 1
+}

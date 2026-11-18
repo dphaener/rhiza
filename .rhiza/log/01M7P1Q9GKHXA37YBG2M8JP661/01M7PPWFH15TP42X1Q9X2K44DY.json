@@ -1,0 +1,39 @@
+{
+  "actor": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "after": [
+    "01M7P3J0AVRK0CQ0APC7100W52"
+  ],
+  "at": "2026-11-18T06:53:07Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "QA note from scratch copy"
+        },
+        "handle": "note-01m7ppwf962375",
+        "id": "01M7PPWF9623752WYB331H7RBR",
+        "key": null,
+        "kind": "note",
+        "node": "01M7PPWF9623752WYB309739ZD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PPWF9623752WYB309739ZD",
+        "id": "01M7PPWFC9072085V1PTB9F5EM",
+        "link": "01M7PPWFC9072085V1PRBC4D7H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7NVMG0EJFRJV03G025C6366",
+        "type": "discusses"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PPWFH15TP42X1Q9X2K44DY",
+  "type": "ops",
+  "v": 1
+}
