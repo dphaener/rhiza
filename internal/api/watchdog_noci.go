@@ -24,6 +24,19 @@ type watchdogMerge struct {
 	Conflicts []string
 }
 
+// watchdogMergeEnded is watchdogMergeMain for st, an ended run, seeing the
+// run's env as its steps do (shipRunEnv, which makes the run's temp folder
+// runTmp). The run has ended, so runTmp and whatever the merge's processes
+// wrote under TMPDIR are removed once the merge returns, whatever it did:
+// a run left to the owner is never resumed to remove them, and a resumed
+// run makes its folder again.
+func watchdogMergeEnded(ctx *Ctx, st run.State, t shipTarget, runTmp string) (watchdogMerge, error) {
+	if st.Ended {
+		defer func() { _ = os.RemoveAll(runTmp) }()
+	}
+	return watchdogMergeMain(shipRunEnv(ctx, st, runTmp), t, st.ID)
+}
+
 // watchdogMergeMain merges origin/main into t's branch, checked out in t's
 // worktree, pushes it without force and records the pushed head in the ship
 // state. A conflicting merge is aborted, leaving the branch as it was.

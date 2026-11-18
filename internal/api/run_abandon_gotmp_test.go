@@ -3,6 +3,7 @@ package api
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -51,5 +52,47 @@ func TestAbandonRemovesRunGoTmp(t *testing.T) {
 	}
 	if st := j.State(); !st.Ended || !st.Abandoned() {
 		t.Errorf("run state %+v: want ended and abandoned", st)
+	}
+}
+
+// A session of a run gets TMPDIR=<run tmp>: what it writes there is gone
+// once the run is abandoned.
+//
+// Serial: see TestAbandonRemovesRunGoTmp.
+func TestAbandonRemovesSessionTmpdirFiles(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	f, s, fs := runFixture(t, `{"permission_mode":"manual","run":"RT-abandon"}`)
+	tmp := startTmpdirRun(t, f, s.Change, "RT-abandon", "name = \"wf\"\n"+tmpdirSteps)
+	var wrote string
+	f.ctx.Start = func(p Program) (Process, error) {
+		if p.Terminal {
+			dirs := envValues(p.Env, "TMPDIR")
+			if len(dirs) != 1 {
+				t.Fatalf("agent TMPDIR %v, want one", dirs)
+			}
+			wrote = filepath.Join(dirs[0], "scratch", "out.txt")
+			if err := os.MkdirAll(filepath.Dir(wrote), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(wrote, []byte("x"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return fs.start(p)
+	}
+	if _, err := callOp(t, f.ctx, "session.run", `{"id":"`+s.ID+`"}`); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(wrote, tmp+string(filepath.Separator)) {
+		t.Fatalf("the session wrote %q, not under the run temp folder %s", wrote, tmp)
+	}
+	ex := &fakeExec{}
+	ctx := *f.ctx
+	ctx.Exec = ex.run
+	if _, err := callOp(t, &ctx, "run.abandon", `{"run":"RT-abandon"}`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(tmp); !os.IsNotExist(err) {
+		t.Errorf("run folder %s still there after abandon (stat err %v)", tmp, err)
 	}
 }

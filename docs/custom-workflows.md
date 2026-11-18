@@ -27,7 +27,7 @@ name = "stop-services"
 run = "docker compose down"
 ```
 
-`[env]` sets variables for every process the run's steps start: agents, commands and cleanup steps. `{run_tmp}` in a value is the run's own private temp folder, made before a step uses it and removed when the run ends, so parallel runs never share scratch files. Names are letters, digits and `_`; `RHIZA_*` names are Rhiza's own and refused.
+`[env]` sets variables for every process the run's steps start: agents, commands and cleanup steps. `{run_tmp}` in a value is the run's own private temp folder, made before a step uses it and removed when the run ends, so parallel runs never share scratch files. `TMPDIR` defaults to `{run_tmp}` for those processes and for the sessions the run spawns, so what they write under `$TMPDIR` goes with the run; set `TMPDIR` in `[env]` to choose another. Names are letters, digits and `_`; `RHIZA_*` names are Rhiza's own and refused.
 
 ```toml
 [env]

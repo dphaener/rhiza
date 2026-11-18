@@ -385,9 +385,14 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return j.State(), &runError{id: j.ID, kind: ErrLive}
 	}
 	defer unlock()
-	// The run's private temp folder goes with the run, whether it finishes,
-	// fails or stops.
-	defer func() { _ = os.RemoveAll(e.Store.TmpDir(j.ID)) }()
+	// The run's private temp folder goes with the run once it ends,
+	// succeeded or failed. A stopped run is not ended: it resumes, and its
+	// steps' and agent sessions' files under TMPDIR stay until it ends.
+	defer func() {
+		if cur, err := e.Store.Read(j.ID); err == nil && cur.State().Ended {
+			_ = os.RemoveAll(e.Store.TmpDir(j.ID))
+		}
+	}()
 	// Read again under the lock: the holder may have moved on.
 	if j, err = e.Store.Read(j.ID); err != nil {
 		return State{}, err
@@ -752,21 +757,21 @@ func (r *running) runStep(step workflow.Step, change string) (result, error) {
 	return errResult(fmt.Errorf("step %q: unknown kind %q", step.Name, step.Kind)), nil
 }
 
-// stepEnv is the RHIZA_* variables of step on the run's change set.
+// stepEnv is the RHIZA_* variables of step on the run's change set, then
+// the workflow's run env (its [env] and TMPDIR, see RunEnvPairs), with the
+// run's temp folder made first whenever that env names it.
 func (r *running) stepEnv(step, change string) []string {
 	env := []string{
 		"RHIZA_CHANGE=" + change,
 		"RHIZA_RUN=" + r.j.ID,
 		"RHIZA_STEP=" + step,
 	}
-	if r.def.UsesRunTmp() {
-		tmp := r.e.Store.TmpDir(r.j.ID)
+	tmp := ""
+	if r.def.NeedsRunTmp() {
+		tmp = r.e.Store.TmpDir(r.j.ID)
 		_ = os.MkdirAll(tmp, 0o755)
-		env = append(env, r.def.EnvPairs(tmp)...)
-	} else {
-		env = append(env, r.def.EnvPairs("")...)
 	}
-	return env
+	return append(env, r.def.RunEnvPairs(tmp)...)
 }
 
 // StopExit is the exit code of a command step that asks the run to stop

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7R0J34G17VNK45Z812PB90D",
+  "after": [
+    "01M7R03FG420X4VN2740QPNPGZ"
+  ],
+  "at": "2026-11-18T19:02:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified builder commit 5fff361b8 at branch head 55d323d37 in a clean detached worktree (no untracked files): make self-check exit 0 (the earlier stale rendered/index.md failure is gone); go test -trimpath -p 2 -count=1 ./internal/api/... -run 'SessionRun|Abandon|ShipRunEnv|Gotmp|RunTmp' exit 0 with TestSessionRunTmpdirDefault (no [env], and [env] without {run_tmp}: dry-run env TMPDIR=<run tmp>, folder absent on dry run, made on real start), TestSessionRunTmpdirOwn (TMPDIR=/x only, no run tmp made), TestAbandonRemovesSessionTmpdirFiles, TestShipRunEnvRunTmp passing; go test ./internal/workflow/... exit 0; rhiza ship generate changed 0 files; spec.go env Desc, docs/custom-workflows.md and docs/reference/workflow-file.md say TMPDIR defaults to {run_tmp} unless [env] sets it. Diff touches no internal/run code; no TODOs."
+        },
+        "handle": "run-sessions-default-tmpdir-verified-2",
+        "id": "01M7R0M7BN400CXDSV1CJ5H76H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R0M7BN400CXDSV19VXP3P2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R0M7BN400CXDSV19VXP3P2",
+        "id": "01M7R0M7D1NVTKQ8XGQBBBCEWH",
+        "link": "01M7R0M7D1NVTKQ8XGQ8QD9PJM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVZ213HF4N41XDNGP7P26",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFRZTGPHG4DHNN8B6NWSP",
+  "for": "01M7QZS1QFTQVYHZHHX8GNVQYZ",
+  "id": "01M7R0M7EE15DXNEH2YNC8EVE9",
+  "type": "ops",
+  "v": 1
+}

@@ -55,10 +55,13 @@ type fakeRunner struct {
 	ended      []string          // "step:session" per AgentEnded call, in order
 	endedErr   error             // what AgentEnded returns
 	onCommand  func(step string) // called as each command step runs
-	leaves     []Leaf            // what Leaves returns
-	leavesErr  error             // Leaves' error, when set
-	leafSpecs  []LeafSpec        // each StartLeaf call's spec, in order
-	leafErr    map[string]error  // StartLeaf's error per "<handle> <role>"
+	// onEnv is called with a command, wait, agent or arbiter step's env as
+	// the step starts, when set.
+	onEnv     func(step string, env []string)
+	leaves    []Leaf           // what Leaves returns
+	leavesErr error            // Leaves' error, when set
+	leafSpecs []LeafSpec       // each StartLeaf call's spec, in order
+	leafErr   map[string]error // StartLeaf's error per "<handle> <role>"
 	// leafCommit is LeafCommit's commit and detail per leaf handle; a
 	// missing handle has commit "C-<handle>".
 	leafCommit map[string][2]string
@@ -135,6 +138,9 @@ func newFakeRunner() *fakeRunner {
 
 func (f *fakeRunner) Command(step workflow.Step, env []string) (int, string, error) {
 	f.envs[step.Name] = env
+	if f.onEnv != nil {
+		f.onEnv(step.Name, env)
+	}
 	if err := f.failOn[step.Name]; err != nil {
 		return 0, "", err
 	}
@@ -152,6 +158,9 @@ func (f *fakeRunner) Command(step workflow.Step, env []string) (int, string, err
 
 func (f *fakeRunner) Holds(step workflow.Step, env []string) (bool, error) {
 	f.envs[step.Name] = env
+	if f.onEnv != nil {
+		f.onEnv(step.Name, env)
+	}
 	if err := f.failOn[step.Name]; err != nil {
 		return false, err
 	}
@@ -169,6 +178,9 @@ func (f *fakeRunner) Holds(step workflow.Step, env []string) (bool, error) {
 
 func (f *fakeRunner) StartAgent(step workflow.Step, model string, env []string) (string, error) {
 	f.envs[step.Name] = env
+	if f.onEnv != nil {
+		f.onEnv(step.Name, env)
+	}
 	if err := f.failOn[step.Name]; err != nil {
 		return "", err
 	}
@@ -202,6 +214,9 @@ func (f *fakeRunner) AgentStatus(session string) (AgentStatus, error) {
 
 func (f *fakeRunner) StartArbiter(step workflow.Step, question string, env []string) (string, error) {
 	f.envs[step.Name] = env
+	if f.onEnv != nil {
+		f.onEnv(step.Name, env)
+	}
 	if err := f.failOn[step.Name]; err != nil {
 		return "", err
 	}
@@ -424,7 +439,7 @@ func TestCommandPassFollowsOnPass(t *testing.T) {
 	if st.Steps[0].Next != "ship" || st.Steps[0].Detail != "exit 0" {
 		t.Errorf("first step = %+v", st.Steps[0])
 	}
-	want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=test"}
+	want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=test", "TMPDIR=" + e.Store.TmpDir(runID)}
 	if !reflect.DeepEqual(r.envs["test"], want) {
 		t.Errorf("env = %v, want %v", r.envs["test"], want)
 	}
@@ -1577,7 +1592,7 @@ func TestArbitratePasses(t *testing.T) {
 	if !reflect.DeepEqual(r.arbiters, []string{"decide Q1"}) || r.answerN["Q1"] != 1 {
 		t.Errorf("arbiters %v answers %v", r.arbiters, r.answerN)
 	}
-	if want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=decide"}; !reflect.DeepEqual(r.envs["decide"], want) {
+	if want := []string{"RHIZA_CHANGE=CS1", "RHIZA_RUN=" + runID, "RHIZA_STEP=decide", "TMPDIR=" + e.Store.TmpDir(runID)}; !reflect.DeepEqual(r.envs["decide"], want) {
 		t.Errorf("arbiter env %v, want %v", r.envs["decide"], want)
 	}
 	if want := []time.Duration{3 * time.Second}; !reflect.DeepEqual(c.sleeps, want) {
@@ -2237,7 +2252,7 @@ func TestCommandAskedArbitratedInChange(t *testing.T) {
 			if st.Result != Succeeded {
 				t.Fatalf("result %q detail %q", st.Result, st.Detail)
 			}
-			if want := []string{"RHIZA_CHANGE=" + tc.want, "RHIZA_RUN=" + runID, "RHIZA_STEP=decide"}; !reflect.DeepEqual(r.envs["decide"], want) {
+			if want := []string{"RHIZA_CHANGE=" + tc.want, "RHIZA_RUN=" + runID, "RHIZA_STEP=decide", "TMPDIR=" + e.Store.TmpDir(runID)}; !reflect.DeepEqual(r.envs["decide"], want) {
 				t.Errorf("arbiter env %v, want %v", r.envs["decide"], want)
 			}
 			if len(st.Asked) != 1 || st.Asked[0].Change != tc.change {

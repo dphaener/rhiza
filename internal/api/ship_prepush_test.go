@@ -757,18 +757,56 @@ func TestShipRunEnv(t *testing.T) {
 	j := run.Journal{ID: "r", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}}}}
 	ctx := testCtx(t, t.TempDir())
 	ctx.Getenv = func(key string) string { return "own-" + key }
-	got := ctxGetenv(shipRunEnv(ctx, j.State(), "/tmp/run"))
+	runTmp := filepath.Join(t.TempDir(), "run")
+	got := ctxGetenv(shipRunEnv(ctx, j.State(), runTmp))
 	if v := got(envShipBuild); v != `go build -o "$SHIP_HEAD_RHIZA" ./cmd/rhiza` {
 		t.Errorf("%s = %q", envShipBuild, v)
 	}
-	if v := got(envShipRhiza); v != "/tmp/run/rhiza-head" {
+	if v := got(envShipRhiza); v != runTmp+"/rhiza-head" {
 		t.Errorf("%s = %q", envShipRhiza, v)
 	}
 	if v := got("PATH"); v != "own-PATH" {
 		t.Errorf("PATH = %q", v)
 	}
-	plain := run.Journal{ID: "p", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"}}}}
-	if c := shipRunEnv(ctx, plain.State(), "/tmp/run"); c != ctx {
-		t.Error("a workflow with no [env] changed the context")
+	if v := got("TMPDIR"); v != runTmp {
+		t.Errorf("TMPDIR = %q, want the run's temp folder %s", v, runTmp)
+	}
+	if fi, err := os.Stat(runTmp); err != nil || !fi.IsDir() {
+		t.Errorf("run temp folder %s not made: %v", runTmp, err)
+	}
+}
+
+// A workflow with no [env] still gives the watchdog's view of its run
+// TMPDIR=<run tmp>, the folder made, as the run's steps get it; one whose
+// [env] sets TMPDIR gives that value only, and no run folder is made.
+func TestShipRunEnvRunTmp(t *testing.T) {
+	t.Parallel()
+	started := func(def string) run.State {
+		j := run.Journal{ID: "p", Entries: []run.Entry{{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}}}}
+		return j.State()
+	}
+	const steps = "[step.wait]\nkind = \"command\"\nrun = \"true\"\n"
+	ctx := testCtx(t, t.TempDir())
+	ctx.Getenv = func(key string) string { return "own-" + key }
+
+	plainTmp := filepath.Join(t.TempDir(), "plain")
+	got := ctxGetenv(shipRunEnv(ctx, started("name = \"w\"\n"+steps), plainTmp))
+	if v := got("TMPDIR"); v != plainTmp {
+		t.Errorf("no [env]: TMPDIR = %q, want %s", v, plainTmp)
+	}
+	if v := got("PATH"); v != "own-PATH" {
+		t.Errorf("no [env]: PATH = %q", v)
+	}
+	if fi, err := os.Stat(plainTmp); err != nil || !fi.IsDir() {
+		t.Errorf("no [env]: run temp folder %s not made: %v", plainTmp, err)
+	}
+
+	ownTmp := filepath.Join(t.TempDir(), "own")
+	got = ctxGetenv(shipRunEnv(ctx, started("name = \"w\"\n[env]\nTMPDIR = \"/x\"\n"+steps), ownTmp))
+	if v := got("TMPDIR"); v != "/x" {
+		t.Errorf("[env] TMPDIR: TMPDIR = %q, want /x", v)
+	}
+	if _, err := os.Stat(ownTmp); !os.IsNotExist(err) {
+		t.Errorf("[env] TMPDIR: run temp folder %s made (stat err %v)", ownTmp, err)
 	}
 }

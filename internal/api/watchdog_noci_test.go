@@ -209,3 +209,37 @@ func TestWatchdogPRNoCI(t *testing.T) {
 		t.Fatalf("spent budget merged %v, logged %q", merges, log)
 	}
 }
+
+// The watchdog merges main for an ended run only: shipRunEnv makes the
+// run's temp folder for its merge, and nothing resumes a run left to the
+// owner, so the folder and what the merge wrote under TMPDIR are removed
+// once the merge returns, whether it pushed, conflicted or failed.
+func TestWatchdogMergeEndedRemovesRunTmp(t *testing.T) {
+	t.Parallel()
+	const def = "name = \"w\"\n[step.wait]\nkind = \"command\"\nrun = \"true\"\n"
+	j := run.Journal{ID: "r", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: time.Now(), Started: &run.Started{Definition: def}},
+		{Type: run.TypeFinished, At: time.Now(), End: run.Failed, Detail: "ci"},
+	}}
+	st := j.State()
+	if !st.Ended {
+		t.Fatal("fixture run not ended")
+	}
+	runTmp := filepath.Join(t.TempDir(), "run-tmp", "r")
+	ctx := testCtx(t, t.TempDir())
+	// The worktree is gone, so the merge fails at once, after shipRunEnv
+	// made the folder; a file stands for what a merge's process wrote.
+	tg := shipTarget{branch: "cs/x", worktree: filepath.Join(t.TempDir(), "gone")}
+	if got := ctxGetenv(shipRunEnv(ctx, st, runTmp))("TMPDIR"); got != runTmp {
+		t.Fatalf("TMPDIR = %q, want %s", got, runTmp)
+	}
+	if err := os.WriteFile(filepath.Join(runTmp, "merge.out"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := watchdogMergeEnded(ctx, st, tg, runTmp); err == nil {
+		t.Fatal("merge into a gone worktree succeeded")
+	}
+	if _, err := os.Stat(runTmp); !os.IsNotExist(err) {
+		t.Errorf("run temp folder %s still there after the watchdog's merge for an ended run: %v", runTmp, err)
+	}
+}

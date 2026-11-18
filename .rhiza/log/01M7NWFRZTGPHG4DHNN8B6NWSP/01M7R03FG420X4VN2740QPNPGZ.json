@@ -1,0 +1,40 @@
+{
+  "actor": "01M7R01WDVYABBTE8R3ANQGRD1",
+  "after": [
+    "01M7QZVZ5K65DG0JH3ZEX9G3NF"
+  ],
+  "at": "2026-11-18T18:53:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At builder commit 0c5d5f2d9: re-ran Checks (capped go test -trimpath -p 2 ./internal/workflow/... ./internal/run/... exit 0, also -count=1 for TestRunEnvPairs, TestStepsGetDefaultTMPDIR (no [env] and [env] without {run_tmp}, each succeeded and failed: build/ci/agent/tidy cleanup steps get TMPDIR=Store.TmpDir(run), folder exists, a file written under it, nothing left after the run), TestOwnTMPDIRWins (TMPDIR=/x, one pair, FOO {run_tmp} and PLAIN unchanged), TestNoEnvNoRunTmp: all PASS; rhiza ship generate exit 0; rhiza render exit 0). Diff: stepEnv uses NeedsRunTmp/RunEnvPairs and is shared by runStep (all step kinds), arbiter, advisor and cleanup; EnvPairs unchanged (describe keeps the file's [env]); run.TmpDir and removal untouched; internal/api untouched; no TODOs. engine_test.go also changed (outside files): existing env expectations gained TMPDIR and the fake runner got an onEnv hook, both needed by the change."
+        },
+        "handle": "run-steps-default-tmpdir-verified",
+        "id": "01M7R03FDAZ0B6W70WFEB7092X",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R03FDAZ0B6W70WFDW2FTWX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R03FDAZ0B6W70WFDW2FTWX",
+        "id": "01M7R03FEPH9SZM5Q7GPYNGWV6",
+        "link": "01M7R03FEPH9SZM5Q7GK7BJ22W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVYZYEW2YQJQR0HXV9K9G",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFRZTGPHG4DHNN8B6NWSP",
+  "for": "01M7QZS1QFTQVYHZHHX8GNVQYZ",
+  "id": "01M7R03FG420X4VN2740QPNPGZ",
+  "type": "ops",
+  "v": 1
+}
