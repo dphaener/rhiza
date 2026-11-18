@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QVDPMDGEFPG1Q47Z2JS5XD",
+  "after": [
+    "01M7QV5BJD3Q7HD1N226E42CSX"
+  ],
+  "at": "2026-11-18T17:33:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit b950d63f1 in a detached checkout. Every Checks: command exited 0 as written: go test -trimpath -p 2 ./internal/api/ -run Request (TestRequestNotes passes, also with -count=1); go test -trimpath -p 2 ./internal/daemon/... (TestRequestsNotesRoundTrip, TestNormalizeRequestNote, TestRequestsRoundTrip now uses reflect.DeepEqual); describe-golden -update leaves no diff; go test ./cmd/rhiza -run 'TestScripts/(describe-golden|plan-requests)$'; rhiza ship generate and rhiza render change nothing. The diff stays within the leaf's files plus the rendered actor and log files. RequestRequest.Notes is a repeatable --note normalised by daemon.NormalizeRequestNote (CRLF to LF, outer blank space trimmed, lines kept; empty or blank, over 8000 bytes and invalid UTF-8 refused as Usagef '--note N ...'). daemon.Request.Notes is omitempty, so a request without notes keeps its old shape. request ls has notes in --json and [N note(s)] in text, and docs/runs-and-daemon.md and cli.md cover it. A scratch-binary smoke test confirmed two notes queued in order with lines kept, and a blank or 8001-byte note refused with exit 2 and nothing queued. Pre-existing gap outside this leaf: invalid UTF-8 given on the CLI is turned into U+FFFD by the argv-to-JSON frame (cmd/rhiza/argv.go) before validation, so it is stored rather than refused, the same as for --ref; the api-level refusal the acceptance names is tested and passes."
+        },
+        "handle": "request-note-flag-verified",
+        "id": "01M7QVH19WV220TCCS9DEJBXXY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QVH19WV220TCCS9A1CT73J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QVH19WV220TCCS9A1CT73J",
+        "id": "01M7QVH1AT7VXW5AMR8DY3QV48",
+        "link": "01M7QVH1AT7VXW5AMR8DXZVHTC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QV3N5ZZR8C2R4THW49RGGN",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMQER3WR98SDXHQCBXKSY",
+  "for": "01M7QV0D5GQR857ERVQB9A4FN1",
+  "id": "01M7QVH1BTSHMT063RTZNRG4A7",
+  "type": "ops",
+  "v": 1
+}
