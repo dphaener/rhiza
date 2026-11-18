@@ -1359,7 +1359,11 @@ func daemonStartQueued(ctx *Ctx, s daemon.Start, mode string) error {
 	if s.Autonomous {
 		args = append(args, "--autonomous")
 	}
-	return daemonDetachStart(ctx, "a run of "+s.Change, s.Change, args)
+	var env []string
+	if s.RetryBy != "" {
+		env = append(env, envStartRetryBy+"="+s.RetryBy)
+	}
+	return daemonDetachStart(ctx, "a run of "+s.Change, s.Change, args, env...)
 }
 
 // daemonQueuedContinues continues the runs the owner queued with rhiza run
@@ -1635,13 +1639,14 @@ func runLogDir(common string) string {
 }
 
 // daemonDetachStart detaches the run start --foreground args of change set
-// cs into a start log of its own, named to the child through envRunLog.
-func daemonDetachStart(ctx *Ctx, what, cs string, args []string) error {
+// cs into a start log of its own, named to the child through envRunLog,
+// with env added to the child's environment.
+func daemonDetachStart(ctx *Ctx, what, cs string, args []string, env ...string) error {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return err
 	}
-	return daemonDetachNumbered(ctx, common, what, cs, args, true)
+	return daemonDetachNumbered(ctx, common, what, cs, args, true, env...)
 }
 
 // daemonDetachLog is daemonDetachStart for a scheduled run: it makes no Rex
@@ -1650,7 +1655,7 @@ func daemonDetachLog(ctx *Ctx, common, what, base string, args []string) error {
 	return daemonDetachNumbered(ctx, common, what, base, args, false)
 }
 
-func daemonDetachNumbered(ctx *Ctx, common, what, cs string, args []string, rex bool) error {
+func daemonDetachNumbered(ctx *Ctx, common, what, cs string, args []string, rex bool, extra ...string) error {
 	name := ""
 	for n := 1; ; n++ {
 		name = fmt.Sprintf("%s.start-%d", cs, n)
@@ -1660,7 +1665,7 @@ func daemonDetachNumbered(ctx *Ctx, common, what, cs string, args []string, rex 
 			return Errorf("start %s: %v", what, err)
 		}
 	}
-	env := []string{envRunLog + "=" + name + ".log"}
+	env := append([]string{envRunLog + "=" + name + ".log"}, extra...)
 	if !rex {
 		return daemonDetachNoRex(ctx, what, name, env, args)
 	}

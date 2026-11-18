@@ -915,8 +915,20 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	if err := canRun(ctx, def); err != nil {
 		return nil, err
 	}
+	// A person's start on a change set whose latest run failed retries it:
+	// queued, the actor rides with the queued start to the run the daemon
+	// starts; in the foreground it is journalled on the new run below.
+	retried := failedRunOf(rs, started.Change)
 	if !r.Foreground {
-		return queueRunStart(rs, t, def, r, started)
+		retryBy := ""
+		if retried != "" {
+			if from, err := messageSender(ctx); err == nil {
+				retryBy = from.Handle
+			} else if ctx.Stderr != nil {
+				fmt.Fprintf(ctx.Stderr, "rhiza: warning: the queued start does not record the retry of run %s: %v\n", retried, err)
+			}
+		}
+		return queueRunStart(rs, t, def, r, started, retryBy)
 	}
 	ww, err := t.open(ctx)
 	if err != nil {
@@ -944,7 +956,66 @@ func runRunStart(ctx *Ctx, req any) (any, error) {
 	} else if err := startRun(rs, rid, started, ctx.Now(), def); err != nil {
 		return nil, err
 	}
+	journalStartRetry(ctx, rs, rid, retried, def.Start)
 	return runEngine(ctx, rs, t.common, rid, started.Change, t.worktree, r.PermissionMode, r.Agent, started.Autonomous, r.NoWait)
+}
+
+// envStartRetryBy names, to a run start --foreground the daemon detached
+// for a queued start, the actor of the person whose start retries the
+// change set's failed run (daemon.Start.RetryBy).
+const envStartRetryBy = "RHIZA_START_RETRY_BY"
+
+// failedRunOf is the ID of change set change's latest run when that run
+// failed, else "".
+func failedRunOf(rs *run.Store, change string) string {
+	if change == "" {
+		return ""
+	}
+	runs, err := rs.List()
+	if err != nil {
+		return ""
+	}
+	for i := len(runs) - 1; i >= 0; i-- {
+		if st := runs[i].State(); st.Change == change {
+			if st.Ended && st.Result == run.Failed {
+				return runs[i].ID
+			}
+			return ""
+		}
+	}
+	return ""
+}
+
+// journalStartRetry journals a retry intervention on new run rid when a
+// person's rhiza run start retries the change set's failed run retried, at
+// the step the run starts at. A start the daemon detached (envRunLog set) is
+// a person's only when it carries envStartRetryBy, from the queued start;
+// otherwise it is the daemon's or the watchdog's, and journals none. The
+// run starts either way, so a journal that cannot be written is only a
+// warning on stderr.
+func journalStartRetry(ctx *Ctx, rs *run.Store, rid, retried, step string) {
+	if retried == "" {
+		return
+	}
+	getenv := ctxGetenv(ctx)
+	err := func() error {
+		actor := ""
+		if strings.TrimSpace(getenv(envRunLog)) != "" {
+			if actor = strings.TrimSpace(getenv(envStartRetryBy)); actor == "" {
+				return nil
+			}
+		} else {
+			from, err := messageSender(ctx)
+			if err != nil {
+				return err
+			}
+			actor = from.Handle
+		}
+		return rs.AppendIntervention(rid, run.Intervention{Kind: run.InterventionRetry, Actor: actor, Detail: "retried failed run " + retried, Step: step, At: ctx.Now()})
+	}()
+	if err != nil && ctx.Stderr != nil {
+		fmt.Fprintf(ctx.Stderr, "rhiza: warning: run %s's journal does not record the retry: %v\n", rid, err)
+	}
 }
 
 // milestonePlanWorkflow swaps the plan workflow for plan-milestone when the
@@ -1021,7 +1092,7 @@ func planIsMilestone(ctx *Ctx, change string) bool {
 // owner's: whatever change set run start accepts is queued, with no
 // milestone, state or leaf filter of the daemon's picks. A change set
 // with a live run or a queued start is refused.
-func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r RunStartRequest, started run.Started) (any, error) {
+func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r RunStartRequest, started run.Started, retryBy string) (any, error) {
 	change := started.Change
 	if err := refuseLiveRun(rs, change, ""); err != nil {
 		return nil, err
@@ -1032,7 +1103,7 @@ func queueRunStart(rs *run.Store, t changeWorktree, def *workflow.Definition, r 
 		}
 		return append(starts, daemon.Start{
 			Change: change, Workflow: r.Workflow, Pick: r.Pick, PermissionMode: r.PermissionMode, Agent: r.Agent,
-			NoWait: r.NoWait, Autonomous: r.Autonomous,
+			NoWait: r.NoWait, Autonomous: r.Autonomous, RetryBy: retryBy,
 		}), nil
 	})
 	if err != nil {
@@ -1379,11 +1450,19 @@ const envDaemonResume = "RHIZA_DAEMON_RESUME"
 // journalResume journals a person's resume of run id as a resume
 // intervention, or with retryStep set a retry one, with the caller's actor
 // and the step the run goes on at. The daemon's own resumes (envDaemonResume
-// set) journal none. The resume goes ahead either way, so a journal that
-// cannot be written is only a warning on stderr.
+// set) journal none, nor does the resume that follows answering every
+// question a run's gate stopped on (the Inbox's, web or TUI): the run
+// stopped to ask the owner, the workflow working as written. The resume
+// goes ahead either way, so a journal that cannot be written is only a
+// warning on stderr.
 func journalResume(ctx *Ctx, rs *run.Store, id string, st run.State, retryStep string) {
 	if strings.TrimSpace(ctxGetenv(ctx)(envDaemonResume)) != "" {
 		return
+	}
+	if retryStep == "" && len(gateStopQuestions(st.Stopped)) > 0 {
+		if open, err := gateUnanswered(ctx, id); err == nil && len(open) == 0 {
+			return
+		}
 	}
 	kind, detail, step := run.InterventionResume, "resumed", st.Current
 	if retryStep != "" {

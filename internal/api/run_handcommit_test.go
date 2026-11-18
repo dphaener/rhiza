@@ -188,3 +188,46 @@ func TestHandCommitJournalledOnce(t *testing.T) {
 		t.Fatalf("interventions = %+v, want one hand-commit of %s at step one", ivs, plain)
 	}
 }
+
+// A branch still at Base that merges main fast-forwards to it, as ship's
+// git merge --no-edit does: main's commits, now on the run's first-parent
+// line, are no hand commits. A commit made by hand after them still is.
+func TestHandCommitsFastForwardedBranch(t *testing.T) {
+	t.Parallel()
+	r, st, git := handCommitBranch(t)
+	git("checkout", "-q", "main")
+	git("commit", "-q", "--allow-empty", "-m", "main moves on")
+	git("commit", "-q", "--allow-empty", "-m", "main again", "-m", "Actor: someone-on-main")
+	git("checkout", "-q", "cs/x")
+	git("merge", "-q", "--no-edit", "main")
+	if got := scanHand(t, r, st, nil); len(got) != 0 {
+		t.Fatalf("hand commits = %q, want none", got)
+	}
+	git("commit", "-q", "--allow-empty", "-m", "fix by hand")
+	plain := git("rev-parse", "HEAD")
+	want := []string{"hand-commit " + plain + " Rhiza Test"}
+	if got := scanHand(t, r, st, nil); !reflect.DeepEqual(got, want) {
+		t.Fatalf("hand commits = %q, want %q", got, want)
+	}
+}
+
+// A person rebasing the run's branch onto newer main puts main's commits on
+// its first-parent line: they are no hand commits, while the run's own
+// rebased commit stays the run's and a hand commit stays one.
+func TestHandCommitsRebasedBranch(t *testing.T) {
+	t.Parallel()
+	r, st, git := handCommitBranch(t)
+	leaves := []run.Leaf{{ID: "L1", Handle: "leaf-a"}}
+	git("commit", "-q", "--allow-empty", "-m", "build leaf", "-m", "Change: CS1\nActor: claude-code-b1\nLeaf: leaf-a")
+	git("commit", "-q", "--allow-empty", "-m", "fix by hand")
+	git("checkout", "-q", "main")
+	git("commit", "-q", "--allow-empty", "-m", "main moves on")
+	git("commit", "-q", "--allow-empty", "-m", "main again", "-m", "Actor: someone-on-main")
+	git("checkout", "-q", "cs/x")
+	git("rebase", "-q", "--keep-empty", "main")
+	plain := git("rev-parse", "HEAD")
+	want := []string{"hand-commit " + plain + " Rhiza Test"}
+	if got := scanHand(t, r, st, leaves); !reflect.DeepEqual(got, want) {
+		t.Fatalf("hand commits = %q, want %q", got, want)
+	}
+}

@@ -20,14 +20,17 @@ const StartsLockFile = "starts.lock"
 // Start is one queued run start: the arguments of the rhiza run start that
 // queued it, for the daemon's detached rhiza run start --foreground.
 type Start struct {
-	Change         string    `json:"change"`
-	Workflow       string    `json:"workflow,omitempty"`
-	Pick           string    `json:"pick,omitempty"`
-	PermissionMode string    `json:"permission_mode,omitempty"`
-	Agent          string    `json:"agent,omitempty"`
-	NoWait         bool      `json:"no_wait,omitempty"`
-	Autonomous     bool      `json:"autonomous,omitempty"`
-	At             time.Time `json:"at"`
+	Change         string `json:"change"`
+	Workflow       string `json:"workflow,omitempty"`
+	Pick           string `json:"pick,omitempty"`
+	PermissionMode string `json:"permission_mode,omitempty"`
+	Agent          string `json:"agent,omitempty"`
+	NoWait         bool   `json:"no_wait,omitempty"`
+	Autonomous     bool   `json:"autonomous,omitempty"`
+	// RetryBy is the actor of the person whose start retries the change
+	// set's failed run, journalled as a retry intervention on the new run.
+	RetryBy string    `json:"retry_by,omitempty"`
+	At      time.Time `json:"at"`
 }
 
 type startsDoc struct {

@@ -102,8 +102,10 @@ func (r *stepRunner) processActors(change string) ([]string, error) {
 // handCommits lists, oldest first, the commits on st's branch after
 // st.Base, along its first parents only (so the base branch's commits a
 // merge brings in are never scanned), that the run did not make. A commit
-// is the run's when it is a merge whose second parent is on the base branch
-// (origin/HEAD, origin/main or main), or a trailer names the run: Leaf: a
+// is the run's when it is on the base branch (origin/HEAD, origin/main or
+// main: a fast-forward to main or a rebase onto it puts main's commits on
+// the first-parent line), a merge whose second parent is on the base branch,
+// or a trailer names the run: Leaf: a
 // leaf of leaves (handle or ID), Review: the run, or Actor: the actor of one
 // of the run's sessions in sessions or one of own (the engine process's own
 // actor, see processActors). Each other commit is a hand commit,
@@ -159,7 +161,9 @@ func handCommits(git func(...string) (string, error), st run.State, leaves []run
 			continue
 		}
 		hash, parents, author, msg := f[0], strings.Fields(f[1]), f[2], f[3]
-		if len(parents) >= 2 && onBase(parents[1]) {
+		// A commit on the base branch is main's, on the first-parent line
+		// when the branch fast-forwarded to main or was rebased onto it.
+		if onBase(hash) || len(parents) >= 2 && onBase(parents[1]) {
 			continue
 		}
 		cs := parseTrailerLog(hash + "\x1f" + msg)
