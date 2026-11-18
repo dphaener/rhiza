@@ -1,0 +1,66 @@
+{
+  "actor": "01M7RFDZ132M3SHZ9P47FE86MS",
+  "after": [
+    "01M7RFPWXNJ17G5DR7SRV8C539"
+  ],
+  "at": "2026-11-18T23:26:32Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "recordTokenUse is documented as 'the later reading wins' with three writers (session done, AgentEnded, agent exit); the exit-time write from internal/api/session_run.go races the engine's ended entry by design, and the TypeTokens fold in internal/run/journal.go keys by session, not position. Injected delays reproduced the CI order 3 of 3.",
+          "statement": "Fix the plan-workflow-autonomous flake in its script, not by quarantine and not in Go: a run session's tokens journal entries may land in any order relative to its step's ended entry (the agent's exit-time token reading is written by its own process, and the journal fold is order-independent), so the script's journal-order assertion stops placing tokens entries and checks them separately",
+          "wording": "Fix the script's journal-order assertion; do not quarantine; no product change. Planner's ruling in an autonomous plan run, from the reproduction"
+        },
+        "handle": "plan-autonomous-tokens-order-free",
+        "id": "01M7RFQFV5W5XNSC7BY4NSE409",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RFQFV4PXDA50Y7RHTJPX32",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RFQFV4PXDA50Y7RHTJPX32",
+        "id": "01M7RFQFVT3HN41VRDPTNWXFHX",
+        "link": "01M7RFQFVT3HN41VRDPQVHH744",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RFPWW4DYR119D54RH9S6T1",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Every go test below runs inside systemd-run --user --scope --quiet -p MemoryMax=6G -p TasksMax=300 with -p 2 and RHIZA_*/SHIP_*/REX_* unset, one at a time. (1) go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous$' passes. (2) (failure case) With two temporary scratch edits, never committed: time.Sleep(1500 * time.Millisecond) right after r.log(\"step %s: %s\", step.Name, res.outcome) in internal/run/engine.go's agent-step end, and 'sleep 0.8' between the fake planner's 'rhiza session done' and its 'exit 0' in the script's bin/claude, the script at main f7313222e fails at the journal-order line with 'unblocked tokens tokens ended tokens entered' in the journal (as in PR #655's CI), and with the fix it passes on 3 runs; both edits reverted and the commit's Checks: block records both outcomes. (3) (failure case) The new tokens assertion fails when its step name is changed in scratch to one with no tokens entry (e.g. step nosuch), showing it is not vacuous; reverted. (4) Every other assertion of the script is unchanged, and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/plan-workflow-autonomous' (the -left and -unapplied scripts too) passes.",
+          "files": "cmd/rhiza/testdata/script/plan-workflow-autonomous.txtar",
+          "must_not": "Change any Go code (internal/ or cmd/rhiza/*.go), including token journaling order; quarantine, skip or add the script to any skip list; loosen any assertion other than the tokens placement in the order check (the rest of the order, from started to the first entered after ended, stays exact); edit other scripts; use busy loops, CPU stress or parallel stress runs to reproduce",
+          "statement": "In cmd/rhiza/testdata/script/plan-workflow-autonomous.txtar the journal-order check (the grep at line 66 and its stdout regex at line 68) leaves tokens entries out of the sequence it matches, so it reads 'started process entered session blocked asked arbiter arbitrated answered unblocked ended entered ' whatever position the tokens entries take, and a separate assertion requires at least one tokens entry with step interview in the run journal"
+        },
+        "handle": "plan-autonomous-journal-order-ignores-tokens",
+        "id": "01M7RFQFXB7SZSEMAB7Z85X2B3",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M7RFQFXB7SZSEMAB7X7X4M0W",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RFQFXB7SZSEMAB7X7X4M0W",
+        "id": "01M7RFQFY1475AZDTW5HPBJ9JN",
+        "link": "01M7RFQFY1475AZDTW5E75GYNS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RFQFV4PXDA50Y7RHTJPX32",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7RFDAZ53YZ3775D7SV70Z4G",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RFQFYRP9MD5TX0F6TK12NS",
+  "type": "ops",
+  "v": 1
+}
