@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QRESJPY2JNNMQYV8K7ZG57",
+  "after": [
+    "01M7QR29NK625H5XG955MF2A34"
+  ],
+  "at": "2026-11-18T16:41:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At c172b4b6c re-ran the Checks: block under the capped scope: go test -count=1 -trimpath -p 2 ./internal/run/... ./internal/guide exit 0; go test -count=1 -trimpath -p 2 ./internal/api -run 'Brief|Retry|Resume|Handback' exit 0; a scratch build's rhiza ship generate (0 changed) and rhiza render exit 0. With -v, TestBriefPreviousAttempt (section after the change set with failed step, outcome, failing command, output tail, findings as check, severity: text; a brief with no previous attempt equals the pre-change todayBrief byte for byte), TestJournalPreviousAttempt (never-retried run has none; only the latest round before the retry), TestJournalPreviousAttemptCheckRounds and TestRunRetryBriefPreviousAttempt (api: run fails at a review-check command step after a findings round, run.resume retry restarts the agent step whose visit-2 brief.md holds the refusal output and 'plan review, major: ...'; the visit-1 session started before the retry has no section, before and after the retry) all PASS. Diff read: only the leaf's files plus actor records; prepareKeyed (leaf/check/spawned sessions) passes nil, handback.md untouched, nothing writes .rhiza/log, retry restart unchanged; no TODOs."
+        },
+        "handle": "retry-brief-carries-failure-verified",
+        "id": "01M7QRH1KSRCXBYQRQHM9BHTX1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QRH1KSRCXBYQRQHGAGDWHW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QRH1KSRCXBYQRQHGAGDWHW",
+        "id": "01M7QRH1MS9W2JKAHZWD9NSG58",
+        "link": "01M7QRH1MS9W2JKAHZWD4NY3F6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QQ8DVDM757QQGNGSG05RM7",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMMPK3A9SRVA9Q63N5SR9",
+  "for": "01M7QQ39P5RCE2QFZ1FB0BC6SG",
+  "id": "01M7QRH1NQ4D1WT9DE79CH8NGW",
+  "type": "ops",
+  "v": 1
+}
