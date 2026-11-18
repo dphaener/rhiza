@@ -268,8 +268,11 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 	return out, holds, first
 }
 
-// daemonWatchdog is the poll's watchdog over this repo's runs.
-func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPolicy) error {
+// daemonWatchdog is the poll's watchdog over this repo's runs. resumed
+// holds the runs this poll continued: each counts as live, since its
+// detached run resume may not hold the run's lock yet, and a failed run
+// the poll just retried is not the watchdog's to judge (or retry again).
+func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPolicy, resumed []string) error {
 	common, err := gitCommonDir(ctx)
 	if err != nil {
 		return nil
@@ -357,7 +360,8 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		return watchdogMergeEnded(ctx, st, t, rs.TmpDir(st.ID))
 	}
 	d.log = watchdogJournalLog(d.log, state, ctx.Now)
-	mem, holds, err := watchdogPasses(pol, all, rs.Live, ctx.Now(), state.Watchdog, d)
+	live := func(id string) bool { return slices.Contains(resumed, id) || rs.Live(id) }
+	mem, holds, err := watchdogPasses(pol, all, live, ctx.Now(), state.Watchdog, d)
 	state.Watchdog, state.WatchdogHolds = mem, holds
 	return err
 }

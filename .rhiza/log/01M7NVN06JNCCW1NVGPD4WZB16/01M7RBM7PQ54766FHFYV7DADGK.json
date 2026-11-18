@@ -1,0 +1,54 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [
+    "01M7RBK5TWTVXVKDG295DTC2S7"
+  ],
+  "at": "2026-11-18T22:14:51Z",
+  "body": {
+    "drop": [
+      "01M7RBK5S5N3XKC7VDYG1M1Q4E"
+    ],
+    "ops": [
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 ./internal/api -run 'TestShipOpenPR|TestReviewJournaled|TestReviewDeclared' and go test -trimpath -p 2 ./internal/workflow pass, plus env -u'd of RHIZA_*/SHIP_*/REX_* go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/run-ship-change$': a run whose workflow declares no review (myteam-flow from docs/examples/byo/workflow.toml, a review-less workflow in a Go test) opens the PR with no review journaled; the declared-review test is true for ship-change (conduct checks), ship-change-classic and review (a review workflow step or checks step) and bugfix; (failure case) a run whose workflow declares a review with none journaled still exits non-zero naming why, and a call outside a run is still refused",
+          "files": "internal/api/ship_openpr.go, internal/api/ship_openpr_test.go, internal/workflow/workflow.go, internal/workflow/workflow_test.go, docs/reference (only if rhiza docs regenerates a changed description)",
+          "must_not": "Decide by a workflow's or step's name; drop the guard for a workflow that declares a review; add a workflow file key; change docs/examples/byo/*.toml",
+          "statement": "rhiza ship open-pr requires a journaled review only when the run's workflow declares one (a checks step, a workflow step running a review, or an agent step with [[check]] tables), judged by the workflow's declared shape and never a name, so a workflow with no review such as the BYO example myteam-flow opens its PR after its own steps pass"
+        },
+        "handle": "open-pr-review-when-declared",
+        "id": "01M7RBM7A9D06RDP95JENYXAJW",
+        "key": "zw",
+        "kind": "capability",
+        "node": "01M7RBM7A9D06RDP95JE3DJCXW",
+        "op": "node.create",
+        "parent": "01M5Z8XQC9YFR1TWS0QNGF2HZC"
+      },
+      {
+        "decision": null,
+        "from": "01M7RBM7A9D06RDP95JE3DJCXW",
+        "id": "01M7RBM7D0PRYF1KEJHWEQFZ1K",
+        "link": "01M7RBM7D0PRYF1KEJHS92W0HN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBJ05HVWR5VPAV1XQAZ8XQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB622RJPBYCSMFMQGDH35M",
+        "id": "01M7RBM7MD08Q58J393ANENGFS",
+        "link": "01M7RBM7MD08Q58J3939DN1NZA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBM7A9D06RDP95JE3DJCXW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RBM7PQ54766FHFYV7DADGK",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RC770FN85CT8R0YY8AH367",
+  "after": [
+    "01M7RBM7PQ54766FHFYV7DADGK"
+  ],
+  "at": "2026-11-18T22:26:41Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 90af1739a, under the capped scope: go test -trimpath -p 2 ./internal/api -run 'TestShipOpenPR|TestReviewJournaled|TestReviewDeclared' exit 0 (TestShipOpenPRReviewless: myteam-flow from docs/examples/byo/workflow.toml and a review-less workflow open the PR with no review; TestShipOpenPRRefusals: review run with none journaled refused naming why, call outside a run refused; TestReviewDeclared true for ship-change, ship-change-classic, review, bugfix, plan runs, missing/unparsable definition, false for myteam-flow and a review-less workflow named review); go test -trimpath -p 2 ./internal/workflow exit 0 (TestDeclaresReview by kinds/[[check]] tables/included workflows, never names; a skipped included checks step declares none); RHIZA_*/SHIP_*/REX_* unset go test ./cmd/rhiza -run 'TestScripts/(ship-open-pr.*|run-ship-change)$' exit 0; go vet exit 0; rhiza ship generate and rhiza render exit 0 with no changes. Diff read: DeclaresReview checks Kind==checks or Conducts(); guard kept for plan runs and every built-in/repo workflow with a review (docs, ship-rhiza included); no workflow file key added, docs/examples/byo untouched, no TODOs."
+        },
+        "handle": "open-pr-review-when-declared-verified",
+        "id": "01M7RC9X0VPY8EVKGZWNF348G1",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RC9X0VPY8EVKGZWHQPGT9Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RC9X0VPY8EVKGZWHQPGT9Y",
+        "id": "01M7RC9X1Y1X6DWB1T16VV944C",
+        "link": "01M7RC9X1Y1X6DWB1T169YFP7W",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBM7A9D06RDP95JE3DJCXW",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "id": "01M7RC9X3D7TNF30SX3HH37Z9R",
+  "type": "ops",
+  "v": 1
+}

@@ -324,3 +324,47 @@ func TestWatchdogRunawayNoHostTable(t *testing.T) {
 		t.Fatal("a real daemon has no process-table reader")
 	}
 }
+
+// TestWatchdogRunawayBYO catches a runaway session of the bring-your-own
+// example workflow's agent step work (myteam-flow): its tree, read from a
+// fake process table, holds 450 processes. It is nudged with the reading,
+// then a grace later the run is stopped and step work journalled stopped
+// with the runaway reason, never resumed.
+func TestWatchdogRunawayBYO(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	def := byoWorkflow(t)
+	f := newRunawayFixture(t)
+	f.d.step = func(st run.State) workflow.Step { return def.Steps[st.Current] }
+	f.report(t, "worker", true, t0)
+	f.tree("worker", 1000, 450, 2<<20)
+	js := []run.Journal{{ID: "W", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Workflow: "myteam-flow"}},
+		{Type: run.TypeEntered, At: t0, Step: "services", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "services", Visit: 1, Outcome: "pass"},
+		{Type: run.TypeEntered, At: t0, Step: "work", Visit: 1},
+		{Type: run.TypeSession, At: t0, Step: "work", Session: "worker"},
+	}}}
+	mem := runawayPoll(t, runawayPolicy, f, js, nil, t0.Add(time.Minute))
+	if !slices.Equal(f.sent, []string{"worker"}) || !strings.Contains(f.nudges[0], "450 processes") {
+		t.Fatalf("sent %v nudges %q, want worker nudged with its reading", f.sent, f.nudges)
+	}
+	runawayPoll(t, runawayPolicy, f, js, mem, t0.Add(7*time.Minute))
+	if !slices.Equal(f.stopped, []string{"W:worker"}) {
+		t.Fatalf("stopped %v, want W with worker's pane", f.stopped)
+	}
+	if len(f.journalled) != 1 {
+		t.Fatalf("journalled %q, want one stopped entry", f.journalled)
+	}
+	for _, want := range []string{"W|work|", "session worker", "450 processes", "over runawayProcs 400"} {
+		if !strings.Contains(f.journalled[0], want) {
+			t.Errorf("stopped entry %q does not name %q", f.journalled[0], want)
+		}
+	}
+	if len(f.resumed) != 0 {
+		t.Errorf("resumed %v: a runaway is never resumed", f.resumed)
+	}
+	if len(f.bugs) != 1 || !strings.HasPrefix(f.bugs[0], "watchdog runaway session at step work: run W") {
+		t.Errorf("bugs %q, want one runaway bug at step work", f.bugs)
+	}
+}

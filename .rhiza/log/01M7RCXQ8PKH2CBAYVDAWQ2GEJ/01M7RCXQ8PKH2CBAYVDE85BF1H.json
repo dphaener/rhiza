@@ -1,0 +1,15 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [],
+  "at": "2026-11-18T22:37:31Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ead76344 for session ead76344-f614-444a-a902-01a1f0ced978",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7RCXQ8PKH2CBAYVDAWQ2GEJ",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RCXQ8PKH2CBAYVDE85BF1H",
+  "type": "open",
+  "v": 1
+}

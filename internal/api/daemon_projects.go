@@ -484,7 +484,7 @@ func (p *daemonProj) poll(r DaemonRequest, resp *DaemonResponse, t daemonTurn, m
 	})
 	p.steps.run(p.name, "watchdog", func() {
 		if pol := watchdogPolicyOf(t.conf.rows); pol.Enabled {
-			if werr := daemonWatchdog(ctx, p.rs, state, pol); err == nil {
+			if werr := daemonWatchdog(ctx, p.rs, state, pol, resumed); err == nil {
 				err = werr
 			}
 		} else if nerr := daemonNudge(ctx, p.rs, state); err == nil {

@@ -66,7 +66,7 @@ var watchdogNames = []struct {
 	{"enabled", "true", validateChoice("true", "false"), false, "boolean", "Run the watchdog, which nudges and retries stalled agents and commands"},
 	{"agentNudge", "20m", validateDeployTimeout, false, "duration", "How long an agent may be silent before the watchdog nudges it"},
 	{"agentRetry", "40m", validateDeployTimeout, false, "duration", "How long an agent may be silent before the watchdog retries its step"},
-	{"commandLimit", "30m", validateDeployTimeout, false, "duration", "How long a command step may run before the watchdog stops it"},
+	{"commandLimit", "30m", validateDeployTimeout, false, "duration", "How long a command or gate step may run before the watchdog stops it, unless the step sets its own stall"},
 	{"waitLimit", "90m", validateDeployTimeout, false, "duration", "How long a wait step may wait before the watchdog gives up on it"},
 	{"retryBudget", strconv.Itoa(DefaultRetryBudget), validateWholeFrom(0), false, "whole number", "How many times the watchdog retries a stalled step before it gives up"},
 	{"failedRetries", strconv.Itoa(DefaultFailedRetries), validateWholeFrom(0), false, "whole number", "How many times the watchdog retries a run that failed for a real reason, or one it cannot judge, before it leaves the run to the inbox; 0 turns it off"},
@@ -176,14 +176,15 @@ const waitStallMargin = 10 * time.Minute
 
 // StallLimit is how long a step of kind may go without progress: its own
 // stall field when set, else the policy's limit for its kind (the agent
-// retry limit for an agent step; nudge is the earlier AgentNudge). A wait
+// retry limit for an agent step, the command limit for a command or gate
+// step; nudge is the earlier AgentNudge). A wait
 // step's limit is never under its own timeout plus waitStallMargin.
 func (p WatchdogPolicy) StallLimit(kind string, stall, timeout time.Duration) time.Duration {
 	if stall > 0 {
 		return stall
 	}
 	switch kind {
-	case "command":
+	case "command", "gate":
 		return p.CommandLimit
 	case "wait":
 		if timeout > 0 {

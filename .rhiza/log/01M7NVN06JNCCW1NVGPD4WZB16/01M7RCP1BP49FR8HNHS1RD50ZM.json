@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RCME1W4WR4YNVEKZQQDPHR",
+  "after": [
+    "01M7RC9X3D7TNF30SX3HH37Z9R"
+  ],
+  "at": "2026-11-18T22:33:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9b99a6597 (capped scope): env -u RHIZA_*/SHIP_*/REX_* go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/byo-workflow-daemon$' -count=1 -v: PASS (script ran). It asserts that daemon --once logs run start --workflow myteam-flow --pick rule ready.feature (not ship-change), that the run is succeeded with every step in order (gate visit 1 fail then work, gate visit 2 pass, signoff, push, wait-ci, merge, close-out, no visit 3), that intervention_count is 0, that the fake docker logs 'compose up -d --wait' then 'compose down' and the stop-services cleanup passes, that make.log shows 'lint fail' then the second gate's 'lint pass'/'test pass', and that handback.md names make lint. go test -run TestDocsExample: PASS. In a scratch worktree with the archived copy's handback_cap edited, TestDocsExampleBYOWorkflowCopies fails, naming byo-workflow-daemon.txtar (exit 1). The archived copy diffs byte-identical to docs/examples/byo/workflow.toml. docs/examples/byo and internal/ are untouched by the commit, and no non-test Go file names myteam. gofmt -l cmd/rhiza is clean. The processScripts entry has its reason."
+        },
+        "handle": "byo-workflow-daemon-e2e-verified",
+        "id": "01M7RCP18C7F2HZVYBPJ520XN9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RCP18C7F2HZVYBPHZHEV2G",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RCP18C7F2HZVYBPHZHEV2G",
+        "id": "01M7RCP1A6MV5D1HN8GSVY4TGY",
+        "link": "01M7RCP1A6MV5D1HN8GSBKHD0Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB622RJPBYCSMFMQGDH35M",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "id": "01M7RCP1BP49FR8HNHS1RD50ZM",
+  "type": "ops",
+  "v": 1
+}

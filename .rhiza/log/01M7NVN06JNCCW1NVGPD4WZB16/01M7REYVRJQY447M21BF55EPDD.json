@@ -1,0 +1,132 @@
+{
+  "actor": "01M7REHJY52BZCBFGQFP6WEF5F",
+  "after": [
+    "01M7RDXJB226RXD9T9XQV3YAV8"
+  ],
+  "at": "2026-11-18T23:13:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e288b6b36 with a scratch build: daemon --once picked myteam-flow by rule ready.feature; the run of docs/examples/byo/workflow.toml passed services, work, gate (lint fail handed back to work, then pass), signoff, push, wait-ci, merge, close-out; succeeded, intervention_count 0; docker compose up then down; cleanup stop-services pass. TestScripts/byo-workflow-daemon and TestDocsExample pass."
+        },
+        "handle": "byo-workflow-daemon-e2e-qa-1",
+        "id": "01M7REYTMAB3GBD03MYCXF5HZQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7REYTM9K51SEHNZCNFHAQYB",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7REYTM9K51SEHNZCNFHAQYB",
+        "id": "01M7REYTP9XVGSMP7MRDMFG7Y1",
+        "link": "01M7REYTP9XVGSMP7MRAD1V7TR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB622RJPBYCSMFMQGDH35M",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e288b6b36 with a scratch build: myteam-flow's push (ship open-pr) passed with no review journaled; the same workflow with a checks step added refused push with 'has no review journaled: its workflow declares a review'; ship open-pr outside a run refused. TestShipOpenPR|TestReviewJournaled|TestReviewDeclared, internal/workflow, run-ship-change and ship-open-pr scripts pass."
+        },
+        "handle": "open-pr-review-when-declared-qa-1",
+        "id": "01M7REYTTJ2QWQT5G5R3FF0898",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7REYTTJ2QWQT5G5R2RDMX75",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7REYTTJ2QWQT5G5R2RDMX75",
+        "id": "01M7REYV470TH5Y9JJ66J14MER",
+        "link": "01M7REYV470TH5Y9JJ655W5358",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBM7A9D06RDP95JE3DJCXW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e288b6b36 with a scratch build: close-out failing once; daemon --once queued a --retry continuation (failed retry 1 of 1), the next poll resumed it, the resume retried only close-out (visit 2, retried) and the run succeeded with intervention_count 0. With close-out always failing, the retry failed and the next poll left it to the inbox with no second retry. TestScripts/byo-workflow-retry passes."
+        },
+        "handle": "byo-failed-run-retry-qa-1",
+        "id": "01M7REYV8SDTPW4W85C4JV2JQ5",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7REYV8SDTPW4W85C0JYRKKG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7REYV8SDTPW4W85C0JYRKKG",
+        "id": "01M7REYVBVGP09RYQF30J1YEQ6",
+        "link": "01M7REYVBVGP09RYQF2WP2AWFK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB62N25AX10VV3VWNZH77K",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e288b6b36 with a scratch build: after a daemon poll at load 3.5, the myteam-flow run's work step was spawn-held (inbox shows it with the load-high detail, no agent started); a poll at load 1 released it and the run succeeded. Outside-message intervention (1) and own-message (0) shown by the passing byo-workflow-hold-intervention script."
+        },
+        "handle": "byo-spawn-hold-intervention-qa-1",
+        "id": "01M7REYVE5K3BXNFQVSX2R7DMY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7REYVE5K3BXNFQVST18AQ6T",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7REYVE5K3BXNFQVST18AQ6T",
+        "id": "01M7REYVGE08X74DMTJWGXNES3",
+        "link": "01M7REYVGE08X74DMTJTC90ST8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB62EDVAPFFYGG892NFT57",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at e288b6b36: TestStallLimit|TestWatchdog|TestRunaway pass incl. TestWatchdogStalledBYO and TestWatchdogRunawayBYO; scratch-built rhiza docs output is identical to docs/reference, commandLimit described as covering command and gate steps."
+        },
+        "handle": "byo-watchdog-stall-runaway-qa-1",
+        "id": "01M7REYVJW25ZRBA5B47402737",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7REYVJW25ZRBA5B46VEBEHW",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7REYVJW25ZRBA5B46VEBEHW",
+        "id": "01M7REYVPK7CHR929YX1MSEEBX",
+        "link": "01M7REYVPK7CHR929YX15KHCRC",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RB624W6QN05GB3VGZPNE90",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "id": "01M7REYVRJQY447M21BF55EPDD",
+  "type": "ops",
+  "v": 1
+}

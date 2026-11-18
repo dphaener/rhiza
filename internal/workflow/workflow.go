@@ -601,6 +601,21 @@ func (s Step) Check(name string) (Check, bool) {
 // not the run is autonomous.
 func (s Step) Conducts() bool { return s.Kind == KindAgent && len(s.Checks) > 0 }
 
+// DeclaresReview reports whether the workflow declares a review: a checks
+// step, or an agent step with [[check]] tables (a conductor's checks). A
+// workflow step that includes a workflow with one declares it too, since
+// a parsed definition holds the included workflow's steps; a skipped or
+// unreachable included step does not. It is judged by the steps' kinds and
+// shape, never by a workflow's or step's name.
+func (d *Definition) DeclaresReview() bool {
+	for _, s := range d.Steps {
+		if s.Kind == KindChecks || s.Conducts() {
+			return true
+		}
+	}
+	return false
+}
+
 // Cap is how many times a run may enter the step.
 func (s Step) Cap() int {
 	if s.MaxVisits > 0 {

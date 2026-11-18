@@ -1,0 +1,21 @@
+# byo-failed-run-retry-verified
+
+evidence · `01M7RDXJ86WFVDNTTM87FR5MRW` · actor [claude-code-84d5c23b](../actor/claude-code-84d5c23b.md)
+
+## result
+
+PASS
+
+## statement
+
+At 099b76b9b, re-ran every Checks: command (capped scope, RHIZA_*/SHIP_*/REX_* unset): go test ./cmd/rhiza -run 'TestScripts/byo-workflow-retry$|TestDocsExampleBYOWorkflowCopies' exit 0; the byo-workflow-*/run-continue-queue/daemon-continue-slot/watchdog-*/run-resume-retry*/run-ship-retry-*/daemon-* script set, all 47 PASS, exit 0; go test ./internal/api -run 'Watchdog|Daemon' exit 0; go vet ./internal/api ./cmd/rhiza exit 0; rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (the only diff is actor lines from untracked sessions). byo-workflow-retry.txtar asserts the acceptance: the fake bin/rhiza fails ship close-out once, the run fails at close-out, the first daemon --once queues a --retry continuation (failed retry 1 of 1), and the second logs a detached run resume --foreground --retry. Run by hand, that resume shows close-out visit 2 retried pass, no visit 2 of services/work/gate/signoff/push/wait-ci/merge, state succeeded and intervention_count 0. The failure case really runs, in a second project with watchdog.failedRetries 0: the failure is left to the inbox, no resume happens, state stays failed, and rhiza inbox (text and --json) lists the failed run at step close-out. The internal/api change is generic (the runs this poll resumed count as live in daemonWatchdog), with no workflow or step names. docs/examples/byo/*.toml are unchanged, and the processScripts entry has its reason.
+
+## Links
+
+### Out
+
+- verifies [byo-failed-run-retry](../capability/rhiza/workflows/workflow-runs/byo-failed-run-retry.md)
+
+## History
+
+- `01M7NVN06JNCCW1NVGPD4WZB16` A bring-your-own workflow (docs/examples/byo) runs end to end under the daemon in a test, with the spawn holds, stall and runaway detection, failure retry and intervention record applying to its steps as they do to the built-in workflows

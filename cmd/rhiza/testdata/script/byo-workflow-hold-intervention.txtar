@@ -1,0 +1,316 @@
+# Under the daemon, the bring-your-own example workflow myteam-flow
+# (docs/examples/byo/workflow.toml; the archive's copy below is held
+# byte-identical to it by TestDocsExampleBYOWorkflowCopies) has its work
+# step's session held by the daemon's load hold as a built-in step's is:
+# while the daemon's last poll holds new starts for load-high, the run
+# journals one spawn-held entry for work, rhiza inbox lists it and no
+# session starts; once a poll finds the load back under the limit the
+# work session starts. A rhiza session message from outside the run to
+# that session is journalled as a message intervention that rhiza run
+# status shows.
+#
+# (failure case) The work session sends itself a message first: a session
+# of the run's own, so nothing is journalled for it.
+#
+# Readings come from RHIZA_TEST_LOAD1/5. Nothing reaches docker, make,
+# GitHub, Rex or Claude Code: all are fakes on PATH. The fake rex runs the
+# tab's command in the background so the run's work step polls its session
+# (under the daemon it only answers). The fake claude is the team's skill:
+# it reports a tool call (working), sends its own message, writes its
+# session ID to $WORK/work.sid, then waits (bounded) for $WORK/release
+# before it builds, lands, renders and commits. The fake gh is
+# byo-workflow-daemon.txtar's.
+
+mkdir $HOME/.claude/projects/p
+mkdir $HOME/.claude/skills/myteam/skills/implement
+cp $WORK/SKILL.md $HOME/.claude/skills/myteam/skills/implement/SKILL.md
+chmod 755 bin/rex
+chmod 755 bin/claude
+chmod 755 bin/gh
+chmod 755 bin/make
+chmod 755 bin/docker
+env PATH=$WORK/bin:$PATH
+env RHIZA_TEST_DETACH_LOG=$WORK/detach.log
+exec git init -q --bare origin.git
+mkdir repo
+cd repo
+exec git init -q
+exec git remote add origin $WORK/origin.git
+exec rhiza init
+mkdir .rhiza/workflows
+cp $WORK/myteam-flow.toml .rhiza/workflows/myteam-flow.toml
+cp $WORK/dispatch.toml .rhiza/dispatch.toml
+
+# An accepted change set of one leaf, committed on main and pushed.
+exec rhiza change new 'Team flow' --title 'Team flow' --json
+stdout '"change_set": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+exec rhiza add capability first --field 'statement=Does first'
+exec rhiza propose
+exec rhiza accept --reason ok
+exec git add -A
+exec git commit -qm 'Start shipping'
+exec git push -q -u origin main
+
+# The 1-minute load is over rhiza.daemon.maxLoad: the daemon's poll holds
+# new starts and saves the hold.
+env RHIZA_TEST_LOAD1=3.5
+env RHIZA_TEST_LOAD5=3.5
+env FAKE_REX_DAEMON=1
+exec rhiza daemon --permission-mode manual --autonomous --once
+! stdout 'Started'
+stderr -count=1 'holding new runs: load-high'
+! exists $WORK/detach.log
+
+# The myteam-flow run, started by hand in the background: services come
+# up, then the work step's session is held, not started.
+env FAKE_REX_DAEMON=
+exec rhiza run start --foreground 01M5PWGEF85Y185JZ2ZGCNH40N --permission-mode manual --workflow myteam-flow --autonomous &
+exec sh -c 'i=0; while [ $i -lt 400 ]; do rhiza inbox --json | grep -q spawn-held && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza inbox --json
+stdout -count=1 '"kind": "spawn-held"'
+stdout '"change": "01M5PWGEF85Y185JZ2ZGCNH40N"'
+stdout '"step": "work"'
+stdout '"detail": "the step''s session waits: machine hold: load-high: 1-minute load 3.50 per core, over the limit of 3.00"'
+exec rhiza inbox
+stdout -count=1 '^[0-9a-f]+ spawn-held run [0-9A-Z]{26}, change set 01M5PWGEF85Y185JZ2ZGCNH40N, step work$'
+exec rhiza run status --json
+stdout '"workflow": "myteam-flow"'
+exec sh -c 'grep -h "\"type\":\"spawn-held\"" .git/rhiza/runs/*.jsonl'
+stdout -count=1 '"step":"work"'
+exec sh -c 'grep -ch "\"type\":\"session\"" .git/rhiza/runs/*.jsonl; true'
+stdout '^0$'
+! exists $WORK/claude.log
+cmp $WORK/docker.log $WORK/want.docker-up
+
+# The load drops: the next poll releases the hold, and the work session
+# starts.
+env RHIZA_TEST_LOAD1=1
+env RHIZA_TEST_LOAD5=2
+env FAKE_REX_DAEMON=1
+exec rhiza daemon --permission-mode manual --autonomous --once
+stderr -count=1 'released the load-high hold on new runs'
+env FAKE_REX_DAEMON=
+exec sh -c 'i=0; while [ $i -lt 400 ]; do [ -s "$WORK/work.sid" ] && exit 0; i=$((i+1)); sleep 0.025; done; exit 1'
+exec rhiza inbox --json
+! stdout 'spawn-held'
+exec cat $WORK/claude.log
+stdout -count=1 '^implement$'
+
+# (failure case) The work session's own message, sent before it wrote its
+# ID: sent, not journalled.
+exec cat $WORK/own.out
+stdout '^Sent session [0-9a-f-]{36} a message from '
+exec rhiza run status --json
+stdout '"intervention_count": 0'
+! stdout 'Own note'
+
+# A message from outside the run to the work session: one message
+# intervention naming the sender, the session and the text.
+exec sh -c 'rhiza session message $(cat "$WORK/work.sid") "Use the blue palette" --timeout 1s'
+stdout '^Sent session [0-9a-f-]{36} a message from test$'
+exec rhiza run status --json
+stdout '"intervention_count": 1'
+stdout '"actor": "test",\n\s+"at": "[^"]+",\n\s+"detail": "session [0-9a-f-]{36}: Use the blue palette",\n\s+"kind": "message",\n\s+"step": "work"'
+! stdout 'Own note'
+exec sh -c 'rhiza run status --json | grep -c "session $(cat "$WORK/work.sid"): Use the blue palette"'
+stdout '^1$'
+exec rhiza run status
+stdout '^- Interventions: 1 \(message 1\)$'
+
+# The skill finishes: the run ends succeeded, still with one intervention.
+exec sh -c 'echo > $WORK/release'
+wait
+stdout '^Run [0-9A-Z]{26} succeeded$'
+exec rhiza run status --json
+stdout '"state": "succeeded"'
+stdout '"intervention_count": 1'
+exec rhiza change show 01M5PWGEF85Y185JZ2ZGCNH40N
+stdout '^- State: landed'
+fold-ok
+
+-- myteam-flow.toml --
+# Bring your own agent, level 3: a workflow.
+#
+# The team's own steps, put together from the primitives: a hook that
+# starts the services, one agent step running the team's skill, a gate
+# of the team's own commands that hands a red back to that agent, the
+# owner's sign-off, the push, a CI wait, the merge and close-out, and a
+# cleanup hook that stops the services however the run ends.
+name = "myteam-flow"
+handback_cap = 3
+
+[env]
+TMPDIR = "{run_tmp}"
+CI = "true"
+
+[step.services]
+kind = "command"
+run = "docker compose up -d --wait"
+on.pass = "work"
+
+[step.work]
+kind = "agent"
+invoke = "/myteam:implement Change set {change} ({title}). Your brief is {brief} and the model around it is {slice}. Build it, land it with rhiza land and rhiza render, commit, then run rhiza session done."
+handback = "/myteam:implement The run handed change set {change} back: read {handback}, fix what it names, land and render again, then run rhiza session done."
+permission_mode = "acceptEdits"
+until = "true"
+until_when = "done"
+on.pass = "gate"
+
+[step.gate]
+kind = "gate"
+commands = ["rhiza check", "make lint", "make test"]
+on.pass = "signoff"
+on.fail = "handback:work"
+
+[step.signoff]
+kind = "signoff"
+on.pass = "push"
+on.changes = "handback:work"
+
+[step.push]
+kind = "command"
+run = "rhiza ship open-pr"
+on.pass = "wait-ci"
+on.fail = "handback:work"
+
+[step.wait-ci]
+kind = "wait"
+until = "rhiza ship check --settled --no-rebase"
+timeout = "1h"
+interval = "30s"
+max_interval = "2m"
+on.pass = "merge"
+on.timeout = "handback:work"
+
+[step.merge]
+kind = "command"
+run = "rhiza ship check --no-rebase && rhiza ship merge"
+on.pass = "close-out"
+on.fail = "handback:work"
+
+[step.close-out]
+kind = "command"
+run = "rhiza ship close-out"
+
+[[cleanup]]
+name = "stop-services"
+run = "docker compose down"
+-- dispatch.toml --
+[ready]
+feature = "myteam-flow"
+-- SKILL.md --
+---
+name: implement
+description: The team's own implement skill (a stub)
+---
+Build the change set.
+-- want.docker-up --
+compose up -d --wait
+-- bin/make --
+#!/bin/sh
+echo "$1 pass" >> "$WORK/make.log"
+exit 0
+-- bin/docker --
+#!/bin/sh
+echo "$*" >> "$WORK/docker.log"
+exit 0
+-- bin/claude --
+#!/bin/sh
+for a; do last=$a; done
+echo '{}' > "$HOME/.claude/projects/p/$RHIZA_SESSION.jsonl"
+case "$last" in
+"/myteam:implement Change set"*)
+	echo implement >> "$WORK/claude.log"
+	echo '{"session_id":"'"$RHIZA_SESSION"'","hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}' | rhiza session hook PostToolUse >> "$WORK/hook.out" || exit 1
+	rhiza session message "$RHIZA_SESSION" 'Own note' --timeout 1s > "$WORK/own.out" 2>&1 || exit 1
+	echo "$RHIZA_SESSION" > "$WORK/work.sid"
+	i=0
+	until [ -f "$WORK/release" ]; do
+		i=$((i + 1))
+		if [ $i -gt 800 ]; then
+			echo 'no release' >&2
+			exit 9
+		fi
+		sleep 0.025
+	done
+	echo first > first.txt
+	git add first.txt
+	git commit -q -m "build first" -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR
+Leaf: first" -- first.txt || exit 1
+	rhiza add evidence first-verified --field 'statement=first works' --field result=PASS --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza link first-verified verifies first --change "$RHIZA_CHANGE" >&2 || exit 1
+	rhiza land >&2 || exit 1
+	rhiza render >&2 || exit 1
+	git add -A -- .rhiza
+	git commit -q -m 'Land and render' -m "Change: $RHIZA_CHANGE
+Actor: $RHIZA_ACTOR" || exit 1
+	rhiza session done >&2 || exit 1
+	;;
+*)
+	echo "fake claude: unexpected prompt: $last" >> "$WORK/claude.log"
+	exit 1
+	;;
+esac
+exit 0
+-- bin/rex --
+#!/bin/sh
+if [ -n "$FAKE_REX_DAEMON" ]; then
+	echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+	exit 0
+fi
+dir=
+while [ $# -gt 0 ]; do
+	if [ "$1" = -c ]; then
+		dir=$2
+	fi
+	if [ "$1" = -- ]; then
+		shift
+		(cd "$dir" && exec "$@") >>"$WORK/tab.out" 2>&1 </dev/null &
+		break
+	fi
+	shift
+done
+echo '{"window_id":"window:w1","block_ids":["block:b1"]}'
+-- bin/gh --
+#!/bin/sh
+csid=${RHIZA_CHANGE:-$(grep -l '"type": "open"' .rhiza/log/*/*.json | tail -1 | xargs grep -ho '"change_set": "[0-9A-Z]*"' | tr -dc 0-9A-Z)}
+echo "$@" >> "$WORK/gh.log"
+o="$WORK/origin.git"
+case "$1 $2" in
+"pr view")
+	if [ "$3" = 7 ]; then
+		printf '{"mergeCommit":{"oid":"%s"},"state":"MERGED"}\n' "$(cat "$WORK/merge.sha")"
+		exit 0
+	fi
+	if ! head=$(git -C "$o" rev-parse --verify --quiet "refs/heads/$3"); then
+		echo "no pull requests found for branch \"$3\"" >&2
+		exit 1
+	fi
+	if [ ! -f "$WORK/pr.created" ]; then
+		printf '{"body":"Change set '"$csid"'","number":3,"url":"https://github.test/o/r/pull/3","state":"MERGED","headRefOid":"%s","statusCheckRollup":[]}\n' "$head"
+		exit 0
+	fi
+	printf '{"body":"Change set '"$csid"'","number":7,"url":"https://github.test/o/r/pull/7","state":"OPEN","headRefOid":"%s","statusCheckRollup":[{"name":"test","status":"COMPLETED","conclusion":"SUCCESS"}]}\n' "$head"
+	;;
+"pr create")
+	touch "$WORK/pr.created"
+	;;
+"pr edit")
+	;;
+"pr merge")
+	head=$(git -C "$o" rev-parse refs/heads/cs/team-flow)
+	if [ "$6" != "$head" ]; then
+		echo "head branch was modified" >&2
+		exit 1
+	fi
+	sha=$(git -C "$o" commit-tree "$head^{tree}" -p refs/heads/main -m 'Team flow (#7)')
+	git -C "$o" update-ref refs/heads/main "$sha"
+	echo "$sha" > "$WORK/merge.sha"
+	;;
+*)
+	echo "fake gh: unexpected: $*" >&2
+	exit 1
+	;;
+esac

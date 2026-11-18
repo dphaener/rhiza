@@ -1,9 +1,10 @@
 package api
 
-// This file holds ship.open-pr: after a change set's review is journaled,
-// it pushes the change set's branch and opens its pull request, titled by
-// the change set with the run's review summary as the body, or, when one
-// is already open, pushes and replaces that body. It records the PR in
+// This file holds ship.open-pr: after a change set's review is journaled
+// (when its run's workflow declares one), it pushes the change set's
+// branch and opens its pull request, titled by the change set with the
+// run's review summary as the body, or, when one is already open, pushes
+// and replaces that body. It records the PR in
 // the ship state file for the steps after it (ship.check, ship.land).
 
 import (
@@ -71,10 +72,25 @@ func reviewJournaled(st run.State) bool {
 	return false
 }
 
+// reviewDeclared reports whether the run st must have its review journaled
+// before ship open-pr: a plan run (its plan review records rounds), or a
+// run whose workflow declares a review by its steps' shape
+// (workflow.Definition.DeclaresReview). A run whose definition is missing or
+// does not parse is taken to declare one, so the guard never lapses on a
+// journal it cannot read.
+func reviewDeclared(st run.State) bool {
+	if st.IsPlanRun() || st.Definition == "" {
+		return true
+	}
+	def, err := st.ParseDefinition()
+	return err != nil || def.DeclaresReview()
+}
+
 // runShipOpenPR pushes the branch and opens or updates the pull request.
 // It runs in the change set's worktree (ctx.Root) on its branch, inside an
-// unfinished run whose review is journaled. A second call, after a new
-// commit, pushes it and edits the body; it never creates a second PR.
+// unfinished run whose review is journaled when its workflow declares one.
+// A second call, after a new commit, pushes it and edits the body; it never
+// creates a second PR.
 func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if err := refuseShipDryRun(ctx, "ship.open-pr"); err != nil {
 		return nil, err
@@ -83,8 +99,8 @@ func runShipOpenPR(ctx *Ctx, _ any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !reviewJournaled(rr.state) && len(rr.state.Rounds) == 0 {
-		return nil, Usagef("run %s has no review journaled: ship open-pr opens the pull request once the review has run", rr.id).
+	if reviewDeclared(rr.state) && !reviewJournaled(rr.state) && len(rr.state.Rounds) == 0 {
+		return nil, Usagef("run %s has no review journaled: its workflow declares a review, and ship open-pr opens the pull request once the review has run", rr.id).
 			WithNext("rhiza run status " + rr.id)
 	}
 	t, err := findShipTarget(ctx)

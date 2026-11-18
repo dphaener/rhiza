@@ -128,6 +128,15 @@ func TestWatchdogPolicy(t *testing.T) {
 			t.Fatalf("step b limit %v", got)
 		}
 	})
+	t.Run("gate step gets the command limit", func(t *testing.T) {
+		p := WatchdogPolicy{CommandLimit: 30 * time.Minute, AgentRetry: 40 * time.Minute}
+		if got := p.StallLimit("gate", 0, 0); got != p.CommandLimit {
+			t.Fatalf("gate limit %v, want command limit %v", got, p.CommandLimit)
+		}
+		if got := p.StallLimit("gate", 70*time.Minute, 0); got != 70*time.Minute {
+			t.Fatalf("gate's own stall limit %v", got)
+		}
+	})
 	t.Run("wait step outlives its timeout", func(t *testing.T) {
 		p := WatchdogPolicy{WaitLimit: 90 * time.Minute}
 		if got := p.StallLimit("wait", 0, 2*time.Hour); got != 2*time.Hour+waitStallMargin {

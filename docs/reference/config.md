@@ -140,7 +140,7 @@ How long an agent may be silent before the watchdog retries its step.
 
 ### `rhiza.daemon.watchdog.commandLimit`
 
-How long a command step may run before the watchdog stops it.
+How long a command or gate step may run before the watchdog stops it, unless the step sets its own stall.
 
 - Type: duration
 - Default: `30m`
@@ -346,7 +346,7 @@ How long an agent may be silent before the watchdog retries its step.
 
 ### `rhiza.project.watchdog.commandLimit`
 
-How long a command step may run before the watchdog stops it.
+How long a command or gate step may run before the watchdog stops it, unless the step sets its own stall.
 
 - Type: duration
 - Default: `30m`

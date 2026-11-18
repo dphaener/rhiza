@@ -1,0 +1,30 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [
+    "01M7RBEKMJM6MD9S70RZB47MH4"
+  ],
+  "at": "2026-11-18T22:12:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "session": "2debf9c0-0390-4456-af6c-01a1f0aeb98a",
+          "statement": "Builder of leaf byo-workflow-daemon-e2e found that the BYO example myteam-flow (docs/examples/byo/workflow.toml) cannot push: `rhiza ship open-pr` refuses a run with no journaled review (internal/api/ship_openpr.go:86, reviewJournaled), and myteam-flow declares no review (no checks step, no conduct checks). Question 01M7RBEHJ5 blocks the leaf. Which fix should this change set make?"
+        },
+        "handle": "question-2debf9c0-1",
+        "id": "01M7RBGT79TXH5BTXQZQ9N52C9",
+        "key": null,
+        "kind": "question",
+        "node": "01M7RBGT79TXH5BTXQZM4NHY4T",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RBGT7CHEN00X08YTBETKR3",
+  "type": "ops",
+  "v": 1
+}

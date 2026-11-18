@@ -1,0 +1,60 @@
+{
+  "actor": "01M7RAXF4AXFF04DXSR18ED4XH",
+  "after": [
+    "01M7RBJ08K0K1BZ4G19DJ452GS"
+  ],
+  "at": "2026-11-18T22:14:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "base": "01M5Z8XR9JBAHCDW9FXT0P6VXJ",
+        "handle": null,
+        "id": "01M7RBK5M9K3ZYKVWV573T2NX8",
+        "node": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "op": "node.update",
+        "set": {
+          "acceptance": "go test -trimpath -p 2 ./internal/api -run 'TestShipOpenPR|TestReviewJournaled|TestReviewDeclared' and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(ship-open-pr.*|run-ship-change)$' pass: with a fake gh and a real git remote, a first call pushes the branch and creates one PR titled by the change set with the summary's text as body, a second call after a new commit pushes and edits that PR's body without creating another, and rhiza ship check after it reads the recorded PR; a run whose workflow declares no review (no checks step, no workflow step running a review, no agent step with [[check]] tables; e.g. myteam-flow from docs/examples/byo/workflow.toml) opens the PR with no review journaled; (failure case) a call outside a run, or in a run whose workflow declares a review (ship-change, bugfix, ship-change-classic) with none journaled, exits non-zero naming why",
+          "files": "internal/api/ship_openpr.go, internal/api/ship_openpr_test.go, internal/workflow/workflow.go (a declared-review test on the workflow's shape), internal/workflow/workflow_test.go, docs/reference (regenerated with rhiza docs if a description changes)",
+          "must_not": "Decide by a workflow's or step's name; drop the guard for a workflow that declares a review; add a workflow file key"
+        },
+        "unset": []
+      },
+      {
+        "decision": null,
+        "from": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "id": "01M7RBK5P95HCZR9HACZAJVV40",
+        "link": "01M7RBK5P95HCZR9HACX1JMBM2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBJ05HVWR5VPAV1XQAZ8XQ",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RBJ05HVWR5VPAV1XQAZ8XQ",
+        "id": "01M7RBK5QHR90ZNESYAP012TFA",
+        "link": "01M7RBK5QHR90ZNESYAKF646Y4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RBEHJ5MRCPKYMZGTTA2XG3",
+        "type": "answers"
+      },
+      {
+        "decision": null,
+        "from": "01M7RB622RJPBYCSMFMQGDH35M",
+        "id": "01M7RBK5S5N3XKC7VDYG1M1Q4E",
+        "link": "01M7RBK5S5N3XKC7VDYE85BM3Z",
+        "note": "",
+        "op": "link.create",
+        "to": "01M5Z8XR9JBAHCDW9FXRCVJRFW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVN06JNCCW1NVGPD4WZB16",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RBK5TWTVXVKDG295DTC2S7",
+  "type": "ops",
+  "v": 1
+}
