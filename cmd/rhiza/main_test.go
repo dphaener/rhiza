@@ -681,6 +681,10 @@ const (
 	// testGoMaxProcs is the GOMAXPROCS of every Go process a script
 	// starts (setup).
 	testGoMaxProcs = "1"
+	// testGoMemLimit is the soft heap limit of every Go process a script
+	// starts, which runs with GOGC=off (setup): the collector runs only
+	// when a heap reaches it.
+	testGoMemLimit = "48MiB"
 )
 
 func setup(env *testscript.Env) error {
@@ -718,6 +722,16 @@ func setup(env *testscript.Env) error {
 	// its in-process rhiza lines, keep their GOMAXPROCS. A script that
 	// wants another figure sets GOMAXPROCS itself.
 	env.Setenv("GOMAXPROCS", testGoMaxProcs)
+	// Nor do they collect garbage until their heap reaches testGoMemLimit:
+	// a run-ship script's profile puts a sixth of its rhiza processes'
+	// samples in the collector (mark assists and scanning), and almost
+	// every one of them exits with a heap below the limit (36 MB peak RSS
+	// with the collector on), which still bounds a long-lived one (a
+	// foreground run, a daemon). A higher limit trades the collector's
+	// user time for the kernel's faulting in fresh heap pages. A script
+	// that wants the collector sets GOGC or GOMEMLIMIT itself.
+	env.Setenv("GOGC", "off")
+	env.Setenv("GOMEMLIMIT", testGoMemLimit)
 	// RHIZA_TEST_BIN is the directory holding the in-process rhiza, so a
 	// script can set PATH to it alone and hide the host's programs (e.g.
 	// systemctl) from rhiza.
