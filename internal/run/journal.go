@@ -478,6 +478,10 @@ type Entry struct {
 	// Retry marks a leaf-round entry the retry of the run gave, not a
 	// Decision.
 	Retry bool `json:"retry,omitempty"`
+	// Failed is a retried entry's failed step: the step the run failed at,
+	// which Step (the step it restarts at) differs from when the failed
+	// step sets retry_from or a wait feeds it.
+	Failed string `json:"failed,omitempty"`
 	// Handle is an asked entry's question node handle.
 	Handle string `json:"handle,omitempty"`
 	// Restated is a recommended entry's plain-language restatement of the
@@ -1288,7 +1292,10 @@ type StepDone struct {
 // Retry is one retried entry: the run had failed (Detail says why) and
 // was reopened at Step.
 type Retry struct {
-	Step   string
+	Step string
+	// Failed is the step the run failed at ("" in a journal written
+	// before retried entries named it).
+	Failed string
 	Detail string
 	At     time.Time
 }
@@ -1956,7 +1963,7 @@ func (j Journal) State() State {
 			// A retry reopens a finished run at e.Step with no open visit,
 			// so the engine enters it anew. Nothing before it is undone:
 			// the failed steps and the finished entry stay in the history.
-			st.Retries = append(st.Retries, Retry{Step: e.Step, Detail: e.Detail, At: e.At})
+			st.Retries = append(st.Retries, Retry{Step: e.Step, Failed: e.Failed, Detail: e.Detail, At: e.At})
 			st.clearBlock()
 			st.Ended = false
 			st.Result = ""
@@ -2143,7 +2150,8 @@ func (st State) FailedStep() (string, error) {
 }
 
 // RetryStep is the step a retry of a run that failed at failed reopens it
-// at in def: when failed is the on.pass target of a wait step (of several, the one
+// at in def: when failed sets retry_from, that step (the workflow names
+// where its retry restarts). Otherwise, when failed is the on.pass target of a wait step (of several, the one
 // the journal visited last), that wait step, so a check that failed because what it checks had not
 // settled waits for it again. Otherwise, when the last other step the
 // journal visited before the failed one (its own earlier visits, each
@@ -2152,6 +2160,11 @@ func (st State) FailedStep() (string, error) {
 // exactly one wait step, that wait: a triage of a red check re-waits for CI, then re-runs the check.
 // Else failed itself.
 func RetryStep(def *workflow.Definition, st State, failed string) string {
+	if s, ok := def.Steps[failed]; ok && s.RetryFrom != "" {
+		if _, ok := def.Steps[s.RetryFrom]; ok {
+			return s.RetryFrom
+		}
+	}
 	if w := waitFor(def, st, failed); w != "" {
 		return w
 	}

@@ -3055,3 +3055,33 @@ func TestRetryFrom(t *testing.T) {
 		})
 	}
 }
+
+// The built-in plan and plan-milestone retry a run that failed in their
+// review loop from the interview; no other step names a retry_from.
+func TestBuiltinPlanReviewLoopRetriesFromInterview(t *testing.T) {
+	loop := []string{"review", "has-findings", "critic", "fresh", "check", "revise", "rulings", "apply-rulings"}
+	for _, name := range []string{"plan", "plan-milestone"} {
+		src, ok := Builtin(name)
+		if !ok {
+			t.Fatalf("no built-in %s", name)
+		}
+		d, err := Parse(name, src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for step, s := range d.Steps {
+			want := ""
+			if slices.Contains(loop, step) {
+				want = "interview"
+			}
+			if s.RetryFrom != want {
+				t.Errorf("%s: step %s retry_from = %q, want %q", name, step, s.RetryFrom, want)
+			}
+		}
+		for _, step := range loop {
+			if _, ok := d.Steps[step]; !ok {
+				t.Errorf("%s: no review-loop step %s", name, step)
+			}
+		}
+	}
+}
