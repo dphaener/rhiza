@@ -1737,14 +1737,21 @@ type DaemonStatusRequest struct {
 // DaemonProjectStatus is one project's part of the root daemon's state: what
 // its poll saw and did there.
 type DaemonProjectStatus struct {
-	Project     string        `json:"project" desc:"The project's name in the root"`
-	Runs        []DaemonRun   `json:"runs" desc:"The project's live runs (running or interrupted) as of its last poll"`
-	Starting    int           `json:"starting,omitempty" desc:"The project's starts and resumes not journaled yet, each holding a slot, as of its last poll"`
-	LastStarted *DaemonEvent  `json:"last_started,omitempty" desc:"The run the daemon last started in the project; absent if none"`
-	LastResumed *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run the daemon last resumed in the project; absent if none"`
-	Skipped     []DaemonSkip  `json:"skipped" desc:"The project's accepted change sets not started at its last poll, each with its reason"`
-	Unjournaled []DaemonEvent `json:"unjournaled" desc:"The project's runs started that never wrote a journal"`
+	Project       string        `json:"project" desc:"The project's name in the root"`
+	Runs          []DaemonRun   `json:"runs" desc:"The project's live runs (running or interrupted) as of its last poll"`
+	Starting      int           `json:"starting,omitempty" desc:"The project's starts and resumes not journaled yet, each holding a slot, as of its last poll"`
+	LastStarted   *DaemonEvent  `json:"last_started,omitempty" desc:"The run the daemon last started in the project; absent if none"`
+	LastResumed   *DaemonEvent  `json:"last_resumed,omitempty" desc:"The run the daemon last resumed in the project; absent if none"`
+	Skipped       []DaemonSkip  `json:"skipped" desc:"The project's accepted change sets not started at its last poll, each with its reason"`
+	Unjournaled   []DaemonEvent `json:"unjournaled" desc:"The project's runs started that never wrote a journal"`
+	Finished      int           `json:"finished" desc:"How many of the project's runs have finished, read from its run journals"`
+	FinishedClean int           `json:"finished_clean" desc:"How many of the project's finished runs had zero interventions"`
+	CleanStreak   int           `json:"clean_streak" desc:"How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time"`
 }
+
+// daemonFinished counts a project's finished runs, read from its run
+// journals, by their interventions.
+type daemonFinished struct{ finished, clean, streak int }
 
 // DaemonRun is a run the daemon sees as live.
 type DaemonRun struct {
@@ -1752,6 +1759,8 @@ type DaemonRun struct {
 	Change string `json:"change" desc:"The change set it runs on"`
 	State  string `json:"state" desc:"running or interrupted"`
 	Queued int    `json:"queued,omitempty" desc:"For an interrupted run with a queued continuation that could start, its place in the project's continuation queue (1 for the oldest); absent otherwise"`
+	// InterventionCount is the run's journalled interventions.
+	InterventionCount int `json:"intervention_count" desc:"How many interventions the run's journal records: 0 when none, or when the journal cannot be read"`
 }
 
 // DaemonEvent is the last run the daemon started or resumed.
@@ -1833,6 +1842,9 @@ type DaemonStatusResponse struct {
 	Memory          *DaemonMemory         `json:"memory,omitempty" desc:"The last poll's available memory; absent before a poll recorded one"`
 	Hold            *DaemonMachineHold    `json:"hold,omitempty" desc:"Set while new runs are held for load or memory; absent when they are not"`
 	Projects        []DaemonProjectStatus `json:"projects" desc:"At the root or with --all: each registered, initialised project's runs, last start and resume, skips and unjournaled starts, in name order, the top-level runs, skipped and unjournaled then being empty; empty for one project"`
+	Finished        int                   `json:"finished" desc:"How many of the project's runs have finished, read from its run journals; 0 when status covers several projects, each part then counting its own"`
+	FinishedClean   int                   `json:"finished_clean" desc:"How many of the project's finished runs had zero interventions; 0 when status covers several projects"`
+	CleanStreak     int                   `json:"clean_streak" desc:"How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time; 0 when status covers several projects"`
 }
 
 // DaemonLoad is a poll's load reading.
@@ -1878,6 +1890,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintln(w, "Daemon not running")
 		fmt.Fprintf(w, "Mode: %s\n", r.Mode)
 		if r.Process == "" {
+			if len(r.Projects) == 0 {
+				humanFinished(w, "", daemonFinished{r.Finished, r.FinishedClean, r.CleanStreak})
+			}
 			return
 		}
 		fmt.Fprintf(w, "Last daemon: process %s, stopped %s\n", r.Process, r.Stopped)
@@ -1933,6 +1948,9 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 		fmt.Fprintln(w, runsAgainstCap(r.Live, r.Starting, r.Max, r.MaxRunsAuto))
 	}
 	humanPart(w, "", r.Runs, r.LastStarted, r.LastResumed, r.Skipped)
+	if len(r.Projects) == 0 {
+		humanFinished(w, "", daemonFinished{r.Finished, r.FinishedClean, r.CleanStreak})
+	}
 	for _, k := range r.SkippedProjects {
 		fmt.Fprintf(w, "Skipped project: %s: %s", k.Project, k.Reason)
 		if k.Detail != "" {
@@ -1944,8 +1962,14 @@ func (r DaemonStatusResponse) Human(w io.Writer) {
 	for _, p := range r.Projects {
 		fmt.Fprintf(w, "Project %s:\n", p.Project)
 		humanPart(w, "  ", p.Runs, p.LastStarted, p.LastResumed, p.Skipped)
+		humanFinished(w, "  ", daemonFinished{p.Finished, p.FinishedClean, p.CleanStreak})
 		humanUnjournaled(w, "  ", p.Unjournaled)
 	}
+}
+
+// humanFinished writes the finished runs' counts as one line behind indent.
+func humanFinished(w io.Writer, indent string, f daemonFinished) {
+	fmt.Fprintf(w, "%sFinished runs: %d, %d with no interventions, clean streak %d\n", indent, f.finished, f.clean, f.streak)
 }
 
 // daemonRunsHeld is the machine-wide runs holding a slot: the live runs (an
@@ -1979,6 +2003,12 @@ func humanPart(w io.Writer, indent string, runs []DaemonRun, started, resumed *D
 			state := d.State
 			if d.Queued > 0 {
 				state += fmt.Sprintf(", queued, waiting for a slot (place %d)", d.Queued)
+			}
+			if d.InterventionCount > 0 {
+				state += fmt.Sprintf(", %d intervention", d.InterventionCount)
+				if d.InterventionCount > 1 {
+					state += "s"
+				}
 			}
 			fmt.Fprintf(w, "%s- %s %s (change set %s)\n", indent, d.ID, state, d.Change)
 		}
@@ -2054,8 +2084,10 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		js := readDaemonJournals(sc.ctx, common)
+		part.Finished, part.FinishedClean, part.CleanStreak = js.finished()
 		if st, ok := daemon.ReadState(common); ok {
-			part.Runs = daemonStatusRuns(common, st.Runs)
+			part.Runs = daemonStatusRuns(common, js, st.Runs)
 			part.Starting = st.Starting
 			part.LastStarted, part.LastResumed = daemonEvent(st.LastStarted), daemonEvent(st.LastResumed)
 			for _, k := range st.Skips {
@@ -2070,24 +2102,79 @@ func runDaemonStatus(ctx *Ctx, req any) (any, error) {
 	resp.Runs, resp.LastStarted, resp.LastResumed = []DaemonRun{}, nil, nil
 	resp.Skipped, resp.Unjournaled = []DaemonSkip{}, []DaemonEvent{}
 	resp.Starting = 0
+	resp.Finished, resp.FinishedClean, resp.CleanStreak = 0, 0, 0
 	if merged {
 		resp.Projects = parts
 	} else if len(parts) == 1 {
 		p := parts[0]
 		resp.Starting = p.Starting
+		resp.Finished, resp.FinishedClean, resp.CleanStreak = p.Finished, p.FinishedClean, p.CleanStreak
 		resp.Runs, resp.LastStarted, resp.LastResumed, resp.Skipped, resp.Unjournaled = p.Runs, p.LastStarted, p.LastResumed, p.Skipped, p.Unjournaled
 	}
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	return resp, nil
 }
 
-// daemonStatusRuns are a project's live runs as status shows them: an
-// interrupted run with a queued continuation that could start carries its
-// place in the project's continuation queue.
-func daemonStatusRuns(common string, live []daemon.LiveRun) []DaemonRun {
+// daemonJournals are a project's run journals as status reads them: listed
+// once through the store's list cache and each folded once. A store that
+// cannot be listed reads as no runs.
+type daemonJournals struct {
+	rs     *run.Store
+	runs   []run.Journal
+	states map[string]run.State
+	err    error
+}
+
+// readDaemonJournals lists and folds the run journals under common.
+func readDaemonJournals(ctx *Ctx, common string) daemonJournals {
+	js := daemonJournals{rs: runStore(ctx, common), states: map[string]run.State{}}
+	js.rs.DiskCache = true
+	js.runs, js.err = js.rs.List()
+	for _, j := range js.runs {
+		js.states[j.ID] = j.State()
+	}
+	return js
+}
+
+// finished counts the finished runs, those with zero interventions, and
+// the streak of zero-intervention runs from the newest by finish time (the
+// later ID first on a tie).
+func (js daemonJournals) finished() (finished, clean, streak int) {
+	var f daemonFinished
+	var ended []run.State
+	for _, st := range js.states {
+		if !st.Ended {
+			continue
+		}
+		f.finished++
+		if len(st.Interventions) == 0 {
+			f.clean++
+		}
+		ended = append(ended, st)
+	}
+	slices.SortFunc(ended, func(a, b run.State) int {
+		if c := b.EndedAt.Compare(a.EndedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(b.ID, a.ID)
+	})
+	for _, st := range ended {
+		if len(st.Interventions) > 0 {
+			break
+		}
+		f.streak++
+	}
+	return f.finished, f.clean, f.streak
+}
+
+// daemonStatusRuns are a project's live runs as status shows them, each
+// with its journal's intervention count: an interrupted run with a queued
+// continuation that could start carries its place in the project's
+// continuation queue.
+func daemonStatusRuns(common string, js daemonJournals, live []daemon.LiveRun) []DaemonRun {
 	out := make([]DaemonRun, 0, len(live))
 	for _, d := range live {
-		out = append(out, DaemonRun{ID: d.ID, Change: d.Change, State: d.State})
+		out = append(out, DaemonRun{ID: d.ID, Change: d.Change, State: d.State, InterventionCount: len(js.states[d.ID].Interventions)})
 	}
 	if len(out) == 0 {
 		return out
@@ -2096,9 +2183,8 @@ func daemonStatusRuns(common string, live []daemon.LiveRun) []DaemonRun {
 	if err != nil || len(q) == 0 {
 		return out
 	}
-	rs := run.NewStore(run.Dir(common))
-	runs, err := rs.List()
-	if err != nil {
+	rs, runs := js.rs, js.runs
+	if js.err != nil {
 		return out
 	}
 	place := 0
@@ -2141,6 +2227,8 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 		_, resp.Running = daemon.Running(common)
 	}
 	st, ok := daemon.ReadState(common)
+	js := readDaemonJournals(ctx, common)
+	resp.Finished, resp.FinishedClean, resp.CleanStreak = js.finished()
 	if !ok || (resp.Running && st.Process != daemon.ReadHolder(common)) {
 		// A live daemon that has not written its state yet, or a lock
 		// naming no state: say what the lock says.
@@ -2170,7 +2258,7 @@ func daemonStatusHome(ctx *Ctx) (any, error) {
 		resp.Hooks = append(resp.Hooks, HookRow{Name: h.Name, Command: h.Command, Source: h.Source})
 	}
 	resp.machineStatus(st)
-	resp.Runs = daemonStatusRuns(common, st.Runs)
+	resp.Runs = daemonStatusRuns(common, js, st.Runs)
 	resp.Starting = st.Starting
 	resp.Live, resp.Starting = daemonRunsHeld(resp)
 	resp.LastStarted = daemonEvent(st.LastStarted)

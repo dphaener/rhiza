@@ -581,7 +581,10 @@ Arguments and flags:
 Output (`--json` fields):
 
 - `autonomous` (boolean): True when it starts each run with --autonomous
+- `clean_streak` (integer): How many of the project's finished runs in a row had zero interventions, counted from the newest by finish time; 0 when status covers several projects
 - `commit` (string): The git commit the daemon's binary was built from, as recorded when it started; absent when the build carried none
+- `finished` (integer): How many of the project's runs have finished, read from its run journals; 0 when status covers several projects, each part then counting its own
+- `finished_clean` (integer): How many of the project's finished runs had zero interventions; 0 when status covers several projects
 - `hold` (object): Set while new runs are held for load or memory; absent when they are not
 - `hooks` (array of object): The notify and event commands the daemon took at start, each with its source: daemon flag, git config or unset
 - `last_poll` (string): When it last polled, RFC 3339 UTC
