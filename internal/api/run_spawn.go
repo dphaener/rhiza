@@ -52,7 +52,7 @@ type RunSpawnRequest struct {
 	Brief  string `json:"brief" flag:"brief" desc:"A file holding the caller's brief for the child: its brief.md holds the contract section, then this file"`
 	Model  string `json:"model,omitempty" flag:"model" desc:"The model the child's agent starts on; default the agent's"`
 	Check  string `json:"check,omitempty" flag:"check" desc:"The review check the child works on, one the run's step declares (such as plan, code or qa), given to it as RHIZA_CHECK with RHIZA_CYCLE; default the <check> of a check-<check> role"`
-	NoWait bool   `json:"no_wait,omitempty" flag:"no-wait" desc:"Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end. Default: wait for the child and print its outcome"`
+	NoWait bool   `json:"no_wait,omitempty" flag:"no-wait" desc:"Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end; default wait for the child and print its outcome"`
 }
 
 // RunSpawnResponse is the child's outcome.

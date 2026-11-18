@@ -20183,7 +20183,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "no_wait": {
-            "description": "Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end. Default: wait for the child and print its outcome",
+            "description": "Return once the child is started and journaled, with its session and no outcome; the run's engine journals its end; default wait for the child and print its outcome",
             "type": "boolean"
           },
           "role": {
