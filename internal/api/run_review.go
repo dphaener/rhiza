@@ -41,7 +41,7 @@ func init() {
 		Input: &Input{
 			Summary: `{"findings":[{"node":...,"kind":...,"reason":...},...]}, maybe empty for a clean review; kind is one of ` + strings.Join(run.Kinds, ", ") +
 				`. With --check: {"findings":[{"severity":...,"leaf":...,"place":...,"reason":...},...]}, maybe empty; severity is one of ` + strings.Join(run.Severities, ", ") +
-				`, leaf optional. With --leaf: {"findings":[{"reason":...},...]}, at least one`,
+				`, leaf optional, plus "evidence":[{"leaf":...,"line":...},...]; in a conductor step each leaf needs a finding naming it or an evidence line. With --leaf: {"findings":[{"reason":...},...]}, at least one`,
 			Schema: findingsFileSchema,
 		},
 		Run: runRunFindings,
@@ -426,16 +426,24 @@ type checkFindingsFile struct {
 		Place    string `json:"place"`
 		Reason   string `json:"reason"`
 	} `json:"findings"`
+	Evidence []struct {
+		Leaf string `json:"leaf"`
+		Line string `json:"line"`
+	} `json:"evidence"`
 }
 
 // runCheckFindings is run.findings with --check in a review run: it checks
 // each finding, a known severity, a place, a reason and, when it names
-// one, a leaf of the run's change set. Only then does it journal them,
-// numbered f1, f2, ..., as check's next round, in the cycle RHIZA_CYCLE
-// names when it is one of the step's that runs check, else in the step's
-// latest cycle when that cycle runs check (its session may write before the
-// engine journals it), else the cycle of the check's latest session, else
-// the step's latest cycle. An empty list is a round with no findings.
+// one, a leaf of the run's change set, then each evidence line, a leaf of
+// the change set and a non-blank line. In a conductor step
+// (workflow.Step.Conducts) it then refuses a round that leaves a leaf of
+// the change set uncovered: no finding naming it and no evidence line for
+// it. Only then does it journal them, findings numbered f1, f2, ..., as
+// check's next round, in the cycle RHIZA_CYCLE names when it is one of the
+// step's that runs check, else in the step's latest cycle when that cycle
+// runs check (its session may write before the engine journals it), else
+// the cycle of the check's latest session, else the step's latest cycle.
+// An empty list is a round with no findings.
 func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file string) (any, error) {
 	const cmd = "run findings --check"
 	var f checkFindingsFile
@@ -445,8 +453,9 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 	if f.Findings == nil {
 		return nil, Usagef(`%s file: want {"findings":[...]}; a clean check is {"findings":[]}`, cmd).WithNext(runFindingsNext)
 	}
-	leafOf, closeLeaves := changeLeafResolver(ctx, rr)
-	defer closeLeaves()
+	leaves := &leafSet{ctx: ctx, rr: rr}
+	defer leaves.close()
+	leafOf := leaves.resolve
 	found := make([]run.Finding, 0, len(*f.Findings))
 	for i, in := range *f.Findings {
 		n := i + 1
@@ -472,6 +481,30 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		}
 		found = append(found, fd)
 	}
+	evidence := make([]run.Evidence, 0, len(f.Evidence))
+	for i, in := range f.Evidence {
+		n := i + 1
+		ref := strings.TrimSpace(in.Leaf)
+		if ref == "" {
+			return nil, Usagef("evidence %d: no leaf", n).WithNext(runFindingsNext)
+		}
+		if strings.TrimSpace(in.Line) == "" {
+			return nil, Usagef("evidence %d: no line: say what the check ran or read for leaf %s, with the result", n, ref).WithNext(runFindingsNext)
+		}
+		node, err := leafOf(ref)
+		if err != nil {
+			if e := AsError(err); e.Code != CodeUsage {
+				return nil, err
+			}
+			return nil, Usagef("evidence %d: leaf %q: %s", n, ref, AsError(err).Message).WithNext("rhiza change show " + rr.change.String())
+		}
+		evidence = append(evidence, run.Evidence{Leaf: node.ID.String(), LeafHandle: node.Handle, Line: in.Line})
+	}
+	if step.Conducts() {
+		if err := checkLeafCoverage(cmd, leaves, found, evidence); err != nil {
+			return nil, err
+		}
+	}
 	rr, unlock, err := rr.lockJournal(ctx)
 	if err != nil {
 		return nil, err
@@ -494,10 +527,108 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 		resp.Findings = append(resp.Findings, runFinding(fd, run.Round{}))
 	}
 	e := run.Entry{Type: run.TypeFindings, At: ctx.Now(), Step: step.Name, Check: check, Cycle: cycle, Findings: found}
+	if len(evidence) > 0 {
+		e.Evidence = evidence
+	}
 	if err := rr.journal(ctx, fmt.Sprintf("findings of check %s, round %d,", check, resp.Round), e); err != nil {
 		return nil, err
 	}
 	return resp, nil
+}
+
+// checkLeafCoverage refuses, as usage naming each one, a conductor step's
+// check round that leaves a leaf of the run's change set uncovered: no
+// finding names it and no evidence line is for it. A change set with no
+// leaves needs no evidence.
+func checkLeafCoverage(cmd string, leaves *leafSet, found []run.Finding, evidence []run.Evidence) error {
+	all, err := leaves.all()
+	if err != nil {
+		return err
+	}
+	covered := map[string]bool{}
+	for _, fd := range found {
+		covered[fd.Leaf] = true
+	}
+	for _, ev := range evidence {
+		covered[ev.Leaf] = true
+	}
+	var missing []string
+	for _, l := range all {
+		if !covered[l.ID.String()] {
+			missing = append(missing, l.Handle)
+		}
+	}
+	if len(missing) == 0 {
+		return nil
+	}
+	what := "leaf"
+	if len(missing) > 1 {
+		what = "leaves"
+	}
+	return Usagef(`%s: the round leaves %s %s uncovered: in a conductor step each leaf of the change set needs a finding naming it or an evidence line, {"evidence":[{"leaf":...,"line":...}]}, saying what the check ran or read for its acceptance, with the result; nothing was journaled`,
+		cmd, what, strings.Join(missing, ", ")).WithNext(runFindingsNext)
+}
+
+// leafSet is the leaves of rr's change set, read from the model on first
+// use. The model stays open until close.
+type leafSet struct {
+	ctx    *Ctx
+	rr     reviewRun
+	w      *workspace
+	m      Model
+	leaves []ChangeLeaf
+	loaded bool
+}
+
+// load reads the change set's leaves, once.
+func (s *leafSet) load() error {
+	if s.loaded {
+		return nil
+	}
+	if s.w == nil {
+		w, err := openCtxWorkspace(s.ctx)
+		if err != nil {
+			return err
+		}
+		s.w = w
+	}
+	c, ok := s.w.changeSet(s.rr.change)
+	if !ok {
+		return Errorf("run %s's change set %s is not in the log", s.rr.id, s.rr.change)
+	}
+	s.m = s.w.model(s.rr.change)
+	s.leaves, s.loaded = changeLeaves(s.m, c.Ops), true
+	return nil
+}
+
+// all is the change set's leaves, in tree order.
+func (s *leafSet) all() ([]ChangeLeaf, error) {
+	if err := s.load(); err != nil {
+		return nil, err
+	}
+	return s.leaves, nil
+}
+
+// resolve resolves ref among the leaves: a ref that names nothing, or a
+// node that is not one of the leaves, is usage.
+func (s *leafSet) resolve(ref string) (Node, error) {
+	if err := s.load(); err != nil {
+		return Node{}, err
+	}
+	node, err := s.m.Resolve(ref)
+	if err != nil {
+		return Node{}, Usagef("%s", AsError(err).Message)
+	}
+	if !slices.ContainsFunc(s.leaves, func(l ChangeLeaf) bool { return l.ID == node.ID }) {
+		return Node{}, Usagef("%s is not one of change set %s's leaves", ref, s.rr.change)
+	}
+	return node, nil
+}
+
+func (s *leafSet) close() {
+	if s.w != nil {
+		s.w.closeProjection()
+	}
 }
 
 // changeLeafResolver resolves a finding's leaf ref among the leaves of
@@ -505,38 +636,8 @@ func runCheckFindings(ctx *Ctx, rr reviewRun, step workflow.Step, check, file st
 // names nothing, or a node that is not one of the leaves, is usage. The
 // model stays open for later calls until the caller calls close.
 func changeLeafResolver(ctx *Ctx, rr reviewRun) (resolve func(ref string) (Node, error), close func()) {
-	var m Model
-	var leaves []ChangeLeaf
-	var w *workspace
-	close = func() {
-		if w != nil {
-			w.closeProjection()
-		}
-	}
-	return func(ref string) (Node, error) {
-		if leaves == nil {
-			var err error
-			if w == nil {
-				if w, err = openCtxWorkspace(ctx); err != nil {
-					return Node{}, err
-				}
-			}
-			c, ok := w.changeSet(rr.change)
-			if !ok {
-				return Node{}, Errorf("run %s's change set %s is not in the log", rr.id, rr.change)
-			}
-			m = w.model(rr.change)
-			leaves = changeLeaves(m, c.Ops)
-		}
-		node, err := m.Resolve(ref)
-		if err != nil {
-			return Node{}, Usagef("%s", AsError(err).Message)
-		}
-		if !slices.ContainsFunc(leaves, func(l ChangeLeaf) bool { return l.ID == node.ID }) {
-			return Node{}, Usagef("%s is not one of change set %s's leaves", ref, rr.change)
-		}
-		return node, nil
-	}, close
+	s := &leafSet{ctx: ctx, rr: rr}
+	return s.resolve, s.close
 }
 
 // envCheckCycle is the cycle the caller's RHIZA_CYCLE names, which the
@@ -837,6 +938,19 @@ func findingsFileSchema() map[string]any {
 						"reason":   map[string]any{"type": "string", "minLength": 1, "description": "Why"},
 					},
 					"required":             []string{"reason"},
+					"additionalProperties": false,
+				},
+			},
+			"evidence": map[string]any{
+				"type":        "array",
+				"description": "With --check, refused otherwise: evidence lines, what the check ran or read for each leaf's acceptance, with the result, one per acceptance point. In a conductor step (an agent step declaring checks) every leaf of the run's change set needs a finding naming it or an evidence line, or the round is refused and nothing is journaled; elsewhere evidence is optional",
+				"items": map[string]any{
+					"type": "object",
+					"properties": map[string]any{
+						"leaf": map[string]any{"type": "string", "minLength": 1, "description": "The leaf of the run's change set, by handle or ID"},
+						"line": map[string]any{"type": "string", "minLength": 1, "description": "What the check ran or read for that leaf's acceptance, with the result"},
+					},
+					"required":             []string{"leaf", "line"},
 					"additionalProperties": false,
 				},
 			},

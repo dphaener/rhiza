@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -306,14 +307,14 @@ func TestPlanReviewDowngradeByKind(t *testing.T) {
 // agent step that declares no checks refuses --check.
 func TestRunFindingsAgentStepChecks(t *testing.T) {
 	t.Parallel()
-	f, _, _ := runFixture(t, `{"permission_mode":"manual"}`)
+	f, sess, _ := runFixture(t, `{"permission_mode":"manual"}`)
 	t0 := time.Date(2026, 11, 13, 12, 0, 0, 0, time.UTC)
 	store := run.NewStore(run.Dir(f.common))
 	def := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
 		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"code\"\n[[step.conduct.check]]\nname = \"qa\"\n"
 	if err := store.Create("R12", run.Entry{
 		Type: run.TypeStarted, Step: "conduct", At: t0,
-		Started: &run.Started{Workflow: "conduct", Definition: def, Change: "01M76F4G0JQ649RR29M9QPFX68", Title: "Conduct"},
+		Started: &run.Started{Workflow: "conduct", Definition: def, Change: sess.Change, Title: "Conduct"},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -956,4 +957,141 @@ func TestReviewCheckQuestionInNodeChangeSet(t *testing.T) {
 			t.Errorf("asked %+v, want one naming no change set", st.Asked)
 		}
 	})
+}
+
+// In a conductor step run findings --check refuses, journaling nothing, a
+// round that leaves a leaf of the run's change set uncovered, naming each
+// uncovered leaf, and accepts one where each leaf has a finding naming it
+// or an evidence line, journaling the lines on the round. An evidence line
+// for a node that is not a leaf, or with a blank line, is usage. A change
+// set with no leaves, and a classic checks step, accept {"findings":[]}.
+func TestRunCheckFindingsLeafCoverage(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "leafcoverage")
+	a := newChange(t, f.ctx, `{"intent":"Plan A"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"parent","fields":["statement=Holds the leaves"]}`)
+	leafA := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-a","parent":"parent","fields":["statement=Does A"]}`).Nodes[0].String()
+	leafB := mustWrite(t, f.ctx, "add", `{"kind":"capability","handle":"leaf-b","parent":"parent","fields":["statement=Does B"]}`).Nodes[0].String()
+	empty := newChange(t, f.ctx, `{"intent":"No leaves"}`)
+	mustWrite(t, f.ctx, "add", `{"kind":"decision","handle":"a-ruling","fields":["statement=Rule it"]}`)
+
+	t0 := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
+	store := run.NewStore(run.Dir(f.common))
+	conduct := "[step.conduct]\nkind = \"agent\"\nprompt = \"go\"\n" +
+		"[[step.conduct.check]]\nname = \"plan\"\n[[step.conduct.check]]\nname = \"qa\"\n"
+	checks, ok := workflow.Builtin("review")
+	if !ok {
+		t.Fatal("no built-in review workflow")
+	}
+	runID := ""
+	start := func(rid, change, def, step string) {
+		t.Helper()
+		if err := store.Create(rid, run.Entry{
+			Type: run.TypeStarted, Step: step, At: t0,
+			Started: &run.Started{Workflow: "w", Definition: def, Change: change, Title: "Cover it"},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		if err := store.Append(rid, run.Entry{Type: run.TypeEntered, Step: step, Visit: 1, At: t0}); err != nil {
+			t.Fatal(err)
+		}
+		runID = rid
+	}
+	f.ctx.Getenv = func(k string) string {
+		if k == envRun {
+			return runID
+		}
+		return ""
+	}
+	entries := func() int {
+		t.Helper()
+		j, err := store.Read(runID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return len(j.Entries)
+	}
+	record := func(check, body string) error {
+		t.Helper()
+		f.ctx.Stdin = strings.NewReader(body)
+		_, err := callOp(t, f.ctx, "run.findings", `{"check":"`+check+`","file":"-"}`)
+		return err
+	}
+	refused := func(what, check, body string, want ...string) *Error {
+		t.Helper()
+		before := entries()
+		err := record(check, body)
+		e := AsError(err)
+		if e == nil || e.Code != CodeUsage {
+			t.Fatalf("%s: %v, want a usage error", what, err)
+		}
+		for _, w := range want {
+			if !strings.Contains(e.Message, w) {
+				t.Errorf("%s: %q missing from %q", what, w, e.Message)
+			}
+		}
+		if n := entries(); n != before {
+			t.Errorf("%s: journal grew from %d to %d entries", what, before, n)
+		}
+		return e
+	}
+
+	start("RC1", a.ChangeSet.String(), conduct, "conduct")
+	e := refused("a clean round with no evidence", "plan", `{"findings":[]}`, "leaf-a", "leaf-b", "uncovered")
+	if e.Next != runFindingsNext {
+		t.Errorf("next %q, want %q", e.Next, runFindingsNext)
+	}
+	refused("evidence for one leaf only", "plan", `{"findings":[],"evidence":[{"leaf":"leaf-a","line":"go test: ok"}]}`, "leaf-b")
+	refused("evidence on a node that is not a leaf", "plan",
+		`{"findings":[],"evidence":[{"leaf":"leaf-a","line":"ok"},{"leaf":"parent","line":"read it"},{"leaf":"leaf-b","line":"ok"}]}`,
+		"evidence 2", "parent", "not one of")
+	refused("evidence naming nothing", "plan", `{"findings":[],"evidence":[{"leaf":"no-such-leaf","line":"ok"}]}`, "evidence 1", "no-such-leaf")
+	refused("a blank evidence line", "plan", `{"findings":[],"evidence":[{"leaf":"leaf-a","line":"ok"},{"leaf":"leaf-b","line":"  "}]}`, "evidence 2", "no line")
+	refused("an evidence line with no leaf", "plan", `{"findings":[],"evidence":[{"leaf":"","line":"ok"}]}`, "evidence 1", "no leaf")
+	// A finding on a node outside the leaves covers nothing.
+	refused("a finding naming no leaf", "plan", `{"findings":[{"severity":"nit","place":"a.go:1","reason":"r"}],"evidence":[{"leaf":"leaf-a","line":"ok"}]}`, "leaf-b")
+	if st, _ := store.Read(runID); len(st.State().Checks) != 0 {
+		t.Fatalf("a refused round left check state %+v", st.State().Checks)
+	}
+
+	// One evidence line per leaf: journaled, with the lines on the round.
+	if err := record("plan", `{"findings":[],"evidence":[{"leaf":"leaf-a","line":"go test ./a: ok"},{"leaf":"leaf-b","line":"read b.go:3: holds"},{"leaf":"leaf-b","line":"go test ./b: ok"}]}`); err != nil {
+		t.Fatalf("a round with evidence per leaf: %v", err)
+	}
+	j, _ := store.Read(runID)
+	cs, ok := j.State().Check("conduct", "plan")
+	if !ok || len(cs.Rounds) != 1 {
+		t.Fatalf("plan check %+v, %v", cs, ok)
+	}
+	want := []run.Evidence{
+		{Leaf: leafA, LeafHandle: "leaf-a", Line: "go test ./a: ok"},
+		{Leaf: leafB, LeafHandle: "leaf-b", Line: "read b.go:3: holds"},
+		{Leaf: leafB, LeafHandle: "leaf-b", Line: "go test ./b: ok"},
+	}
+	if !reflect.DeepEqual(cs.Rounds[0].Evidence, want) {
+		t.Errorf("round evidence %+v, want %+v", cs.Rounds[0].Evidence, want)
+	}
+	if last := j.Entries[len(j.Entries)-1]; !reflect.DeepEqual(last.Evidence, want) {
+		t.Errorf("findings entry evidence %+v", last.Evidence)
+	}
+
+	// A finding naming leaf A and evidence for leaf B covers both.
+	if err := record("qa", `{"findings":[{"severity":"minor","leaf":"leaf-a","place":"a.go:1","reason":"r"}],"evidence":[{"leaf":"leaf-b","line":"ran it: ok"}]}`); err != nil {
+		t.Fatalf("a finding on A and evidence on B: %v", err)
+	}
+
+	// A change set with no leaves needs no evidence.
+	start("RC2", empty.ChangeSet.String(), conduct, "conduct")
+	if err := record("plan", `{"findings":[]}`); err != nil {
+		t.Fatalf("a change set with no leaves: %v", err)
+	}
+
+	// A classic checks step still accepts a clean round with no evidence.
+	start("RC3", a.ChangeSet.String(), string(checks), "review")
+	if err := record("compliance", `{"findings":[]}`); err != nil {
+		t.Fatalf("a classic checks step: %v", err)
+	}
+	if j, _ := store.Read(runID); len(j.Entries[len(j.Entries)-1].Evidence) != 0 {
+		t.Errorf("classic round journaled evidence %+v", j.Entries[len(j.Entries)-1].Evidence)
+	}
 }

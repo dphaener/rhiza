@@ -979,13 +979,14 @@ func TestFoldCheckRounds(t *testing.T) {
 	fa := Finding{ID: "f1", Check: "alpha", Severity: SeverityMajor, Leaf: "L1", LeafHandle: "leaf-a", Place: "a.go:3", Reason: "off by one"}
 	fb := Finding{ID: "f1", Check: "beta", Severity: SeverityNit, Place: "README.md:1", Reason: "typo"}
 	pf := Finding{ID: "f1", Node: "N1", Kind: KindContradiction, Reason: "says both"}
+	ev := []Evidence{{Leaf: "L2", LeafHandle: "leaf-b", Line: "go test ./b: ok"}}
 	es := []Entry{
 		startedEntry("review", 0),
 		{Type: TypeEntered, At: at(1), Step: "review"},
 		{Type: TypeCheckCycle, At: at(1), Step: "review", Cycle: 1, Checks: []string{"alpha", "beta"}},
 		{Type: TypeCheckSession, At: at(2), Step: "review", Check: "alpha", Role: "check", Cycle: 1, Session: "s1"},
 		{Type: TypeCheckSession, At: at(2), Step: "review", Check: "beta", Role: "check", Cycle: 1, Session: "s2"},
-		{Type: TypeFindings, At: at(3), Step: "review", Check: "alpha", Cycle: 1, Findings: []Finding{fa}},
+		{Type: TypeFindings, At: at(3), Step: "review", Check: "alpha", Cycle: 1, Findings: []Finding{fa}, Evidence: ev},
 		{Type: TypeFindings, At: at(4), Step: "review", Check: "beta", Findings: []Finding{fb}},
 		{Type: TypeVerdict, At: at(5), Step: "review", Check: "alpha", Verdicts: []Verdict{{Finding: "f1", Verdict: Dropped, Reason: "fine"}}},
 		{Type: TypeFindings, At: at(6), Findings: []Finding{pf}},
@@ -1003,12 +1004,18 @@ func TestFoldCheckRounds(t *testing.T) {
 	if !ok || ra.Number != 1 || ra.Cycle != 1 || !ra.At.Equal(at(3)) || !reflect.DeepEqual(ra.Findings, []Finding{fa}) {
 		t.Fatalf("alpha round = %+v, %v", ra, ok)
 	}
+	if !reflect.DeepEqual(ra.Evidence, ev) {
+		t.Fatalf("alpha round evidence = %+v, want %+v", ra.Evidence, ev)
+	}
 	if v, ok := ra.Verdict("f1"); !ok || v.Verdict != Dropped {
 		t.Fatalf("alpha verdict = %+v, %v", v, ok)
 	}
 	b, _ := st.Check("review", "beta")
 	if len(b.Rounds) != 2 || b.Rounds[0].Cycle != 1 || b.Rounds[1].Number != 2 || len(b.Rounds[1].Findings) != 0 || len(b.Rounds[0].Verdicts) != 0 {
 		t.Fatalf("beta rounds = %+v", b.Rounds)
+	}
+	if b.Rounds[0].Evidence != nil || b.Rounds[1].Evidence != nil {
+		t.Fatalf("beta rounds without evidence = %+v", b.Rounds)
 	}
 	if rd, ok := b.RoundFor(1); !ok || rd.Number != 2 {
 		t.Fatalf("beta RoundFor(1) = %+v, %v", rd, ok)
@@ -1025,7 +1032,7 @@ func TestFoldCheckRounds(t *testing.T) {
 	}
 	want := `{"type":"findings","at":"2026-10-26T12:03:00Z","step":"review","findings":[` +
 		`{"id":"f1","check":"alpha","severity":"major","leaf":"L1","leaf_handle":"leaf-a","place":"a.go:3","reason":"off by one"}],` +
-		`"check":"alpha","cycle":1}`
+		`"evidence":[{"leaf":"L2","leaf_handle":"leaf-b","line":"go test ./b: ok"}],"check":"alpha","cycle":1}`
 	if string(raw) != want {
 		t.Fatalf("findings entry = %s\nwant %s", raw, want)
 	}

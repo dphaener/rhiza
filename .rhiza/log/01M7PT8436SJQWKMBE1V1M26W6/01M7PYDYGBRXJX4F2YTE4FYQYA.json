@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PYBWQN0PJV3TZG10HXX19K",
+  "after": [
+    "01M7PY5B21F15WZNP8B0VSD7RZ"
+  ],
+  "at": "2026-11-18T09:04:59Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 9aaad711f: go test -count=1 -trimpath -p 2 ./internal/api -run 'RunStatus|CheckRound' exit 0 (new TestRunStatusCheckRoundEvidence passes: two evidence lines with handles in JSON and human output under the round, no evidence key on an evidence-less round, findings round printed as before, retired leaf-c shown with ID, empty leaf_handle, bare ID in human text, status succeeds); go test ./cmd/rhiza -run TestScripts/describe-golden$ exit 0 (golden carries the evidence schema); in a clean detached worktree make self-check exit 0 and rhiza ship generate 0 files changed. Diff read: only RunCheckRound/RunEvidence, evidenceHandles and the Human round loop change (findings/verdicts/plan-review output unchanged, the no-findings continue becomes an equivalent else); run findings validation untouched; no TODOs."
+        },
+        "handle": "check-round-evidence-status-verified",
+        "id": "01M7PYDYE80VVRMPY3WFDZPBSR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PYDYE80VVRMPY3WETG7W82",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PYDYE80VVRMPY3WETG7W82",
+        "id": "01M7PYDYFCCDJNYW2PHHSVXMF4",
+        "link": "01M7PYDYFCCDJNYW2PHGJ1F9W7",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M7PX3TTY1A00MGBNXKT6V0WQ",
+  "id": "01M7PYDYGBRXJX4F2YTE4FYQYA",
+  "type": "ops",
+  "v": 1
+}

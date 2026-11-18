@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PY469ZPAWDJ16WEN1BA90N",
+  "after": [
+    "01M7PY159HDA62Z09Q4QVAGHHZ"
+  ],
+  "at": "2026-11-18T09:00:17Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 4d0d6e575, go test -trimpath -p 2 -count=1 ./cmd/rhiza -run 'TestScripts/ship-change-one-ci$' (RHIZA_/SHIP_/REX_ env unset) exits 0; rhiza ship generate exits 0. The diff touches only ship-change-one-ci.txtar (plus the builder's log/actor records): the fake claude records plan, code and qa rounds each with an evidence line for leaf first, and first records a clean plan round with no evidence, which must fail; the script greps its stderr for 'leaves leaf first uncovered' and 'nothing was journaled' (matching internal/api/run_review.go:568) and asserts the round was not accepted. No Go code changed, no existing assertion dropped, no classic-check or plan-review script touched."
+        },
+        "handle": "conduct-fixtures-cover-leaves-verified",
+        "id": "01M7PY5AYS38M65YJHDG58BNCX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PY5AYREWX251QMMTX5130Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PY5AYREWX251QMMTX5130Z",
+        "id": "01M7PY5B06KK0CR6MD4D9H412T",
+        "link": "01M7PY5B06KK0CR6MD4A8YT8EE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M7PX3TTY1A00MGBNXKT6V0WQ",
+  "id": "01M7PY5B21F15WZNP8B0VSD7RZ",
+  "type": "ops",
+  "v": 1
+}

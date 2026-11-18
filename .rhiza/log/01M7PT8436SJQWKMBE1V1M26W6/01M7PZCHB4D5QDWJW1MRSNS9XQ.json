@@ -1,0 +1,109 @@
+{
+  "actor": "01M7PZ5HKZ87WXXPY0B0YGRT0F",
+  "after": [
+    "01M7PYS3BBEXNC79V0JHYC1C4C"
+  ],
+  "at": "2026-11-18T09:21:42Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1bfa91e9d, scratch build (go build -trimpath) driving a real ship-change conduct step in a scratch repo with a fake claude, 4 leaves (par,a,b,c): {\"findings\":[]} refused exit 2 naming 'leaves par, a, b, c', 'nothing was journaled' (round count unchanged); finding on a + evidence for b only refused naming 'par, c'; finding with no leaf + b,c evidence refused naming a; unknown leaf zzz, blank line, missing leaf, extra field, evidence as object all usage exit 2; evidence:null treated as none and refused; finding a + evidence b,c,par accepted; leaf by full ID, multiple lines per leaf and stdin '-' accepted; evidence journaled on the round. go test ./internal/api -run 'RunStatus|CheckRound|RunFindings|Coverage|Evidence' and ./internal/run/... pass."
+        },
+        "handle": "check-round-leaf-coverage-qa-1",
+        "id": "01M7PZCGZRA5Q1K6K5GBNTZZ5D",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PZCGZQ71RB0N848T4M5Q3C",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PZCGZQ71RB0N848T4M5Q3C",
+        "id": "01M7PZCH1BJ05GRH67N3DA2JAZ",
+        "link": "01M7PZCH1BJ05GRH67N0TT2H3A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCNE0M4REEQY57T5PW8Z",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1bfa91e9d: go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/(ship-change-one-ci|describe-golden)$' passes (ship-change-one-ci 3.7s); script's fake conductor records the uncovered plan round first (asserted refused naming leaf first, nothing journaled) then plan/code/qa rounds each with an evidence line for first. Mirrored the same flow by hand in a scratch conduct run: identical refusal text."
+        },
+        "handle": "conduct-fixtures-cover-leaves-qa-1",
+        "id": "01M7PZCH2RPF7N8A7792MKY01J",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PZCH2RPF7N8A778YW2ZA5K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PZCH2RPF7N8A778YW2ZA5K",
+        "id": "01M7PZCH3YEX87K5R9YKYYVNE8",
+        "link": "01M7PZCH3YEX87K5R9YJEDTCZ3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCV4EMFSDRTDC7CF0Z6C",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1bfa91e9d in a scratch conduct run: rhiza run status --json gives each round an evidence array of {leaf, leaf_handle, line} with handles; human output lists '- evidence for <handle>: <line>' under the round, after the findings line which is unchanged ('1 finding, 0 confirmed' / '- f1 minor at x:1 on a: r'); a multi-line evidence line is folded to one line. After retiring leaf b, status still exits 0, JSON keeps b's ID with leaf_handle \"\" and human text prints the bare ID. go test ./internal/api -run RunStatus passes (evidence-less round has no evidence key)."
+        },
+        "handle": "check-round-evidence-status-qa-1",
+        "id": "01M7PZCH55NGQGE5YAS5CBVEDN",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PZCH55NGQGE5YAS3N42Y18",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PZCH55NGQGE5YAS3N42Y18",
+        "id": "01M7PZCH6JEVRP3MMW08S61A7J",
+        "link": "01M7PZCH6JEVRP3MMW080JM85B",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCQDJX30S30ZZT05GDPJ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 1bfa91e9d: scratch-built rhiza guide check-plan/check-code/check-qa each show the findings example with an \"evidence\":[{leaf,line}] list, say 'one evidence line per acceptance point of each leaf' and that an uncovered round 'is refused and not recorded'; check-qa still carries the rhiza apply Evidence node example; check-compliance/quality/model unchanged (no evidence text). go test -trimpath -p 2 ./internal/guide/... passes."
+        },
+        "handle": "check-guides-evidence-lines-qa-1",
+        "id": "01M7PZCH8BFX84WTD8CQ3FJGZV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PZCH8BFX84WTD8CKS97FG6",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PZCH8BFX84WTD8CKS97FG6",
+        "id": "01M7PZCH9K9A7JRRNS68Y2NKQY",
+        "link": "01M7PZCH9K9A7JRRNS68NATKB3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M7PX3TTY1A00MGBNXKT6V0WQ",
+  "id": "01M7PZCHB4D5QDWJW1MRSNS9XQ",
+  "type": "ops",
+  "v": 1
+}

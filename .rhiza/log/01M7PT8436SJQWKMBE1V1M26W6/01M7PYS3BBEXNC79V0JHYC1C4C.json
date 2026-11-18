@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PYQYCM3FQS4QF393728X1X",
+  "after": [
+    "01M7PYDYGBRXJX4F2YTE4FYQYA"
+  ],
+  "at": "2026-11-18T09:11:05Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1bfa91e9d: go test -trimpath -p 2 -count=1 ./internal/guide/... exit 0 (incl. TestCaps); rhiza ship generate exit 0 (0 files changed); rhiza render exit 0 (only untracked session actor lines in index.md). Diff read: check-plan/check-code/check-qa show {\"findings\":[...],\"evidence\":[{\"leaf\",\"line\"}]}, say one evidence line per acceptance point of each leaf, and that an uncovered leaf is refused in a conductor run; new 'coverage' assertions in check_plan/code/qa_test.go cover each; check_qa_test still asserts the rhiza apply Evidence example and check-qa.md keeps it. check-compliance/quality/model and Go code outside internal/guide tests untouched; no TODOs."
+        },
+        "handle": "check-guides-evidence-lines-verified",
+        "id": "01M7PYS34K5YZ094WHE0KZNGAS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PYS34K5YZ094WHE011P8M9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PYS34K5YZ094WHE011P8M9",
+        "id": "01M7PYS37R0S06SD6Y5C0RQZNS",
+        "link": "01M7PYS37R0S06SD6Y59YD9NRZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7PTHCYQHPSDSYPH4FEZ98AS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7PT8436SJQWKMBE1V1M26W6",
+  "for": "01M7PX3TTY1A00MGBNXKT6V0WQ",
+  "id": "01M7PYS3BBEXNC79V0JHYC1C4C",
+  "type": "ops",
+  "v": 1
+}

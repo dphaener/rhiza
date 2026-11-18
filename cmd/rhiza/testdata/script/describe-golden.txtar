@@ -3774,6 +3774,33 @@ cmp stdout describe.golden.json
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
                           },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
                             "items": {
@@ -5758,6 +5785,33 @@ cmp stdout describe.golden.json
                           "cycle": {
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
+                          },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
                           },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
@@ -9833,6 +9887,33 @@ cmp stdout describe.golden.json
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
                           },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
                             "items": {
@@ -11654,6 +11735,33 @@ cmp stdout describe.golden.json
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
                           },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
                             "items": {
@@ -13439,6 +13547,30 @@ cmp stdout describe.golden.json
       "input": {
         "additionalProperties": false,
         "properties": {
+          "evidence": {
+            "description": "With --check, refused otherwise: evidence lines, what the check ran or read for each leaf's acceptance, with the result, one per acceptance point. In a conductor step (an agent step declaring checks) every leaf of the run's change set needs a finding naming it or an evidence line, or the round is refused and nothing is journaled; elsewhere evidence is optional",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "leaf": {
+                  "description": "The leaf of the run's change set, by handle or ID",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "line": {
+                  "description": "What the check ran or read for that leaf's acceptance, with the result",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "leaf",
+                "line"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "findings": {
             "description": "The findings, in order; empty for a clean review or check, but at least one with --leaf. They are numbered f1, f2, ... in the round, or in the leaf's attempt",
             "items": {
@@ -14634,6 +14766,33 @@ cmp stdout describe.golden.json
                           "cycle": {
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
+                          },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
                           },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
@@ -16499,6 +16658,33 @@ cmp stdout describe.golden.json
                           "cycle": {
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
+                          },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
                           },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
@@ -18472,6 +18658,33 @@ cmp stdout describe.golden.json
                           "cycle": {
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
+                          },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
                           },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
@@ -20474,6 +20687,33 @@ cmp stdout describe.golden.json
                             "description": "The check's cycle it was recorded in, from 1",
                             "type": "integer"
                           },
+                          "evidence": {
+                            "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "leaf": {
+                                  "description": "The leaf node it is for, by ID",
+                                  "type": "string"
+                                },
+                                "leaf_handle": {
+                                  "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                                  "type": "string"
+                                },
+                                "line": {
+                                  "description": "What the check ran or read for the leaf's acceptance, with the result",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "leaf",
+                                "leaf_handle",
+                                "line"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "findings": {
                             "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
                             "items": {
@@ -22183,6 +22423,33 @@ cmp stdout describe.golden.json
                       "cycle": {
                         "description": "The check's cycle it was recorded in, from 1",
                         "type": "integer"
+                      },
+                      "evidence": {
+                        "description": "The evidence lines journalled with its findings, in order: what the check ran or read for each leaf's acceptance; absent when it has none",
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "leaf": {
+                              "description": "The leaf node it is for, by ID",
+                              "type": "string"
+                            },
+                            "leaf_handle": {
+                              "description": "That leaf's handle; empty when the leaf no longer resolves among the change set's leaves (e.g. it was retired after the round was journalled)",
+                              "type": "string"
+                            },
+                            "line": {
+                              "description": "What the check ran or read for the leaf's acceptance, with the result",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "leaf",
+                            "leaf_handle",
+                            "line"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
                       },
                       "findings": {
                         "description": "The check's findings, in order, each with its latest verdict; empty for a clean check",
