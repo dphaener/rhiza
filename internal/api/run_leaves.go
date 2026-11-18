@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/check"
@@ -698,7 +699,9 @@ func (r *stepRunner) CommitEvidence(leaf run.Leaf, session string) (string, erro
 // compare-and-swap is refused because another commit landed on HEAD
 // meanwhile, it builds the commit again on the new HEAD, keeping both, at
 // most commitOnlyTries times in all; then, or on any other failure, it
-// fails with git's error.
+// fails with git's error. The real index's update waits a bounded time
+// for an index.lock another git in the shared worktree holds
+// (updateIndexWaitingLock).
 func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 	mirrored, err := r.mirroredPaths()
 	if err != nil {
@@ -712,7 +715,7 @@ func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 	for try := 1; ; try++ {
 		commit, err := r.commitOnHead(paths, msg)
 		if err == nil {
-			if _, err := r.worktreeGit(append([]string{"update-index", "--add", "--"}, paths...)...); err != nil {
+			if err := r.updateIndexWaitingLock(paths); err != nil {
 				return "", err
 			}
 			return commit, nil
@@ -723,6 +726,32 @@ func (r *stepRunner) commitOnly(paths []string, msg string) (string, error) {
 		}
 	}
 }
+
+// updateIndexWaitingLock adds paths to the worktree's real index after
+// commitOnly moved HEAD to the commit holding them. The run worktree is
+// shared with the builder, whose git add or commit holds index.lock for a
+// moment; update-index then fails with "index.lock': File exists". That
+// failure alone is retried, every indexLockPoll for at most indexLockWait,
+// then it fails with git's error. Any other failure fails at once. The
+// commit is never built again: HEAD already holds it, and only the index
+// is behind.
+func (r *stepRunner) updateIndexWaitingLock(paths []string) error {
+	deadline := time.Now().Add(indexLockWait)
+	for {
+		_, err := r.worktreeGit(append([]string{"update-index", "--add", "--"}, paths...)...)
+		if err == nil || !strings.Contains(err.Error(), "index.lock': File exists") || !time.Now().Before(deadline) {
+			return err
+		}
+		time.Sleep(indexLockPoll)
+	}
+}
+
+// indexLockWait bounds updateIndexWaitingLock's wait for another git's
+// index.lock; indexLockPoll is its sleep between tries.
+const (
+	indexLockWait = 2 * time.Second
+	indexLockPoll = 50 * time.Millisecond
+)
 
 // commitOnlyTries is how many times commitOnly builds its commit before
 // it gives up on a HEAD that keeps moving.

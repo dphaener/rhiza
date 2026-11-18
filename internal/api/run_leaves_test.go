@@ -557,6 +557,102 @@ func TestCommitOnlyHeadMovedEveryTry(t *testing.T) {
 	}
 }
 
+// indexLock is the path of the run worktree's index.lock, as git names it.
+func indexLock(t *testing.T, git func(...string) string, wt string) string {
+	t.Helper()
+	p := git("rev-parse", "--git-path", "index.lock")
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(wt, p)
+	}
+	return p
+}
+
+// A builder's git add or commit holding the run worktree's index.lock
+// when commitOnly updates the real index (after its update-ref) does not
+// fail the Evidence commit: the update waits for the lock to go, the
+// commit is built once, and the real index shows the entries committed.
+func TestCommitOnlyIndexLocked(t *testing.T) {
+	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
+	evidence := raceEvidence(t, r, ctx, ada)
+	lock := indexLock(t, git, r.worktree)
+	calls := 0
+	released := make(chan struct{})
+	setCommitOnlyHeadRead(t, func(string) {
+		calls++
+		if err := os.WriteFile(lock, nil, 0o644); err != nil {
+			t.Error(err)
+			close(released)
+			return
+		}
+		time.AfterFunc(300*time.Millisecond, func() {
+			if err := os.Remove(lock); err != nil {
+				t.Error(err)
+			}
+			close(released)
+		})
+	})
+
+	c, err := r.CommitEvidence(leaf, "S-v")
+	<-released
+	if err != nil {
+		t.Fatalf("CommitEvidence with index.lock held 300ms: %v", err)
+	}
+	if calls != 1 {
+		t.Errorf("commitOnly built its commit %d times, want 1", calls)
+	}
+	if head := git("rev-parse", "HEAD"); head != c {
+		t.Fatalf("HEAD = %s, want the Evidence commit %s", head, c)
+	}
+	files := strings.Split(git("show", "--name-only", "--format=", c), "\n")
+	for _, p := range evidence {
+		if !slices.Contains(files, p) {
+			t.Errorf("Evidence commit's files %v lack %s", files, p)
+		}
+	}
+	if s := git(append([]string{"status", "--porcelain", "--untracked-files=all", "--"}, evidence...)...); s != "" {
+		t.Errorf("status of the Evidence entries = %q, want them committed", s)
+	}
+	if d := git("diff", "--cached", "--name-only"); d != "" {
+		t.Errorf("real index differs from HEAD: %q", d)
+	}
+}
+
+// An index.lock held for the whole call fails the Evidence commit after
+// the bounded wait with git's error naming index.lock; the commit is
+// built once and the lock is left as its holder made it.
+func TestCommitOnlyIndexLockedThroughout(t *testing.T) {
+	r, git, ctx, leaf, ada := evidenceCommitRunner(t)
+	raceEvidence(t, r, ctx, ada)
+	lock := indexLock(t, git, r.worktree)
+	body := []byte("held by another git\n")
+	calls := 0
+	setCommitOnlyHeadRead(t, func(string) {
+		calls++
+		if err := os.WriteFile(lock, body, 0o644); err != nil {
+			t.Error(err)
+		}
+	})
+
+	start := time.Now()
+	_, err := r.CommitEvidence(leaf, "S-v")
+	took := time.Since(start)
+	if err == nil {
+		t.Fatal("CommitEvidence succeeded with index.lock held throughout")
+	}
+	if !strings.Contains(err.Error(), "index.lock") {
+		t.Errorf("err = %v, want git's error naming index.lock", err)
+	}
+	if took < indexLockWait || took > 10*time.Second {
+		t.Errorf("CommitEvidence took %s, want the bounded wait (%s, well under 10s)", took, indexLockWait)
+	}
+	if calls != 1 {
+		t.Errorf("commitOnly built its commit %d times, want 1", calls)
+	}
+	if got, err := os.ReadFile(lock); err != nil || string(got) != string(body) {
+		t.Errorf("index.lock = %q, %v; want it left as %q", got, err, body)
+	}
+}
+
 // With no Evidence of the verifier's own actor, nothing is committed.
 func TestEvidenceCommitNone(t *testing.T) {
 	t.Parallel()
