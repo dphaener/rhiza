@@ -1,0 +1,100 @@
+{
+  "actor": "01M7QZS1QFTQVYHZHHX8GNVQYZ",
+  "after": [
+    "01M7QZVBY32G54NEY162FKDZBD"
+  ],
+  "at": "2026-11-18T18:49:22Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The default TMPDIR={run_tmp} comes from one helper in internal/workflow beside EnvPairs, used by every place a run's [env] reaches a process (engine stepEnv, session_run for spawned sessions, shipRunEnv for the watchdog), so steps, arbiter and advisor, cleanup steps and spawned sessions all get it; a TMPDIR key in the workflow's own [env] wins, and the folder is made whenever the env names it",
+          "wording": "(assumed, would have escalated) chosen by the conductor from the research pass; autonomous run, no owner present"
+        },
+        "handle": "run-tmpdir-one-helper",
+        "id": "01M7QZVYY04XMGRFM45SSG5FTA",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QZVYY04XMGRFM45R6QSX1D",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QZVYY04XMGRFM45R6QSX1D",
+        "id": "01M7QZVYYWGNEA34RPVWMX80EB",
+        "link": "01M7QZVYYWGNEA34RPVTCKHN5P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVBWQNA65EN997T5MH4PJ",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/workflow/... ./internal/run/... passes with new tests (beside gotmp_test.go): a workflow whose [env] names no {run_tmp} (and one with no [env] at all) gives its command, wait, agent and cleanup steps TMPDIR = Store.TmpDir(run), the folder exists as each step runs, a step writes a file under $TMPDIR, and after the run ends succeeded and again after it ends failed nothing of it is left under the tmp root; (failure case) a workflow whose [env] sets TMPDIR = \"/x\" gets TMPDIR=/x and no second TMPDIR pair in the step env; a workflow's other [env] keys and their {run_tmp} filling are unchanged",
+          "files": "internal/workflow/workflow.go, internal/workflow/workflow_test.go, internal/run/engine.go, internal/run/gotmp_test.go",
+          "must_not": "Change where {run_tmp} lives (run.TmpDir) or when the engine removes it; add TMPDIR to a workflow's [env] table or to EnvPairs' output as the file's own (workflow describe keeps showing only the file's [env]); touch internal/api",
+          "statement": "Every process a run's engine starts (command, wait, gate and agent steps, the arbiter and advisor, cleanup steps) gets TMPDIR set to the run's {run_tmp}, made before the step starts, unless the workflow's [env] sets TMPDIR itself, so what it writes under $TMPDIR is removed with {run_tmp} when the run ends"
+        },
+        "handle": "run-steps-default-tmpdir",
+        "id": "01M7QZVYZYEW2YQJQR0KD0J0H8",
+        "key": "y",
+        "kind": "capability",
+        "node": "01M7QZVYZYEW2YQJQR0HXV9K9G",
+        "op": "node.create",
+        "parent": "01M5TYGH047RKA27R0RBS38HKM"
+      },
+      {
+        "decision": null,
+        "from": "01M7QZVYZYEW2YQJQR0HXV9K9G",
+        "id": "01M7QZVZ0ZGGGN10AVQ1GP2428",
+        "link": "01M7QZVZ0ZGGGN10AVQ0AVXR4P",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVYY04XMGRFM45R6QSX1D",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api/... -run 'SessionRun|Abandon|ShipRunEnv|Gotmp|RunTmp' passes with new tests: session run --dry-run --json of a session in a run whose workflow has no [env] (and one whose [env] names no {run_tmp}) shows TMPDIR=<run tmp> in env and the folder exists after a real start; abandoning a run whose step wrote a file under that TMPDIR leaves nothing of it (beside run_abandon_gotmp_test.go); (failure case) a workflow with TMPDIR = \"/x\" in [env] gives the session TMPDIR=/x only; the env key description in internal/workflow/spec.go and docs/custom-workflows.md say TMPDIR defaults to {run_tmp} unless [env] sets it, docs/reference regenerated with rhiza ship generate, and make self-check passes",
+          "files": "internal/api/session_run.go, internal/api/ship_build.go, internal/api/session_run_tmpdir_test.go, internal/api/run_abandon_gotmp_test.go, internal/workflow/spec.go, docs/custom-workflows.md, docs/reference/workflow-file.md, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change the engine (internal/run) or the helper's behaviour from run-steps-default-tmpdir; change where {run_tmp} lives; remove the /tmp/rhiza-projection-* folders (bug 01M7M3JZFW's)",
+          "statement": "A session a run spawns (rhiza session run for a run's session, such as a conductor's children) and the watchdog's view of a run (shipRunEnv) get the same run env as the run's steps, TMPDIR={run_tmp} included unless [env] sets TMPDIR, with the folder made, and an abandoned run leaves nothing under the tmp root; the [env] docs say so"
+        },
+        "handle": "run-sessions-default-tmpdir",
+        "id": "01M7QZVZ213HF4N41XDS3Y07P6",
+        "key": "z",
+        "kind": "capability",
+        "node": "01M7QZVZ213HF4N41XDNGP7P26",
+        "op": "node.create",
+        "parent": "01M5TYGH047RKA27R0RBS38HKM"
+      },
+      {
+        "decision": null,
+        "from": "01M7QZVZ213HF4N41XDNGP7P26",
+        "id": "01M7QZVZ3581EBXKFMRX5SZZA2",
+        "link": "01M7QZVZ3581EBXKFMRVBGZC85",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVYY04XMGRFM45R6QSX1D",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QZVZ213HF4N41XDNGP7P26",
+        "id": "01M7QZVZ49A3YC198XJ8A0Y6XC",
+        "link": "01M7QZVZ49A3YC198XJ7GPHQTG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVYZYEW2YQJQR0HXV9K9G",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NWFRZTGPHG4DHNN8B6NWSP",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QZVZ5K65DG0JH3ZEX9G3NF",
+  "type": "ops",
+  "v": 1
+}
