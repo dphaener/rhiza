@@ -1,0 +1,40 @@
+{
+  "actor": "01M7Q3FW5YEZFTCSX16F694K69",
+  "after": [
+    "01M7Q3AGPJHWTJ9FRY9HF2RHVT"
+  ],
+  "at": "2026-11-18T10:35:19Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: a scratch build's ship close-out, under pull.rebase=true with a multi-line FETCH_HEAD written by a concurrent fetch, updated main via git fetch origin main + git merge --ff-only refs/remotes/origin/main with no git pull; an injected merge or fetch failure reported update-main failed with a 'main was not updated: ' detail and a main-stale inbox item, and a failed fetch ran no merge; the scoped internal/api tests and two close-out scripts pass; no \"pull\" in non-test internal/api."
+        },
+        "handle": "main-update-without-pull-qa-1",
+        "id": "01M7Q3KASPF1HABBFBR6C8PJSA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q3KASPF1HABBFBR5BFK6Q5",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q3KASPF1HABBFBR5BFK6Q5",
+        "id": "01M7Q3KAV4YTDQZY66AN78WF6W",
+        "link": "01M7Q3KAV4YTDQZY66AMGVPA9F",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q2VZY1G17DVAGMK5H1JZ1R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7Q2Q68JE50NCRKGCT5Z3APZ",
+  "for": "01M7Q33WNTCT5ZVAZFH9PT1443",
+  "id": "01M7Q3KAWAE1ZXZ0FEWCA6NVEX",
+  "type": "ops",
+  "v": 1
+}

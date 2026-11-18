@@ -15,6 +15,7 @@ the building agent's design, accepted by the orchestrator on PR #30 (the owner a
 ### In
 
 - decided-by [close-out](../capability/rhiza/orchestration/shipping/close-out.md)
+- supersedes [main-fast-forward-by-ref](main-fast-forward-by-ref.md)
 
 ## History
 

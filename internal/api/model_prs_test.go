@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/daemon"
 )
 
 // modelPRFixture is modelBranchFixture with every orphan entry shipped on a
@@ -54,6 +56,24 @@ func modelPRFixture(t *testing.T, ci string) *modelFixture {
 
 var merges int
 
+// recordMainGit records the git commands f.ctx runs in the main checkout as
+// "git <args>", failing the one whose args are fail with msg.
+func recordMainGit(f *modelFixture, fail, msg string) *[]string {
+	var calls []string
+	inner := f.ctx.Exec
+	f.ctx.Exec = func(name string, args []string, dir string, env []string) ([]byte, error) {
+		k := strings.Join(args, " ")
+		if name == "git" && samePath(dir, f.root) {
+			calls = append(calls, "git "+k)
+			if fail != "" && k == fail {
+				return nil, errors.New("git " + k + ": " + msg)
+			}
+		}
+		return inner(name, args, dir, env)
+	}
+	return &calls
+}
+
 func untrackedLog(t *testing.T, f *modelFixture) string {
 	t.Helper()
 	return f.git(f.root, "ls-files", "--others", "--exclude-standard", ".rhiza/log")
@@ -73,9 +93,14 @@ func TestDaemonModelPR(t *testing.T) {
 		if untrackedLog(t, f) == "" {
 			t.Fatal("fixture has no untracked entries")
 		}
+		calls := recordMainGit(f, "", "")
 		daemonMergeModelPRs(f.ctx)
 		if f.stderr.Len() != 0 {
 			t.Fatalf("stderr: %s", f.stderr)
+		}
+		wantMainFastForward(t, *calls, true)
+		if _, ok := daemon.ReadMainStale(filepath.Join(f.root, ".git")); ok {
+			t.Error("main-stale recorded after a fast-forward")
 		}
 		if merges == 0 {
 			t.Fatal("nothing merged")
@@ -116,6 +141,27 @@ func TestDaemonModelPR(t *testing.T) {
 			}
 		})
 	}
+	// A fast-forward merge that fails leaves main where it was and records
+	// main-stale with git's error.
+	t.Run("MergeFails", func(t *testing.T) {
+		merges = 0
+		f := modelPRFixture(t, "green")
+		const msg = "fatal: Not possible to fast-forward, aborting."
+		before := f.git(f.root, "rev-parse", "HEAD")
+		calls := recordMainGit(f, "merge --ff-only refs/remotes/origin/main", msg)
+		daemonMergeModelPRs(f.ctx)
+		if merges == 0 {
+			t.Fatal("nothing merged")
+		}
+		wantMainFastForward(t, *calls, true)
+		ms, ok := daemon.ReadMainStale(filepath.Join(f.root, ".git"))
+		if !ok || ms.Change != f.cs || !strings.HasPrefix(ms.Detail, "main was not updated: ") || !strings.Contains(ms.Detail, msg) {
+			t.Errorf("main-stale = %+v, %v", ms, ok)
+		}
+		if h := f.git(f.root, "rev-parse", "HEAD"); h != before {
+			t.Errorf("main moved to %s from %s", h, before)
+		}
+	})
 	t.Run("GhFailureNeverFails", func(t *testing.T) {
 		f := modelPRFixture(t, "green")
 		inner := f.ctx.Exec

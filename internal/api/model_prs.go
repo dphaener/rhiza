@@ -90,13 +90,12 @@ func mergeModelPRs(ctx *Ctx) error {
 }
 
 // pullMainAfterModelMerge fast-forwards the main checkout after a model PR
-// merged, dropping its untracked copies of the merged entries first. A pull
-// that cannot be done is recorded as main-stale, as a ship close-out's is.
+// merged, through fastForwardMain as a ship close-out does, dropping its
+// untracked copies of the merged entries first. An update that cannot be done is recorded as main-stale, as a ship close-out's is.
 func pullMainAfterModelMerge(ctx *Ctx, top, common, cs string) error {
 	detail := shipMainBlocked(ctx, top)
 	if detail == "" {
-		dropIncomingLogCopies(ctx, top)
-		if _, err := gitAt(ctx, top, "pull", "--ff-only", "origin", "main"); err != nil {
+		if err := fastForwardMain(ctx, top); err != nil {
 			detail = err.Error()
 		}
 	}
