@@ -1,0 +1,309 @@
+{
+  "actor": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "after": [
+    "01M7R2ESZ0CQEYXR724BFKTCX1"
+  ],
+  "at": "2026-11-18T19:35:14Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Every intervention is one journal entry type, intervention, with a kind (message, resume, retry, abandon, approve, hand-commit), the actor who made it and a detail; the fold keeps them in order and rhiza run status --json shows the list and its count",
+          "wording": "(assumed, would have escalated) one entry type with a kind field, chosen by the conductor so status and the daemon count one list"
+        },
+        "handle": "intervention-one-entry-type",
+        "id": "01M7R2FXN4BPJRD4ZYWJNFAGMB",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7R2FXN4BPJRD4ZYWG8FMD04",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXN4BPJRD4ZYWG8FMD04",
+        "id": "01M7R2FXNXGRZ3KHMHMKRPS8NJ",
+        "link": "01M7R2FXNXGRZ3KHMHMG71S6MK",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2ESXAWZBHM2HKWK57EHMM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "An intervention is an action a person (or an orchestrator acting for one) takes from outside the run: the daemon's own resume, the watchdog's retry, the engine's hand-back and wake messages, messages between the run's own sessions and approving a signoff step the run waits on are never interventions",
+          "wording": "(assumed, would have escalated) the line drawn at who made the action: the run and its daemon act as written; anyone else intervenes"
+        },
+        "handle": "intervention-is-a-person-command",
+        "id": "01M7R2FXPR9X3V95KZADS4C7MK",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7R2FXPR9X3V95KZABFZM5RA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXPR9X3V95KZABFZM5RA",
+        "id": "01M7R2FXQGDT8GSVGR9YPRD3NA",
+        "link": "01M7R2FXQGDT8GSVGR9TRX3CNH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2ESXAWZBHM2HKWK57EHMM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A commit on a run's branch is the run's when it is a merge of the base branch, carries a Leaf: trailer naming a leaf of the run's change set, a Review: trailer naming the run, or an Actor: trailer naming the actor of one of the run's sessions; any other commit added to the branch after the run started is a hand commit, journalled once per commit",
+          "wording": "(assumed, would have escalated) attribution by the trailers the run's roles already write"
+        },
+        "handle": "hand-commit-by-trailer",
+        "id": "01M7R2FXRAMCY0W76S1S9MN07M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7R2FXRAMCY0W76S1QG78Z7Y",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXRAMCY0W76S1QG78Z7Y",
+        "id": "01M7R2FXS56GZ9GTPKMXEJ6VX2",
+        "link": "01M7R2FXS56GZ9GTPKMV5S4YPG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2ESXAWZBHM2HKWK57EHMM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "rhiza daemon status shows each live run's intervention count, and over the project's finished runs the number finished, the number finished with zero interventions and the current streak of consecutive finished runs with zero, newest first",
+          "wording": "(assumed, would have escalated) the streak serves the milestone's measure of consecutive runs with zero interventions"
+        },
+        "handle": "daemon-counts-clean-streak",
+        "id": "01M7R2FXT3P77EXXQMC7W14F4M",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7R2FXT3P77EXXQMC4RY23ME",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXT3P77EXXQMC4RY23ME",
+        "id": "01M7R2FXTYWY20AZFEN3TQC6HR",
+        "link": "01M7R2FXTYWY20AZFEN3K1W99Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2ESXAWZBHM2HKWK57EHMM",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/run -run Intervention: a journal with two intervention entries folds to both in order, count 2; a journal with none folds to count 0; (failure case) an intervention entry with an unknown kind is refused by append or reported by the fold, never counted silently. Testscript cmd/rhiza/testdata/script/run-status-interventions.txtar shows the count and list in rhiza run status --json and the text line; describe-golden.txtar regenerated",
+          "files": "internal/run/journal.go, internal/run/journal_test.go, internal/api/run.go, cmd/rhiza/testdata/script/run-status-interventions.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Record any intervention from a command yet (later leaves do); change any other entry type's fold or the run's state or result",
+          "statement": "The run journal has an intervention entry (kind, actor, detail, optional commit) folded into the run's state in order, and rhiza run status shows them: --json an interventions list and an intervention_count (0 when none), text a line counting them by kind"
+        },
+        "handle": "run-intervention-journal",
+        "id": "01M7R2FXVTKFFG30W56T6XRFRM",
+        "key": "zzzzzzw",
+        "kind": "capability",
+        "node": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "id": "01M7R2FXWS267D5V1D95NFB9DZ",
+        "link": "01M7R2FXWS267D5V1D93AN8YS9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXN4BPJRD4ZYWG8FMD04",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscript cmd/rhiza/testdata/script/run-intervention-message.txtar: a message from outside any run to a run's session shows one message intervention in rhiza run status --json; (failure case) a message sent with RHIZA_RUN and RHIZA_SESSION naming a session of the same run adds none, and a message to a session of no run journals nothing and still sends",
+          "files": "internal/api/session_message.go, internal/api/session_message_test.go, cmd/rhiza/testdata/script/run-intervention-message.txtar",
+          "must_not": "Change how the message is delivered; journal the engine's own hand-back, amend, lost-session or API-error pointer lines",
+          "statement": "rhiza session message to a session of a run journals a message intervention on that run (actor, target session, the text's first line) when the sender is not a session of the same run"
+        },
+        "handle": "run-intervention-message",
+        "id": "01M7R2FXXVADBMRDCBMMMEC7WA",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "id": "01M7R2FXZ064QWPCEX4QX4NRMC",
+        "link": "01M7R2FXZ064QWPCEX4P4S1AQY",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXPR9X3V95KZABFZM5RA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "id": "01M7R2FY02TBXQGY5DW92HE1ZJ",
+        "link": "01M7R2FY02TBXQGY5DW7CZDHKG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscripts cmd/rhiza/testdata/script/run-intervention-resume.txtar: rhiza run resume, rhiza run resume --retry and rhiza run abandon on runs each show the one matching intervention in rhiza run status --json; (failure case) a run resumed by the daemon (daemon-resume path) and one retried by the watchdog show intervention_count 0, covered by go test ./internal/api -run 'Intervention' or the script",
+          "files": "internal/api/run.go, internal/api/daemon_watchdog.go, internal/api/run_intervention_test.go, cmd/rhiza/testdata/script/run-intervention-resume.txtar",
+          "must_not": "Change what resume, retry or abandon do; count a --dry-run",
+          "statement": "A person's rhiza run resume journals a resume intervention, with --retry (or rhiza run start retrying a failed run of the change set) a retry intervention, and rhiza run abandon an abandon intervention, each with the actor; the daemon's own resume and the watchdog's retry journal none"
+        },
+        "handle": "run-intervention-resume",
+        "id": "01M7R2FY1KB5VKZZYS1XSVD9VJ",
+        "key": "zzzzzzz",
+        "kind": "capability",
+        "node": "01M7R2FY1KB5VKZZYS1XGDHRBC",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY1KB5VKZZYS1XGDHRBC",
+        "id": "01M7R2FY3DT9GP6EHTSKZSC9BG",
+        "link": "01M7R2FY3DT9GP6EHTSHHFGFT5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXPR9X3V95KZABFZM5RA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY1KB5VKZZYS1XGDHRBC",
+        "id": "01M7R2FY4E07ZMRZ1KJMWCNEGM",
+        "link": "01M7R2FY4E07ZMRZ1KJMT97RQZ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscript cmd/rhiza/testdata/script/run-intervention-approve.txtar: an owner accept of a change set whose run is live under auto accept shows one approve intervention in rhiza run status --json; (failure case) rhiza run approve at a waiting signoff step leaves intervention_count 0, and an accept of a change set with no live run journals nothing",
+          "files": "internal/api/lifecycle.go, internal/api/run_signoff.go, cmd/rhiza/testdata/script/run-intervention-approve.txtar",
+          "must_not": "Change accept, reject or approve behaviour; journal the workflow's own autonomous gate accepts",
+          "statement": "An owner-rule accept or reject of a change set while a live run of it is not waiting for that owner accept (its accept stage is not owner) journals an approve intervention on that run; rhiza run approve at a signoff step the run waits on journals none"
+        },
+        "handle": "run-intervention-approve",
+        "id": "01M7R2FY5HR9X0ZJRR5A0K00JB",
+        "key": "zzzzzzzi",
+        "kind": "capability",
+        "node": "01M7R2FY5HR9X0ZJRR595VFVPE",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY5HR9X0ZJRR595VFVPE",
+        "id": "01M7R2FY6JYMMA8FMS11A48NBJ",
+        "link": "01M7R2FY6JYMMA8FMS10RME8ER",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXPR9X3V95KZABFZM5RA",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY5HR9X0ZJRR595VFVPE",
+        "id": "01M7R2FY7G8P1ARAG8R2XFAA4B",
+        "link": "01M7R2FY7G8P1ARAG8R1SSR32H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test ./internal/api -run HandCommit (or ./internal/run): a branch with a Leaf:-trailered commit, a Review: <run> commit, an Actor: commit of a run session and a merge of main shows 0 hand commits; a plain commit made by hand shows one hand-commit intervention naming it, and a second scan adds none; (failure case) a commit whose Review: trailer names another run counts as a hand commit",
+          "files": "internal/api/run_handcommit.go, internal/api/run_handcommit_test.go, internal/run/engine.go",
+          "must_not": "Block, fail or change the run because of a hand commit; scan outside the run's own branch",
+          "statement": "The engine, on entering each step and before the run finishes, journals one hand-commit intervention (with the commit) for each commit on the run's branch since it started that the run did not make, never twice for one commit"
+        },
+        "handle": "run-intervention-hand-commit",
+        "id": "01M7R2FY8VC5AK2F7BWYG22VHM",
+        "key": "zzzzzzzr",
+        "kind": "capability",
+        "node": "01M7R2FY8VC5AK2F7BWWFFHW55",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY8VC5AK2F7BWWFFHW55",
+        "id": "01M7R2FYA9H5HCKMGQBNK8ZGQA",
+        "link": "01M7R2FYA9H5HCKMGQBHVMTAC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXRAMCY0W76S1QG78Z7Y",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FY8VC5AK2F7BWWFFHW55",
+        "id": "01M7R2FYC1K0D79PNSAY13VW9M",
+        "link": "01M7R2FYC1K0D79PNSAW9V8Z5D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "Testscript cmd/rhiza/testdata/script/daemon-status-interventions.txtar: with three finished runs, oldest to newest intervened, clean, clean, finished 3, finished_clean 2 and clean_streak 2 show in --json and text, and a live run row carries its count; (failure case) a project with no finished runs shows 0 for all three and no error; describe-golden.txtar regenerated",
+          "files": "internal/api/daemon.go, cmd/rhiza/testdata/script/daemon-status-interventions.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change the daemon's scheduling or the existing daemon status fields",
+          "statement": "rhiza daemon status shows each live run's intervention count and, over the project's finished runs, finished, finished_clean (zero interventions) and clean_streak (consecutive finished runs with zero, newest first), in --json and as a text line"
+        },
+        "handle": "daemon-status-interventions",
+        "id": "01M7R2FYDRQGC4KBP7G76KBPS5",
+        "key": "zzzzzzzw",
+        "kind": "capability",
+        "node": "01M7R2FYDRQGC4KBP7G5SXJ8XB",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FYDRQGC4KBP7G5SXJ8XB",
+        "id": "01M7R2FYG2E15XXTK514QD1FPY",
+        "link": "01M7R2FYG2E15XXTK513B50F6X",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXT3P77EXXQMC4RY23ME",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7R2FYDRQGC4KBP7G5SXJ8XB",
+        "id": "01M7R2FYHM8E9Q1S1ZK03KXSWH",
+        "link": "01M7R2FYHM8E9Q1S1ZJX2DRP44",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NWFV54PDK3XDSGH07HK0K7",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7R2FYJY5VRA1F44KVXQXJSS",
+  "type": "ops",
+  "v": 1
+}
