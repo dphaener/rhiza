@@ -1,0 +1,155 @@
+{
+  "actor": "01M7RAB0GV50XAXCCSY5FWHSNM",
+  "after": [
+    "01M7RA216DVTE1760PC28AXY58"
+  ],
+  "at": "2026-11-18T21:56:11Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2 with a scratch build: run status --json shows intervention_count 0 and interventions [] on a fresh run, then the list in journal order; text shows '- Interventions: 3 (resume 2, abandon 1)' and the Interventions section; go test ./internal/run -run Intervention ok."
+        },
+        "handle": "run-intervention-journal-qa-2",
+        "id": "01M7RAJ0RZ1GKZ8K3WRDYQZRWW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ0RZ1GKZ8K3WRBQ9VZVT",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ0RZ1GKZ8K3WRBQ9VZVT",
+        "id": "01M7RAJ0VFG1BSVRA6AYX268Y8",
+        "link": "01M7RAJ0VFG1BSVRA6AY1R7DS3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXVTKFFG30W56PYYSGHW",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: session message from outside to a run's session journals one message intervention (first line only, actor, step); from a sibling session (RHIZA_RUN+RHIZA_SESSION or RHIZA_SESSION alone), to a no-run session, --dry-run, blank text and unknown session journal none."
+        },
+        "handle": "run-intervention-message-qa-2",
+        "id": "01M7RAJ0WPJ0PAT9B3F2JEWVZD",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ0WPJ0PAT9B3F173XMWD",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ0WPJ0PAT9B3F173XMWD",
+        "id": "01M7RAJ0YVRZ8Y64SDPX2QWA9T",
+        "link": "01M7RAJ0YVRZ8Y64SDPSC8QHY3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FXXVADBMRDCBMH1JESQ1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: person's queued and foreground resume, resume --retry and abandon each journal one matching intervention; dry runs and refused repeats none; RHIZA_DAEMON_RESUME resume none; run start on a failed change set journals a retry (foreground, and queued via retry_by/RHIZA_START_RETRY_BY), the daemon's own start none."
+        },
+        "handle": "run-intervention-resume-qa-2",
+        "id": "01M7RAJ132F0G98HEST273BEQ0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ132F0G98HEST13CR2G9",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ132F0G98HEST13CR2G9",
+        "id": "01M7RAJ15EPQEEAFGVP05KDK1S",
+        "link": "01M7RAJ15EPQEEAFGVNYHZ24XH",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY1KB5VKZZYS1XGDHRBC",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: owner accept of a change set with a live auto-accept run journals one approve at the run's step; dry run, refused repeat and a run whose workflow declares accept=owner journal none; run-intervention-approve script passes."
+        },
+        "handle": "run-intervention-approve-qa-2",
+        "id": "01M7RAJ17HXC9KYZKMFKN47HBE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ17HXC9KYZKMFJTH9ARJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ17HXC9KYZKMFJTH9ARJ",
+        "id": "01M7RAJ19HWKSSP31VKRF1QFAF",
+        "link": "01M7RAJ19HWKSSP31VKPSEC97H",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY5HR9X0ZJRR595VFVPE",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: a hand commit on a stopped run's branch is journalled once on entering the next step with its hash, the run succeeding unchanged; a merge of main adds none. A rebase of the branch re-journals the rewritten commit (minor finding f1)."
+        },
+        "handle": "run-intervention-hand-commit-qa-2",
+        "id": "01M7RAJ1AZ9EV3121BTSNAGXQH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ1AZ9EV3121BTQFZXH6X",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ1AZ9EV3121BTQFZXH6X",
+        "id": "01M7RAJ1CKVWTV5HHD6P8ZW350",
+        "link": "01M7RAJ1CKVWTV5HHD6MMVN2MX",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FY8VC5AK2F7BWWFFHW55",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA cycle 2: daemon status --json and text show finished 7, finished_clean 2, clean_streak 1 matching each run's status; after daemon --once with fake rex live rows carry intervention_count and ', N intervention'; a fresh project shows 0/0/0 without error."
+        },
+        "handle": "daemon-status-interventions-qa-2",
+        "id": "01M7RAJ1E5JK6X357QZ3RMGRQE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RAJ1E5JK6X357QZ2902ZNZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RAJ1E5JK6X357QZ2902ZNZ",
+        "id": "01M7RAJ1G02DEW6J1JVPHCXMJZ",
+        "link": "01M7RAJ1G02DEW6J1JVMDKEWGP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7R2FYDRQGC4KBP7G5SXJ8XB",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFV54PDK3XDSGH07HK0K7",
+  "for": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "id": "01M7RAJ1J3ZZY0VXN25ST55JGQ",
+  "type": "ops",
+  "v": 1
+}

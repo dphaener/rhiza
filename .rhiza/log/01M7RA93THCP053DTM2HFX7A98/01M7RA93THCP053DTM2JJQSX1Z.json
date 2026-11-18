@@ -1,0 +1,15 @@
+{
+  "actor": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "after": [],
+  "at": "2026-11-18T21:51:18Z",
+  "body": {
+    "intent": "Record agent actor claude-code-fda2896d for session fda2896d-0086-45bd-807f-01a1f0a48c2e",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7RA93THCP053DTM2HFX7A98",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RA93THCP053DTM2JJQSX1Z",
+  "type": "open",
+  "v": 1
+}

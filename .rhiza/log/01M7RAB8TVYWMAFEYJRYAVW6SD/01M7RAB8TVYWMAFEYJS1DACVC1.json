@@ -1,0 +1,15 @@
+{
+  "actor": "01M7R28ESE7JARNKK4BBXY3G3W",
+  "after": [],
+  "at": "2026-11-18T21:52:29Z",
+  "body": {
+    "intent": "rhiza daemon status counts interventions only over runs that started after interventions were journalled (runs with no recorded base are unknown, not clean), so the clean count and streak start from zero; the hand-commit scan reads a deleted branch as no hand commits and costs one rev-list per scan; daemon status reads journals cheaply",
+    "kind": "intention",
+    "sources": []
+  },
+  "change_set": "01M7RAB8TVYWMAFEYJRYAVW6SD",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RAB8TVYWMAFEYJS1DACVC1",
+  "type": "open",
+  "v": 1
+}
