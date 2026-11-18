@@ -39,12 +39,23 @@ func planCoverWorkflow(name string) bool {
 // An abandoned run covers nothing, but the gated entry it journaled still
 // does.
 func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]bool) []string {
+	if len(proposed) == 0 {
+		return nil
+	}
+	return uncoveredProposalsOf(proposed, runStates(runs), held)
+}
+
+// uncoveredProposalsOf is uncoveredProposals with each run's state already
+// folded (runStates).
+func uncoveredProposalsOf(proposed []string, states []run.State, held map[string]bool) []string {
+	if len(proposed) == 0 {
+		return nil
+	}
 	covered := map[string]bool{}
 	for cs := range held {
 		covered[cs] = true
 	}
-	for _, j := range runs {
-		st := j.State()
+	for _, st := range states {
 		if planCoverWorkflow(st.Workflow) || st.IsPlanRun() {
 			for _, g := range st.Gated {
 				covered[g] = true
@@ -79,6 +90,12 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 // from each remaining change set's own view over the projection's stored
 // as-is rows.
 func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxFold) []InboxItem {
+	return inboxUncoveredProposalsOf(items, runStates(runs), fold)
+}
+
+// inboxUncoveredProposalsOf is inboxUncoveredProposals with each run's
+// state already folded (runStates).
+func inboxUncoveredProposalsOf(items []InboxItem, states []run.State, fold *inboxFold) []InboxItem {
 	if fold.load() != nil {
 		return nil
 	}
@@ -91,12 +108,12 @@ func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxF
 	slices.Sort(proposed)
 	listed := acceptListed(items)
 	var withLeaves []string
-	for _, cs := range uncoveredProposals(proposed, runs, nil) {
+	for _, cs := range uncoveredProposalsOf(proposed, states, nil) {
 		if !listed[cs] && fold.proposalHasLeaf(cs) {
 			withLeaves = append(withLeaves, cs)
 		}
 	}
-	return uncoveredAcceptItems(items, withLeaves, runs)
+	return uncoveredAcceptItemsOf(items, withLeaves, states)
 }
 
 // proposalHasLeaf reports whether proposed change set change has a leaf in
@@ -130,9 +147,18 @@ func acceptListed(items []InboxItem) map[string]bool {
 // uncoveredAcceptItems is one accept item per change set of proposed that
 // uncoveredProposals leaves uncovered and that has no accept item in items.
 func uncoveredAcceptItems(items []InboxItem, proposed []string, runs []run.Journal) []InboxItem {
+	if len(proposed) == 0 {
+		return nil
+	}
+	return uncoveredAcceptItemsOf(items, proposed, runStates(runs))
+}
+
+// uncoveredAcceptItemsOf is uncoveredAcceptItems with each run's state
+// already folded (runStates).
+func uncoveredAcceptItemsOf(items []InboxItem, proposed []string, states []run.State) []InboxItem {
 	listed := acceptListed(items)
 	var out []InboxItem
-	for _, cs := range uncoveredProposals(proposed, runs, nil) {
+	for _, cs := range uncoveredProposalsOf(proposed, states, nil) {
 		if listed[cs] {
 			continue
 		}

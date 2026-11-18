@@ -414,6 +414,26 @@ func TestQueryChangeSets(t *testing.T) {
 	same(t, "change sets", got, fromModel)
 }
 
+func TestQueryChangeSetStates(t *testing.T) {
+	_, x := queryIndex(t)
+	infos, err := x.ChangeSets()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := x.ChangeSetStates()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[id.ID]changeset.State{}
+	for _, c := range infos {
+		want[c.ID] = c.State
+	}
+	if len(want) == 0 {
+		t.Fatal("no change sets")
+	}
+	same(t, "change set states", got, want)
+}
+
 func TestQueryEntries(t *testing.T) {
 	f, x := queryIndex(t)
 	l := store.ReadLog(os.DirFS(f.gdir))

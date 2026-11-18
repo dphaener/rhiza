@@ -314,6 +314,23 @@ func (r InboxResponse) Human(w io.Writer) {
 // stalled gives the stalled session of a run, nil when it has none; a nil
 // stalled lists none. Only a run another process holds can have one.
 func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, blocked func(st run.State) []RunPermission, apiErrored func(st run.State) []RunAPIError, tabOf func(sid string) session.Tab) []InboxItem {
+	return inboxItemsOf(runs, runStates(runs), host, alive, locked, changeState, stalled, blocked, apiErrored, tabOf)
+}
+
+// runStates is each run's folded state, in runs' order. Folding a journal
+// is the costly part of reading a run, so a caller that reads the states
+// more than once folds them here once and passes them on.
+func runStates(runs []run.Journal) []run.State {
+	states := make([]run.State, len(runs))
+	for i, j := range runs {
+		states[i] = j.State()
+	}
+	return states
+}
+
+// inboxItemsOf is inboxItems with each run's state already folded:
+// states[i] is runs[i].State().
+func inboxItemsOf(runs []run.Journal, states []run.State, host string, alive func(pid int) bool, locked func(id string) bool, changeState func(change string) (string, bool), stalled func(st run.State) []RunStalled, blocked func(st run.State) []RunPermission, apiErrored func(st run.State) []RunAPIError, tabOf func(sid string) session.Tab) []InboxItem {
 	// gone reports a change set that is landed, withdrawn, rejected or
 	// superseded: a failed or given-up run on one is left out, as its next
 	// command could only fail.
@@ -330,8 +347,7 @@ func inboxItems(runs []run.Journal, host string, alive func(pid int) bool, locke
 	items := []InboxItem{}
 	newer := map[string]bool{}
 	for i := len(runs) - 1; i >= 0; i-- {
-		j := runs[i]
-		st := j.State()
+		j, st := runs[i], states[i]
 		// A scheduled run with no change set reports its end and failure to
 		// the daemon log only: it is no owner's item, and no retry of one.
 		scheduled := st.Trigger == run.TriggerSchedule && st.Change == ""
@@ -603,6 +619,17 @@ func (f *inboxFold) load() error {
 	f.ws = ws
 	ws.useProjection(f.ctx)
 	p := ws.projection()
+	if x := p.store(); x != nil && p.failure() == nil && len(ws.pending) == 0 {
+		// With no pending entries the stored rows are the states, and their
+		// ID and state columns alone are read.
+		states, err := x.ChangeSetStates()
+		if err != nil {
+			f.err = readError(err)
+			return f.err
+		}
+		f.p, f.states = p, states
+		return nil
+	}
 	infos := p.changeSetInfos(ws.pending)
 	if err := p.failure(); err != nil {
 		f.err = Errorf("%s", err.Error())
@@ -826,9 +853,10 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	host, _ := os.Hostname()
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	items := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
-	items = append(items, inboxUncoveredProposals(items, runs, fold)...)
-	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
+	states := runStates(runs)
+	items := inboxItemsOf(runs, states, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
+	items = append(items, inboxUncoveredProposalsOf(items, states, fold)...)
+	blockers, err := inboxBlockers(ctx, questionAdvice(states))
 	if err != nil {
 		return nil, err
 	}
@@ -838,8 +866,8 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 	}
 	items = sortInboxItems(append(append(append(append(append(append(append(append(append(append(items, blockers...), overlaps...), inboxDiskLow(ctx)...), inboxUsageHold(ctx)...), inboxMachineHold(ctx)...), inboxGuideHold(ctx)...), inboxMainStale(ctx)...), inboxModelPRs(ctx)...), inboxWorkflow(ctx)...), inboxWatchdog(ctx)...))
 	byRun := map[string]run.State{}
-	for _, j := range runs {
-		byRun[j.ID] = j.State()
+	for i, j := range runs {
+		byRun[j.ID] = states[i]
 	}
 	for i := range items {
 		items[i].ChangeTitle = fold.titleOf(items[i].Change)
@@ -953,11 +981,12 @@ func inboxBlockers(ctx *Ctx, advice map[string]run.Advice) ([]InboxItem, error) 
 
 // questionAdvice is the latest advice with a recommendation on each
 // question node, by the node's ID (the Asker of an advisor the engine
-// started on a question it raised), across every run.
-func questionAdvice(runs []run.Journal) map[string]run.Advice {
+// started on a question it raised), across every run, given as each run's
+// state (runStates).
+func questionAdvice(states []run.State) map[string]run.Advice {
 	out := map[string]run.Advice{}
-	for _, j := range runs {
-		for _, a := range j.State().Advice {
+	for _, st := range states {
+		for _, a := range st.Advice {
 			if a.Recommendation == "" {
 				continue
 			}
@@ -1228,9 +1257,10 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 	var found []InboxItem
 	fold := newInboxFold(ctx)
 	defer fold.close()
-	all := inboxItems(runs, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
-	all = append(all, inboxUncoveredProposals(all, runs, fold)...)
-	blockers, err := inboxBlockers(ctx, questionAdvice(runs))
+	states := runStates(runs)
+	all := inboxItemsOf(runs, states, host, nil, rs.Live, fold.stateOf, inboxStalledOf(ctx, common), inboxBlockedOf(ctx, common), inboxAPIErrorOf(ctx, common), inboxTabOf(ctx, common))
+	all = append(all, inboxUncoveredProposalsOf(all, states, fold)...)
+	blockers, err := inboxBlockers(ctx, questionAdvice(states))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1244,8 +1274,8 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 		}
 	}
 	st := map[string]run.State{}
-	for _, j := range runs {
-		st[j.ID] = j.State()
+	for i, j := range runs {
+		st[j.ID] = states[i]
 	}
 	return found, st, nil
 }

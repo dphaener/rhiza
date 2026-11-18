@@ -1,0 +1,33 @@
+{
+  "actor": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "after": [
+    "01M7PN3F41X25ATA4FEY38DZP7"
+  ],
+  "at": "2026-11-18T06:22:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "agent": "claude-code",
+          "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+          "name": "claude-code-42204294",
+          "role": "runs change set 01M7P1Q9GKHXA37YBG2M8JP661",
+          "session": "42204294-008f-4180-ad62-01a1ed51b97f"
+        },
+        "handle": "claude-code-42204294",
+        "id": "01M7PN3F41X25ATA4FEV5K8C6S",
+        "key": null,
+        "kind": "actor",
+        "node": "01M7PN3F41X25ATA4FEQEQ4RV7",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7PN3F41X25ATA4FEXXYK2R2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PN3F466CTFG4PKFQ53D96M",
+  "type": "ops",
+  "v": 1
+}
