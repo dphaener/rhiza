@@ -1,0 +1,15 @@
+{
+  "actor": "01M7Q33WNTCT5ZVAZFH9PT1443",
+  "after": [],
+  "at": "2026-11-18T10:29:53Z",
+  "body": {
+    "intent": "Record agent actor claude-code-154d232b for session 154d232b-d74f-4eda-b957-01a1ee34ae2d",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7Q39CHN2CMGDTH371TNAMB2",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7Q39CHN2CMGDTH372300DJ0",
+  "type": "open",
+  "v": 1
+}

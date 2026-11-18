@@ -1,0 +1,40 @@
+{
+  "actor": "01M7Q39CHN2CMGDTH36WQY8WNG",
+  "after": [
+    "01M7Q2YRKG5BX0SSX4HRZ2J8WT"
+  ],
+  "at": "2026-11-18T10:30:30Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At 1b624f1e6: go test -trimpath ./internal/api -run 'TestShipCloseOut|TestDaemonModelPR' passed, incl. TestShipCloseOutUpdateMainFails/Merge and /Fetch (update-main failed, main_updated false, 'main was not updated: ' detail, main-stale recorded, no merge after failed fetch) and TestDaemonModelPR/MergeFails (main-stale, main unmoved); success paths assert fetch then merge --ff-only refs/remotes/origin/main and no git pull via wantMainFastForward. TestScripts/(ship-close-out-forget-retry|ship-close-out-log-copies) passed. grep -rn '\"pull\"' internal/api/*.go | grep -v _test.go printed nothing. Diff: one helper fastForwardMain in ship_close.go used by close-out and pullMainAfterModelMerge; shipMainBlocked, main-stale, step names and response JSON untouched; ship.go/ship_rebase.go/watchdog_noci.go/daemon self-update untouched."
+        },
+        "handle": "main-update-without-pull-verified",
+        "id": "01M7Q3AGMVB3GWF24DC2Z67B6K",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7Q3AGMTNTJJPY9WR641H0QF",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7Q3AGMTNTJJPY9WR641H0QF",
+        "id": "01M7Q3AGNQ45V452SZY4XD4DPF",
+        "link": "01M7Q3AGNQ45V452SZY1DWXN4M",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7Q2VZY1G17DVAGMK5H1JZ1R",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7Q2Q68JE50NCRKGCT5Z3APZ",
+  "for": "01M7Q33WNTCT5ZVAZFH9PT1443",
+  "id": "01M7Q3AGPJHWTJ9FRY9HF2RHVT",
+  "type": "ops",
+  "v": 1
+}
