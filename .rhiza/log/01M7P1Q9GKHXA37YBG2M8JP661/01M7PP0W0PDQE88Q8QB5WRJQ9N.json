@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PNR08M0SNVCK9H3XSVWMTY",
+  "after": [
+    "01M7PN30Q71FZ10TF71HDDT26S"
+  ],
+  "at": "2026-11-18T06:38:02Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 3bf00d314 in a detached worktree. go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox': ok 13.5s; the Checks: Proposal|Uncovered|NeedsYou|Daemon.*Accept|QuestionAdvice|Advice run: ok 6.6s; ./internal/index: ok 40.3s (new TestQueryChangeSetStates); ./cmd/rhiza -run TestScripts/inbox: ok (20 scripts); internal/model untouched. RHIZA_CPUPROFILE, 6 warm rhiza inbox runs merged per binary in the main checkout, parent d97acc451 -> commit: run.Journal.State 19.01% -> 5.38%, api.uncoveredProposals 7.44% -> gone from the listing, inboxFold.load 4.55% -> 2.69% (index.ChangeSetStates 2.69%), Index.ChangeSets 7.85% -> 6.45%, questionAdvice 2.89% -> gone; total samples 2.42 -> 1.86 s. /usr/bin/time rhiza inbox in the main checkout, one warm call each, base 5d2596d and commit alternately x5, load ~3.5: base user+sys 1.09 1.10 1.02 1.09 1.07 (median 1.09 s), commit 0.34 0.31 0.32 0.33 0.32 (median 0.32 s): 29.4%, target at most 31%, met. Failure case: parent and commit inbox --json in the main checkout cmp 0 twice; in a scratch worktree after rhiza note add on an accept-listed change set, cmp 0; after rhiza withdraw of it, both binaries drop it (10 items), cmp 0. Fast path in inboxFold.load matches changeSetInfos with no pending entries (same stored rows). rhiza ship generate exit 0, rhiza render no diff, make self-check exit 0 in the clean checkout. No TODOs; no format or threshold changes. Note: internal/api/proposals.go is changed outside the leaf's files list (inbox code the profile names, said so in the commit); accepted as within the statement's internal/api scope."
+        },
+        "handle": "inbox-rest-cut-verified",
+        "id": "01M7PP0VTRDEYQCMBAGE8H0B7H",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PP0VTRDEYQCMBAGC9STYP2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PP0VTRDEYQCMBAGC9STYP2",
+        "id": "01M7PP0VXZZCFVG0FEMTCGAZD6",
+        "link": "01M7PP0VXZZCFVG0FEMRE2X9R4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3FX70P6S111HSJMKA3B88",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PP0W0PDQE88Q8QB5WRJQ9N",
+  "type": "ops",
+  "v": 1
+}

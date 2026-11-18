@@ -91,6 +91,10 @@ type builder struct {
 	// gave.
 	src    Source
 	srcErr error
+	// owned, when not nil, says b shares the records it did not create
+	// with a seed (see Seed.builder): it holds the IDs of the nodes and
+	// links whose fields, history and aspects b has copied and may write.
+	owned map[id.ID]struct{}
 }
 
 // newBuilder returns an empty builder whose links may name the change sets
@@ -149,17 +153,37 @@ func (b *builder) finishModel(clone bool) (Model, []Problem) {
 		kind   op.Kind
 		handle string
 	}
-	groups := map[place][]id.ID{}
+	// Two nodes share a place only when they share a handle, so the nodes
+	// are first keyed by handle alone, which is cheaper to hash than a
+	// place; only the handles more than one node holds are grouped by
+	// place. first holds the first node seen with each handle, and more
+	// every node of a handle that more than one holds.
+	first := make(map[string]id.ID, len(b.m.nodes))
+	more := map[string][]id.ID{}
 	for k, r := range b.m.nodes {
-		n := r.v
-		if n.Retired {
+		if r.v.Retired {
 			continue
 		}
-		p := place{parent: n.Parent, handle: n.Handle}
-		if !op.HasParent(n.Kind) {
-			p = place{kind: n.Kind, handle: n.Handle}
+		f, ok := first[r.v.Handle]
+		if !ok {
+			first[r.v.Handle] = k
+			continue
 		}
-		groups[p] = append(groups[p], k)
+		if more[r.v.Handle] == nil {
+			more[r.v.Handle] = []id.ID{f}
+		}
+		more[r.v.Handle] = append(more[r.v.Handle], k)
+	}
+	groups := map[place][]id.ID{}
+	for _, ns := range more {
+		for _, k := range ns {
+			n := &b.m.nodes[k].v
+			p := place{parent: n.Parent, handle: n.Handle}
+			if !op.HasParent(n.Kind) {
+				p = place{kind: n.Kind, handle: n.Handle}
+			}
+			groups[p] = append(groups[p], k)
+		}
 	}
 	var ps []Problem
 	for i, p := range b.problems {
@@ -250,6 +274,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 			}
 		}
 		current := o.Base == r.v.Version
+		b.ownNode(r)
 		b.effect(r, ref, o)
 		r.v.History = append(r.v.History, ref)
 		r.aspects = append(r.aspects, aspects(o))
@@ -268,6 +293,7 @@ func (b *builder) applyOp(cs id.ID, o op.Op) error {
 		if err != nil {
 			return err
 		}
+		b.ownLink(r)
 		r.v.Retired = true
 		r.v.History = append(r.v.History, ref)
 		r.aspects = append(r.aspects, aspects(o))
@@ -348,6 +374,7 @@ func (b *builder) createNode(ref Ref, o op.Op) error {
 			Version: o.ID, Created: ref.ChangeSet, History: []Ref{ref}},
 		aspects: [][]string{nil},
 	}
+	b.own(o.Node)
 	if op.HasParent(o.Kind) {
 		b.addChild(o.Parent, o.Node)
 	}
@@ -377,7 +404,40 @@ func (b *builder) createLink(ref Ref, o op.Op) error {
 			Version: o.ID, Created: ref.ChangeSet, History: []Ref{ref}},
 		aspects: [][]string{nil},
 	}
+	b.own(o.Link)
 	return nil
+}
+
+// own marks the node or link i as b's own, to write without copying.
+func (b *builder) own(i id.ID) {
+	if b.owned != nil {
+		b.owned[i] = struct{}{}
+	}
+}
+
+// ownNode copies node record r's fields, history and aspects before b
+// first writes it, when b shares them with a seed.
+func (b *builder) ownNode(r *record[Node]) {
+	if b.owned == nil {
+		return
+	}
+	if _, ok := b.owned[r.v.ID]; ok {
+		return
+	}
+	r.v, r.aspects = copyNode(r.v), slices.Clone(r.aspects)
+	b.owned[r.v.ID] = struct{}{}
+}
+
+// ownLink is ownNode for link record r.
+func (b *builder) ownLink(r *record[Link]) {
+	if b.owned == nil {
+		return
+	}
+	if _, ok := b.owned[r.v.ID]; ok {
+		return
+	}
+	r.v, r.aspects = copyLink(r.v), slices.Clone(r.aspects)
+	b.owned[r.v.ID] = struct{}{}
 }
 
 // checkMove checks a move of n: n sits in the tree, and its new parent can

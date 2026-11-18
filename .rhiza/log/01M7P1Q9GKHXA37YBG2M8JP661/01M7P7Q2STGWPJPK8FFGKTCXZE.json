@@ -1,0 +1,40 @@
+{
+  "actor": "01M7P7ARD9FT9PRJHRR3236JHZ",
+  "after": [
+    "01M7P7A0A3V33XDPKDC653689V"
+  ],
+  "at": "2026-11-18T02:28:01Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at eee179680 under decision api-tests-half-cpu-accept-at-60 (half-CPU line replaced by the measured ~60% cut: builder 193.69 s, earlier verifier 198.84 s user+sys of 321.25 s; profiled run not rerun per the ruling). Checks: block has before/after /usr/bin/time lines and pprof index.Open/catchUp/ensureSchema lines (index.Open 151.85s -> 70.12s). go test -trimpath -count=1 -p 2 -shuffle=11111 ./internal/api: exit 0 (174.1 s); -shuffle=22222: exit 0 (169.4 s). go test -list '.*' ./internal/api counts 839 (>= 838). go test -run TestSnapshotFixture -v: TestSnapshotFixtureCopyCatchesUpFromCopiedIndex PASS (an apply on a copy read back through the copy's index with Read=1, no rebuild; template index size and mtime unchanged, no -wal/-shm). Diff bda3b5d3d..eee179680 touches only internal/api *_test.go and .rhiza: no non-test code, no budget thresholds, TestWritesThroughIndexMatchFold untouched, each copy gets its own index file (templates under a per-binary snapshotDir removed at exit, so no cross-run index), no setup writes baked into the budgets' generated model (recordAda only reuses ctx's own index), no TODOs or skips."
+        },
+        "handle": "api-tests-copy-prebuilt-index-verified",
+        "id": "01M7P7Q2KHRB58PK6Y2RXND8DT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7P7Q2KHRB58PK6Y2NNAPHPS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7P7Q2KHRB58PK6Y2NNAPHPS",
+        "id": "01M7P7Q2P6TR1TKH2KEM2R9DGS",
+        "link": "01M7P7Q2P6TR1TKH2KEJV3HYB5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X412DYC423YKYB9Y917",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7P7Q2STGWPJPK8FFGKTCXZE",
+  "type": "ops",
+  "v": 1
+}

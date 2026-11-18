@@ -1,0 +1,271 @@
+{
+  "actor": "01M7PPPX1KPWWR3P7SH9AYAFTR",
+  "after": [
+    "01M7PP0W0PDQE88Q8QB5WRJQ9N",
+    "01M7PPWFH15TP42X1Q9X2K44DY"
+  ],
+  "at": "2026-11-18T07:01:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: go test -p 2 ./internal/api -run 'Inbox|Proposal|Plan|Parity|Projection|WhatIf|Snapshot|Fixture|Template' ok (23.5 s), incl. TestSnapshotFixtureCopyCatchesUpFromCopiedIndex; timing pairs read from the commit's Checks: block, not rerun."
+        },
+        "handle": "api-tests-copy-prebuilt-index-qa-1",
+        "id": "01M7PQC0VG2M4MRJV2S27TKGFP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC0VG2M4MRJV2S036P3S0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC0VG2M4MRJV2S036P3S0",
+        "id": "01M7PQC0WZ265JG3V01SQ7VH13",
+        "link": "01M7PQC0WZ265JG3V01QAWZH9J",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X412DYC423YKYB9Y917",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: rhiza check --json in the main checkout: same bytes and exit 0 from both binaries (10.2 s / 12.4 u base, 4.8 s / 5.1 u HEAD). In a scratch clone, an in-flight set linking evidence to a node and then retiring that node, and a set retiring a constraint with as-is links: both binaries give the same findings. go test ./internal/check ok."
+        },
+        "handle": "check-inflight-links-own-only-qa-1",
+        "id": "01M7PQC0YJ87GKBV4VTKK02AW0",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC0YJ87GKBV4VTHH58GHX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC0YJ87GKBV4VTHH58GHX",
+        "id": "01M7PQC102VXPQR61RPY1VX1J1",
+        "link": "01M7PQC102VXPQR61RPW4Z8YAQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: Scratch clone, rhiza check --json with one entry file pretty-printed, one truncated to invalid JSON ('entry: invalid: canon: invalid JSON: offset 11', exit 1) and one empty (exit 1): both binaries print identical bytes and exit codes each time. go test ./internal/store/... ./internal/entry/... ok."
+        },
+        "handle": "check-log-decode-cheaper-qa-1",
+        "id": "01M7PQC11JFPDF4GDGKGXXBXCW",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC11JFPDF4GDGKFH0QP6K",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC11JFPDF4GDGKFH0QP6K",
+        "id": "01M7PQC135N33Q0V00APZ5VRMC",
+        "link": "01M7PQC135N33Q0V00ANSQB8K0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: rhiza check --json in the main checkout and in a scratch clone with extra in-flight sets: same bytes and exit code from both binaries; HEAD 5.1 s user vs base 12.4 s. go test ./internal/model/... ./internal/check ok."
+        },
+        "handle": "check-whatif-finish-cheaper-qa-1",
+        "id": "01M7PQC14QB82H40Z1A46TSFYP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC14QB82H40Z1A29VCGJN",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC14QB82H40Z1A29VCGJN",
+        "id": "01M7PQC167ZHX8GDAS5XBDGG2Z",
+        "link": "01M7PQC167ZHX8GDAS5X3W4469",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: go test ./cmd/rhiza -run TestScripts/run-ship ok (39.8 s), RHIZA_/SHIP_/REX_ unset, capped scope; wall/CPU pairs read from the commit's Checks: block, not rerun."
+        },
+        "handle": "cold-run-ship-scripts-cut-qa-1",
+        "id": "01M7PQC17QVYDPQ8FTK6Y3MMCT",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC17QVYDPQ8FTK5D9WMCS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC17QVYDPQ8FTK5D9WMCS",
+        "id": "01M7PQC19DV62S2V9JW9SPCX64",
+        "link": "01M7PQC19DV62S2V9JW7XQTZWV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: rhiza inbox --json in the main checkout, warm, both binaries back to back: same bytes (10 items). In a scratch clone after rhiza accept of a proposed set and after rhiza note add, both binaries list the same items; the accepted set's item drops out. go test ./internal/api -run Inbox|Plan ok."
+        },
+        "handle": "inbox-blockers-cheaper-qa-1",
+        "id": "01M7PQC1B3726GMYBH6793CQ7M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1B3726GMYBH66QFXHE3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1B3726GMYBH66QFXHE3",
+        "id": "01M7PQC1CMB0630Y5MC6MM9F75",
+        "link": "01M7PQC1CMB0630Y5MC2RDHGTN",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: rhiza inbox --json: the ten accept items for uncovered proposed sets are identical between base and HEAD in the main checkout and the scratch clone; accepting one removes exactly its item in both binaries. go test ./internal/api -run Inbox|Proposal ok."
+        },
+        "handle": "inbox-proposals-overlay-once-qa-1",
+        "id": "01M7PQC1E5ZM9G76JG424Q2QYG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1E5ZM9G76JG3ZTMXFQK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1E5ZM9G76JG3ZTMXFQK",
+        "id": "01M7PQC1FPK71AE1M8JA0HVWXC",
+        "link": "01M7PQC1FPK71AE1M8J7NM67B3",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: Warm rhiza inbox in the main checkout: base 1.36/1.22 s (1.35/1.32 u), HEAD 0.35/0.46 s (0.31 u), same bytes. Scratch clone: after rhiza note add and after rhiza accept, HEAD and base list the same items, so no stale index or view is served."
+        },
+        "handle": "inbox-rest-cut-qa-1",
+        "id": "01M7PQC1H9Y5S6Z1AFDRC2MAB2",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1H9Y5S6Z1AFDMRQBAT8",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1H9Y5S6Z1AFDMRQBAT8",
+        "id": "01M7PQC1JXQ8MQN3BF4ESJH6B4",
+        "link": "01M7PQC1JXQ8MQN3BF4EPS992A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3FX70P6S111HSJMKA3B88",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: Scratch clone with XDG_CACHE_HOME in scratch: first HEAD inbox writes run-list/<hash>.gob (13 MB) under the cache dir only; second call 0.39 s. Cache garbage, truncated, empty, a directory in its place, and a read-only cache dir: each run exits 0 with bytes identical to base. Appending a 'stopped: open questions' entry to a journal shows a new open item in HEAD exactly as in base; restoring the journal (shrink) drops it; removing a journal rewrites the cache and matches base; HOME unset/no cache dir runs uncached and matches. go test ./internal/run ok."
+        },
+        "handle": "inbox-run-list-cached-qa-1",
+        "id": "01M7PQC1MGDGZ6323Y727JRYPP",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1MGDGZ6323Y71MQPG25",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1MGDGZ6323Y71MQPG25",
+        "id": "01M7PQC1P37S82MVGJN95N0D4V",
+        "link": "01M7PQC1P37S82MVGJN7YF99HJ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: go test ./cmd/rhiza -run TestScripts/run-ship ok under the changed harness (GC/one-P settings in cmd/rhiza/main_test.go), RHIZA_/SHIP_/REX_ unset; timing pair read from the commit's Checks: block, not rerun."
+        },
+        "handle": "scripts-top-cost-cut-qa-1",
+        "id": "01M7PQC1QNJ8AYT4PFK50C8ZM4",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1QNJ8AYT4PFK35JQ66P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1QNJ8AYT4PFK35JQ66P",
+        "id": "01M7PQC1SHFB8BBB7XNHXQ0WW9",
+        "link": "01M7PQC1SHFB8BBB7XNGRKGKVD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20X7FRK4EP2SSK5VYVRPZ",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with $TMPDIR/rhiza-qa built at HEAD 3bf00d3 vs $TMPDIR/rhiza-qabase at base bda3b5d: rhiza check --json same bytes base vs HEAD in the main checkout and with three extra in-flight entries (link, retire) in a scratch clone; go test ./internal/model/... ./internal/check ./internal/index/... ok."
+        },
+        "handle": "whatif-copies-only-written-qa-1",
+        "id": "01M7PQC1V5R7PGWBPZJ0B434ZK",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PQC1V5R7PGWBPZHWZ9730H",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PQC1V5R7PGWBPZHWZ9730H",
+        "id": "01M7PQC1WY1NTA6GNEATY80T76",
+        "link": "01M7PQC1WY1NTA6GNEARWKPW9D",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XK14P9JE95J3GQVS36H",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PQC1YP9NZA1YVWQBPCTTAH",
+  "type": "ops",
+  "v": 1
+}

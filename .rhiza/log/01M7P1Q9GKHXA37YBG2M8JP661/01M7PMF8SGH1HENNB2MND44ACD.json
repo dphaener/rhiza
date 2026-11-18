@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PMBXE6R53M7W02MH95Y81G",
+  "after": [
+    "01M7PM55KE4RWPKP3ZC8665S82"
+  ],
+  "at": "2026-11-18T06:10:57Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 493aa35f7: go test -trimpath -count=1 -p 2 ./internal/api -run 'Inbox|Proposal' exit 0 (12.3s), new TestInboxUncoveredProposalsOverlayOnce counts views via inboxFold.onProposalView over 4 proposed + 2 draft sets (no runs: 4 views; 2 covered: 2 views; all covered: 0), existing proposals tests unchanged and passing. Before/after binaries (HEAD~1 vs HEAD) in the main checkout, warm, back to back at load ~4: RHIZA_CPUPROFILE inboxUncoveredProposals 31.33%->16.28% and 33.82%->9.80%, WhatIfOverlayOver 28.92%->11.63% and 32.35%->3.92%; /usr/bin/time profiled 0.73->0.52 s, 0.62->0.53 s; unprofiled 0.54->0.46 s, 0.69->0.32 s. rhiza inbox --json before/after byte-identical (cmp). Diff touches only proposals.go, proposals_test.go and inbox.go's fold struct; no internal/index or internal/model change. make self-check in a clean detached worktree at HEAD exit 0."
+        },
+        "handle": "inbox-proposals-overlay-once-verified",
+        "id": "01M7PMF8PADWBQ4FYXTKHHF8S9",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PMF8PADWBQ4FYXTJ50XYVZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PMF8PADWBQ4FYXTJ50XYVZ",
+        "id": "01M7PMF8QRR8DKVDQ6P7VW2NWH",
+        "link": "01M7PMF8QRR8DKVDQ6P47W73VP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PMF8SGH1HENNB2MND44ACD",
+  "type": "ops",
+  "v": 1
+}

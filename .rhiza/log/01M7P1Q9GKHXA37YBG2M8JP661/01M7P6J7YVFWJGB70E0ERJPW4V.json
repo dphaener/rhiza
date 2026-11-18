@@ -1,0 +1,29 @@
+{
+  "actor": "01M7P5E06GVPXVR6APEM5M508H",
+  "after": [
+    "01M7P3J0AVRK0CQ0APC7100W52"
+  ],
+  "at": "2026-11-18T02:07:54Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf api-tests-copy-prebuilt-index: the half-CPU target (after user+sys at most 160.6 s, half of the before 321.25 s) is out of reach inside the leaf's files and must_not. Attempt 2 measured 193.69 s (144.08 user + 49.61 sys, 60% of before; attempt 1 199.77 s). Attempt 2 cut the 50,000-node model's throwaway index build in driverPollBudget (recordAda now records through ctx's index, TestReadBudget 39.9 s -> 29.9 s of samples) and moved TestRootIdlePoll's grown log into a snapshot (daemon-fold-98-grown-1100; the one build costs what the one catch-up did). What is left: GC 20 s; TestReadBudget 29.9 s, of which the 50,000-node model's one generation and index build (9.6 s) and the budgets' own setup writes, each new change set or actor record refolding that model's views (changeShowBudget change.new 4.8 s + warm-up 2.7 s, driverPollBudget newChange 2.5 s, actor record 4.1 s); TestRootIdlePoll 12.6 s (its 1100-change-set snapshot build); TestWritesThroughIndexMatchFold 11.4 s, whose fold side has no index on purpose (a throwaway index per write is its comparison); TestLinkEndpointKinds 6.3 s, TestPropertyProjectionParity 4.4 s. Cutting these means changing what the budgets measure on (setup writes baked into the generated model before it is indexed), sharing one index across runs of the binary, or dropping the fold side of TestWritesThroughIndexMatchFold, each against must_not or the test's meaning. Ruling asked: accept the leaf at 60% (the index setup the profile names cut as far as must_not allows), or name which of those trade-offs is allowed."
+        },
+        "handle": "api-tests-half-cpu-unreachable",
+        "id": "01M7P6J7WRJZ7G1F7FXY1533P2",
+        "key": null,
+        "kind": "question",
+        "node": "01M7P6J7WRJZ7G1F7FXXYGMKN9",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7P6J7YVFWJGB70E0ERJPW4V",
+  "type": "ops",
+  "v": 1
+}

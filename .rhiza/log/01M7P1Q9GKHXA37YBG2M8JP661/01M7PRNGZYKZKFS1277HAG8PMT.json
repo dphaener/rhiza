@@ -1,0 +1,202 @@
+{
+  "actor": "01M7PR63HBQ13ZW0JR5T3YPN4Q",
+  "after": [
+    "01M7PQC1YP9NZA1YVWQBPCTTAH",
+    "01M7PRM7XC41VAZBBEN9FBBM0H"
+  ],
+  "at": "2026-11-18T07:24:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d (go build -trimpath, never installed). rhiza check --json in the main checkout: both exit 0, identical bytes (user+sys 7.2 s HEAD vs 16.4 s base). In a scratch clone with the main checkout's .rhiza and runs, after rhiza note add and rhiza accept --rule owner entries, both binaries' check --json again identical, exit 0"
+        },
+        "handle": "check-inflight-links-own-only-qa-2",
+        "id": "01M7PRNFFZJVTZRGFAA8B29GWG",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNFFZJVTZRGFAA5NDBDN0",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNFFZJVTZRGFAA5NDBDN0",
+        "id": "01M7PRNFP5YMC59KDV2G3K1GXW",
+        "link": "01M7PRNFP5YMC59KDV2FQZSB4T",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d (go build -trimpath, never installed). rhiza check --json in the main checkout: both exit 0, identical bytes (user+sys 7.2 s HEAD vs 16.4 s base). In a scratch clone with the main checkout's .rhiza and runs, after rhiza note add and rhiza accept --rule owner entries, both binaries' check --json again identical, exit 0"
+        },
+        "handle": "check-log-decode-cheaper-qa-2",
+        "id": "01M7PRNFVJFAK3GPF4WC2EBFBJ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNFVJFAK3GPF4W9FW6MTZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNFVJFAK3GPF4W9FW6MTZ",
+        "id": "01M7PRNFXZKM0FJJYPTET8BMDJ",
+        "link": "01M7PRNFXZKM0FJJYPTDX8BYMM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d (go build -trimpath, never installed). rhiza check --json in the main checkout: both exit 0, identical bytes (user+sys 7.2 s HEAD vs 16.4 s base). In a scratch clone with the main checkout's .rhiza and runs, after rhiza note add and rhiza accept --rule owner entries, both binaries' check --json again identical, exit 0"
+        },
+        "handle": "check-whatif-finish-cheaper-qa-2",
+        "id": "01M7PRNG0E86P4WM32HD1XZYSH",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNG0E86P4WM32HBD5D59P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNG0E86P4WM32HBD5D59P",
+        "id": "01M7PRNG2TRMHDFB709ZQ97YHK",
+        "link": "01M7PRNG2TRMHDFB709YPE8HNA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9DSE7CVKCPE6RRH8AXN",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d (go build -trimpath, never installed). rhiza check --json in the main checkout: both exit 0, identical bytes (user+sys 7.2 s HEAD vs 16.4 s base). In a scratch clone with the main checkout's .rhiza and runs, after rhiza note add and rhiza accept --rule owner entries, both binaries' check --json again identical, exit 0"
+        },
+        "handle": "whatif-copies-only-written-qa-2",
+        "id": "01M7PRNG4Y8V9DW64JT690EM0Q",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNG4Y8V9DW64JT602M0XS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNG4Y8V9DW64JT602M0XS",
+        "id": "01M7PRNG8A3G10J8ER9GQZQ557",
+        "link": "01M7PRNG8A3G10J8ER9E0YT5X1",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XK14P9JE95J3GQVS36H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d. rhiza inbox --json warm in the main checkout: identical bytes, 10 items (HEAD 0.56 s vs base 1.0 s warm). In a scratch clone of the checkout with its .rhiza and run journals, under clean env -i: after rhiza note add the items are unchanged and identical on both; after rhiza accept --rule owner --change 01M7NVMG0EJFRJV03G025C6366 both list 9 items, identical bytes, so no stale index or view is served"
+        },
+        "handle": "inbox-blockers-cheaper-qa-2",
+        "id": "01M7PRNGBD5RXADGYZNQZ5DTSR",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNGBD5RXADGYZNP23N1H2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNGBD5RXADGYZNP23N1H2",
+        "id": "01M7PRNGDQMA007QKWN6R7YEK0",
+        "link": "01M7PRNGDQMA007QKWN3GVM6ED",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9G4SDMT389QMT2XMQE0",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d. rhiza inbox --json warm in the main checkout: identical bytes, 10 items (HEAD 0.56 s vs base 1.0 s warm). In a scratch clone of the checkout with its .rhiza and run journals, under clean env -i: after rhiza note add the items are unchanged and identical on both; after rhiza accept --rule owner --change 01M7NVMG0EJFRJV03G025C6366 both list 9 items, identical bytes, so no stale index or view is served"
+        },
+        "handle": "inbox-proposals-overlay-once-qa-2",
+        "id": "01M7PRNGJFMG6XSRZ7E47D5VRA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNGJFMG6XSRZ7E1RMXFAA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNGJFMG6XSRZ7E1RMXFAA",
+        "id": "01M7PRNGN5BSFB5HP8PA18Q4EP",
+        "link": "01M7PRNGN5BSFB5HP8P9CM4SW8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XEZF2EG09V98GMRZZ94",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d. rhiza inbox --json warm in the main checkout: identical bytes, 10 items (HEAD 0.56 s vs base 1.0 s warm). In a scratch clone of the checkout with its .rhiza and run journals, under clean env -i: after rhiza note add the items are unchanged and identical on both; after rhiza accept --rule owner --change 01M7NVMG0EJFRJV03G025C6366 both list 9 items, identical bytes, so no stale index or view is served"
+        },
+        "handle": "inbox-rest-cut-qa-2",
+        "id": "01M7PRNGQCKF2PJC6R4ZNZ3EYC",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNGQCKF2PJC6R4YNNWCJG",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNGQCKF2PJC6R4YNNWCJG",
+        "id": "01M7PRNGS55KEGJKN94TAM9H2H",
+        "link": "01M7PRNGS55KEGJKN94PFKN58V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P3FX70P6S111HSJMKA3B88",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "With XDG_CACHE_HOME set to a scratch dir, $TMPDIR/rhiza-qa inbox --json in a scratch copy wrote <cache>/rhiza/run-list/<hash>.gob (13 MB) outside the repo; cold, warm, and with the file replaced by random bytes, truncated, emptied, a directory in its place, a read-only run-list dir, and another store's cache file: every call exit 0 with bytes identical to the uncached base binary, and the bad file rewritten. Journal edits on a finished run (last line dropped, re-appended, end changed to failed, mtime touched, journal removed and restored): each call's inbox equal to the uncached base binary's (10/10/11/10/10/0/10 items). go test -trimpath -count=1 -p 2 ./internal/run ./internal/check passes. Built $TMPDIR/rhiza-qa at HEAD 639e806f6 and $TMPDIR/rhiza-qa-base at merge-base bda3b5d3d. rhiza inbox --json warm in the main checkout: identical bytes, 10 items (HEAD 0.56 s vs base 1.0 s warm). In a scratch clone of the checkout with its .rhiza and run journals, under clean env -i: after rhiza note add the items are unchanged and identical on both; after rhiza accept --rule owner --change 01M7NVMG0EJFRJV03G025C6366 both list 9 items, identical bytes, so no stale index or view is served"
+        },
+        "handle": "inbox-run-list-cached-qa-2",
+        "id": "01M7PRNGVH69JDX9366N99VTB7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PRNGVH69JDX9366KDDS6TJ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PRNGVH69JDX9366KDDS6TJ",
+        "id": "01M7PRNGXNVC6DBQGTF8DD7QP1",
+        "link": "01M7PRNGXNVC6DBQGTF63C9NTP",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PRNGZYKZKFS1277HAG8PMT",
+  "type": "ops",
+  "v": 1
+}

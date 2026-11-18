@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PGBXGXAX91GHHWC6RCDPZK",
+  "after": [
+    "01M7PGB91HD347Q4AS10B0YFPW"
+  ],
+  "at": "2026-11-18T05:00:06Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 845741f94 per decision cold-run-ship-accept-wall-short-of-60 (no timed or whole-package runs, per the ruling). Commit's Checks: block holds the before/after run-ship pair, both pprof -top -cum lines, the per-PID child profile, and the per-package lines (internal/api 370.225s, cmd/rhiza 182.433s, internal/index 71.255s vs base), with the 60% points recorded as MISSED. go test -trimpath -p 2 -list '.*' ./cmd/rhiza: 55 Test lines at 52037ffcb and at 845741f94, identical (diff empty). txtar count 400 both sides, no testdata file in the diff. Failure case in a scratch worktree at 845741f94: run-ship-change.txtar:186 'landed' -> 'abandoned', go test -trimpath -count=1 -p 2 ./cmd/rhiza -run 'TestScripts/run-ship-change$' exit 1 with 'run-ship-change.txtar:186: no match for ^- State: abandoned found in stdout'; reverted, same command exit 0. Diff 52037ffcb..845741f94 touches only cmd/rhiza/main_test.go (GOGC=off, GOMEMLIMIT=48MiB in setup) plus .rhiza/log and the builder's rendered actor: no internal/api edit, no non-test code, no script line changed."
+        },
+        "handle": "cold-run-ship-scripts-cut-verified-ruling",
+        "id": "01M7PGDHH7PB23J7JTSPN51H36",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PGDHH7PB23J7JTSKGZHAFA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PGDHH7PB23J7JTSKGZHAFA",
+        "id": "01M7PGDHJR986S1ARAC7NG1HX5",
+        "link": "01M7PGDHJR986S1ARAC7KFAHPB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9HGS6ACMZCBMGJKGXSS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PGDHMBX89RTWQAHK4KJNZ4",
+  "type": "ops",
+  "v": 1
+}

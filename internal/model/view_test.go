@@ -566,3 +566,48 @@ func TestCreatedBy(t *testing.T) {
 		t.Errorf("CreatedBy of a node with no history = %v, %v, want zero, false", got, ok)
 	}
 }
+
+// TestWhatIfRefusedOpSameProblem: a what-if view over a change set whose
+// op the fold refuses gives the problem it gave before what-if views shared
+// one analysis and keyed handles alone: the refused op's ErrMissing, a
+// handle held twice at one place as ErrHandle on the later node (but not a
+// handle held at two places), and a dependency's revision under its write as
+// ErrConflict, the same from the seed as from the whole log.
+func TestWhatIfRefusedOpSameProblem(t *testing.T) {
+	landed, draft := changeset.StateLanded, changeset.StateDraft
+	old := set(3, 1, 1, "statement", `"old"`)
+	cur := set(3, 1, 1, "statement", `"new"`)
+	depA := written(vSet(csA, draft, mkCap(2, 2, "dup", 1, "a"), cur), 1, 1)
+	depA.History[cur.ID] = []changeset.Revision{{Entry: entry(1), Op: old}, {Entry: entry(3), Op: cur}}
+	sets := []changeset.ChangeSet{
+		vSet(csID(6), landed, mkCap(1, 1, "root", 0, ""), mkCap(9, 9, "other", 0, ""),
+			mkCap(10, 10, "dup", 9, "b")),
+		depA,
+		written(vSet(csB, draft, dependsOn(4, 1, csB, csA), set(5, 1, 3, "statement", `"b"`),
+			set(6, 7, 1, "status", `"gone"`), mkCap(7, 3, "dup", 1, "c")), 2, 2, 2, 2),
+	}
+	wantMsgs := []string{
+		"model: conflict: change set " + csA.String() + " revised op " + fid(3).String() + " on " + nd(1).String() +
+			" (field:statement) after op " + fid(5).String() + " was written",
+		"model: not found: node " + nd(7).String(),
+		"model: duplicate handle: node " + nd(3).String() + ` has handle "dup", already held by node ` + nd(2).String(),
+	}
+	check := func(t *testing.T, ps []Problem) {
+		t.Helper()
+		checkProblems(t, ps, []want{{csB, 5, ErrConflict}, {csB, 6, ErrMissing}, {csB, 7, ErrHandle}})
+		for i, p := range ps {
+			if got := p.Err.Error(); got != wantMsgs[i] {
+				t.Errorf("problem %d = %q, want %q", i, got, wantMsgs[i])
+			}
+		}
+	}
+	m, ps := WhatIf(sets, csB)
+	check(t, ps)
+	if _, ok := m.Node(nd(7)); ok {
+		t.Errorf("the refused op's node 7 is in the view")
+	}
+	_, _, seed := AsIsSeed(sets)
+	mf, psf := WhatIfFrom(seed, sets, csB)
+	check(t, psf)
+	sameView(t, "from seed", m, ps, mf, psf)
+}

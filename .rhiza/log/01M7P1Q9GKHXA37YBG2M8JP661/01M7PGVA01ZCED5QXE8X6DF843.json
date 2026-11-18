@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PGM66T72WY8H42RQ8EGFFS",
+  "after": [
+    "01M7PGDHMBX89RTWQAHK4KJNZ4"
+  ],
+  "at": "2026-11-18T05:07:37Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At adbc9aeb4: go test -trimpath -count=1 -p 2 ./internal/check/... ok; TestRunInFlightLinks passes and covers an own bad link per set reported once as in-flight, the as-is bad link by the link rule only (once, fail), and the failure case (bad link whose from end the same set retires is still reported), plus equality with the old badLinks-over-every-view rule. Diff touches only internal/check/check.go and check_test.go (plus the actor record); no internal/model change, finding text/rule/severity unchanged. Back to back in the main checkout (load ~5.7): base 845741f94 rhiza check 10.66 s, checker.inFlightLinks 2.16s cum = 14.56% of 14.84s samples; after 8.21 s, inFlightLinks no samples; stdout and stderr findings identical, both exit 0. make self-check in this worktree fails only on uncommitted run state; from a clean detached checkout at adbc9aeb4 it fails only on .rhiza/rendered/index.md lacking actor claude-code-feeecdbd (this leaf's) plus claude-code-376e0ebe and claude-code-a8b56767, stale since base 845741f94, which fails the same way; rhiza render at land fixes it"
+        },
+        "handle": "check-inflight-links-own-only-verified",
+        "id": "01M7PGV9W136ZF1R1APDQVNW25",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PGV9W136ZF1R1APB7AT77P",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PGV9W136ZF1R1APB7AT77P",
+        "id": "01M7PGV9XKS447ECA23F721X73",
+        "link": "01M7PGV9XKS447ECA23E4QMAJG",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XPG0C2NH160Z2RHJCGS",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PGVA01ZCED5QXE8X6DF843",
+  "type": "ops",
+  "v": 1
+}

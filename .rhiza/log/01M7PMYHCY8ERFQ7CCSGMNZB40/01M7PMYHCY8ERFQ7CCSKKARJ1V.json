@@ -1,0 +1,15 @@
+{
+  "actor": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "after": [],
+  "at": "2026-11-18T06:19:17Z",
+  "body": {
+    "intent": "Record agent actor claude-code-e28d3814 for session e28d3814-cdbf-4cc6-8ac0-01a1ed4f4275",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7PMYHCY8ERFQ7CCSGMNZB40",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7PMYHCY8ERFQ7CCSKKARJ1V",
+  "type": "open",
+  "v": 1
+}

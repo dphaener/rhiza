@@ -1017,3 +1017,87 @@ func TestRunNote(t *testing.T) {
 		}
 	})
 }
+
+// TestRunInFlightLinks checks the in-flight link rule, which looks only at
+// the links each in-flight set created, against the rule it replaced:
+// badLinks over every link of every what-if view, keeping those the set
+// created.
+func TestRunInFlightLinks(t *testing.T) {
+	r := newRepo(t)
+	intent, capab, capOp := cleanOps(r)
+	asIsBad := r.next()
+	r.record("Bad", mkLink(r.next(), asIsBad, op.LinkDiscusses, capab, intent))
+
+	// A writes a bad link and a good one.
+	a := r.open(changeset.KindIntention, "A")
+	aBad, aBadOp, note := r.next(), r.next(), r.next()
+	a.then(changeset.Ops{Ops: []op.Op{
+		mkLink(aBadOp, aBad, op.LinkDiscusses, capab, intent),
+		mkNode(r.next(), note, op.KindNote, "remark"),
+		mkLink(r.next(), r.next(), op.LinkDiscusses, note, capab),
+	}})
+	// B writes nothing, so its what-if holds only the as-is bad link.
+	r.open(changeset.KindIntention, "B")
+	// C writes a bad link and retires its from end in another op: the link
+	// stays live and bad, so it is still reported. It also writes a bad
+	// link and retires it, which is not.
+	c := r.open(changeset.KindIntention, "C")
+	cBad, cBadOp, cGone, cGoneOp := r.next(), r.next(), r.next(), r.next()
+	c.then(changeset.Ops{Ops: []op.Op{
+		mkLink(cBadOp, cBad, op.LinkDiscusses, capab, intent),
+		{ID: r.next(), Type: op.TypeNodeRetire, Node: capab, Base: capOp, Reason: "gone"},
+		mkLink(cGoneOp, cGone, op.LinkDiscusses, capab, intent),
+	}})
+	c.then(changeset.Ops{Ops: []op.Op{{ID: r.next(), Type: op.TypeLinkRetire, Link: cGone, Base: cGoneOp}}})
+
+	rep := Run(r.input())
+	links := ofRule(rep, RuleLink)
+	if len(links) != 1 || links[0].Link != asIsBad.String() || links[0].Severity != SeverityFail {
+		t.Fatalf("link findings %+v", links)
+	}
+	var got []Finding
+	for _, f := range ofRule(rep, RuleInFlight) {
+		if f.Link != "" {
+			got = append(got, f)
+		}
+	}
+	want := []Finding{
+		{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: a.id.String(), Op: aBadOp.String(), Link: aBad.String(),
+			Message: `link type "discusses" does not go from capability to intent`},
+		{Severity: SeverityWarn, Rule: RuleInFlight, ChangeSet: c.id.String(), Op: cBadOp.String(), Link: cBad.String(),
+			Message: `link type "discusses" does not go from capability to intent`},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("in-flight link findings\n got %+v\nwant %+v", got, want)
+	}
+
+	// The rule it replaced gives the same findings.
+	l := store.ReadLog(r.files)
+	sets, _ := changeset.FoldLog(l)
+	var ck checker
+	_, wis := ck.model(sets)
+	ck.findings = nil
+	ck.inFlightLinks(sets, wis)
+	var old []Finding
+	seen := map[id.ID]bool{}
+	for _, s := range sets {
+		if _, ok := wis[s.ID]; !ok {
+			continue
+		}
+		for _, b := range badLinks(wis[s.ID], sets) {
+			if b.Created != s.ID || seen[b.ID] {
+				continue
+			}
+			seen[b.ID] = true
+			old = append(old, linkFinding(SeverityWarn, RuleInFlight, b))
+		}
+	}
+	sortFindings := func(fs []Finding) {
+		slices.SortFunc(fs, func(x, y Finding) int { return strings.Compare(x.Link, y.Link) })
+	}
+	sortFindings(old)
+	sortFindings(ck.findings)
+	if !reflect.DeepEqual(ck.findings, old) || len(old) != 2 {
+		t.Fatalf("own-links rule\n got %+v\nold rule %+v", ck.findings, old)
+	}
+}

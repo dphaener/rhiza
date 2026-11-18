@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PM1BN9XASYB54MJYXVVBXR",
+  "after": [
+    "01M7PKFD2915R0RHKJMW4EBWGT"
+  ],
+  "at": "2026-11-18T06:05:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at c292adb2f. go test -trimpath -count=1 -p 2 ./internal/run: ok (TestStoreListDiskCacheParsesOnlyChanged, TestStoreListDiskCacheIgnoresBadFile corrupt/garbage/other version, TestStoreListNoDiskCacheWritesNothing pass; with diskStore's DiskCache flipped off in a scratch worktree the first fails 'parsed 3 journals, want only the appended one', so it needs the on-disk cache). Tests set XDG_CACHE_HOME and HOME to TempDirs; ~/.cache/rhiza/run-list untouched by the test runs. go test -trimpath -count=1 -p 2 ./internal/api -run Inbox: ok 12.5s. cmd/rhiza TestScripts/(inbox-.*|tui-inbox-app)$ with RHIZA_/SHIP_/REX_ unset: ok. Profile pairs in ~/code/rhiza, base a7e6ab696 vs leaf, warm call first, back to back at load ~4.6: run.(*Store).List 27.48% (360ms) -> 13.04% (90ms) and 37.84% (560ms) -> 10.29% (70ms); /usr/bin/time warm call 1.14 s -> 0.72 s and 1.35 s -> 0.62 s. rhiza inbox --json base vs leaf byte-identical. Diff touches only store.go, store_test.go and inbox.go's two rs.List call sites (plus the leaf's .rhiza records); no TODOs, journal format and List output unchanged."
+        },
+        "handle": "inbox-run-list-cached-verified",
+        "id": "01M7PM55G675AKGHWR04R2KPWQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PM55G675AKGHWR02RNA9N7",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PM55G675AKGHWR02RNA9N7",
+        "id": "01M7PM55HSKXVQVCQ5BVB9YBBQ",
+        "link": "01M7PM55HSKXVQVCQ5BRBHHBKT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P20XBYDN7HR4ZRG7W101HX",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PM55KE4RWPKP3ZC8665S82",
+  "type": "ops",
+  "v": 1
+}

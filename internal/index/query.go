@@ -335,6 +335,31 @@ func (x *Index) ChangeSets() ([]ChangeSetInfo, error) {
 	return out, rows.Err()
 }
 
+// ChangeSetStates returns the state of every folded change set, by ID:
+// ChangeSets' ID and State columns alone, for a reader that needs no more.
+// The other columns, the intent's text above all, are most of what reading
+// every row costs.
+func (x *Index) ChangeSetStates() (map[id.ID]changeset.State, error) {
+	var n int
+	if err := x.db.QueryRow(`SELECT count(*) FROM change_sets`).Scan(&n); err != nil {
+		return nil, err
+	}
+	rows, err := x.db.Query(`SELECT id, state FROM change_sets`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make(map[id.ID]changeset.State, n)
+	for rows.Next() {
+		var cid, state string
+		if err := rows.Scan(&cid, &state); err != nil {
+			return nil, err
+		}
+		out[parseID(cid)] = changeset.State(state)
+	}
+	return out, rows.Err()
+}
+
 // StoredEntry returns the canonical bytes the index stored for entry eid of
 // change set cs, and whether it has them. The bytes are what the entry file
 // held when the index read it, so they survive a later overwrite of the

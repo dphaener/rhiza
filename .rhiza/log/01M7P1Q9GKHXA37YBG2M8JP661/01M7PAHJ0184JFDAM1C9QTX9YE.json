@@ -1,0 +1,29 @@
+{
+  "actor": "01M7P7QS61A9J9DPTX7YW71K8P",
+  "after": [
+    "01M7P7Q2STGWPJPK8FFGKTCXZE"
+  ],
+  "at": "2026-11-18T03:17:26Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "Leaf scripts-top-cost-cut: the 15% CPU cut (after user+sys at most 85% of the before) is out of reach inside the leaf's files and must_not. Measured back to back, go test -trimpath -count=1 -p 2 -cpuprofile ./cmd/rhiza -run TestScripts: before 371.95 s (196.85 user + 175.10 sys), after 324.96 s (168.71 + 156.25), a 12.6% cut (target <= 316.2 s); an earlier pair 364.27 -> 332.95 s with GOMAXPROCS alone. The cut: setup gives every Go process a script starts GOMAXPROCS=1 (each rhiza process's scheduler and GC threads spread over 4 cores), and the scripts' global git config turns off maintenance.auto and gc.auto (1645 detached git maintenance run --auto per suite). The test process's own pprof is only ~36 s of the ~370 s; the rest is ~107k child processes (strace): 44.5k git (rev-parse --git-common-dir 9k from the CLI's test-mode ID offset, user.email 2.9k, show-prefix 2.3k, rhiza.project.agent 2.1k, worktree list 1.9k, all from non-test rhiza code), ~6.1k rhiza processes (~11-13 ms CPU each to start, internal/web's init 4.6 ms of it), 4k sh, 3k sleep 0.025 polls in fake bin/ scripts. Tried and rejected: GOGC=200/400/off+GOMEMLIMIT (more CPU),  on tmpfs (no gain). Going further means changing non-test code (fewer git calls per command, a cheaper internal/web init) or rewriting the scripts' fake bin/ polling lines, both against must_not. Ruling asked: accept the leaf at 12.6%, or name which trade-off is allowed."
+        },
+        "handle": "scripts-cpu-15pct-unreachable",
+        "id": "01M7PAHHYYKK39VC5N5ZQTFE18",
+        "key": null,
+        "kind": "question",
+        "node": "01M7PAHHYYKK39VC5N5XE1QR98",
+        "op": "node.create",
+        "parent": null
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PAHJ0184JFDAM1C9QTX9YE",
+  "type": "ops",
+  "v": 1
+}

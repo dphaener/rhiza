@@ -1,0 +1,40 @@
+{
+  "actor": "01M7PH60ERQRSHEPP9F8ZCF5QG",
+  "after": [
+    "01M7PGVA01ZCED5QXE8X6DF843"
+  ],
+  "at": "2026-11-18T05:15:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at f865e9a2c (verifier, attempt 1). go test -trimpath -count=1 -p 2 ./internal/store/... ./internal/entry/...: exit 0. Failure case: TestReadEntriesBadFilesSameErrors (non-canonical, unparsable and canonical-but-invalid entry files) passes with the parent adbc9aeb4's entry.go too, so errors are unchanged. make self-check in a detached clean worktree at f865e9a2c: exit 0. RHIZA_CPUPROFILE of rhiza check --json in the main checkout, back to back at load ~5: before (adbc9aeb4) 7.96 s wall, 9.44 user + 2.01 sys = 11.45 s CPU; pprof -top -cum store.readEntries.func1 15.45%, store.readEntries 3.88%, entry.Decode 12.10%, canon.Canonicalize 11.02% of 11.07 s. After 7.31 s wall, 7.77 user + 1.93 sys = 9.70 s CPU; store.readEntries.func1 9.61%, store.readEntries 2.38%, entry.Decode 5.29%, canon.Canonicalize 8.96% of 9.26 s. readEntries share fell. Before and after rhiza check --json: same bytes (cmp), both exit 0. Diff touches only internal/entry/entry.go and internal/store/read_test.go plus .rhiza records; Decode still runs canon.Check first and every envelope rule; existing tests unchanged; no TODOs."
+        },
+        "handle": "check-log-decode-cheaper-verified",
+        "id": "01M7PH944K7VY618ZKYNFJZ21S",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7PH944K7VY618ZKYMQYJJY2",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7PH944K7VY618ZKYMQYJJY2",
+        "id": "01M7PH947111EGYZAR0T0QDT0R",
+        "link": "01M7PH947111EGYZAR0PA2WRP9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7P2X9C68DXSQNHA0QFRKTRM",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7P1Q9GKHXA37YBG2M8JP661",
+  "for": "01M7P3QR3XCV5EK2PK4EPFSHVT",
+  "id": "01M7PH9493J6FETZ0BA4HNW4HA",
+  "type": "ops",
+  "v": 1
+}

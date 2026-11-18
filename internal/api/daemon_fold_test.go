@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -46,15 +47,107 @@ type daemonFoldFix struct {
 	runsDir   string
 }
 
-func newDaemonFoldFix(t testing.TB) *daemonFoldFix { return newDaemonFoldFixN(t, 98, nil) }
+func newDaemonFoldFix(t testing.TB) *daemonFoldFix { return newDaemonFoldFixN(t, 98, 0) }
+
+// daemonFoldSeed is the snapshot of newDaemonFoldFixN's repository for one
+// count of done change sets and of the change sets the log grows to, built
+// once per binary: a landed milestone, done change sets landed in one step
+// each, then six in flight, the first accepted (target) and the next three
+// proposed (proposed), with the build's IDs kept so every copy knows them;
+// then, when grown is set, the landed ones copied until the log holds grown
+// change sets (growLog), so the template's index is caught up with them too.
+type daemonFoldSeed struct {
+	snap     *snapshot
+	target   string
+	proposed []string
+}
+
+// daemonFoldSeeds holds a daemonFoldSeed per count of done change sets.
+var daemonFoldSeeds sync.Map // [2]int{done, grown} -> *daemonFoldSeed
+
+// daemonFoldSeedOf returns the seed for done change sets and a log grown to
+// grown change sets (none when 0), registering it on first use. The seed that wins the store is the one whose build runs, so
+// its fields are the ones its snapshot's build wrote.
+func daemonFoldSeedOf(done, grown int) *daemonFoldSeed {
+	key := [2]int{done, grown}
+	if v, ok := daemonFoldSeeds.Load(key); ok {
+		return v.(*daemonFoldSeed)
+	}
+	seed := &daemonFoldSeed{}
+	seed.snap = &snapshot{name: fmt.Sprintf("daemon-fold-%d-grown-%d", done, grown), build: func(dir string) (*Ctx, error) {
+		ctx, err := buildInit(dir)
+		if err != nil {
+			return nil, err
+		}
+		call := func(name, req string) (any, error) { return runOp(ctx, name, req) }
+		calls := func(reqs ...[2]string) error {
+			for _, r := range reqs {
+				if _, err := call(r[0], r[1]); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+		propose, accept, land := [2]string{"propose", `{}`}, [2]string{"accept", `{"reason":"ok"}`}, [2]string{"land", `{}`}
+		// A milestone, landed.
+		if err := calls(
+			[2]string{"change.new", `{"intent":"Milestone"}`},
+			[2]string{"add", `{"kind":"intent","handle":"org"}`},
+			[2]string{"add", `{"kind":"intent","handle":"m","parent":"org","json_fields":["milestone=null"]}`},
+			[2]string{"set", `{"ref":"m","fields":["milestone=1"]}`},
+			propose, accept, land,
+		); err != nil {
+			return nil, err
+		}
+		// Many change sets landed in one step each, then a few in flight.
+		rec := *ctx
+		rec.Record = true
+		for i := range done {
+			if _, err := runOp(&rec, "add", fmt.Sprintf(`{"kind":"capability","handle":"done-%d"}`, i)); err != nil {
+				return nil, err
+			}
+		}
+		for i := range 6 {
+			resp, err := call("change.new", fmt.Sprintf(`{"intent":"Work %d"}`, i))
+			if err != nil {
+				return nil, err
+			}
+			cs := resp.(ChangeNewResponse).ChangeSet.String()
+			if _, err := call("add", fmt.Sprintf(`{"kind":"capability","handle":"cap-%d"}`, i)); err != nil {
+				return nil, err
+			}
+			switch {
+			case i == 0:
+				if err := calls([2]string{"link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"m"}`, cs)}, propose, accept); err != nil {
+					return nil, err
+				}
+				seed.target = cs
+			case i < 4:
+				if err := calls(propose); err != nil {
+					return nil, err
+				}
+				seed.proposed = append(seed.proposed, cs)
+			}
+		}
+		if grown > 0 {
+			if err := growLog(filepath.Join(ctx.Root, store.Dir, store.LogDir), grown); err != nil {
+				return nil, err
+			}
+		}
+		return ctx, nil
+	}}
+	v, _ := daemonFoldSeeds.LoadOrStore(key, seed)
+	return v.(*daemonFoldSeed)
+}
 
 // newDaemonFoldFixN is newDaemonFoldFix with done change sets landed in
-// one step each. grow, when set, is called with the log folder once the
-// change sets are written, to add more of them directly.
-func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemonFoldFix {
+// one step each and, when grown is set, the log grown to grown change sets
+// by copying them directly (growLog). The repository is a copy of
+// daemonFoldSeedOf(done, grown)'s snapshot, its index with it.
+func newDaemonFoldFixN(t testing.TB, done, grown int) *daemonFoldFix {
 	t.Helper()
-	ctx := testCtx(t, t.TempDir())
-	ctx.IndexPath = filepath.Join(t.TempDir(), "index.db")
+	seed := daemonFoldSeedOf(done, grown)
+	_, ctx := seed.snap.copy(t)
 	call := func(name, req string) any {
 		o, _ := Lookup(name)
 		r, err := DecodeRequest(o, []byte(req))
@@ -67,44 +160,8 @@ func newDaemonFoldFixN(t testing.TB, done int, grow func(logDir string)) *daemon
 		}
 		return resp
 	}
-	call("init", `{}`)
-	f := &daemonFoldFix{call: call, config: map[string]string{}, ctx: ctx, pending: map[string]daemonPending{}, unj: map[string]daemonPending{}, clock: ctx.Now()}
-	// A milestone, landed.
-	call("change.new", `{"intent":"Milestone"}`)
-	call("add", `{"kind":"intent","handle":"org"}`)
-	call("add", `{"kind":"intent","handle":"m","parent":"org","json_fields":["milestone=null"]}`)
-	call("set", `{"ref":"m","fields":["milestone=1"]}`)
-	f.lifecycle(call, "propose", "accept", "land")
-	// Many change sets landed in one step each, then a few in flight.
-	rec := *ctx
-	rec.Record = true
-	for i := range done {
-		o, _ := Lookup("add")
-		r, err := DecodeRequest(o, []byte(fmt.Sprintf(`{"kind":"capability","handle":"done-%d"}`, i)))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := o.Run(&rec, r); err != nil {
-			t.Fatal(err)
-		}
-	}
-	var proposed []string
-	for i := range 6 {
-		cs := call("change.new", fmt.Sprintf(`{"intent":"Work %d"}`, i)).(ChangeNewResponse).ChangeSet
-		call("add", fmt.Sprintf(`{"kind":"capability","handle":"cap-%d"}`, i))
-		switch {
-		case i == 0:
-			call("link", fmt.Sprintf(`{"from":%q,"type":"serves","to":"m"}`, cs.String()))
-			f.lifecycle(call, "propose", "accept")
-			f.target = cs.String()
-		case i < 4:
-			call("propose", `{}`)
-			proposed = append(proposed, cs.String())
-		}
-	}
-	if grow != nil {
-		grow(filepath.Join(ctx.Root, store.Dir, store.LogDir))
-	}
+	f := &daemonFoldFix{call: call, config: map[string]string{}, ctx: ctx, pending: map[string]daemonPending{}, unj: map[string]daemonPending{}, clock: ctx.Now(), target: seed.target}
+	proposed := seed.proposed
 	// The log is old news: a folder changed in the last clock ticks is not
 	// a stamp to trust.
 	old := time.Now().Add(-time.Hour)
@@ -394,7 +451,7 @@ func TestDaemonPollCacheInvalidates(t *testing.T) {
 // log.
 func TestDaemonFoldIndexedMatchesLog(t *testing.T) {
 	t.Parallel()
-	f := newDaemonFoldFixN(t, 2, nil)
+	f := newDaemonFoldFixN(t, 2, 0)
 	bare := f.call("change.new", `{"intent":"No leaves"}`).(ChangeNewResponse).ChangeSet
 	f.call("add", `{"kind":"intent","handle":"bare-intent"}`)
 	f.call("propose", `{}`)

@@ -299,42 +299,115 @@ type planBlocker struct {
 	target   id.ID
 }
 
-// planCore computes every in-flight change set's verdict, the roadmap
-// groups and the ready order from in, as the file comment says.
-func planCore(in planInputs) planResult {
-	// The view's live links, each once, by end.
-	seen := map[id.ID]bool{}
-	byEnd := map[id.ID][]gmodel.Link{}
+// planLinks is the view's live links of planInputs, each once, by end,
+// and which questions are open, as planCore and planBlockersOnly read
+// them.
+type planLinks struct {
+	in planInputs
+	// seen is every link ID in in.links, live or retired.
+	seen map[id.ID]bool
+	// byEnd is the live links at each end, byTo those to each node, sorted
+	// by ID.
+	byEnd, byTo map[id.ID][]gmodel.Link
+}
+
+func newPlanLinks(in planInputs) planLinks {
+	pl := planLinks{in: in, seen: map[id.ID]bool{}, byEnd: map[id.ID][]gmodel.Link{}, byTo: map[id.ID][]gmodel.Link{}}
 	var live []gmodel.Link
 	for _, l := range in.links {
-		if l.Retired || seen[l.ID] {
-			seen[l.ID] = true
+		if l.Retired || pl.seen[l.ID] {
+			pl.seen[l.ID] = true
 			continue
 		}
-		seen[l.ID] = true
+		pl.seen[l.ID] = true
 		live = append(live, l)
 	}
 	slices.SortFunc(live, func(a, b gmodel.Link) int { return id.Compare(a.ID, b.ID) })
-	byTo := map[id.ID][]gmodel.Link{}
 	for _, l := range live {
-		byEnd[l.From] = append(byEnd[l.From], l)
+		pl.byEnd[l.From] = append(pl.byEnd[l.From], l)
 		if l.To != l.From {
-			byEnd[l.To] = append(byEnd[l.To], l)
+			pl.byEnd[l.To] = append(pl.byEnd[l.To], l)
 		}
-		byTo[l.To] = append(byTo[l.To], l)
+		pl.byTo[l.To] = append(pl.byTo[l.To], l)
 	}
-	open := func(q id.ID) bool {
-		n, ok := in.nodes[q]
-		if !ok || n.Retired || n.Kind != op.KindQuestion {
+	return pl
+}
+
+// open reports whether q is a live question the view has with no answers
+// link to it.
+func (pl planLinks) open(q id.ID) bool {
+	n, ok := pl.in.nodes[q]
+	if !ok || n.Retired || n.Kind != op.KindQuestion {
+		return false
+	}
+	for _, l := range pl.byTo[q] {
+		if l.Type == op.LinkAnswers {
 			return false
 		}
-		for _, l := range byTo[q] {
-			if l.Type == op.LinkAnswers {
-				return false
+	}
+	return true
+}
+
+// of is the intents in-flight change set c's live links (planLinksOf)
+// serve, unsorted, and the open questions blocking it, sorted as the
+// reasons say: on c itself, or on a node it touches, one it moves or
+// creates a node under, or an ancestor of either.
+func (pl planLinks) of(c id.ID) (serves []id.ID, blockers []planBlocker) {
+	in := pl.in
+	for _, l := range planLinksOf(c, pl.byEnd[c], pl.seen, in.ops[c]) {
+		switch {
+		case l.From == c && l.Type == op.LinkServes:
+			serves = append(serves, l.To)
+		case l.To == c && l.Type == op.LinkBlocks && pl.open(l.From):
+			blockers = append(blockers, planBlocker{question: l.From, target: c})
+		}
+	}
+	touched, parents := planTouched(in.ops[c])
+	targets := map[id.ID]bool{}
+	for _, t := range touched {
+		targets[t] = true
+		for _, a := range in.ancestors[t] {
+			targets[a] = true
+		}
+		for _, p := range parents[t] {
+			if as, ok := in.ancestors[p]; ok {
+				targets[p] = true
+				for _, a := range as {
+					targets[a] = true
+				}
 			}
 		}
-		return true
 	}
+	for t := range targets {
+		for _, l := range pl.byTo[t] {
+			if l.Type == op.LinkBlocks && pl.open(l.From) {
+				blockers = append(blockers, planBlocker{question: l.From, target: t})
+			}
+		}
+	}
+	return serves, planSortBlockers(c, blockers, in.nodes)
+}
+
+// planBlockersOnly is each in-flight change set of in, in ID order, with
+// only its info and its blockers set, as planCore sets them: it runs no
+// dependency analysis, so in may come from planGatherBlockers.
+func planBlockersOnly(in planInputs) []*planChangeSet {
+	pl := newPlanLinks(in)
+	var out []*planChangeSet
+	for _, c := range in.changeSets {
+		if !planInFlight(c.State) {
+			continue
+		}
+		_, blockers := pl.of(c.ID)
+		out = append(out, &planChangeSet{info: c, blockers: blockers})
+	}
+	return out
+}
+
+// planCore computes every in-flight change set's verdict, the roadmap
+// groups and the ready order from in, as the file comment says.
+func planCore(in planInputs) planResult {
+	pl := newPlanLinks(in)
 	states := map[id.ID]changeset.State{}
 	for _, c := range in.changeSets {
 		states[c.ID] = c.State
@@ -348,39 +421,8 @@ func planCore(in planInputs) planResult {
 			continue
 		}
 		p := &planChangeSet{info: c}
-		links := planLinksOf(c.ID, byEnd[c.ID], seen, in.ops[c.ID])
 		var blockers []planBlocker
-		for _, l := range links {
-			switch {
-			case l.From == c.ID && l.Type == op.LinkServes:
-				p.serves = append(p.serves, l.To)
-			case l.To == c.ID && l.Type == op.LinkBlocks && open(l.From):
-				blockers = append(blockers, planBlocker{question: l.From, target: c.ID})
-			}
-		}
-		touched, parents := planTouched(in.ops[c.ID])
-		targets := map[id.ID]bool{}
-		for _, t := range touched {
-			targets[t] = true
-			for _, a := range in.ancestors[t] {
-				targets[a] = true
-			}
-			for _, p := range parents[t] {
-				if as, ok := in.ancestors[p]; ok {
-					targets[p] = true
-					for _, a := range as {
-						targets[a] = true
-					}
-				}
-			}
-		}
-		for t := range targets {
-			for _, l := range byTo[t] {
-				if l.Type == op.LinkBlocks && open(l.From) {
-					blockers = append(blockers, planBlocker{question: l.From, target: t})
-				}
-			}
-		}
+		p.serves, blockers = pl.of(c.ID)
 		p.serves = planSortIDs(p.serves)
 		p.dependsOn = an.DependsOn(c.ID)
 
@@ -399,7 +441,7 @@ func planCore(in planInputs) planResult {
 			p.reasons = append(p.reasons, fmt.Sprintf("rests on %s (%s): %d operations", shortID(r.ChangeSet), r.State, len(r.Ops)))
 		}
 		p.reasons = append(p.reasons, planRevisedReasons(an.Revised(c.ID))...)
-		p.blockers = planSortBlockers(c.ID, blockers, in.nodes)
+		p.blockers = blockers
 		for _, b := range p.blockers {
 			on := "this change set"
 			if b.target != c.ID {
@@ -740,6 +782,20 @@ const planCycleReason = "depends-on cycle"
 // it climbs on its own; every query stays within index.BatchOne, so no
 // third connection is opened.
 func planGather(r *reader) (planInputs, error) {
+	return planGatherWith(r, true)
+}
+
+// planGatherBlockers is planGather for planBlockersOnly: in.sets holds the
+// in-flight change sets alone, since it reads neither the dropped change
+// sets an op may rest on nor the landed ones (planLanded, planLandedDeps)
+// that only the dependency analyses need.
+func planGatherBlockers(r *reader) (planInputs, error) {
+	return planGatherWith(r, false)
+}
+
+// planGatherWith is planGather, reading what the dependency analyses need
+// only when deps is set.
+func planGatherWith(r *reader, deps bool) (planInputs, error) {
 	in := planInputs{ops: map[id.ID][]op.Op{}, nodes: map[id.ID]gmodel.Node{},
 		ancestors: map[id.ID][]id.ID{}, intentPath: map[id.ID][]id.ID{}, milestones: map[id.ID]bool{}, milestoneNums: map[id.ID]float64{}, umbrellas: map[id.ID]bool{}, statements: map[id.ID]string{}}
 	w := newPlanWalk(r)
@@ -823,29 +879,11 @@ func planGather(r *reader) (planInputs, error) {
 		in.ops[c] = folded[k].Ops
 		csLinks = append(csLinks, planOwnLinks(c, folded[k].Ops)...)
 	}
-	// The dropped change sets are read only when an in-flight op may rest
-	// on one: they pile up with the log, and most reads need none.
-	var gone []changeset.ChangeSet
-	if len(dropped) > 0 {
-		may, err := planMayRest(r, in.changeSets, folded)
-		if err != nil {
+	in.sets = folded
+	if deps {
+		if in.sets, err = planDepSets(r, in.changeSets, flying, dropped, folded); err != nil {
 			return planInputs{}, err
 		}
-		if may {
-			entries, err := r.EntriesOf(dropped)
-			if err != nil {
-				return planInputs{}, err
-			}
-			gone = planFold(dropped, entries)
-		}
-	}
-	landed, err := planLanded(r, flying, gone)
-	if err != nil {
-		return planInputs{}, err
-	}
-	in.sets = slices.Concat(folded, gone, []changeset.ChangeSet{landed})
-	if in.sets, err = planLandedDeps(r, in.changeSets, flying, in.sets); err != nil {
-		return planInputs{}, err
 	}
 
 	// Every node a chain below starts from: the touched nodes and the
@@ -984,6 +1022,34 @@ func planGather(r *reader) (planInputs, error) {
 	}
 	in.links = append(in.links, ls...)
 	return in, nil
+}
+
+// planDepSets is what the dependency analyses read (planInputs.sets): the
+// in-flight change sets folded, the dropped ones when an in-flight op may
+// rest on one, planLanded's stand-in and the landed change sets the
+// flying ones depend on (planLandedDeps).
+func planDepSets(r *reader, all []index.ChangeSetInfo, flying, dropped []id.ID, folded []changeset.ChangeSet) ([]changeset.ChangeSet, error) {
+	// The dropped change sets are read only when an in-flight op may rest
+	// on one: they pile up with the log, and most reads need none.
+	var gone []changeset.ChangeSet
+	if len(dropped) > 0 {
+		may, err := planMayRest(r, all, folded)
+		if err != nil {
+			return nil, err
+		}
+		if may {
+			entries, err := r.EntriesOf(dropped)
+			if err != nil {
+				return nil, err
+			}
+			gone = planFold(dropped, entries)
+		}
+	}
+	landed, err := planLanded(r, flying, gone)
+	if err != nil {
+		return nil, err
+	}
+	return planLandedDeps(r, all, flying, slices.Concat(folded, gone, []changeset.ChangeSet{landed}))
 }
 
 // planStarts appends to starts the nodes the node ops of change set cs's
