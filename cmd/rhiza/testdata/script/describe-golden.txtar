@@ -8928,7 +8928,7 @@ cmp stdout describe.golden.json
             "type": "string"
           },
           "notes": {
-            "description": "A note for the request's planner, repeatable, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused",
+            "description": "A note for the request's planner, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused",
             "items": {
               "type": "string"
             },
