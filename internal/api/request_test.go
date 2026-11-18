@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"os"
 	"slices"
 	"strings"
@@ -211,5 +212,74 @@ func TestDaemonMilestoneWaitsOwnerSteps(t *testing.T) {
 	append1(run.Entry{Type: run.TypeStopped, Detail: "waiting for the owner"})
 	if waits() {
 		t.Fatal("stopped at the gate: second can start, want it to wait")
+	}
+}
+
+// rhiza request --note, repeated, queues the request with its notes in
+// order, lines kept and outer blank space trimmed, and request ls shows
+// them; a note that is blank, too long or not UTF-8 is a usage error that
+// queues nothing.
+func TestRequestNotes(t *testing.T) {
+	t.Parallel()
+	f := newSessionFixture(t, "req")
+	multi := "\r\n  1. Keep the brief short\r\n2. Name the files\r\n\r\n- and the tests\n\n"
+	body, err := json.Marshal(map[string]any{"text": "Dark mode", "notes": []string{"  First idea ", multi}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := callOp(t, f.ctx, "request", string(body)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := callOp(t, f.ctx, "request", `{"text":"No notes"}`); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"First idea", "1. Keep the brief short\n2. Name the files\n\n- and the tests"}
+	reqs, err := daemon.ReadRequests(f.common)
+	if err != nil || len(reqs) != 2 {
+		t.Fatalf("requests %v, %v", reqs, err)
+	}
+	if !slices.Equal(reqs[0].Notes, want) || reqs[1].Notes != nil {
+		t.Fatalf("requests.json notes %q and %q, want %q and none", reqs[0].Notes, reqs[1].Notes, want)
+	}
+	resp, err := callOp(t, f.ctx, "request.ls", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ls := resp.(RequestLsResponse)
+	if !slices.Equal(ls.Requests[0].Notes, want) || ls.Requests[1].Notes != nil {
+		t.Fatalf("request ls notes %q and %q, want %q and none", ls.Requests[0].Notes, ls.Requests[1].Notes, want)
+	}
+	out, err := json.Marshal(ls)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Requests []map[string]json.RawMessage `json:"requests"`
+	}
+	if err := json.Unmarshal(out, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := doc.Requests[1]["notes"]; ok {
+		t.Errorf("request ls --json: a notes key for the request without notes in %s", out)
+	}
+	if text := human(t, resp); !strings.Contains(text, "Dark mode [2 notes]") || strings.Contains(text, "No notes [") {
+		t.Errorf("request ls text:\n%s\nwant [2 notes] on the first request only", text)
+	}
+
+	for name, note := range map[string]string{
+		"empty":     "",
+		"blank":     " \r\n\t\n ",
+		"too long":  strings.Repeat("x", daemon.MaxRequestNote+1),
+		"not UTF-8": "bad \xff byte",
+	} {
+		// Built as the request itself: JSON would replace the bad bytes.
+		o, _ := Lookup("request")
+		_, err := o.Run(f.ctx, RequestRequest{Text: "Refused " + name, Notes: []string{"fine", note}})
+		if e := AsError(err); e == nil || e.Code != CodeUsage || !strings.Contains(e.Message, "--note 2") {
+			t.Errorf("%s note: %v, want a usage error naming --note 2", name, err)
+		}
+		if reqs, err := daemon.ReadRequests(f.common); err != nil || len(reqs) != 2 {
+			t.Errorf("%s note: %d requests, %v; want nothing queued", name, len(reqs), err)
+		}
 	}
 }

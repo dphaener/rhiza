@@ -1320,7 +1320,7 @@ Output (`--json` fields):
 Queue a plan request in this clone: the daemon starts a plan run for it.
 
 ```
-rhiza request <text> [--kind <kind>] [--milestone <milestone>] [--workflow <workflow>] [--ref <ref>]
+rhiza request <text> [--kind <kind>] [--milestone <milestone>] [--workflow <workflow>] [--ref <ref>] [--note <note>]...
 ```
 
 Arguments and flags:
@@ -1330,6 +1330,7 @@ Arguments and flags:
 - `--milestone`: A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)
 - `--workflow`: A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)
 - `--ref`: An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none
+- `--note`: A note for the request's planner, repeatable, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused (repeatable)
 
 Output (`--json` fields):
 

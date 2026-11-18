@@ -43,25 +43,27 @@ func init() {
 
 // RequestRequest is a plan request to queue.
 type RequestRequest struct {
-	Text      string `json:"text" arg:"0" desc:"What to plan, in one line"`
-	Kind      string `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"One of feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
-	Milestone string `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
-	Workflow  string `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)"`
-	Ref       string `json:"ref,omitempty" flag:"ref" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Text      string   `json:"text" arg:"0" desc:"What to plan, in one line"`
+	Kind      string   `json:"kind,omitempty" enum:"feature,bug,milestone" desc:"One of feature, bug or milestone; default feature. A bug's plan run opens its change set with the intent prefixed 'Fix ' (so its title names the bug), a milestone's a record change set"`
+	Milestone string   `json:"milestone,omitempty" flag:"milestone" desc:"A milestone intent, by handle or ID, the request's plan should serve; default none (the planner serves the open milestone it fits)"`
+	Workflow  string   `json:"workflow,omitempty" flag:"workflow" desc:"A workflow, by name, for the change set the request's plan run opens: it overrides that change set's ready pick only, not the plan run's own workflow; default none (the dispatch rules choose)"`
+	Ref       string   `json:"ref,omitempty" flag:"ref" desc:"An opaque external reference, such as an issue URL, at most 2048 bytes, trimmed; Rhiza never interprets it. An empty one means none"`
+	Notes     []string `json:"notes,omitempty" flag:"note" desc:"A note for the request's planner, repeatable, kept in order: free text, its lines kept, leading and trailing blank space trimmed and CRLF turned into LF; an empty one, one over 8000 bytes or one not valid UTF-8 is refused"`
 }
 
 // RequestInfo is one plan request.
 type RequestInfo struct {
-	ID        string `json:"id" desc:"The request's ID"`
-	Kind      string `json:"kind" desc:"feature, bug or milestone"`
-	Text      string `json:"text" desc:"What to plan"`
-	Milestone string `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
-	Workflow  string `json:"workflow,omitempty" desc:"The workflow the request named for its change set's ready pick; absent if none"`
-	Ref       string `json:"ref,omitempty" desc:"The request's opaque external reference, if any: untrusted text"`
-	At        string `json:"at" desc:"When it was queued, RFC 3339 UTC"`
-	State     string `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
-	Run       string `json:"run,omitempty" desc:"Its plan run; absent while queued"`
-	Change    string `json:"change,omitempty" desc:"The change set its plan run plans in; absent until the run's journal names it"`
+	ID        string   `json:"id" desc:"The request's ID"`
+	Kind      string   `json:"kind" desc:"feature, bug or milestone"`
+	Text      string   `json:"text" desc:"What to plan"`
+	Milestone string   `json:"milestone,omitempty" desc:"The ID of the milestone intent the request names; absent if none"`
+	Workflow  string   `json:"workflow,omitempty" desc:"The workflow the request named for its change set's ready pick; absent if none"`
+	Ref       string   `json:"ref,omitempty" desc:"The request's opaque external reference, if any: untrusted text"`
+	At        string   `json:"at" desc:"When it was queued, RFC 3339 UTC"`
+	State     string   `json:"state" desc:"queued, planning (its plan run started), planned (its run succeeded) or failed (its run failed)"`
+	Run       string   `json:"run,omitempty" desc:"Its plan run; absent while queued"`
+	Change    string   `json:"change,omitempty" desc:"The change set its plan run plans in; absent until the run's journal names it"`
+	Notes     []string `json:"notes,omitempty" desc:"The request's notes for its planner, oldest first; absent if none"`
 }
 
 // RequestResponse is the request queued, or in a dry run the one that
@@ -102,6 +104,13 @@ func (r RequestLsResponse) Human(w io.Writer) {
 		if q.Ref != "" {
 			fmt.Fprintf(w, " [ref %q]", q.Ref)
 		}
+		switch len(q.Notes) {
+		case 0:
+		case 1:
+			fmt.Fprint(w, " [1 note]")
+		default:
+			fmt.Fprintf(w, " [%d notes]", len(q.Notes))
+		}
 		if q.Run != "" {
 			fmt.Fprintf(w, " (run %s", q.Run)
 			if q.Change != "" {
@@ -139,6 +148,10 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 	if !utf8.ValidString(ref) {
 		return nil, Usagef("--ref is not valid UTF-8")
 	}
+	notes, err := requestNotes(r.Notes)
+	if err != nil {
+		return nil, err
+	}
 	milestone, err := requestMilestone(ctx, r.Milestone)
 	if err != nil {
 		return nil, err
@@ -163,7 +176,7 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Workflow: wf, Ref: ref, At: ctx.Now().UTC()}
+		q = daemon.Request{ID: rid, Kind: kind, Text: text, Milestone: milestone, Workflow: wf, Ref: ref, At: ctx.Now().UTC(), Notes: notes}
 		return append(reqs, q), nil
 	}
 	if ctx.DryRun {
@@ -178,6 +191,21 @@ func runRequest(ctx *Ctx, req any) (any, error) {
 		return nil, requestsErr(err)
 	}
 	return RequestResponse{Request: requestInfo(q, nil), DryRun: ctx.DryRun, Note: requestRiskNote(ctx, ref)}, nil
+}
+
+// requestNotes is notes as a request stores them, in order, each
+// normalised by daemon.NormalizeRequestNote; none gives nil. A note it
+// refuses is a usage error naming the note by its place.
+func requestNotes(notes []string) ([]string, error) {
+	var out []string
+	for i, n := range notes {
+		norm, err := daemon.NormalizeRequestNote(n)
+		if err != nil {
+			return nil, Usagef("--note %d %v", i+1, err)
+		}
+		out = append(out, norm)
+	}
+	return out, nil
 }
 
 // requestRiskNote is the one-line note for a request with a ref while the
@@ -275,7 +303,7 @@ func runRequestLs(ctx *Ctx, req any) (any, error) {
 
 func requestInfo(q daemon.Request, runs []run.Journal) RequestInfo {
 	state, change := daemon.RequestState(q, runs)
-	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Workflow: q.Workflow, Ref: q.Ref, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change}
+	return RequestInfo{ID: q.ID, Kind: q.Kind, Text: q.Text, Milestone: q.Milestone, Workflow: q.Workflow, Ref: q.Ref, At: q.At.UTC().Format(time.RFC3339), State: state, Run: q.Run, Change: change, Notes: q.Notes}
 }
 
 // daemonPlanRequests starts a plan run, in a new Rex tab, for each of the

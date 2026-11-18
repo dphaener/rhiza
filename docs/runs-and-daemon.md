@@ -120,7 +120,7 @@ rhiza request "Export reports as CSV"
 rhiza request "Totals are wrong on the invoice page" --kind bug
 ```
 
-That queues a plan request, and the daemon starts a `plan` run for it, which comes back as a draft change set for you to review and accept. `--kind` is `feature`, `bug` or `milestone`. `--ref` carries an issue URL along, which Rhiza stores and never reads. `rhiza request ls` shows the queue.
+That queues a plan request, and the daemon starts a `plan` run for it, which comes back as a draft change set for you to review and accept. `--kind` is `feature`, `bug` or `milestone`. `--ref` carries an issue URL along, which Rhiza stores and never reads. `--note`, which you can repeat, adds a note for the planner: free text, several lines if you like, kept in order with leading and trailing blank space trimmed. A blank note, one over 8000 bytes or one that isn't valid UTF-8 is refused, and nothing is queued. `rhiza request ls` shows the queue, with each request's note count (`[2 notes]`), and `--json` gives the notes themselves.
 
 Which workflow handles what lives in `.rhiza/dispatch.toml`. Its `[request]` table names the workflow for each kind of plan run, and `[ready]` names the one that builds a ready change set. Anything unset uses `plan` and `ship-change`. A name that doesn't resolve is never quietly swapped for a default: `rhiza daemon status` shows it as skipped.
 
