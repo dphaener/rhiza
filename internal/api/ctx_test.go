@@ -19,10 +19,18 @@ func entryOf(t *testing.T, ctx *Ctx, e id.ID) entry.Entry {
 	return entry.Entry{}
 }
 
-// recordAda records an actor node for ada@example.com and returns it.
+// recordAda records an actor node for email and returns it.
 func recordAda(t *testing.T, ctx *Ctx, email string) id.ID {
 	t.Helper()
-	a, _, err := resolveRefs(ctxWorkspace(t, ctx), "", "", gitConfig(map[string]string{"user.email": email}))
+	w := ctxWorkspace(t, ctx)
+	// Through ctx's own index when it has one: a throwaway index would be
+	// built from an empty file over the whole log (on the 50,000-node
+	// model, seconds of setup the budget does not time).
+	if ctx.IndexPath != "" {
+		w.useProjection(ctx)
+		defer w.closeProjection()
+	}
+	a, _, err := resolveRefs(w, "", "", gitConfig(map[string]string{"user.email": email}))
 	if err != nil {
 		t.Fatal(err)
 	}

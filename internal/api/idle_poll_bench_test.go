@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -67,107 +68,105 @@ var ulidRe = regexp.MustCompile(`[0-9A-HJKMNP-TV-Z]{26}`)
 
 const ulidAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
-// growLog returns a grow function (see newDaemonFoldFixN) that copies the
-// landed "done-" change sets of the log until it holds total change sets.
+// growLog copies the landed "done-" change sets of the log folder logDir
+// until it holds total change sets (see daemonFoldSeedOf).
 // A write through the operations reads the whole log each time, so writing a
 // thousand that way takes minutes. A copy keeps its entries' time prefix
 // (so their order holds) and gets new IDs and handles; the actors stay.
-func growLog(tb testing.TB, total int) func(string) {
-	return func(logDir string) {
-		tb.Helper()
-		dirs, err := os.ReadDir(logDir)
-		if err != nil {
-			tb.Fatal(err)
+func growLog(logDir string, total int) error {
+	dirs, err := os.ReadDir(logDir)
+	if err != nil {
+		return err
+	}
+	type src struct {
+		name  string
+		files map[string]string
+	}
+	var srcs []src
+	for _, d := range dirs {
+		files := map[string]string{}
+		es, _ := os.ReadDir(filepath.Join(logDir, d.Name()))
+		for _, e := range es {
+			data, err := os.ReadFile(filepath.Join(logDir, d.Name(), e.Name()))
+			if err != nil {
+				return err
+			}
+			files[e.Name()] = string(data)
 		}
-		type src struct {
-			name  string
-			files map[string]string
+		all := ""
+		for _, c := range files {
+			all += c
 		}
-		var srcs []src
-		for _, d := range dirs {
-			files := map[string]string{}
-			es, _ := os.ReadDir(filepath.Join(logDir, d.Name()))
-			for _, e := range es {
-				data, err := os.ReadFile(filepath.Join(logDir, d.Name(), e.Name()))
-				if err != nil {
-					tb.Fatal(err)
+		if strings.Contains(all, `"handle": "done-`) {
+			srcs = append(srcs, src{d.Name(), files})
+		}
+	}
+	if len(srcs) == 0 {
+		return errors.New("no change set to copy")
+	}
+	actorRe := regexp.MustCompile(`"(?:actor|for)": "([0-9A-Z]{26})"`)
+	for n := len(dirs); n < total; n++ {
+		s := srcs[n%len(srcs)]
+		ids := map[string]string{}
+		keep := map[string]bool{}
+		for _, c := range s.files {
+			for _, m := range actorRe.FindAllStringSubmatch(c, -1) {
+				keep[m[1]] = true
+			}
+		}
+		suffix := func(k int) string {
+			b := []byte("00000")
+			for i := 4; i >= 0; i-- {
+				b[i] = ulidAlphabet[k%32]
+				k /= 32
+			}
+			return string(b)
+		}
+		next := 0
+		rename := func(c string) string {
+			c = ulidRe.ReplaceAllStringFunc(c, func(u string) string {
+				if keep[u] {
+					return u
 				}
-				files[e.Name()] = string(data)
-			}
-			all := ""
-			for _, c := range files {
-				all += c
-			}
-			if strings.Contains(all, `"handle": "done-`) {
-				srcs = append(srcs, src{d.Name(), files})
-			}
-		}
-		if len(srcs) == 0 {
-			tb.Fatal("no change set to copy")
-		}
-		actorRe := regexp.MustCompile(`"(?:actor|for)": "([0-9A-Z]{26})"`)
-		for n := len(dirs); n < total; n++ {
-			s := srcs[n%len(srcs)]
-			ids := map[string]string{}
-			keep := map[string]bool{}
-			for _, c := range s.files {
-				for _, m := range actorRe.FindAllStringSubmatch(c, -1) {
-					keep[m[1]] = true
-				}
-			}
-			suffix := func(k int) string {
-				b := []byte("00000")
-				for i := 4; i >= 0; i-- {
-					b[i] = ulidAlphabet[k%32]
-					k /= 32
-				}
-				return string(b)
-			}
-			next := 0
-			rename := func(c string) string {
-				c = ulidRe.ReplaceAllStringFunc(c, func(u string) string {
-					if keep[u] {
-						return u
-					}
-					if v, ok := ids[u]; ok {
-						return v
-					}
-					next++
-					v := u[:10] + suffix(n) + u[15:25] + ulidAlphabet[next%32:next%32+1]
-					ids[u] = v
+				if v, ok := ids[u]; ok {
 					return v
-				})
-				return strings.ReplaceAll(c, `"handle": "done-`, fmt.Sprintf(`"handle": "c%d-done-`, n))
-			}
-			// The same renaming for every file: IDs first seen in one file
-			// show up in the others.
-			var names []string
-			for name := range s.files {
-				names = append(names, name)
-			}
-			sortStrings(names)
-			out := map[string]string{}
-			for _, name := range names {
-				out[rename(name)] = rename(s.files[name])
-			}
-			dir := filepath.Join(logDir, rename(s.name))
-			if err := os.MkdirAll(dir, 0o755); err != nil {
-				tb.Fatal(err)
-			}
-			for name, c := range out {
-				if err := os.WriteFile(filepath.Join(dir, name), []byte(c), 0o644); err != nil {
-					tb.Fatal(err)
 				}
+				next++
+				v := u[:10] + suffix(n) + u[15:25] + ulidAlphabet[next%32:next%32+1]
+				ids[u] = v
+				return v
+			})
+			return strings.ReplaceAll(c, `"handle": "done-`, fmt.Sprintf(`"handle": "c%d-done-`, n))
+		}
+		// The same renaming for every file: IDs first seen in one file
+		// show up in the others.
+		var names []string
+		for name := range s.files {
+			names = append(names, name)
+		}
+		sortStrings(names)
+		out := map[string]string{}
+		for _, name := range names {
+			out[rename(name)] = rename(s.files[name])
+		}
+		dir := filepath.Join(logDir, rename(s.name))
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+		for name, c := range out {
+			if err := os.WriteFile(filepath.Join(dir, name), []byte(c), 0o644); err != nil {
+				return err
 			}
 		}
 	}
+	return nil
 }
 
 func sortStrings(s []string) { slices.Sort(s) }
 
 func newIdleFix(b testing.TB) *idleFix {
 	b.Helper()
-	f := &idleFix{home: newDaemonFoldFixN(b, 98, growLog(b, idleChangeSets)), other: newDaemonFoldFixN(b, 50, nil)}
+	f := &idleFix{home: newDaemonFoldFixN(b, 98, idleChangeSets), other: newDaemonFoldFixN(b, 50, 0)}
 	config := b.TempDir()
 	writeTranscripts(b, config, idleTranscript, f.home.ctx.Now())
 	env := func(k string) string {
