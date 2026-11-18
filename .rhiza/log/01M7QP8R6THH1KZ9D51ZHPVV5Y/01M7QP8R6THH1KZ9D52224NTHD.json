@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QMXX2TDHNN4PBRAF0C4KD5",
+  "after": [],
+  "at": "2026-11-18T16:01:35Z",
+  "body": {
+    "intent": "Record agent actor claude-code-ada2130b for session ada2130b-db00-4ee3-8cf7-01a1ef645df9",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7QP8R6THH1KZ9D51ZHPVV5Y",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QP8R6THH1KZ9D52224NTHD",
+  "type": "open",
+  "v": 1
+}

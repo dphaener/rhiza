@@ -164,7 +164,7 @@ func watchdogRunaway(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 		}
 		set(nil)
 		stopped = append(stopped, j.ID)
-		detail := "watchdog: runaway " + reading
+		detail := daemon.RunawayStopped + reading
 		if d.stopped != nil {
 			if err := d.stopped(j.ID, st.Current, detail); err != nil {
 				fail(fmt.Errorf("journal run %s stopped: %w", j.ID, err))

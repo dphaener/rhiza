@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
@@ -179,10 +180,16 @@ func decide(candidates []string, runs []run.Journal, pending []string, host stri
 // before the process running it records itself.
 const Unrecorded = time.Minute
 
+// RunawayStopped begins the detail of the stopped entry the watchdog
+// journals when it stops a runaway session's run. Resumable never resumes
+// a run so stopped; only the owner's run resume or run start restarts it.
+const RunawayStopped = "watchdog: runaway "
+
 // Resumable returns the IDs of the runs the daemon resumes now: those
 // interrupted (see run.State.Liveness) that it has not resumed before. A
 // run interrupted again after its one resume is left alone, and a finished
-// run, failed or not, is never resumed. Nor is a run whose lock another
+// run, failed or not, is never resumed, and nor is a run the watchdog
+// stopped as a runaway (its stopped detail begins RunawayStopped). Nor is a run whose lock another
 // process holds (locked reports it), which is running whatever its journal
 // says, or one with no process record started less than Unrecorded before
 // now, whose process may not have recorded itself yet. Nor is a run whose
@@ -196,6 +203,9 @@ func Resumable(runs []run.Journal, host string, alive func(pid int) bool, locked
 	for _, j := range runs {
 		st := j.State()
 		if st.Liveness(host, alive) != run.LiveInterrupted || st.DaemonResumed {
+			continue
+		}
+		if strings.HasPrefix(st.Stopped, RunawayStopped) {
 			continue
 		}
 		if st.Process == nil && now.Sub(st.StartedAt) < Unrecorded {
