@@ -385,9 +385,14 @@ func (e *Engine) run(id string, retry bool, before func(State) ([]Entry, error))
 		return j.State(), &runError{id: j.ID, kind: ErrLive}
 	}
 	defer unlock()
-	// The run's private temp folder goes with the run, whether it finishes,
-	// fails or stops.
-	defer func() { _ = os.RemoveAll(e.Store.TmpDir(j.ID)) }()
+	// The run's private temp folder goes with the run once it ends,
+	// succeeded or failed. A stopped run is not ended: it resumes, and its
+	// steps' and agent sessions' files under TMPDIR stay until it ends.
+	defer func() {
+		if cur, err := e.Store.Read(j.ID); err == nil && cur.State().Ended {
+			_ = os.RemoveAll(e.Store.TmpDir(j.ID))
+		}
+	}()
 	// Read again under the lock: the holder may have moved on.
 	if j, err = e.Store.Read(j.ID); err != nil {
 		return State{}, err

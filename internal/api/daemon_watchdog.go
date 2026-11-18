@@ -352,7 +352,7 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		if err != nil {
 			return watchdogMerge{}, err
 		}
-		return watchdogMergeMain(shipRunEnv(ctx, st, rs.TmpDir(st.ID)), t, st.ID)
+		return watchdogMergeEnded(ctx, st, t, rs.TmpDir(st.ID))
 	}
 	d.log = watchdogJournalLog(d.log, state, ctx.Now)
 	mem, holds, err := watchdogPasses(pol, all, rs.Live, ctx.Now(), state.Watchdog, d)

@@ -243,3 +243,35 @@ func TestRunTmpRemovalSparesOthers(t *testing.T) {
 		t.Errorf("another run's folder gone: %v", err)
 	}
 }
+
+// A run stopped at a wait (NoWait) has not ended: its folder and what its
+// steps wrote under TMPDIR stay for the resume, and go once the run ends.
+func TestRunTmpStaysWhileStopped(t *testing.T) {
+	e, r, _, _ := setup(t, gotmpWF)
+	e.NoWait = true
+	want := e.Store.TmpDir(runID)
+	r.onEnv = func(step string, env []string) {
+		if step == "build" {
+			_ = os.WriteFile(filepath.Join(envOf(env, "TMPDIR"), "build.out"), []byte("x"), 0o644)
+		}
+	}
+	st, err := e.Run(runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ended || st.Stopped == "" {
+		t.Fatalf("ended %v stopped %q, want a stopped run", st.Ended, st.Stopped)
+	}
+	if _, err := os.Stat(filepath.Join(want, "build.out")); err != nil {
+		t.Errorf("stopped run lost its TMPDIR files: %v", err)
+	}
+	e.NoWait = false
+	r.holds["ci"] = []bool{true}
+	r.outcome["S-agent"] = "pass"
+	if st, err = e.Run(runID); err != nil || st.Result != Succeeded {
+		t.Fatalf("resume: %v, %q %v", err, st.Result, outcomes(st))
+	}
+	if _, err := os.Stat(want); !os.IsNotExist(err) {
+		t.Errorf("run folder still there after the run ended: %v", err)
+	}
+}
