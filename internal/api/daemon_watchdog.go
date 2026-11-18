@@ -21,6 +21,7 @@ import (
 	"github.com/dphaener/rhiza/internal/changeset"
 	"github.com/dphaener/rhiza/internal/daemon"
 	"github.com/dphaener/rhiza/internal/id"
+	"github.com/dphaener/rhiza/internal/proctree"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 	"github.com/dphaener/rhiza/internal/workflow"
@@ -67,7 +68,13 @@ type watchdogDeps struct {
 	// classify reads a failed step's output and says whether a rerun would
 	// likely clear it; nil classifies nothing, so every failure is real.
 	classify func(output string) FailureVerdict
-	log      func(format string, args ...any)
+	// procs reads the host's process table for the runaway pass; nil reads
+	// none, so the pass does nothing.
+	procs func() ([]proctree.Process, error)
+	// stopped journals a stopped entry on runID's step with detail; nil
+	// journals none.
+	stopped func(runID, step, detail string) error
+	log     func(format string, args ...any)
 }
 
 // charge spends one retry of m's budget and journals the recovery tried.
@@ -125,16 +132,7 @@ func stallReason(st run.State, sids []string, at time.Time, d watchdogDeps) stri
 	}
 	var parts []string
 	for _, sid := range sids {
-		who := "the step's session"
-		for _, sp := range st.Spawns {
-			if sp.Step == st.Current && !sp.Ended && sp.Session == sid {
-				role := sp.Role
-				if role == "" {
-					role = "spawned"
-				}
-				who = fmt.Sprintf("role %s, spawned by session %s", role, sp.Parent)
-			}
-		}
+		who := sessionRole(st, sid)
 		last := "never reported"
 		if rec, err := d.sessions.Read(sid); err == nil {
 			if rep, _ := session.Resolve(rec); !rep.At.IsZero() {
@@ -144,6 +142,22 @@ func stallReason(st run.State, sids []string, at time.Time, d watchdogDeps) stri
 		parts = append(parts, fmt.Sprintf("session %s (%s) %s", sid, who, last))
 	}
 	return strings.Join(parts, "; ")
+}
+
+// sessionRole names sid's part in st's current step: a spawned child's
+// role and parent, or the step's session.
+func sessionRole(st run.State, sid string) string {
+	who := "the step's session"
+	for _, sp := range st.Spawns {
+		if sp.Step == st.Current && !sp.Ended && sp.Session == sid {
+			role := sp.Role
+			if role == "" {
+				role = "spawned"
+			}
+			who = fmt.Sprintf("role %s, spawned by session %s", role, sp.Parent)
+		}
+	}
+	return who
 }
 
 // watchdogStalled checks each live run of journals at now and returns the
@@ -286,7 +300,11 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		warn: func(id, detail string) error {
 			return rs.Append(id, run.Entry{Type: run.TypeWarning, At: ctx.Now(), Detail: detail})
 		},
-		now: ctx.Now,
+		stopped: func(id, step, detail string) error {
+			return rs.Append(id, run.Entry{Type: run.TypeStopped, At: ctx.Now(), Step: step, Detail: detail})
+		},
+		procs: watchdogProcTable(ctx),
+		now:   ctx.Now,
 		log: func(format string, args ...any) {
 			if ctx.Stderr != nil {
 				fmt.Fprintf(ctx.Stderr, "rhiza: daemon: "+format+"\n", args...)
@@ -336,8 +354,8 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 	return err
 }
 
-// watchdogPasses is one poll of the watchdog over all runs: the
-// stalled-step pass over the live ones, then the transient-failure and CI
+// watchdogPasses is one poll of the watchdog over all runs: the runaway
+// pass, then the stalled-step pass over the live ones it did not stop, then the transient-failure and CI
 // passes over the failed ones. The memory of a run that is not live is
 // carried over from prev, so its budget holds across polls; a run gone from
 // all is forgotten. It returns the memory and holds after, and the first
@@ -351,7 +369,12 @@ func watchdogPasses(pol WatchdogPolicy, all []run.Journal, live func(id string) 
 			running = append(running, j)
 		}
 	}
-	mem, holds, err := watchdogStalled(pol, running, now, prev, d)
+	prev, stopped, err := watchdogRunaway(pol, running, now, prev, d)
+	running = slices.DeleteFunc(running, func(j run.Journal) bool { return slices.Contains(stopped, j.ID) })
+	mem, holds, serr := watchdogStalled(pol, running, now, prev, d)
+	if err == nil {
+		err = serr
+	}
 	for _, j := range all {
 		if slices.ContainsFunc(mem, func(w daemon.WatchdogRun) bool { return w.Run == j.ID }) {
 			continue

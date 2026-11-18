@@ -1,8 +1,9 @@
 package api
 
 // This file is the watchdog's bug filing (decision watchdog-scope-and-defaults):
-// a recovery caused by a bug (a stall, a transient failure other than a CI
-// flake, a PR its run left unmerged or without CI) queues one bug request
+// a recovery caused by a bug (a stall, a runaway session, a transient
+// failure other than a CI flake, a PR its run left unmerged or without CI)
+// queues one bug request
 // with the evidence, unless an open request already names the same recovery
 // kind and step. fileBugs = false in the policy turns it off.
 
@@ -19,6 +20,7 @@ const (
 	bugTransient = "transient failure"
 	bugUnmerged  = "unmerged PR"
 	bugNoCI      = "PR without CI"
+	bugRunaway   = "runaway session"
 )
 
 // watchdogBugMaxLog bounds the log lines quoted in a bug request.

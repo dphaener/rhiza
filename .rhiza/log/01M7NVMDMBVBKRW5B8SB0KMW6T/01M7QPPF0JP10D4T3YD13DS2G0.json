@@ -1,0 +1,86 @@
+{
+  "actor": "01M7QPHY45FF5S4HJ8VBXZRT1X",
+  "after": [
+    "01M7QNYV7SD27YVQ858W1FPRE8"
+  ],
+  "at": "2026-11-18T16:09:04Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b9129e145: go test -trimpath -p 2 -count=1 ./internal/proctree -v exit 0 (TestSessionTree, KeepsEachProcess, PrefixIsNotRoot, NotFound, ParseSkipsHeaderAndMalformed, ReadPSFails, ReadUsesTable PASS). Real 'ps -A -ww -o pid= -o ppid= -o rss= -o args=' on this Linux host prints live session roots as '<pid> <ppid> <rss> /home/rhiza/bin/rhiza session run <uuid>', the shape IsSessionRoot matches (fields 1-3 session/run/id, whole-id match). Code read: one ps call, no /proc, no OS-specific call, not-found is an error, rss KiB x 1024."
+        },
+        "handle": "session-process-tree-reading-qa-1",
+        "id": "01M7QPPEJV4FNHDQDMWRK784NY",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QPPEJV4FNHDQDMWMZZAPKX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QPPEJV4FNHDQDMWMZZAPKX",
+        "id": "01M7QPPEMY672YBNYKSX9T55VF",
+        "link": "01M7QPPEMY672YBNYKSW58MG7S",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RCKAVANW6QNGVNZ7W1H",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b9129e145 with a scratch build in a scratch root and project: rhiza daemon settings lists runawayProcs 400, runawayMemory 8G, runawayGrace 5m (default) for machine and project; daemon set machine runawayMemory 12G/512M and runawayProcs 0 land in rhiza.toml, project runawayProcs 50/runawayMemory 2G/runawayGrace 90s land in git config and show (git config, project); 'runawayMemory lots' refused naming the key (exit 2), '-- runawayProcs -1' and '1.5' refused naming the key, runawayGrace 0 refused. go test ./internal/api -run TestWatchdogPolicy (runaway_keys, project_over_machine) and TestScripts/watchdog-policy exit 0; rhiza docs --out scratch gives config.md byte-identical to docs/reference/config.md."
+        },
+        "handle": "runaway-threshold-keys-qa-1",
+        "id": "01M7QPPEQ6BWMBP0KFZMQG8AY7",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QPPEQ6BWMBP0KFZHXD5FB3",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QPPEQ6BWMBP0KFZHXD5FB3",
+        "id": "01M7QPPES9ENMGMPA7RG06RH3Q",
+        "link": "01M7QPPES9ENMGMPA7RC38BKQ9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RE9HAZ65J0A2DABCHG1",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at b9129e145 (no real daemon or runaway, per brief): go test -trimpath -p 2 -count=1 ./internal/api -run 'TestWatchdogRunaway|TestWatchdogStalled|TestWatchdogPolicy' exit 0 (TestWatchdogRunaway, SpawnedChild, NoHostTable, LeftAlone under_both/no_tree/attended/back_under/threshold_off, all Stalled tests); go test ./internal/daemon -run Resumable exit 0 (a runaway-stopped run is not resumed, a waiting stop is). Code read: watchdogProcTable is nil under RHIZA_TEST_NOW, the stall pass carries the runaway nudge memory from prev, a stopped run is dropped from the stall pass that poll, the stopped detail begins 'watchdog: runaway ' which Resumable skips, and an owner resume re-entering the step clears Stopped."
+        },
+        "handle": "runaway-session-fails-step-qa-1",
+        "id": "01M7QPPEW5WMT6SX3AYASNTCBM",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QPPEW5WMT6SX3AY8YSV4ZP",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QPPEW5WMT6SX3AY8YSV4ZP",
+        "id": "01M7QPPEYSZVQ9B5NKP1SJAK95",
+        "link": "01M7QPPEYSZVQ9B5NKNZQP9WW0",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RG4WGQBDGHX67B53556",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M7QMXX2TDHNN4PBRAF0C4KD5",
+  "id": "01M7QPPF0JP10D4T3YD13DS2G0",
+  "type": "ops",
+  "v": 1
+}

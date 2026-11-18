@@ -222,3 +222,28 @@ func TestPickShippedUnderDispatchedWorkflow(t *testing.T) {
 		t.Fatalf("Pick = %v, want [plain]", got)
 	}
 }
+
+// A run the watchdog stopped as a runaway is interrupted (its process was
+// terminated) but never resumed by the daemon; a run stopped for any other
+// reason (waiting, sign-off, a hand-back park) still is.
+func TestResumableLeavesARunawayStop(t *testing.T) {
+	dead := func(int) bool { return false }
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	journal := func(id, stopped string) run.Journal {
+		return run.Journal{ID: id, Entries: []run.Entry{
+			{Type: run.TypeStarted, At: now.Add(-time.Hour), Started: &run.Started{Change: id}},
+			{Type: run.TypeProcess, Process: &run.Process{Host: "h", Pid: 1}},
+			{Type: run.TypeEntered, Step: "conduct"},
+			{Type: run.TypeStopped, Step: "conduct", Detail: stopped},
+		}}
+	}
+	runs := []run.Journal{
+		journal("runaway", RunawayStopped+"session s1 rss 9.1G over 8G"),
+		journal("waiting", "waiting on question q1"),
+	}
+	accepted := func(string) string { return "accepted" }
+	got := Resumable(runs, "h", dead, func(string) bool { return false }, accepted, now)
+	if want := []string{"waiting"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("Resumable = %v, want %v", got, want)
+	}
+}

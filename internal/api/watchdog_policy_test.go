@@ -36,7 +36,7 @@ func TestWatchdogPolicy(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := WatchdogPolicy{true, 20 * time.Minute, 40 * time.Minute, 30 * time.Minute, 90 * time.Minute, 2, 1, 3, true, true}
+		want := WatchdogPolicy{true, 20 * time.Minute, 40 * time.Minute, 30 * time.Minute, 90 * time.Minute, 2, 1, 3, true, true, 400, 8 << 30, 5 * time.Minute}
 		if p != want {
 			t.Fatalf("got %+v, want %+v", p, want)
 		}
@@ -73,6 +73,31 @@ func TestWatchdogPolicy(t *testing.T) {
 			t.Fatal(err)
 		}
 		if p.RetryBudget != 0 || p.Enabled || p.CIReruns != 4 {
+			t.Fatalf("got %+v", p)
+		}
+	})
+	t.Run("runaway keys", func(t *testing.T) {
+		if got := defaultWatchdogPolicy(); got.RunawayProcs != DefaultRunawayProcs || got.RunawayMemory != DefaultRunawayMemory || got.RunawayGrace != DefaultRunawayGrace {
+			t.Fatalf("defaults %+v", got)
+		}
+		ctx, root := watchdogCtx(t, map[string]string{
+			"rhiza.project.watchdog.runawayProcs":  "0",
+			"rhiza.project.watchdog.runawayMemory": "512M",
+		})
+		for key, v := range map[string]string{
+			"rhiza.daemon.watchdog.runawayProcs":  "900",
+			"rhiza.daemon.watchdog.runawayMemory": "16G",
+			"rhiza.daemon.watchdog.runawayGrace":  "2m",
+		} {
+			if err := rootcfg.SetDaemon(root, key, v); err != nil {
+				t.Fatal(err)
+			}
+		}
+		p, err := WatchdogPolicyOf(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p.RunawayProcs != 0 || p.RunawayMemory != 512<<20 || p.RunawayGrace != 2*time.Minute {
 			t.Fatalf("got %+v", p)
 		}
 	})
@@ -118,6 +143,9 @@ func TestWatchdogPolicy(t *testing.T) {
 			"rhiza.daemon.watchdog.pollBehind":    "0",
 			"rhiza.daemon.watchdog.enabled":       "maybe",
 			"rhiza.project.watchdog.commandLimit": "0s",
+			"rhiza.daemon.watchdog.runawayMemory": "lots",
+			"rhiza.project.watchdog.runawayProcs": "-1",
+			"rhiza.daemon.watchdog.runawayGrace":  "0",
 		} {
 			ctx, root := watchdogCtx(t, nil)
 			if strings.HasPrefix(key, "rhiza.project.") {

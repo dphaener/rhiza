@@ -263,6 +263,16 @@ type WatchdogRun struct {
 	// still ends there, the failure is left to the inbox without asking the
 	// classifier or logging again. A resume moves the journal on.
 	Judged time.Time `json:"judged,omitzero"`
+	// Runaway is each stall session the runaway pass nudged over a
+	// threshold, with when: still over runawayGrace later, the run is
+	// stopped; back under every threshold, the session's nudge clears.
+	Runaway []RunawayNudge `json:"runaway,omitempty"`
+}
+
+// RunawayNudge is one runaway nudge: the session and when it was sent.
+type RunawayNudge struct {
+	Session string    `json:"session"`
+	At      time.Time `json:"at"`
 }
 
 // WatchdogAttempt is one recovery the watchdog tried on a run.

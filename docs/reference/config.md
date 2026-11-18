@@ -187,6 +187,27 @@ Watch only autonomous runs, never ones an owner drives.
 - Type: boolean
 - Default: `true`
 
+### `rhiza.daemon.watchdog.runawayProcs`
+
+How many processes an agent session's tree may hold before the watchdog calls it a runaway; 0 turns it off.
+
+- Type: whole number
+- Default: `400`
+
+### `rhiza.daemon.watchdog.runawayMemory`
+
+How much summed resident memory an agent session's tree may use before the watchdog calls it a runaway, such as 8G; 0 turns it off.
+
+- Type: size
+- Default: `8G`
+
+### `rhiza.daemon.watchdog.runawayGrace`
+
+How long an agent session may stay over a runaway threshold before the watchdog acts.
+
+- Type: duration
+- Default: `5m`
+
 
 ## Project settings
 
@@ -357,3 +378,24 @@ Watch only autonomous runs, never ones an owner drives.
 
 - Type: boolean
 - Default: `true`
+
+### `rhiza.project.watchdog.runawayProcs`
+
+How many processes an agent session's tree may hold before the watchdog calls it a runaway; 0 turns it off.
+
+- Type: whole number
+- Default: `400`
+
+### `rhiza.project.watchdog.runawayMemory`
+
+How much summed resident memory an agent session's tree may use before the watchdog calls it a runaway, such as 8G; 0 turns it off.
+
+- Type: size
+- Default: `8G`
+
+### `rhiza.project.watchdog.runawayGrace`
+
+How long an agent session may stay over a runaway threshold before the watchdog acts.
+
+- Type: duration
+- Default: `5m`

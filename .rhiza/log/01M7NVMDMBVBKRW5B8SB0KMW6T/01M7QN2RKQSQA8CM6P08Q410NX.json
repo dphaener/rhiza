@@ -1,0 +1,181 @@
+{
+  "actor": "01M7QMXX2TDHNN4PBRAF0C4KD5",
+  "after": [
+    "01M7QN1KAZFD067NKRGJWRP0TB"
+  ],
+  "at": "2026-11-18T15:40:50Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "A session's process tree is the 'rhiza session run <session-id>' process and every descendant, read from one ps -A -o pid=,ppid=,rss=,args= call (Linux and macOS alike, rss in KiB on both), never /proc; the reading keeps each process (pid, ppid, rss, args), not only the totals, so the stall pass can later tell an idle agent with a live background command from one with nothing running (orchestrator evidence 2026-11-18, ~/orchestrator/planner-notes/m40-stalls.md)",
+          "wording": "(assumed, would have escalated) planner's choice under the autonomous rules, from the code and milestone 40's Decision m40-host-limits-as-holds"
+        },
+        "handle": "runaway-tree-from-session-run",
+        "id": "01M7QN2R8384ZPCVR215WX3RRY",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QN2R8384ZPCVR2121MZ1SZ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2R8384ZPCVR2121MZ1SZ",
+        "id": "01M7QN2R8WY1RSAJ7CC7GRJ6JF",
+        "link": "01M7QN2R8WY1RSAJ7CC74GK5AS",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN1K9VDSJ66N7D5TR41XR6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "Three watchdog keys, machine and project like the others: runawayProcs (default 400 processes), runawayMemory (default 8G of summed resident memory, a size as rhiza.daemon.minTmpFree parses it) and runawayGrace (default 5m); 0 turns a threshold off. The defaults sit above this VM's capped test scope (TasksMax=300, MemoryMax=6G), so a session running one capped test is not a runaway",
+          "wording": "(assumed, would have escalated) planner's choice under the autonomous rules"
+        },
+        "handle": "runaway-thresholds-defaults",
+        "id": "01M7QN2R9KVQ1ZW3APMKCMXWK0",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QN2R9KVQ1ZW3APMFYFQN9M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2R9KVQ1ZW3APMFYFQN9M",
+        "id": "01M7QN2RAARRHM2EM6P8VNV9HA",
+        "link": "01M7QN2RAARRHM2EM6P4XRXVB6",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN1K9VDSJ66N7D5TR41XR6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "statement": "A runaway stall session is nudged once with its reading; when a poll at least runawayGrace after the nudge still reads it over a threshold, the watchdog closes the stall sessions' panes (and parents waiting on their spawns), terminates the run and journals the current step stopped with the reading as its detail, never resuming or retrying it (a retry reruns the same runaway), and files a bug when fileBugs is on. A reading back under every threshold clears the nudge. An attended run under autonomousOnly gets a log line only, as stalls do",
+          "wording": "(assumed, would have escalated) planner's choice under the autonomous rules, from the intent's 'nudges the session, then fails the step with the reading as its reason'"
+        },
+        "handle": "runaway-fails-not-retries",
+        "id": "01M7QN2RB1D66AZE1ZHJ1BK89N",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7QN2RB1D66AZE1ZHE62A7YX",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RB1D66AZE1ZHE62A7YX",
+        "id": "01M7QN2RBT4KVN5C9T8SJQDMYD",
+        "link": "01M7QN2RBT4KVN5C9T8PYXQ8Q9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN1K9VDSJ66N7D5TR41XR6",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 ./internal/proctree passes, with tests over fake ps text (never the host's ps): a table holding two sessions' trees, nested three deep, gives each session its own count and summed rss in bytes (KiB x 1024), the root counted, the other session's processes and unrelated processes left out; a 'rhiza session run' line whose session argument only shares a prefix with the asked id is not its root. (failure case) a session with no root process gives not-found, not a zero reading; malformed and header lines are skipped; a ps that fails returns an error naming ps",
+          "files": "internal/proctree/proctree.go, internal/proctree/proctree_test.go",
+          "must_not": "Read /proc or use any Linux- or darwin-only call; add a dependency; touch internal/api or the watchdog; run ps in a test",
+          "statement": "A new internal/proctree package reads the host's process table portably with one ps call and gives a session's process tree: the 'rhiza session run <session-id>' root, its descendants with pid, ppid, rss and args, the process count and the summed resident memory in bytes"
+        },
+        "handle": "session-process-tree-reading",
+        "id": "01M7QN2RCKAVANW6QNGYNPEFRB",
+        "key": "zzzz",
+        "kind": "capability",
+        "node": "01M7QN2RCKAVANW6QNGVNZ7W1H",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RCKAVANW6QNGVNZ7W1H",
+        "id": "01M7QN2RDD2KAKD68JRM6RWEVP",
+        "link": "01M7QN2RDD2KAKD68JRJM0GH8A",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2R8384ZPCVR2121MZ1SZ",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 ./internal/api -run 'TestWatchdogPolicy' passes, a test resolving the three keys' defaults (400, 8G as bytes, 5m) and a project key over a machine key; env -u RHIZA_SESSION go test -trimpath -p 2 ./cmd/rhiza -run TestScripts/watchdog-policy passes with the three keys listed at their defaults and one set through rhiza daemon set. (failure case) rhiza daemon set rhiza.daemon.watchdog.runawayMemory lots and rhiza daemon set rhiza.project.watchdog.runawayProcs -1 are refused naming the key; docs/reference/config.md is regenerated (rhiza ship generate) so the docs check passes",
+          "files": "internal/api/watchdog_policy.go, internal/api/watchdog_policy_test.go, cmd/rhiza/testdata/script/watchdog-policy.txtar, docs/reference/config.md",
+          "must_not": "Change any existing watchdog key, its default or meaning; read a process table; act on the keys (the runaway pass's leaf)",
+          "statement": "The watchdog policy gains runawayProcs, runawayMemory and runawayGrace, machine (rhiza.daemon.watchdog.*) and project (rhiza.project.watchdog.*) keys with their defaults, listed by rhiza daemon settings and documented in the generated docs/reference/config.md"
+        },
+        "handle": "runaway-threshold-keys",
+        "id": "01M7QN2RE9HAZ65J0A2EE02PEA",
+        "key": "zzzzi",
+        "kind": "capability",
+        "node": "01M7QN2RE9HAZ65J0A2DABCHG1",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RE9HAZ65J0A2DABCHG1",
+        "id": "01M7QN2RF4GXCKC4EW6NX6JABK",
+        "link": "01M7QN2RF4GXCKC4EW6MPMBQD9",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2R9KVQ1ZW3APMFYFQN9M",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath -p 2 ./internal/api -run 'TestWatchdogRunaway|TestWatchdogStalled' passes, with a new test driving the watchdog through an injected fake process table (never the host's ps) for an autonomous run whose step session's tree holds 450 processes: the first poll sends that session a nudge naming the count and the threshold; a poll runawayGrace later with the tree still over closes the session's pane, terminates the run, journals a stopped entry on the current step whose detail names the session, 450 processes, the resident memory and the runawayProcs threshold, queues no continue (no resume, no --retry) and files a runaway bug; a spawned child's tree over runawayMemory is caught the same way and named with its role. (failure case) a tree under both thresholds is neither nudged nor stopped; a tree back under the thresholds after the nudge is not stopped and its nudge clears; a threshold set to 0 is never passed; an owner-attended run under autonomousOnly is only logged; a session with no tree in the table is left alone; the daemon reads no host process table under RHIZA_TEST_NOW",
+          "files": "internal/api/watchdog_runaway.go, internal/api/watchdog_runaway_test.go, internal/api/daemon_watchdog.go (watchdogDeps gains the process-table reader and a stopped-entry journal dep, watchdogPasses runs the pass, daemonWatchdog wires ps through internal/proctree), internal/api/watchdog_bugs.go (a runaway bug kind), internal/daemon state file holding WatchdogRun (the runaway nudge time)",
+          "must_not": "Change the stall pass's limits, nudge text or retry behaviour, or session.Stallable; resume or retry a run stopped as a runaway; read /proc; run ps in a test; touch the pre-start or spawn holds",
+          "statement": "Each watchdog poll reads the process tree of every live run's stall sessions and treats one over runawayProcs or runawayMemory like a stall: it nudges the session with the reading, then, still over a threshold runawayGrace later, stops the run and journals its step stopped with the reading (session, process count, resident memory and the threshold passed) as the reason, without resuming it"
+        },
+        "handle": "runaway-session-fails-step",
+        "id": "01M7QN2RG4WGQBDGHX67K20AFP",
+        "key": "zzzzr",
+        "kind": "capability",
+        "node": "01M7QN2RG4WGQBDGHX67B53556",
+        "op": "node.create",
+        "parent": "01M6WJ2BF6X93480DV342ARX39"
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RG4WGQBDGHX67B53556",
+        "id": "01M7QN2RH93JAYQVPYGM0ZJ8AJ",
+        "link": "01M7QN2RH93JAYQVPYGKADMSYD",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RB1D66AZE1ZHE62A7YX",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RG4WGQBDGHX67B53556",
+        "id": "01M7QN2RJ5FTXBT2RKFPK5Z3ZP",
+        "link": "01M7QN2RJ5FTXBT2RKFM054CFA",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RCKAVANW6QNGVNZ7W1H",
+        "type": "depends-on"
+      },
+      {
+        "decision": null,
+        "from": "01M7QN2RG4WGQBDGHX67B53556",
+        "id": "01M7QN2RJXTKM83VRCW3GAP6VB",
+        "link": "01M7QN2RJXTKM83VRCW2KJ0CG4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RE9HAZ65J0A2DABCHG1",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QN2RKQSQA8CM6P08Q410NX",
+  "type": "ops",
+  "v": 1
+}

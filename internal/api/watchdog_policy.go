@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/dphaener/rhiza/internal/daemon"
 )
 
 // The watchdog's machine and project key prefixes.
@@ -28,7 +30,18 @@ const (
 	DefaultRetryBudget  = 2
 	DefaultCIReruns     = 1
 	DefaultPollBehind   = 3
+	DefaultRunawayProcs = 400
+	DefaultRunawayGrace = 5 * time.Minute
 )
+
+// DefaultRunawayMemory is the shipped runawayMemory: 8G of summed resident
+// memory, as daemon.ParseSize reads "8G".
+const DefaultRunawayMemory uint64 = 8 << 30
+
+func validateSize(v string) error {
+	_, err := daemon.ParseSize(v)
+	return err
+}
 
 func validateWholeFrom(min int) func(string) error {
 	return func(v string) error {
@@ -59,6 +72,9 @@ var watchdogNames = []struct {
 	{"pollBehind", strconv.Itoa(DefaultPollBehind), validateWholeFrom(1), true, "whole number", "How many daemon polls a run may fall behind before the watchdog acts"},
 	{"fileBugs", "true", validateChoice("true", "false"), false, "boolean", "File a bug when the watchdog gives up on a step"},
 	{"autonomousOnly", "true", validateChoice("true", "false"), false, "boolean", "Watch only autonomous runs, never ones an owner drives"},
+	{"runawayProcs", strconv.Itoa(DefaultRunawayProcs), validateWholeFrom(0), false, "whole number", "How many processes an agent session's tree may hold before the watchdog calls it a runaway; 0 turns it off"},
+	{"runawayMemory", "8G", validateSize, false, "size", "How much summed resident memory an agent session's tree may use before the watchdog calls it a runaway, such as 8G; 0 turns it off"},
+	{"runawayGrace", "5m", validateDeployTimeout, false, "duration", "How long an agent session may stay over a runaway threshold before the watchdog acts"},
 }
 
 func init() {
@@ -84,6 +100,9 @@ type WatchdogPolicy struct {
 	PollBehind     int
 	FileBugs       bool
 	AutonomousOnly bool
+	RunawayProcs   int
+	RunawayMemory  uint64
+	RunawayGrace   time.Duration
 }
 
 // watchdogPolicyOf resolves the policy from rows: a project key set in git
@@ -105,6 +124,10 @@ func watchdogPolicyOf(rows []Setting) WatchdogPolicy {
 		n, _ := strconv.Atoi(get(name))
 		return n
 	}
+	size := func(name string) uint64 {
+		n, _ := daemon.ParseSize(get(name))
+		return n
+	}
 	return WatchdogPolicy{
 		Enabled:        get("enabled") == "true",
 		AgentNudge:     dur("agentNudge"),
@@ -116,6 +139,9 @@ func watchdogPolicyOf(rows []Setting) WatchdogPolicy {
 		PollBehind:     num("pollBehind"),
 		FileBugs:       get("fileBugs") == "true",
 		AutonomousOnly: get("autonomousOnly") == "true",
+		RunawayProcs:   num("runawayProcs"),
+		RunawayMemory:  size("runawayMemory"),
+		RunawayGrace:   dur("runawayGrace"),
 	}
 }
 

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QNVN7EBRCBDFV93TK2AYYB",
+  "after": [
+    "01M7QNGMXZSGEWQ2H1QPZF9MJP"
+  ],
+  "at": "2026-11-18T15:56:10Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "At f300dfbe1: go test -trimpath -p 2 ./internal/api -run 'TestWatchdogRunaway|TestWatchdogStalled' exit 0 (TestWatchdogRunaway, SpawnedChild, LeftAlone with under-both/back-under/threshold-off/attended/no-tree subtests, NoHostTable, all Stalled tests PASS); -run 'Watchdog|Daemon' exit 0; ./internal/daemon/... exit 0; go vet and gofmt clean; rhiza ship generate and rhiza render in a clean detached worktree exit 0 with no changes. Diff read: watchdogRunaway runs before watchdogStalled on an injected procs reader (nil under RHIZA_TEST_NOW), nudges with count and threshold, after runawayGrace closes panes plus waiting parents and calls terminateRun, journals TypeStopped on the current step naming session/role, processes, RSS and threshold, files a 'runaway session' bug, never resumes (a stopped run is not Ended so the transient pass skips it); nudge memory is WatchdogRun.Runaway in internal/daemon/state.go. Stall limits and nudge text are unchanged (stallReason only extracted sessionRole), there is no /proc read or ps in tests, and the holds are untouched."
+        },
+        "handle": "runaway-session-fails-step-verified",
+        "id": "01M7QNYV5Y96PSJMQF67CB6KBX",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QNYV5Y96PSJMQF65J2E13Z",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QNYV5Y96PSJMQF65J2E13Z",
+        "id": "01M7QNYV6XPH1KZ65ZMZR73R0K",
+        "link": "01M7QNYV6XPH1KZ65ZMW3T7HB5",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RG4WGQBDGHX67B53556",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M7QMXX2TDHNN4PBRAF0C4KD5",
+  "id": "01M7QNYV7SD27YVQ858W1FPRE8",
+  "type": "ops",
+  "v": 1
+}

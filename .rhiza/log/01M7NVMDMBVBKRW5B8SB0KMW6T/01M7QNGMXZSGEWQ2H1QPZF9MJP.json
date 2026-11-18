@@ -1,0 +1,40 @@
+{
+  "actor": "01M7QNE2XGEFVRY144A814RXFP",
+  "after": [
+    "01M7QN8J6QQT4DPXNW0ES8A14K"
+  ],
+  "at": "2026-11-18T15:48:25Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified commit 6e7b448d0. go test -trimpath -p 2 ./internal/api -run TestWatchdogPolicy: exit 0 (runaway keys subtest resolves defaults 400, 8<<30 bytes, 5m and project over machine; invalid-values subtest refuses runawayMemory=lots, runawayProcs=-1, runawayGrace=0 naming the key). env -u RHIZA_*/SHIP_*/REX_* go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/watchdog-policy$': exit 0 (three keys listed at defaults for machine and project, runawayMemory 12G set via rhiza daemon set, 'lots' and '-- runawayProcs -1' refused naming the key). rhiza ship generate: exit 0, 0 changed files (docs/reference/config.md current). rhiza render: exit 0. make self-check: exit 0 from a clean detached worktree at the commit (in the run worktree it only failed on this verifier's own untracked actor entry). Diff touches only the leaf's files plus its .rhiza log/rendered; existing watchdog keys unchanged; no process table read; no TODOs."
+        },
+        "handle": "runaway-threshold-keys-verified",
+        "id": "01M7QNGMW1NJ7CYE6EN9EB5Y97",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7QNGMW1NJ7CYE6EN7HRMFGH",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7QNGMW1NJ7CYE6EN7HRMFGH",
+        "id": "01M7QNGMX1EHHEBHVTX5EDBNM8",
+        "link": "01M7QNGMX1EHHEBHVTX27606GT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QN2RE9HAZ65J0A2DABCHG1",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NVMDMBVBKRW5B8SB0KMW6T",
+  "for": "01M7QMXX2TDHNN4PBRAF0C4KD5",
+  "id": "01M7QNGMXZSGEWQ2H1QPZF9MJP",
+  "type": "ops",
+  "v": 1
+}
