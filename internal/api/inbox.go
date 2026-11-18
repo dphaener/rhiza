@@ -815,6 +815,7 @@ func inboxOne(ctx *Ctx) ([]InboxItem, error) {
 		return nil, err
 	}
 	rs := runStore(ctx, common)
+	rs.DiskCache = true
 	runs, err := rs.List()
 	if err != nil {
 		return nil, Errorf("read runs: %v", err)
@@ -1209,6 +1210,7 @@ func findInboxItems(ctx *Ctx, ref string) ([]InboxItem, map[string]run.State, er
 		return nil, nil, err
 	}
 	rs := runStore(ctx, common)
+	rs.DiskCache = true
 	runs, err := rs.List()
 	if err != nil {
 		return nil, nil, Errorf("read runs: %v", err)
