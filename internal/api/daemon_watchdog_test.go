@@ -251,6 +251,139 @@ func TestWatchdogStalledSpawnedChild(t *testing.T) {
 	})
 }
 
+// TestWatchdogStalledReason checks that each stall retry and give-up names
+// its reason (decision stall-reason-on-run): a stalled spawned fixer's retry
+// journals one warning naming the fixer, its role, its parent and its last
+// report, the charged attempt names it too, and once the budget is spent the
+// hold and its inbox item do. A nudge journals nothing, nor does a step that
+// moved since; a step's own session is named as the step's session.
+func TestWatchdogStalledReason(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2026, 11, 16, 0, 0, 0, 0, time.UTC)
+	pol := WatchdogPolicy{Enabled: true, AgentNudge: 20 * time.Minute, AgentRetry: 40 * time.Minute, CommandLimit: 30 * time.Minute, WaitLimit: 90 * time.Minute, RetryBudget: 1, AutonomousOnly: true}
+	type warning struct{ run, detail string }
+	setup := func(t *testing.T) (*session.Store, *[]warning, watchdogDeps) {
+		sessions := session.NewStore(t.TempDir())
+		var warns []warning
+		d := watchdogDeps{
+			sessions: sessions,
+			step:     func(run.State) workflow.Step { return workflow.Step{Kind: "agent"} },
+			send:     func(string, string) error { return nil },
+			stop:     func(run.State, []string) error { return nil },
+			resume:   func(string) error { return nil },
+			warn:     func(id, detail string) error { warns = append(warns, warning{id, detail}); return nil },
+			now:      func() time.Time { return t0.Add(time.Hour) },
+			log:      func(string, ...any) {},
+		}
+		return sessions, &warns, d
+	}
+	report := func(t *testing.T, s *session.Store, id string, at time.Time) {
+		t.Helper()
+		rec := session.Record{ID: id, Autonomous: true}
+		rec.Status.Hook = &session.Report{State: session.StateIdle, At: at}
+		if err := s.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	poll := func(t *testing.T, d watchdogDeps, js []run.Journal, mem []daemon.WatchdogRun, now time.Time) ([]daemon.WatchdogRun, []daemon.WatchdogHold) {
+		t.Helper()
+		mem, holds, err := watchdogStalled(pol, js, now, mem, d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return mem, holds
+	}
+	fixerAt := t0.Add(-5 * time.Minute)
+	conduct := []run.Journal{{ID: "R", Entries: []run.Entry{
+		{Type: run.TypeStarted, At: t0.Add(-3 * time.Hour), Started: &run.Started{Autonomous: true}},
+		{Type: run.TypeEntered, At: t0.Add(-3 * time.Hour), Step: "conduct", Visit: 1},
+		{Type: run.TypeSession, At: t0.Add(-3 * time.Hour), Step: "conduct", Session: "conductor-1"},
+		{Type: run.TypeSpawn, At: t0, Step: "conduct", Parent: "conductor-1", Session: "fixer-1", Role: "fixer"},
+	}}}
+	fixerAtS := fixerAt.UTC().Format(time.RFC3339)
+
+	t.Run("spawned fixer", func(t *testing.T) {
+		sessions, warns, d := setup(t)
+		report(t, sessions, "conductor-1", t0.Add(-2*time.Hour))
+		report(t, sessions, "fixer-1", fixerAt)
+		mem, _ := poll(t, d, conduct, nil, t0.Add(21*time.Minute))
+		if len(*warns) != 0 {
+			t.Fatalf("a nudge journalled %v, want nothing", *warns)
+		}
+		mem, holds := poll(t, d, conduct, mem, t0.Add(41*time.Minute))
+		if len(*warns) != 1 || (*warns)[0].run != "R" {
+			t.Fatalf("warnings %v, want one on run R", *warns)
+		}
+		w := (*warns)[0].detail
+		for _, want := range []string{"fixer-1", "role fixer", "conductor-1", fixerAtS} {
+			if !strings.Contains(w, want) {
+				t.Errorf("warning %q does not name %q", w, want)
+			}
+		}
+		if len(holds) != 0 || len(mem) != 1 || len(mem[0].Attempts) != 1 {
+			t.Fatalf("holds %+v memory %+v, want one charged attempt", holds, mem)
+		}
+		if a := mem[0].Attempts[0].Action; !strings.Contains(a, "fixer-1") || !strings.Contains(a, "role fixer") {
+			t.Errorf("attempt %q does not name the fixer and its role", a)
+		}
+		// Silent again past the second limit: the budget is spent, so the
+		// run is held, and the hold and its item name the fixer.
+		mem, holds = poll(t, d, conduct, mem, t0.Add(90*time.Minute))
+		if len(*warns) != 1 {
+			t.Errorf("warnings %v after the give-up, want the retry's only", *warns)
+		}
+		if len(holds) != 1 {
+			t.Fatalf("holds %+v, want one", holds)
+		}
+		items := watchdogHoldItems(holds)
+		for _, s := range []string{holds[0].Detail, items[0].Detail} {
+			for _, want := range []string{"fixer-1", "role fixer", "conductor-1", fixerAtS} {
+				if !strings.Contains(s, want) {
+					t.Errorf("hold detail %q does not name %q", s, want)
+				}
+			}
+		}
+		// The budget hold that replaces it lists the charged attempt, which
+		// names the fixer.
+		bh := watchdogBudgetHolds(pol, conduct, mem, holds)
+		if len(bh) != 1 || !strings.Contains(bh[0].Detail, "fixer-1") || !strings.Contains(watchdogHoldItems(bh)[0].Detail, "role fixer") {
+			t.Errorf("budget holds %+v, want one naming the fixer and its role", bh)
+		}
+	})
+	t.Run("moved since", func(t *testing.T) {
+		sessions, warns, d := setup(t)
+		report(t, sessions, "conductor-1", t0.Add(-2*time.Hour))
+		report(t, sessions, "fixer-1", fixerAt)
+		mem, _ := poll(t, d, conduct, nil, t0.Add(21*time.Minute))
+		report(t, sessions, "fixer-1", t0.Add(30*time.Minute))
+		mem, _ = poll(t, d, conduct, mem, t0.Add(41*time.Minute))
+		if len(*warns) != 0 || len(mem[0].Attempts) != 0 {
+			t.Errorf("a step that moved journalled %v, attempts %+v", *warns, mem[0].Attempts)
+		}
+	})
+	t.Run("step's own session", func(t *testing.T) {
+		sessions, warns, d := setup(t)
+		report(t, sessions, "builder-1", t0)
+		js := []run.Journal{{ID: "B", Entries: []run.Entry{
+			{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true}},
+			{Type: run.TypeEntered, At: t0, Step: "build", Visit: 1},
+			{Type: run.TypeSession, At: t0, Step: "build", Session: "builder-1"},
+		}}}
+		mem, _ := poll(t, d, js, nil, t0.Add(21*time.Minute))
+		poll(t, d, js, mem, t0.Add(41*time.Minute))
+		if len(*warns) != 1 {
+			t.Fatalf("warnings %v, want one", *warns)
+		}
+		w := (*warns)[0].detail
+		if !strings.Contains(w, "session builder-1 (the step's session) last reported at "+t0.Format(time.RFC3339)) {
+			t.Errorf("warning %q does not name the step's session", w)
+		}
+		if strings.Contains(w, "spawned by") {
+			t.Errorf("warning %q names a parent", w)
+		}
+	})
+}
+
 func slicesHoldFor(holds []daemon.WatchdogHold, id string) bool {
 	for _, h := range holds {
 		if h.Run == id {

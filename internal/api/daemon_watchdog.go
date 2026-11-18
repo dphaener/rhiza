@@ -59,6 +59,9 @@ type watchdogDeps struct {
 	// changeState gives a change set's state and whether the log has it; nil
 	// knows none.
 	changeState func(change string) (string, bool)
+	// warn appends a warning entry with detail to the run's journal; nil
+	// journals none.
+	warn func(runID, detail string) error
 	// now is the clock stamping journalled attempts; nil stamps none.
 	now func() time.Time
 	// classify reads a failed step's output and says whether a rerun would
@@ -105,6 +108,38 @@ func watchdogProgress(j run.Journal, st run.State, d watchdogDeps) (at time.Time
 		sids = append(sids, sid)
 	}
 	return at, sids, true
+}
+
+// stallReason names why st's step counts as stalled, for the run's journal,
+// the charged attempt and the hold (decision stall-reason-on-run): each of
+// sids, the stall sessions, with its role (a spawned child's role and
+// parent, or the step's session) and the time it last reported; with no
+// session, the step's last journal entry at at.
+func stallReason(st run.State, sids []string, at time.Time, d watchdogDeps) string {
+	if len(sids) == 0 {
+		return fmt.Sprintf("no session, last journal entry at %s", at.UTC().Format(time.RFC3339))
+	}
+	var parts []string
+	for _, sid := range sids {
+		who := "the step's session"
+		for _, sp := range st.Spawns {
+			if sp.Step == st.Current && !sp.Ended && sp.Session == sid {
+				role := sp.Role
+				if role == "" {
+					role = "spawned"
+				}
+				who = fmt.Sprintf("role %s, spawned by session %s", role, sp.Parent)
+			}
+		}
+		last := "never reported"
+		if rec, err := d.sessions.Read(sid); err == nil {
+			if rep, _ := session.Resolve(rec); !rep.At.IsZero() {
+				last = "last reported at " + rep.At.UTC().Format(time.RFC3339)
+			}
+		}
+		parts = append(parts, fmt.Sprintf("session %s (%s) %s", sid, who, last))
+	}
+	return strings.Join(parts, "; ")
 }
 
 // watchdogStalled checks each live run of journals at now and returns the
@@ -174,10 +209,11 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 			}
 			continue
 		}
+		reason := stallReason(st, sids, at, d)
 		if cur.Spent >= pol.RetryBudget {
 			holds = append(holds, daemon.WatchdogHold{
 				Run: j.ID, Change: st.Change, Step: st.Current, Since: at,
-				Detail: fmt.Sprintf("step %s stalled and the watchdog's retry budget of %d is spent: it stopped and retried %d times", st.Current, pol.RetryBudget, cur.Spent),
+				Detail: fmt.Sprintf("step %s stalled (%s) and the watchdog's retry budget of %d is spent: it stopped and retried %d times", st.Current, reason, pol.RetryBudget, cur.Spent),
 			})
 			continue
 		}
@@ -195,9 +231,14 @@ func watchdogStalled(pol WatchdogPolicy, journals []run.Journal, now time.Time, 
 			fail(fmt.Errorf("resume run %s: %w", j.ID, err))
 			continue
 		}
-		d.charge(cur, fmt.Sprintf("step %s stalled: stopped and resumed with --retry", st.Current))
+		d.charge(cur, fmt.Sprintf("step %s stalled (%s): stopped and resumed with --retry", st.Current, reason))
 		cur.Nudged = false
-		d.fileBug(pol, j.ID, bugStall, st.Current, fmt.Sprintf("no journal or session progress since %s", at.UTC().Format(time.RFC3339)))
+		if d.warn != nil {
+			if err := d.warn(j.ID, fmt.Sprintf("watchdog: step %s stalled: %s; stopped and resumed with --retry (budget %d of %d)", st.Current, reason, cur.Spent, pol.RetryBudget)); err != nil {
+				d.log("watchdog: run %s: warning not journalled: %v", j.ID, err)
+			}
+		}
+		d.fileBug(pol, j.ID, bugStall, st.Current, fmt.Sprintf("no journal or session progress since %s: %s", at.UTC().Format(time.RFC3339), reason))
 		d.log("watchdog: run %s step %s silent since %s: stopped and resumed with --retry (budget %d of %d)", j.ID, st.Current, at.UTC().Format(time.RFC3339), cur.Spent, pol.RetryBudget)
 	}
 	return out, holds, first
@@ -237,6 +278,9 @@ func daemonWatchdog(ctx *Ctx, rs *run.Store, state *daemon.State, pol WatchdogPo
 		resume: func(id string) error {
 			_, err := queueContinue(ctx, common, id, true, false)
 			return err
+		},
+		warn: func(id, detail string) error {
+			return rs.Append(id, run.Entry{Type: run.TypeWarning, At: ctx.Now(), Detail: detail})
 		},
 		now: ctx.Now,
 		log: func(format string, args ...any) {
