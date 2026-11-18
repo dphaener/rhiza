@@ -1183,3 +1183,124 @@ func TestWatchdogFailedRetryMeasure(t *testing.T) {
 		t.Fatalf("inbox %+v, want the plan run failed at review-check with its retry named", got)
 	}
 }
+
+// byoWorkflow parses the bring-your-own example workflow (myteam-flow): an
+// agent step work and a gate step gate with no stall= of their own.
+func byoWorkflow(t *testing.T) *workflow.Definition {
+	t.Helper()
+	b, err := os.ReadFile("../../docs/examples/byo/workflow.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	def, err := workflow.Parse("myteam-flow", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range []string{"work", "gate"} {
+		if def.Steps[s].Stall != 0 {
+			t.Fatalf("step %s sets its own stall %v", s, def.Steps[s].Stall)
+		}
+	}
+	if def.Steps["work"].Kind != "agent" || def.Steps["gate"].Kind != "gate" {
+		t.Fatalf("steps work %q gate %q, want agent and gate", def.Steps["work"].Kind, def.Steps["gate"].Kind)
+	}
+	return def
+}
+
+// TestWatchdogStalledBYO drives the stall recovery over a run of the
+// bring-your-own example workflow: its agent step work, silent, is nudged
+// at agentNudge, then stopped and resumed with --retry at agentRetry; its
+// gate step gate, which has no session and no stall=, is stopped and
+// resumed past commandLimit, and left alone inside it.
+func TestWatchdogStalledBYO(t *testing.T) {
+	t.Parallel()
+	t0 := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	def := byoWorkflow(t)
+	pol := WatchdogPolicy{Enabled: true, AgentNudge: 20 * time.Minute, AgentRetry: 40 * time.Minute, CommandLimit: 30 * time.Minute, WaitLimit: 90 * time.Minute, RetryBudget: 1, AutonomousOnly: true}
+	type fixture struct {
+		sent, stopped, resumed, log []string
+		d                           watchdogDeps
+		sessions                    *session.Store
+	}
+	setup := func(t *testing.T) *fixture {
+		f := &fixture{sessions: session.NewStore(t.TempDir())}
+		f.d = watchdogDeps{
+			sessions: f.sessions,
+			step:     func(st run.State) workflow.Step { return def.Steps[st.Current] },
+			send:     func(sid, _ string) error { f.sent = append(f.sent, sid); return nil },
+			stop:     func(st run.State, _ []string) error { f.stopped = append(f.stopped, st.ID); return nil },
+			resume:   func(id string) error { f.resumed = append(f.resumed, id); return nil },
+			log:      func(fm string, a ...any) { f.log = append(f.log, fmt.Sprintf(fm, a...)) },
+		}
+		return f
+	}
+	poll := func(t *testing.T, f *fixture, js []run.Journal, mem []daemon.WatchdogRun, now time.Time) []daemon.WatchdogRun {
+		t.Helper()
+		mem, _, err := watchdogStalled(pol, js, now, mem, f.d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return mem
+	}
+	started := []run.Entry{
+		{Type: run.TypeStarted, At: t0, Started: &run.Started{Autonomous: true, Workflow: "myteam-flow"}},
+		{Type: run.TypeEntered, At: t0, Step: "services", Visit: 1},
+		{Type: run.TypeEnded, At: t0, Step: "services", Visit: 1, Outcome: "pass"},
+	}
+	retried := func(t *testing.T, f *fixture, step string) {
+		t.Helper()
+		if !slices.Equal(f.stopped, []string{"W"}) || !slices.Equal(f.resumed, []string{"W"}) {
+			t.Fatalf("stopped %v resumed %v, want W once", f.stopped, f.resumed)
+		}
+		if !slices.ContainsFunc(f.log, func(l string) bool {
+			return strings.Contains(l, "step "+step+" ") && strings.Contains(l, "stopped and resumed with --retry")
+		}) {
+			t.Errorf("log %q has no retry line for step %s", f.log, step)
+		}
+	}
+
+	t.Run("agent step work", func(t *testing.T) {
+		f := setup(t)
+		rec := session.Record{ID: "worker", Autonomous: true}
+		rec.Status.Hook = &session.Report{State: session.StateWorking, At: t0}
+		if err := f.sessions.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+		js := []run.Journal{{ID: "W", Entries: append(slices.Clone(started),
+			run.Entry{Type: run.TypeEntered, At: t0, Step: "work", Visit: 1},
+			run.Entry{Type: run.TypeSession, At: t0, Step: "work", Session: "worker"},
+		)}}
+		mem := poll(t, f, js, nil, t0.Add(19*time.Minute))
+		if len(f.sent)+len(f.stopped) != 0 {
+			t.Fatalf("before agentNudge: sent %v stopped %v", f.sent, f.stopped)
+		}
+		mem = poll(t, f, js, mem, t0.Add(21*time.Minute))
+		if !slices.Equal(f.sent, []string{"worker"}) || len(f.stopped) != 0 {
+			t.Fatalf("past agentNudge: sent %v stopped %v, want worker nudged", f.sent, f.stopped)
+		}
+		poll(t, f, js, mem, t0.Add(41*time.Minute))
+		retried(t, f, "work")
+	})
+	gate := []run.Journal{{ID: "W", Entries: append(slices.Clone(started),
+		run.Entry{Type: run.TypeEntered, At: t0, Step: "work", Visit: 1},
+		run.Entry{Type: run.TypeEnded, At: t0, Step: "work", Visit: 1, Outcome: "pass"},
+		run.Entry{Type: run.TypeEntered, At: t0, Step: "gate", Visit: 1},
+	)}}
+	t.Run("gate step past commandLimit", func(t *testing.T) {
+		f := setup(t)
+		// 31m is past commandLimit but inside agentRetry, which a gate
+		// step with no stall= fell through to before.
+		poll(t, f, gate, nil, t0.Add(31*time.Minute))
+		if len(f.sent) != 0 {
+			t.Errorf("sent %v: a gate step has no session to nudge", f.sent)
+		}
+		retried(t, f, "gate")
+	})
+	t.Run("gate step inside commandLimit", func(t *testing.T) {
+		f := setup(t)
+		poll(t, f, gate, nil, t0.Add(29*time.Minute))
+		if len(f.sent)+len(f.stopped)+len(f.resumed) != 0 {
+			t.Fatalf("inside commandLimit: sent %v stopped %v resumed %v", f.sent, f.stopped, f.resumed)
+		}
+	})
+}
