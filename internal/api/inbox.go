@@ -570,6 +570,9 @@ type inboxFold struct {
 	p      projection
 	states map[id.ID]changeset.State
 	sets   map[id.ID]changeset.ChangeSet
+	// onProposalView, when set, is called with each proposed change set
+	// whose view inboxUncoveredProposals builds (tests count them).
+	onProposalView func(id.ID)
 }
 
 // newInboxFold returns the fold of ctx's change sets; nothing is read

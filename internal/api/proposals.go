@@ -72,49 +72,65 @@ func uncoveredProposals(proposed []string, runs []run.Journal, held map[string]b
 
 // inboxUncoveredProposals is one accept item per proposed change set with
 // leaves that no run covers (uncoveredProposals), whatever
-// rhiza.autonomy.accept says: nothing is going to accept it. Only the
-// proposed change sets are folded; a leaf is read from the change set's
-// view over the projection's stored as-is rows. A
-// change set that already has an accept item in items (a gate left it for
-// the owner) is not listed again.
+// rhiza.autonomy.accept says: nothing is going to accept it. The proposed
+// change sets a run covers, or that already have an accept item in items (a
+// gate left it for the owner), are dropped before any view is built, so
+// only the change sets it reports cost a what-if overlay: a leaf is read
+// from each remaining change set's own view over the projection's stored
+// as-is rows.
 func inboxUncoveredProposals(items []InboxItem, runs []run.Journal, fold *inboxFold) []InboxItem {
 	if fold.load() != nil {
 		return nil
 	}
 	var proposed []string
 	for cs, st := range fold.states {
-		if st != changeset.StateProposed {
-			continue
-		}
-		c, ok := fold.changeSet(cs.String())
-		if !ok {
-			continue
-		}
-		// The proposal's view over the projection's stored as-is rows, so a
-		// leaf under a landed parent counts. Only whether it has a leaf
-		// matters, so the leaves are not ranked.
-		m := fold.p.model(fold.ws.pending, cs)
-		leaves := changeLeavesIn(m, c.Ops, func([]Node) map[id.ID]int { return nil })
-		if fold.p.failure() != nil {
-			continue
-		}
-		if len(leaves) > 0 {
+		if st == changeset.StateProposed {
 			proposed = append(proposed, cs.String())
 		}
 	}
 	slices.Sort(proposed)
-	return uncoveredAcceptItems(items, proposed, runs)
+	listed := acceptListed(items)
+	var withLeaves []string
+	for _, cs := range uncoveredProposals(proposed, runs, nil) {
+		if !listed[cs] && fold.proposalHasLeaf(cs) {
+			withLeaves = append(withLeaves, cs)
+		}
+	}
+	return uncoveredAcceptItems(items, withLeaves, runs)
 }
 
-// uncoveredAcceptItems is one accept item per change set of proposed that
-// uncoveredProposals leaves uncovered and that has no accept item in items.
-func uncoveredAcceptItems(items []InboxItem, proposed []string, runs []run.Journal) []InboxItem {
+// proposalHasLeaf reports whether proposed change set change has a leaf in
+// its own view over the projection's stored as-is rows, so a leaf under a
+// landed parent counts. Only whether it has a leaf matters, so the leaves
+// are not ranked.
+func (f *inboxFold) proposalHasLeaf(change string) bool {
+	c, ok := f.changeSet(change)
+	if !ok {
+		return false
+	}
+	if f.onProposalView != nil {
+		f.onProposalView(c.ID)
+	}
+	m := f.p.model(f.ws.pending, c.ID)
+	leaves := changeLeavesIn(m, c.Ops, func([]Node) map[id.ID]int { return nil })
+	return f.p.failure() == nil && len(leaves) > 0
+}
+
+// acceptListed is the change sets that have an accept item in items.
+func acceptListed(items []InboxItem) map[string]bool {
 	listed := map[string]bool{}
 	for _, it := range items {
 		if it.Kind == InboxAccept {
 			listed[it.Change] = true
 		}
 	}
+	return listed
+}
+
+// uncoveredAcceptItems is one accept item per change set of proposed that
+// uncoveredProposals leaves uncovered and that has no accept item in items.
+func uncoveredAcceptItems(items []InboxItem, proposed []string, runs []run.Journal) []InboxItem {
+	listed := acceptListed(items)
 	var out []InboxItem
 	for _, cs := range uncoveredProposals(proposed, runs, nil) {
 		if listed[cs] {

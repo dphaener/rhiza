@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dphaener/rhiza/internal/daemon"
+	"github.com/dphaener/rhiza/internal/id"
 	"github.com/dphaener/rhiza/internal/run"
 )
 
@@ -175,5 +176,60 @@ func TestInboxUncoveredProposalsUnderLandedParent(t *testing.T) {
 		if !slices.Equal(got, want) {
 			t.Errorf("index %q: accept items for %v, want %v", c.IndexPath, got, want)
 		}
+	}
+}
+
+// TestInboxUncoveredProposalsOverlayOnce: the inbox builds one view (one
+// what-if overlay) per proposed change set no run covers, none for a
+// covered proposed set or a draft set, and none when every proposed set has
+// a run.
+func TestInboxUncoveredProposalsOverlayOnce(t *testing.T) {
+	t.Parallel()
+	ctx := readCtx(t)
+	var proposed []string
+	for _, h := range []string{"p1", "p2", "p3", "p4"} {
+		cs := newChange(t, ctx, `{"intent":"Proposed `+h+`"}`).ChangeSet
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"`+h+`"}`)
+		move(t, ctx, "propose", `{}`)
+		proposed = append(proposed, cs.String())
+	}
+	var drafts []string
+	for _, h := range []string{"d1", "d2"} {
+		cs := newChange(t, ctx, `{"intent":"Draft `+h+`"}`).ChangeSet
+		mustWrite(t, ctx, "add", `{"kind":"capability","handle":"`+h+`"}`)
+		drafts = append(drafts, cs.String())
+	}
+	slices.Sort(proposed)
+	// p[0] has a live plan-review run, p[1] a plan run's gated entry.
+	some := []run.Journal{
+		proposalRun("r1", "plan-review", proposed[0], nil, "", ""),
+		proposalRun("r2", "plan", "X", []string{proposed[1]}, run.Succeeded, ""),
+	}
+	all := append(slices.Clone(some), proposalRun("r3", "plan", "Y", proposed[2:], run.Succeeded, ""))
+	for _, tc := range []struct {
+		name string
+		runs []run.Journal
+		want []string
+	}{
+		{"no runs", nil, proposed},
+		{"some covered", some, proposed[2:]},
+		{"all covered", all, nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fold := newInboxFold(ctx)
+			defer fold.close()
+			var viewed []string
+			fold.onProposalView = func(cs id.ID) { viewed = append(viewed, cs.String()) }
+			var got []string
+			for _, it := range inboxUncoveredProposals(nil, tc.runs, fold) {
+				got = append(got, it.Change)
+			}
+			if !slices.Equal(got, tc.want) {
+				t.Errorf("accept items for %v, want %v", got, tc.want)
+			}
+			if !slices.Equal(viewed, tc.want) {
+				t.Errorf("views built for %v, want one each for %v (drafts %v)", viewed, tc.want, drafts)
+			}
+		})
 	}
 }
