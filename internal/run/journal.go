@@ -128,7 +128,35 @@ const (
 	// (rhiza run note): Text, and Step, Session, Role and Leaf as the
 	// session had them. It changes nothing else in the fold.
 	TypeNote = "note"
+	// TypeIntervention records one outside intervention in the run: Kind
+	// (an Intervention kind), Actor (who made it), Detail (what), Commit
+	// (a hand commit's commit, else empty) and Step (the step the run was
+	// at). It changes nothing else in the fold.
+	TypeIntervention = "intervention"
 )
+
+// Intervention kinds, an intervention entry's Kind: what someone outside
+// the run did to it.
+const (
+	InterventionMessage    = "message"
+	InterventionResume     = "resume"
+	InterventionRetry      = "retry"
+	InterventionAbandon    = "abandon"
+	InterventionApprove    = "approve"
+	InterventionHandCommit = "hand-commit"
+)
+
+// InterventionKinds are the intervention kinds, in the order status lists
+// their counts.
+var InterventionKinds = []string{
+	InterventionMessage, InterventionResume, InterventionRetry,
+	InterventionAbandon, InterventionApprove, InterventionHandCommit,
+}
+
+// ValidInterventionKind says whether kind is an intervention kind.
+func ValidInterventionKind(kind string) bool {
+	return slices.Contains(InterventionKinds, kind)
+}
 
 // Sign-off outcomes, a signoff entry's Outcome.
 const (
@@ -442,6 +470,9 @@ type Block struct {
 //	note:      Text, Step, Session, Role, Leaf (a one-line learning journaled
 //	           by rhiza run note, with the step the run was at and the
 //	           noting session, role and leaf when set)
+//	intervention: Kind, Actor, Detail, Commit, Step (an outside
+//	           intervention in the run: a message, resume, retry, abandon,
+//	           approve or hand commit; Commit only for a hand commit)
 //	signoff:   Step, Visit, Actor, Rule (owner or autonomous), Outcome (approved
 //	           or changes), Findings (signoff step Step's visit Visit was
 //	           signed off: approved, or with changes, the owner's findings,
@@ -742,6 +773,30 @@ type Note struct {
 	Leaf    string
 	Text    string
 	At      time.Time
+}
+
+// Intervention is one intervention entry: Actor did something of kind
+// Kind to the run from outside it while it was at Step, Detail saying
+// what; Commit is a hand commit's commit, empty for other kinds.
+type Intervention struct {
+	Kind   string
+	Actor  string
+	Detail string
+	Commit string
+	Step   string
+	At     time.Time
+}
+
+// InterventionProblem says why iv cannot be journalled: its kind is not
+// an intervention kind, or it names no actor; "" when it can.
+func InterventionProblem(iv Intervention) string {
+	switch {
+	case !ValidInterventionKind(iv.Kind):
+		return fmt.Sprintf("unknown intervention kind %q: want one of %s", iv.Kind, strings.Join(InterventionKinds, ", "))
+	case strings.TrimSpace(iv.Actor) == "":
+		return "an intervention needs the actor who made it"
+	}
+	return ""
 }
 
 // NoteMax is the most characters a note may hold.
@@ -1468,6 +1523,10 @@ type State struct {
 	// Notes are the run's note entries, oldest first. A note changes
 	// nothing else in the fold.
 	Notes []Note
+	// Interventions are the run's intervention entries with a known kind,
+	// in journal order. An intervention changes nothing else in the fold;
+	// an entry with an unknown kind is not counted and adds a warning.
+	Interventions []Intervention
 	// StoppedAt is when the last stopped entry was journalled, and EndedAt
 	// when the finished entry was; zero while there is none.
 	StoppedAt time.Time
@@ -1691,6 +1750,12 @@ func (j Journal) State() State {
 			st.Warnings = append(st.Warnings, e.Detail)
 		case TypeNote:
 			st.Notes = append(st.Notes, Note{Step: e.Step, Session: e.Session, Role: e.Role, Leaf: e.Leaf, Text: e.Text, At: e.At})
+		case TypeIntervention:
+			if !ValidInterventionKind(e.Kind) {
+				st.Warnings = append(st.Warnings, fmt.Sprintf("intervention entry at %s has unknown kind %q: not counted", e.At.UTC().Format(time.RFC3339), e.Kind))
+				break
+			}
+			st.Interventions = append(st.Interventions, Intervention{Kind: e.Kind, Actor: e.Actor, Detail: e.Detail, Commit: e.Commit, Step: e.Step, At: e.At})
 		case TypeEntered:
 			st.Visits[e.Step]++
 			st.Current = e.Step

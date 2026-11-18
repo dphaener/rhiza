@@ -1226,3 +1226,98 @@ func TestNoteProblem(t *testing.T) {
 		}
 	}
 }
+
+// TestInterventionFoldsInOrder: two intervention entries fold to both, in
+// journal order, and change nothing else in the fold.
+func TestInterventionFoldsInOrder(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01RUNIV", startedEntry("build", 0)); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Append("01RUNIV", Entry{Type: TypeEntered, At: at(1), Step: "build", Visit: 1}); err != nil {
+		t.Fatal(err)
+	}
+	ivs := []Intervention{
+		{Kind: InterventionMessage, Actor: "owner", Detail: "sent session s1 a message", Step: "build", At: at(2)},
+		{Kind: InterventionHandCommit, Actor: "owner", Detail: "fix typo", Commit: "abc123", Step: "build", At: at(3)},
+	}
+	for _, iv := range ivs {
+		if err := s.AppendIntervention("01RUNIV", iv); err != nil {
+			t.Fatal(err)
+		}
+	}
+	j, err := s.Read("01RUNIV")
+	if err != nil {
+		t.Fatal(err)
+	}
+	st := j.State()
+	if !reflect.DeepEqual(st.Interventions, ivs) {
+		t.Fatalf("interventions %+v, want %+v", st.Interventions, ivs)
+	}
+	if len(st.Interventions) != 2 {
+		t.Errorf("count %d, want 2", len(st.Interventions))
+	}
+	if st.Current != "build" || st.Ended || len(st.Messages) != 0 || len(st.Warnings) != 0 {
+		t.Errorf("an intervention changed the fold: %+v", st)
+	}
+}
+
+// TestInterventionNoneCountsZero: a journal with no intervention entry
+// folds to none.
+func TestInterventionNoneCountsZero(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01RUNIV0", startedEntry("build", 0)); err != nil {
+		t.Fatal(err)
+	}
+	j, err := s.Read("01RUNIV0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := len(j.State().Interventions); n != 0 {
+		t.Errorf("count %d, want 0", n)
+	}
+}
+
+// TestInterventionUnknownKind: AppendIntervention refuses an unknown kind
+// (or no actor) and journals nothing; an unknown kind already in a journal
+// is not counted, and the fold reports it as a warning.
+func TestInterventionUnknownKind(t *testing.T) {
+	s := newStore(t)
+	if err := s.Create("01RUNIVX", startedEntry("build", 0)); err != nil {
+		t.Fatal(err)
+	}
+	for _, bad := range []Intervention{
+		{Kind: "poke", Actor: "owner", At: at(1)},
+		{Kind: "", Actor: "owner", At: at(1)},
+		{Kind: InterventionResume, Actor: " ", At: at(1)},
+	} {
+		if err := s.AppendIntervention("01RUNIVX", bad); err == nil {
+			t.Errorf("AppendIntervention(%+v) took it", bad)
+		}
+	}
+	j, err := s.Read("01RUNIVX")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(j.Entries) != 1 {
+		t.Fatalf("a refused intervention was journalled: %+v", j.Entries)
+	}
+	if err := s.Append("01RUNIVX", Entry{Type: TypeIntervention, At: at(2), Kind: "poke", Actor: "owner"}); err != nil {
+		t.Fatal(err)
+	}
+	if j, err = s.Read("01RUNIVX"); err != nil {
+		t.Fatal(err)
+	}
+	st := j.State()
+	if len(st.Interventions) != 0 {
+		t.Errorf("an unknown kind was counted: %+v", st.Interventions)
+	}
+	if len(st.Warnings) != 1 || !strings.Contains(st.Warnings[0], `unknown kind "poke"`) {
+		t.Errorf("warnings %q, want one naming the unknown kind", st.Warnings)
+	}
+	for _, k := range InterventionKinds {
+		if InterventionProblem(Intervention{Kind: k, Actor: "a"}) != "" {
+			t.Errorf("kind %s refused", k)
+		}
+	}
+}

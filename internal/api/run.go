@@ -190,44 +190,87 @@ type RunResponse struct {
 
 // RunInfo is a run folded from its journal.
 type RunInfo struct {
-	ID              string             `json:"id" desc:"The run ID"`
-	Workflow        string             `json:"workflow" desc:"The workflow's name"`
-	Pick            string             `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
-	Change          string             `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
-	Trigger         string             `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
-	TriggerName     string             `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
-	Title           string             `json:"title" desc:"The change set's title"`
-	Worktree        string             `json:"worktree" desc:"The worktree every step runs in"`
-	MilestoneNumber int                `json:"milestone_number,omitempty" desc:"The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none"`
-	Autonomous      bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
-	Autonomy        []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
-	State           string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
-	Current         string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
-	Detail          string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
-	Steps           []RunStep          `json:"steps" desc:"The steps done, in order"`
-	StartedAt       string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
-	Blocked         *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
-	Stalled         *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
-	Amendments      []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
-	Messages        []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
-	Sessions        []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
-	Totals          SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
-	Warnings        []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
-	Notes           []RunNote          `json:"notes,omitempty" desc:"The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none"`
-	Retries         []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
-	Accepts         []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
-	Questions       []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
-	Rounds          []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
-	Waiting         []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
-	Leaves          []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
-	Checks          []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
-	Fixes           []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
-	CodeChecks      []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
-	PrePush         *RunPrePush        `json:"pre_push,omitempty" desc:"The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran"`
-	Signoffs        []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
-	PR              string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
-	Spawned         []RunSpawned       `json:"spawned,omitempty" desc:"The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none"`
-	SignoffWaiting  bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+	ID                string             `json:"id" desc:"The run ID"`
+	Workflow          string             `json:"workflow" desc:"The workflow's name"`
+	Pick              string             `json:"pick,omitempty" desc:"Which workflow dispatch picked and why: explicit (--workflow), request (the workflow its request named), rule <table>.<kind> or default; absent for a run journaled before it was recorded"`
+	Change            string             `json:"change" desc:"The change set it runs on; empty for a scheduled run, which has none"`
+	Trigger           string             `json:"trigger,omitempty" desc:"What started a run with no change set: schedule; absent for a change set's run"`
+	TriggerName       string             `json:"trigger_name,omitempty" desc:"With trigger schedule: the schedule's name"`
+	Title             string             `json:"title" desc:"The change set's title"`
+	Worktree          string             `json:"worktree" desc:"The worktree every step runs in"`
+	MilestoneNumber   int                `json:"milestone_number,omitempty" desc:"The milestone number a plan run for a new milestone reserved when it started; absent for a run that reserved none"`
+	Autonomous        bool               `json:"autonomous,omitempty" desc:"True for a run started with --autonomous: it goes on without the owner; absent otherwise"`
+	Autonomy          []RunStageAutonomy `json:"autonomy,omitempty" desc:"The autonomy of each stage (plan, accept, ship, signoff) as the run started, and where it came from; absent for a run started before it was recorded"`
+	State             string             `json:"state" desc:"running (another process runs it now), blocked (its agent step waits on the owner), stopped (resumable), succeeded or failed; empty in a dry run"`
+	Current           string             `json:"current,omitempty" desc:"The step being run or to run next; empty once the run is finished"`
+	Detail            string             `json:"detail,omitempty" desc:"Why it stopped or failed"`
+	Steps             []RunStep          `json:"steps" desc:"The steps done, in order"`
+	StartedAt         string             `json:"started_at" desc:"When it started, RFC 3339 UTC"`
+	Blocked           *RunBlocked        `json:"blocked,omitempty" desc:"What the run waits on while its agent step's session is blocked; absent otherwise"`
+	Stalled           *RunStalled        `json:"stalled,omitempty" desc:"A session of a live run's current step (its agent session, or a leaf's, check's or fixer's latest session) while it is stalled: working, or idle in an autonomous run, without saying it is done and silent for more than 20 minutes, not paused at a usage limit; absent otherwise"`
+	Amendments        []RunAmendment     `json:"amendments" desc:"The amendments made to its agent steps' briefs or plans, in order"`
+	Messages          []RunMessage       `json:"messages" desc:"The messages its sessions sent each other, in order"`
+	Sessions          []RunSession       `json:"sessions" desc:"The sessions it launched or read token use for, in order of first appearance, each with its latest reading"`
+	Totals            SessionTokenUse    `json:"totals" desc:"The sums of the sessions with recorded token use, the session's own and helpers' kept apart"`
+	Warnings          []string           `json:"warnings,omitempty" desc:"The warnings on the run, in order: a scheduled run that changed the main checkout's branch, HEAD or tracked files names what changed; absent when there were none"`
+	Notes             []RunNote          `json:"notes,omitempty" desc:"The one-line learnings its sessions journaled with rhiza run note, oldest first; absent when there were none"`
+	Interventions     []RunIntervention  `json:"interventions" desc:"The outside interventions in the run (a message, resume, retry, abandon, approve or hand commit from outside it), in journal order"`
+	InterventionCount int                `json:"intervention_count" desc:"How many interventions the run has: 0 when none"`
+	Retries           []RunRetry         `json:"retries,omitempty" desc:"The retries of the run after it failed, in order; absent when it was never retried"`
+	Accepts           []RunAccept        `json:"accepts,omitempty" desc:"The change sets an autonomous run accepted or rejected in the owner's place under rule autonomous, in order; absent when there were none"`
+	Questions         []RunQuestion      `json:"questions,omitempty" desc:"The questions an autonomous run's agent steps asked, each with its arbiter's verdict, in order; absent when there were none"`
+	Rounds            []RunRound         `json:"rounds,omitempty" desc:"The plan review rounds journalled by run findings and run verdict, in order; absent when there were none"`
+	Waiting           []RunWaiting       `json:"waiting,omitempty" desc:"The plan's change sets run gate proposed that still wait proposed for the owner, by ID; absent when none does"`
+	Leaves            []RunLeaf          `json:"leaves,omitempty" desc:"The leaves its leaves steps conducted, and those its checks steps' fixers fixed, in the order they began, each with its sessions, judged attempts and outcome; absent when there were none"`
+	Checks            []RunCheck         `json:"checks,omitempty" desc:"The checks its checks steps ran, in the order they began, each with its cycles and outcome; absent when there were none"`
+	Fixes             []RunFix           `json:"fixes,omitempty" desc:"The change-set fixers its checks steps ran, for confirmed findings naming no leaf, one per cycle, in order; absent when there were none"`
+	CodeChecks        []RunCodeCheck     `json:"code_checks,omitempty" desc:"The code checks rhiza run code-check journalled, in order; absent when there were none"`
+	PrePush           *RunPrePush        `json:"pre_push,omitempty" desc:"The latest pre-push check, the one every push the run makes runs on the committed head first; absent when none ran"`
+	Signoffs          []RunSignoff       `json:"signoffs,omitempty" desc:"The sign-offs of its signoff steps, in order: the owner's approvals and requests for changes, and an autonomous run's under rule autonomous; absent when there were none"`
+	PR                string             `json:"pr,omitempty" desc:"While the run waits at a signoff step: the URL of the change set's pull request, when ship open-pr recorded one; absent otherwise"`
+	Spawned           []RunSpawned       `json:"spawned,omitempty" desc:"The child sessions its steps' sessions spawned with rhiza run spawn, under the step that spawned each, in the order they started; absent when there were none"`
+	SignoffWaiting    bool               `json:"signoff_waiting,omitempty" desc:"True while the run is stopped at a signoff step, waiting for the owner's rhiza run approve or rhiza run request-changes, with rhiza run summary rendering its verdicts; absent otherwise"`
+}
+
+// RunIntervention is one outside intervention in a run.
+type RunIntervention struct {
+	Kind   string `json:"kind" desc:"message, resume, retry, abandon, approve or hand-commit"`
+	Actor  string `json:"actor" desc:"Who made it"`
+	Detail string `json:"detail,omitempty" desc:"What it was; absent when not recorded"`
+	Commit string `json:"commit,omitempty" desc:"A hand commit's commit; absent for other kinds"`
+	Step   string `json:"step,omitempty" desc:"The step the run was at; absent when it was at none"`
+	At     string `json:"at" desc:"When it was journalled, RFC 3339 UTC"`
+}
+
+// runInterventions are the response form of a run's interventions, never
+// nil.
+func runInterventions(ivs []run.Intervention) []RunIntervention {
+	out := make([]RunIntervention, 0, len(ivs))
+	for _, iv := range ivs {
+		out = append(out, RunIntervention{Kind: iv.Kind, Actor: iv.Actor, Detail: iv.Detail, Commit: iv.Commit, Step: iv.Step, At: rfc3339(iv.At)})
+	}
+	return out
+}
+
+// interventionLine counts interventions by kind, in run.InterventionKinds
+// order: "0", or "3 (message 2, resume 1)".
+func interventionLine(ivs []RunIntervention) string {
+	if len(ivs) == 0 {
+		return "0"
+	}
+	var parts []string
+	for _, k := range run.InterventionKinds {
+		n := 0
+		for _, iv := range ivs {
+			if iv.Kind == k {
+				n++
+			}
+		}
+		if n > 0 {
+			parts = append(parts, fmt.Sprintf("%s %d", k, n))
+		}
+	}
+	return fmt.Sprintf("%d (%s)", len(ivs), strings.Join(parts, ", "))
 }
 
 // RunSpawned is one child session a step's session spawned.
@@ -3246,6 +3289,8 @@ func runInfo(ctx *Ctx, st run.State, live bool, sessions *session.Store) RunInfo
 		Warnings: slices.Clone(st.Warnings),
 		Notes:    runNotes(st.Notes),
 	}
+	info.Interventions = runInterventions(st.Interventions)
+	info.InterventionCount = len(info.Interventions)
 	switch {
 	case st.Ended:
 		info.State, info.Detail = st.Result, st.Detail
@@ -3536,6 +3581,7 @@ func (r RunAbandonResponse) Human(w io.Writer) {
 func (r RunInfo) Human(w io.Writer) {
 	fmt.Fprintf(w, "Run %s %s\n\n", r.ID, r.State)
 	runLines(w, r)
+	fmt.Fprintf(w, "- Interventions: %s\n", interventionLine(r.Interventions))
 	if len(r.Steps) > 0 {
 		fmt.Fprintf(w, "\n## Steps\n\n")
 		for _, s := range r.Steps {
@@ -3784,6 +3830,22 @@ func (r RunInfo) Human(w io.Writer) {
 		fmt.Fprintf(w, "\n## Amendments\n\n")
 		for _, a := range r.Amendments {
 			fmt.Fprintf(w, "- %s %s amended %s (step %s)\n", a.At, a.Actor, a.File, a.Step)
+		}
+	}
+	if len(r.Interventions) > 0 {
+		fmt.Fprintf(w, "\n## Interventions\n\n")
+		for _, iv := range r.Interventions {
+			fmt.Fprintf(w, "- %s %s by %s", iv.At, iv.Kind, iv.Actor)
+			if iv.Step != "" {
+				fmt.Fprintf(w, " (step %s)", iv.Step)
+			}
+			if iv.Commit != "" {
+				fmt.Fprintf(w, " commit %s", iv.Commit)
+			}
+			if iv.Detail != "" {
+				fmt.Fprintf(w, ": %s", oneLine(iv.Detail))
+			}
+			fmt.Fprintf(w, "\n")
 		}
 	}
 	if len(r.Notes) > 0 {
