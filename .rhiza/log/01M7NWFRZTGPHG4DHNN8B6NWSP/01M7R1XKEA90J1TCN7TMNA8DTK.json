@@ -1,0 +1,63 @@
+{
+  "actor": "01M7R1Q5JGC2KAJQXZGCD6A2C2",
+  "after": [
+    "01M7R0M7EE15DXNEH2YNC8EVE9"
+  ],
+  "at": "2026-11-18T19:25:13Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: workflows with no [env] and with [env] naming no {run_tmp} gave command and cleanup steps TMPDIR=<run tmp>, the folder existed, a file written under it was gone after the run succeeded and after it failed; [env] TMPDIR=/x gave exactly one TMPDIR=/x; a stopped run kept its folder until resumed and ended"
+        },
+        "handle": "run-steps-default-tmpdir-qa-1",
+        "id": "01M7R1XK9HJB18RZXE6J91ZGRV",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R1XK9HJB18RZXE6J4RC9BS",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R1XK9HJB18RZXE6J4RC9BS",
+        "id": "01M7R1XKAH1MQX8KNCM4JCTQAJ",
+        "link": "01M7R1XKAH1MQX8KNCM3EDH0KE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVYZYEW2YQJQR0HXV9K9G",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA with a scratch build: session run --dry-run --json of a run's session showed TMPDIR=<run tmp> without making it; a real start (fake agent) got that TMPDIR, the folder existed, and abandoning the run removed what it wrote; a workflow setting TMPDIR=/x gave the session /x only; scoped internal/api tests incl. shipRunEnv and watchdogMergeEnded pass"
+        },
+        "handle": "run-sessions-default-tmpdir-qa-1",
+        "id": "01M7R1XKBNJKX5SQS3GJ5RNEVE",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7R1XKBNJKX5SQS3GE8GK73J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7R1XKBNJKX5SQS3GE8GK73J",
+        "id": "01M7R1XKCZ3CJGN7G5XSGK5JCY",
+        "link": "01M7R1XKCZ3CJGN7G5XRHX7RD2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7QZVZ213HF4N41XDNGP7P26",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7NWFRZTGPHG4DHNN8B6NWSP",
+  "for": "01M7QZS1QFTQVYHZHHX8GNVQYZ",
+  "id": "01M7R1XKEA90J1TCN7TMNA8DTK",
+  "type": "ops",
+  "v": 1
+}
