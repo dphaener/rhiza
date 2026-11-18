@@ -15,7 +15,8 @@ const needsYouStuckAfter = 20 * time.Minute
 // questions, change sets waiting for the owner's sign-off and failed runs.
 // Stuck runs are added from the journals. The daemon's machine-wide holds
 // (disk-low, tmp-low, usage-reserve, load-high, memory-low) belong to no project and
-// are in no count (decision needs-you-count-excludes-machine-holds).
+// are in no count (decision needs-you-count-excludes-machine-holds), nor is a
+// spawn-held item: a run's spawn or step session waiting on one of them.
 var needsYouKinds = map[string]bool{
 	InboxQuestion: true, InboxOpen: true, InboxSignoff: true, InboxFailed: true,
 }

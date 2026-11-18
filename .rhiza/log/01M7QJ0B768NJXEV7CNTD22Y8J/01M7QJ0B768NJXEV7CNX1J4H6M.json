@@ -1,0 +1,15 @@
+{
+  "actor": "01M7QG51NQXKZ9PEAG6B8TVXZE",
+  "after": [],
+  "at": "2026-11-18T14:47:05Z",
+  "body": {
+    "intent": "Record agent actor claude-code-cb40e965 for session cb40e965-62e3-40d9-a450-01a1ef202606",
+    "kind": "record",
+    "sources": []
+  },
+  "change_set": "01M7QJ0B768NJXEV7CNTD22Y8J",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7QJ0B768NJXEV7CNX1J4H6M",
+  "type": "open",
+  "v": 1
+}

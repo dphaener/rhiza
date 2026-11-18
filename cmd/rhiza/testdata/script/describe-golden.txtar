@@ -3251,7 +3251,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "detail": {
-                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on",
+                  "description": "A failed run: why it failed; a sign-off: what it waits for; a permission item: the prompt's message; an api-error item: the session and the error it stopped on; a spawn-held item: what waits and the hold's reading and limit",
                   "type": "string"
                 },
                 "handle": {
@@ -3263,7 +3263,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "kind": {
-                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, tmp-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow or guide-stale",
+                  "description": "question, open, signoff, failed, gave-up, handback, skipped, stalled, permission, api-error, blocker, overlap, disk-low, tmp-low, usage-reserve, load-high, memory-low, main-stale, model-pr, accept, interview, workflow, guide-stale or spawn-held",
                   "type": "string"
                 },
                 "next": {
@@ -3341,7 +3341,7 @@ cmp stdout describe.golden.json
                   "type": "string"
                 },
                 "session": {
-                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped",
+                  "description": "A question: the asking session; an interview: the interview's session; a stalled item: the stalled session; a permission item: the blocked session; an api-error item: the session that stopped; a spawn-held item: the session whose child's spawn waits, absent for a step's own session",
                   "type": "string"
                 },
                 "step": {
@@ -3385,7 +3385,7 @@ cmp stdout describe.golden.json
         ],
         "type": "object"
       },
-      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs and sessions of live runs blocked on a permission prompt, and the daemon's low disk space, oldest first",
+      "summary": "List what waits on the owner across every run: questions, sign-offs, failed runs, runs the daemon gave up on, interrupted runs it skipped because their change set is no longer accepted, stalled sessions of live runs, sessions of live runs blocked on a permission prompt, spawns and step sessions of live runs held by a pre-start check, and the daemon's low disk space, oldest first",
       "write": false
     },
     {
