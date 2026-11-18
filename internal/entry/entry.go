@@ -190,7 +190,9 @@ func Decode(data []byte) (Entry, error) {
 	if err := canon.Check(data); err != nil {
 		return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
-	return decode(data, false)
+	// Check has just proved data canonical, so decode's canonical-form
+	// shortcuts hold and the body need not be canonicalised again.
+	return decode(data)
 }
 
 // DecodeCanonical is Decode for bytes already known to be canonical, such
@@ -203,19 +205,18 @@ func DecodeCanonical(data []byte) (Entry, error) {
 	if len(data) == 0 {
 		return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, canon.Check(data))
 	}
-	return decode(data, true)
+	return decode(data)
 }
 
 // decode parses data, which Decode has checked to be canonical or
-// DecodeCanonical takes to be (trusted).
-func decode(data []byte, trusted bool) (Entry, error) {
+// DecodeCanonical takes to be: it splits members and elements by scanning
+// rather than parsing, and takes the body's canonical form by removing its
+// indentation, falling back to a full parse only where the scan cannot.
+func decode(data []byte) (Entry, error) {
 	if data[0] != '{' {
 		return Entry{}, fmt.Errorf("%w: not an object", ErrInvalid)
 	}
-	var fields map[string]json.RawMessage
-	if trusted {
-		fields = scanMembers(data)
-	}
+	fields := scanMembers(data)
 	if fields == nil {
 		if err := json.Unmarshal(data, &fields); err != nil {
 			return Entry{}, fmt.Errorf("%w: %w", ErrInvalid, err)
@@ -282,10 +283,7 @@ func decode(data []byte, trusted bool) (Entry, error) {
 	if raw[0] != '[' {
 		return Entry{}, invalid("after", "not an array")
 	}
-	var after []json.RawMessage
-	if trusted {
-		after = scanElements(raw)
-	}
+	after := scanElements(raw)
 	if after == nil {
 		if err := json.Unmarshal(raw, &after); err != nil {
 			return Entry{}, invalidWrap("after", err)
@@ -315,21 +313,12 @@ func decode(data []byte, trusted bool) (Entry, error) {
 		return Entry{}, invalid("body", "not an object")
 	}
 	// The body sits indented inside the entry; standalone it has its own
-	// canonical form.
-	if trusted {
-		// Canonical text holds no raw newline inside a string, so every
-		// "\n  " is indentation: removing two spaces of it is the body's
-		// own canonical form, without parsing it again.
-		e.Body = json.RawMessage(bytes.ReplaceAll(raw, []byte("\n  "), []byte("\n")))
-	} else {
-		body, err := canon.Canonicalize(raw)
-		if err != nil {
-			return Entry{}, invalidWrap("body", err)
-		}
-		e.Body = json.RawMessage(bytes.TrimSuffix(body, []byte("\n")))
-	}
+	// canonical form. Canonical text holds no raw newline inside a string,
+	// so every "\n  " is indentation: removing two spaces of it is the
+	// body's own canonical form, without parsing it again.
+	e.Body = json.RawMessage(bytes.ReplaceAll(raw, []byte("\n  "), []byte("\n")))
 
-	if err := e.validate(trusted); err != nil {
+	if err := e.validate(true); err != nil {
 		return Entry{}, err
 	}
 	return e, nil

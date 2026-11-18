@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -601,5 +602,75 @@ func TestDecodeWorkers(t *testing.T) {
 		if got := decodeWorkers(tt.n); got != tt.want {
 			t.Errorf("decodeWorkers(%d) = %d, want %d (GOMAXPROCS %d)", tt.n, got, tt.want, procs)
 		}
+	}
+}
+
+// TestReadEntriesBadFilesSameErrors pins the exact errors a log's bad
+// entry files get, so a cheaper decode reports each as it did: a file that
+// is not canonical, one that does not parse, and canonical ones that break
+// an envelope rule (an unknown type, a renamed field, a body that is not
+// an object, an at in the wrong layout), beside two good entries, one with
+// a nested body, that are still read.
+func TestReadEntriesBadFilesSameErrors(t *testing.T) {
+	good := testEntry(t)
+	body := testEntry(t)
+	body.ID = mustID(t, sOtherID)
+	body.Type = entry.TypeNote
+	body.Body = json.RawMessage("{\n  \"a\": {\n    \"c\": true\n  },\n  \"b\": [\n    1,\n    \"x\\n\"\n  ]\n}")
+	canonBody := mustEncode(t, body)
+
+	enc := mustEncode(t, good)
+	replace := func(old, new string) []byte {
+		t.Helper()
+		b := bytes.Replace(enc, []byte(old), []byte(new), 1)
+		if bytes.Equal(b, enc) {
+			t.Fatalf("no %q in the encoding", old)
+		}
+		return b
+	}
+	at := func(n int) string { return fmt.Sprintf("log/%s/01JB0000000000000000000%03d.json", sOtherCS, n) }
+	files := map[string][]byte{
+		at(1): bytes.TrimSuffix(enc, []byte("\n")),                 // not canonical: no final newline
+		at(2): bytes.ReplaceAll(enc, []byte("\n  "), []byte("\n")), // not canonical: unindented
+		at(3): []byte("{\n  \"v\": 1,\n"),                          // does not parse
+		at(4): []byte("not json\n"),                                // does not parse
+		at(5): replace(`"type": "open"`, `"type": "bogus"`),        // canonical, unknown type
+		at(6): replace(`"for": `, `"fox": `),                       // canonical, renamed field
+		at(7): replace(`"body": {}`, `"body": []`),                 // canonical, body not an object
+		at(8): replace(`"at": "2026-10-23T21:14:03Z"`, `"at": "2026-10-23 21:14:03"`),
+	}
+	paths := []string{entryPath(good), entryPath(body)}
+	fsys := fstest.MapFS{entryPath(good): file(enc), entryPath(body): file(canonBody)}
+	for p, b := range files {
+		fsys[p] = file(b)
+		paths = append(paths, p)
+	}
+	got := ReadEntries(fsys, paths)
+
+	if want := []entry.Entry{good, body}; !reflect.DeepEqual(got.Entries, want) {
+		t.Errorf("Entries = %+v\nwant %+v", got.Entries, want)
+	}
+	want := map[string]string{
+		at(1): "entry: invalid: canon: not canonical",
+		at(2): "entry: invalid: canon: not canonical",
+		at(3): "entry: invalid: canon: invalid JSON: offset 12: expected string key",
+		at(4): "entry: invalid: canon: invalid JSON: offset 0: invalid literal",
+		at(5): "entry: invalid: field \"type\": unknown type \"bogus\"",
+		at(6): "entry: invalid: field \"for\": missing",
+		at(7): "entry: invalid: field \"body\": not an object",
+		at(8): "entry: invalid: field \"at\": \"2026-10-23 21:14:03\" is not 2006-01-02T15:04:05Z",
+	}
+	gotErrs := map[string]string{}
+	for _, p := range got.Problems {
+		if !errors.Is(p.Err, entry.ErrInvalid) {
+			t.Errorf("%s: %v does not match entry.ErrInvalid", p.Path, p.Err)
+		}
+		gotErrs[p.Path] = p.Err.Error()
+	}
+	if !reflect.DeepEqual(gotErrs, want) {
+		for p := range want {
+			t.Logf("%s: %q", p, gotErrs[p])
+		}
+		t.Errorf("errors differ from before the cut")
 	}
 }
