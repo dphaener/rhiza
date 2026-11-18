@@ -1,7 +1,9 @@
 package run
 
 import (
+	"errors"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -182,6 +184,125 @@ func TestSpawnResume(t *testing.T) {
 		}
 		if n := countEntries(t, e, TypeHandback, ""); n != 1 {
 			t.Errorf("%d hand-back entries after the restart, want 1", n)
+		}
+	})
+}
+
+// wakeRunner is the resume runner that also wakes a no-wait child's parent.
+type wakeRunner struct {
+	*resumeRunner
+	wakes   []string         // "<parent> <child> <role> <leaf> <outcome> <detail>" per WakeParent call
+	wakeErr map[string]error // per child, the error WakeParent returns
+}
+
+func (r *wakeRunner) WakeParent(sp Spawn) error {
+	r.wakes = append(r.wakes, strings.Join([]string{sp.Parent, sp.Session, sp.Role, sp.Leaf, sp.Outcome, sp.Detail}, " "))
+	return r.wakeErr[sp.Session]
+}
+
+func TestSpawnWake(t *testing.T) {
+	saidDone := ChildState{Ended: true, Outcome: workflow.OutcomePass, Detail: "said done"}
+	exit1 := ChildState{Ended: true, Outcome: workflow.OutcomeFail, Detail: "exit 1"}
+	spawn := func(t *testing.T, e *Engine, child, leaf string, noWait bool) {
+		t.Helper()
+		if err := e.Store.Append(runID, Entry{Type: TypeSpawn, At: at(2), Step: "build", Parent: "S-build", Session: child, Role: "builder", Leaf: leaf, NoWait: noWait}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	newRunner := func(fr *fakeRunner) *wakeRunner {
+		return &wakeRunner{
+			resumeRunner: &resumeRunner{fakeRunner: fr, children: map[string][]ChildState{}, childCalls: map[string]int{}},
+			wakeErr:      map[string]error{},
+		}
+	}
+
+	t.Run("each no-wait child wakes its parent once", func(t *testing.T) {
+		e, fr, _, _ := setup(t, spawnWF)
+		wr := newRunner(fr)
+		e.Runner = wr
+		var logs []string
+		e.Log = func(l string) { logs = append(logs, l) }
+		fr.outcome["S-build"] = workflow.OutcomePass
+		fr.agentOut["S-build"] = []bool{false, false, false, false, true} // the poll repeats past the children's ends
+		fr.onPoll = func(session string, n int) {
+			if session != "S-build" || n != 0 {
+				return
+			}
+			spawn(t, e, "K-done", "leaf-a", true)
+			spawn(t, e, "K-exit", "leaf-b", true)
+			spawn(t, e, "K-wait", "leaf-c", false)
+			spawn(t, e, "K-err", "leaf-d", true)
+		}
+		wr.children["K-done"] = []ChildState{{}, saidDone}
+		wr.children["K-exit"] = []ChildState{exit1}
+		wr.children["K-wait"] = []ChildState{saidDone}
+		wr.children["K-err"] = []ChildState{saidDone}
+		wr.wakeErr["K-err"] = errors.New("parent pane is gone")
+		if _, err := e.Run(runID); err != nil {
+			t.Fatal(err)
+		}
+		j, _ := e.Store.Read(runID)
+		if st := j.State(); st.Result != Succeeded {
+			t.Fatalf("result %q steps %v", st.Result, outcomes(st))
+		}
+		want := []string{
+			"S-build K-exit builder leaf-b fail exit 1",
+			"S-build K-err builder leaf-d pass said done",
+			"S-build K-done builder leaf-a pass said done",
+		}
+		slices.Sort(want)
+		got := slices.Clone(wr.wakes)
+		slices.Sort(got)
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("wakes %q, want %q", wr.wakes, want)
+		}
+		for _, c := range []string{"K-done", "K-exit", "K-wait", "K-err"} {
+			if n := countEntries(t, e, TypeSpawnEnded, c); n != 1 {
+				t.Errorf("%s: %d spawn-ended entries, want 1", c, n)
+			}
+		}
+		if !slices.ContainsFunc(logs, func(l string) bool {
+			return strings.Contains(l, "K-err") && strings.Contains(l, "wake parent S-build: parent pane is gone")
+		}) {
+			t.Errorf("wake error not logged: %q", logs)
+		}
+	})
+
+	t.Run("one wake across a driver restart", func(t *testing.T) {
+		e, fr, _, _ := setup(t, spawnWF)
+		wr := newRunner(fr)
+		e.Runner = wr
+		fr.outcome["S-build"] = workflow.OutcomePass
+		fr.agentOut["S-build"] = []bool{false, false, false}
+		// K-early ends and is recorded before the driver is killed; K-late
+		// ends while no driver watches.
+		wr.children["K-early"] = []ChildState{saidDone}
+		wr.children["K-late"] = []ChildState{{}}
+		fr.onPoll = func(session string, n int) {
+			switch {
+			case session == "S-build" && n == 0:
+				spawn(t, e, "K-early", "leaf-a", true)
+				spawn(t, e, "K-late", "leaf-b", true)
+			case session == "S-build" && n == 1:
+				panic(errKilled)
+			}
+		}
+		if !killDriver(e) {
+			t.Fatal("driver was not killed")
+		}
+		if want := []string{"S-build K-early builder leaf-a pass said done"}; !reflect.DeepEqual(wr.wakes, want) {
+			t.Fatalf("wakes before the restart %q, want %q", wr.wakes, want)
+		}
+		wr.children["K-late"] = []ChildState{exit1}
+		fr.onPoll = nil
+		fr.polls = map[string]int{}
+		fr.agentOut["S-build"] = []bool{false, false, true}
+		if _, err := e.Run(runID); err != nil {
+			t.Fatal(err)
+		}
+		want := []string{"S-build K-early builder leaf-a pass said done", "S-build K-late builder leaf-b fail exit 1"}
+		if !reflect.DeepEqual(wr.wakes, want) {
+			t.Errorf("wakes %q, want %q", wr.wakes, want)
 		}
 	})
 }

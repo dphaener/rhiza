@@ -11,12 +11,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
 )
+
+var _ run.SpawnWaker = (*stepRunner)(nil)
 
 // Reasons a session is lost, the detail of its lost exit.
 const (
@@ -162,4 +165,79 @@ func (r *stepRunner) Child(sid string) (run.ChildState, error) {
 	}
 	outcome, detail, done := childOutcome(rec)
 	return run.ChildState{Ended: done, Outcome: outcome, Detail: detail}, nil
+}
+
+// spawnWakeTimeout is how long WakeParent waits for an idle parent to
+// reach its prompt, short so one parent cannot hold up the engine's poll;
+// a working parent gets the pointer queued at once.
+const spawnWakeTimeout = 30 * time.Second
+
+// WakeParent is run.SpawnWaker: the end of no-wait child sp, just
+// recorded, wakes its parent session. A child that said done waits at its
+// prompt, so its pane is closed first, as a waiting spawn does; a failed
+// close is reported and still wakes the parent. The parent gets a message
+// naming the child, its role, leaf, outcome and detail and pointing at
+// rhiza run status for the rest, queued while it works.
+func (r *stepRunner) WakeParent(sp run.Spawn) error {
+	var errs []error
+	if rec, err := readSession(r.sessions, sp.Session); err != nil {
+		errs = append(errs, err)
+	} else if rec.Status.SaidDone() {
+		if _, err := closeSessionPane(r.ctx, rec, r.ctx.Root); err != nil {
+			errs = append(errs, fmt.Errorf("child session %s said done, but its pane stays open: %v", sp.Session, err))
+		}
+	}
+	if err := r.messageParent(sp.Parent, spawnWakeText(r.run, sp)); err != nil {
+		errs = append(errs, fmt.Errorf("message parent session %s: %v", sp.Parent, err))
+	}
+	return errors.Join(errs...)
+}
+
+// messageParent sends live session sid text as a message from the run's
+// caller, as session.message does: queued while the session works, else
+// typed once it is idle, waiting at most spawnWakeTimeout.
+func (r *stepRunner) messageParent(sid, text string) error {
+	rec, err := readSession(r.sessions, sid)
+	if err != nil {
+		return err
+	}
+	if err := messageable(rec); err != nil {
+		return err
+	}
+	from, err := messageSender(r.ctx)
+	if err != nil {
+		return err
+	}
+	dir, rel, err := messageFolder(r.ctx, rec)
+	if err != nil {
+		return err
+	}
+	name, err := writeMessage(dir, messageContent(from, rec, rfc3339(r.ctx.Now()), text))
+	if err != nil {
+		return err
+	}
+	pointer := messagePointer(from.Handle, rel+"/"+name)
+	if queued, err := queuePointer(r.sessions, rec.ID, pointer); err != nil || queued {
+		return err
+	}
+	if _, err := typePointer(r.ctx, r.sessions, rec.ID, pointer, spawnWakeTimeout); err != nil {
+		return withNote(err, "the message is in "+filepath.Join(dir, name))
+	}
+	return nil
+}
+
+// spawnWakeText is the message that wakes the parent of no-wait child sp.
+func spawnWakeText(runID string, sp run.Spawn) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Your spawned child session %s ended.\n\n", sp.Session)
+	fmt.Fprintf(&b, "- Role: %s\n", sp.Role)
+	if sp.Leaf != "" {
+		fmt.Fprintf(&b, "- Leaf: %s\n", sp.Leaf)
+	}
+	fmt.Fprintf(&b, "- Outcome: %s\n", sp.Outcome)
+	if sp.Detail != "" {
+		fmt.Fprintf(&b, "- Detail: %s\n", sp.Detail)
+	}
+	fmt.Fprintf(&b, "\nRun `rhiza run status %s --json` for the rest.\n", runID)
+	return b.String()
 }

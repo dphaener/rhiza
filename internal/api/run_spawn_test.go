@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -575,4 +576,77 @@ func TestRunSpawnSaidDone(t *testing.T) {
 			t.Errorf("rex calls %q", rex.calls)
 		}
 	})
+}
+
+// TestRunSpawnWake: the stepRunner's wake of a no-wait child's parent
+// closes the pane of a child that said done, leaves that of a child that
+// exited alone, and writes the parent a message naming the child, its
+// role, leaf and outcome, queued while the parent works.
+func TestRunSpawnWake(t *testing.T) {
+	t.Parallel()
+	one := 1
+	for _, c := range []struct {
+		name    string
+		child   func(*session.Record)
+		outcome string
+		detail  string
+		rex     []string
+	}{
+		{"SaidDone", func(rec *session.Record) {
+			rec.Tab = session.Tab{Session: "s1", Block: "block:c1"}
+			rec.Status = session.Status{Done: &session.Report{State: session.StateDone}}
+		}, "pass", "said done", []string{"rex block close -s s1 block:c1"}},
+		{"Exit1", func(rec *session.Record) {
+			rec.Tab = session.Tab{Session: "s1", Block: "block:c1"}
+			rec.Status = session.Status{Exit: &session.Report{State: session.StateExited, Code: &one}}
+		}, "fail", "exit 1", nil},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			s := newSpawnFixture(t)
+			s.child = c.child
+			rex := &spawnRex{}
+			s.f.ctx.Exec = rex.exec
+			sessions := session.NewStore(session.Dir(s.f.common))
+			if _, err := sessions.Update("parent-1", func(r *session.Record) {
+				r.Worktree, r.Tab = s.f.ctx.Root, session.Tab{Session: "s1", Block: "block:p1"}
+				r.Status.Hook = &session.Report{State: session.StateWorking, At: s.f.ctx.Now()}
+			}); err != nil {
+				t.Fatal(err)
+			}
+			req := s.req()
+			req.NoWait = true
+			if _, err := s.sp.spawn(req); err != nil {
+				t.Fatal(err)
+			}
+			sp := s.state(t).Spawns[0]
+			if !sp.NoWait || sp.Ended {
+				t.Fatalf("spawn %+v", sp)
+			}
+			sp.Ended, sp.Outcome, sp.Detail = true, c.outcome, c.detail
+			r := &stepRunner{ctx: s.f.ctx, run: "R1", sessions: sessions}
+			if err := r.WakeParent(sp); err != nil {
+				t.Fatal(err)
+			}
+			if !slices.Equal(rex.calls, c.rex) {
+				t.Errorf("rex calls %q, want %q", rex.calls, c.rex)
+			}
+			data, err := os.ReadFile(filepath.Join(s.f.ctx.Root, ".rhiza", "local", "messages", "parent-1", "0001.md"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range []string{"child session child-1 ended", "- Role: verifier", "- Leaf: run-spawn",
+				"- Outcome: " + c.outcome, "- Detail: " + c.detail, "rhiza run status R1 --json"} {
+				if !strings.Contains(string(data), want) {
+					t.Errorf("message lacks %q:\n%s", want, data)
+				}
+			}
+			parent, err := sessions.Read("parent-1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(parent.Pending) != 1 || !strings.Contains(parent.Pending[0], "messages/parent-1/0001.md") {
+				t.Errorf("pending %q", parent.Pending)
+			}
+		})
+	}
 }

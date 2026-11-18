@@ -136,6 +136,17 @@ type ChildWatcher interface {
 	Child(session string) (ChildState, error)
 }
 
+// SpawnWaker is a Runner that can wake a no-wait spawned child's parent
+// session (see Spawn.NoWait) once the engine records the child's end:
+// sp is the spawn, Ended with its Outcome and Detail. It closes the
+// child's pane when the child said done and messages the parent. It is
+// called once per child, never for a waiting spawn, whose own process
+// reports the end; an error is logged and not retried. A Runner without
+// it wakes no one.
+type SpawnWaker interface {
+	WakeParent(sp Spawn) error
+}
+
 // Question is a question node the Runner added: its ID and handle.
 type Question struct {
 	ID     string
@@ -550,6 +561,7 @@ func (r *running) finish(step string, end workflow.End, detail string) (State, e
 // shows running: it asks the Runner (ChildWatcher) where each stands, as a
 // restarted driver must, and again on every poll while a step waits. A child
 // whose end its own spawn process already recorded is not recorded twice.
+// A no-wait child whose end this records wakes its parent (SpawnWaker).
 func (r *running) reconcileSpawns() {
 	cw, ok := r.e.Runner.(ChildWatcher)
 	if !ok {
@@ -583,7 +595,22 @@ func (r *running) reconcileSpawns() {
 			r.log("spawned session %s: %v", sp.Session, err)
 		} else if added {
 			r.log("spawned session %s: ended %s, recorded", sp.Session, en.Outcome)
+			r.wakeParent(sp, en)
 		}
+	}
+}
+
+// wakeParent wakes the parent of no-wait child sp, whose end entry en was
+// just recorded, through the Runner's SpawnWaker. A waiting child's parent
+// is its spawn process, which reports the end itself.
+func (r *running) wakeParent(sp Spawn, en Entry) {
+	w, ok := r.e.Runner.(SpawnWaker)
+	if !ok || !sp.NoWait {
+		return
+	}
+	sp.Ended, sp.Outcome, sp.Detail = true, en.Outcome, en.Detail
+	if err := w.WakeParent(sp); err != nil {
+		r.log("spawned session %s: wake parent %s: %v", sp.Session, sp.Parent, err)
 	}
 }
 
