@@ -30,6 +30,7 @@ import (
 	"github.com/dphaener/rhiza/internal/release"
 	"github.com/dphaener/rhiza/internal/run"
 	"github.com/dphaener/rhiza/internal/session"
+	"github.com/dphaener/rhiza/internal/userdir"
 	"github.com/dphaener/rhiza/internal/web"
 	"github.com/dphaener/rhiza/internal/workflow"
 )
@@ -1453,7 +1454,7 @@ func tmpLowDetail(low *daemon.DiskLow) string {
 }
 
 // tmpFreeBytes is the free space on the filesystem of the daemon's temp
-// directory: TMPDIR when set, else os.TempDir. RHIZA_TEST_TMP_FREE_BYTES
+// directory: userdir.Temp over the Ctx's environment. RHIZA_TEST_TMP_FREE_BYTES
 // stands in for it alongside RHIZA_TEST_NOW, and under RHIZA_TEST_NOW
 // without it the figure is not known, so no test reads the host's temp
 // space.
@@ -1466,11 +1467,7 @@ func tmpFreeBytes(ctx *Ctx) (uint64, error) {
 		}
 		return strconv.ParseUint(v, 10, 64)
 	}
-	dir := getenv("TMPDIR")
-	if dir == "" {
-		dir = os.TempDir()
-	}
-	return diskFreeBytes(dir)
+	return diskFreeBytes(userdir.Temp(getenv))
 }
 
 // conductorWorkflow reports whether workflow ref is a conductor default: its
