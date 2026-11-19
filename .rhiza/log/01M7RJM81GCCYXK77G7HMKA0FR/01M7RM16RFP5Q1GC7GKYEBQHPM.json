@@ -1,0 +1,86 @@
+{
+  "actor": "01M7RKXHF8GC7W2KYH416TKX8C",
+  "after": [
+    "01M7RKVRJ9FPTDTHA1SFJZP10B"
+  ],
+  "at": "2026-11-19T00:41:45Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: built binary in scratch git repos: land --commit commits only .rhiza with Change:/Actor: trailers, staged code.go stays staged and uncommitted; draft exits 3 and dry-run exits 2 with HEAD unchanged; RHIZA_ACTOR unset falls back to the user.email actor; plain land unchanged; via a fake head build --commit is not forwarded and the commit still carries trailers; land-commit and describe-golden scripts and TestLandCommitViaHead pass. Minor: outside a git repo it lands, then fails at git add"
+        },
+        "handle": "land-commit-qa-1",
+        "id": "01M7RM16DA8Z7P1FMJA8PAJ87M",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RM16DA8Z7P1FMJA78TEKSQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RM16DA8Z7P1FMJA78TEKSQ",
+        "id": "01M7RM16EGSVA4YQJPX5FZEK2H",
+        "link": "01M7RM16EGSVA4YQJPX2KXTVBR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNV0969V311Y3SBK5BMP",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test -trimpath ./internal/api -run TestHandCommitsConductorLandCommit passes both subtests (no hand commit for the run's session actor; one hand-commit for another run's actor); existing TestHandCommits* pass; run_handcommit.go unchanged; built land --commit commits carry Change:/Actor: trailers"
+        },
+        "handle": "conductor-land-commit-not-hand-commit-qa-1",
+        "id": "01M7RM16FQGB2P5M3FDVTJ166R",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RM16FQGB2P5M3FDVQ0W8V4",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RM16FQGB2P5M3FDVQ0W8V4",
+        "id": "01M7RM16GV012GNH8N37F2MS12",
+        "link": "01M7RM16GV012GNH8N34CVGVQV",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNWYVVR0Z2YYZ1WXY2Q4",
+        "type": "verifies"
+      },
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA: go test -trimpath ./internal/guide -run TestConduct|TestConductHandback|TestBuildReviewCommandBudget passes; conduct.md Land names rhiza land --commit and the Change:/Actor: rule; conduct-handback.md closing land uses rhiza land --commit; old commit-what-they-change wording gone; no other guide topics changed"
+        },
+        "handle": "conduct-guide-land-commit-qa-1",
+        "id": "01M7RM16JM971NDRCESWTV1EEA",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RM16JM971NDRCESS2D4RVK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RM16JM971NDRCESS2D4RVK",
+        "id": "01M7RM16P73XM6S2M89WEGS46J",
+        "link": "01M7RM16P73XM6S2M89VE9B830",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNZVJ7N3FJ1M9N4G3PN3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RJM81GCCYXK77G7HMKA0FR",
+  "for": "01M7RK94F0PHKEP3GYJ4KMZJ3P",
+  "id": "01M7RM16RFP5Q1GC7GKYEBQHPM",
+  "type": "ops",
+  "v": 1
+}

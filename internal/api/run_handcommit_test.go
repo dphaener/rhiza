@@ -231,3 +231,66 @@ func TestHandCommitsRebasedBranch(t *testing.T) {
 		t.Fatalf("hand commits = %q, want %q", got, want)
 	}
 }
+
+// The commit land --commit makes on a run's branch, as the actor of a
+// session recorded with the run, carries that actor in its Actor: trailer
+// and so is the run's: no hand commit. The same land commit made as an
+// actor whose only session belongs to another run is one hand commit,
+// its actor that session's.
+func TestHandCommitsConductorLandCommit(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name, actor string
+		hand        bool
+	}{
+		{"a session of the run", "claude-code-s1", false},
+		{"a session of another run", "claude-code-s2", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			r, st, git := handCommitBranch(t)
+			// The model goes on main, as the planned change set does, and
+			// the run's branch merges it: main's commits are no hand commits.
+			git("checkout", "-q", "main")
+			if _, err := callOp(t, r.ctx, "init", `{}`); err != nil {
+				t.Fatal(err)
+			}
+			// The actor git's user.email records is the session's actor.
+			r.ctx.GitConfig = gitConfig(map[string]string{"user.email": tc.actor + "@rhiza.invalid", "user.name": tc.actor})
+			newChange(t, r.ctx, `{"intent":"Land and commit"}`)
+			mustWrite(t, r.ctx, "add", `{"kind":"capability","handle":"landing"}`)
+			for _, v := range []string{"propose", "accept"} {
+				if _, err := callOp(t, r.ctx, v, `{}`); err != nil {
+					t.Fatalf("%s: %v", v, err)
+				}
+			}
+			git("add", "-A", "--", ".", ":!.rhiza/log")
+			git("commit", "-q", "-m", "plan the change set")
+			git("checkout", "-q", "cs/x")
+			git("merge", "-q", "--no-edit", "main")
+			if got := scanHand(t, r, st, nil); len(got) != 0 {
+				t.Fatalf("hand commits before land = %q, want none", got)
+			}
+
+			before := git("rev-parse", "HEAD")
+			out, err := callOp(t, r.ctx, "land", `{"commit":true}`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			commit := git("rev-parse", "HEAD")
+			if commit == before || out.(LifecycleResponse).Commit != commit {
+				t.Fatalf("HEAD %s (was %s), resp.Commit %s: want land's commit", commit, before, out.(LifecycleResponse).Commit)
+			}
+			if got := git("log", "-1", "--format=%(trailers:key=Actor,valueonly)"); got != tc.actor {
+				t.Fatalf("land commit's Actor: %q, want %q", got, tc.actor)
+			}
+			var want []string
+			if tc.hand {
+				want = []string{"hand-commit " + commit + " " + tc.actor}
+			}
+			if got := scanHand(t, r, st, nil); !reflect.DeepEqual(got, want) {
+				t.Fatalf("hand commits = %q, want %q", got, want)
+			}
+		})
+	}
+}

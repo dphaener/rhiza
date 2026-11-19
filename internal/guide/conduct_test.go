@@ -37,7 +37,7 @@ func TestConduct(t *testing.T) {
 	last := -1
 	for _, phase := range []string{
 		"`rhiza apply`", "--role builder", "--role verifier", "--role check-plan", "--role check-code",
-		"--role check-qa", "--role critic", "--role fixer", "`rhiza run review-check`", "`rhiza land`",
+		"--role check-qa", "--role critic", "--role fixer", "`rhiza run review-check`", "`rhiza land --commit`",
 		"`rhiza render`", "`rhiza session done`",
 	} {
 		i := strings.Index(must, phase)
@@ -57,12 +57,30 @@ func TestConduct(t *testing.T) {
 		"never":     {"Merge or push", "Edit `.rhiza/log`", "Pass your own gate"},
 		"contract":  {"rhiza guide contract"},
 		"spawn-tag": {"--brief <file>"},
+		"land": {
+			"`rhiza land --commit`: it lands, runs `rhiza render` and commits",
+			"Every other commit you make carries\n  `Change: <change set>` and `Actor: <your actor>` trailers",
+			"none is journalled as a\n  hand commit",
+		},
 		"retry": {
 			"builder retry whose brief quotes the verifier's findings verbatim",
 			"tells it to inspect the working tree",
 		},
 	})
+	for _, old := range oldLandWording {
+		if strings.Contains(c.Body, old) {
+			t.Errorf("conduct: still says %q; land with rhiza land --commit", old)
+		}
+	}
 	if n := Tokens(c.Body); n > TopicCap {
 		t.Errorf("conduct costs %d tokens, cap %d", n, TopicCap)
 	}
+}
+
+// oldLandWording is the land step before rhiza land --commit: a land, a
+// render and a commit by hand, which carried no trailers and was journalled
+// as a hand commit.
+var oldLandWording = []string{
+	"`rhiza land`, then `rhiza render`, and commit what they change",
+	"commit what they change",
 }

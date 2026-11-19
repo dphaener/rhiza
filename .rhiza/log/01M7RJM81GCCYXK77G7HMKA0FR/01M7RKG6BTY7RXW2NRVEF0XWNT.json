@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RKDVRMDCXSZDB1NYXSEFCA",
+  "after": [
+    "01M7RK3WYMVG3KAD6ZEACS1R29"
+  ],
+  "at": "2026-11-19T00:32:28Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at 1152041d3. Re-ran Checks: go test -trimpath ./internal/guide -run 'TestConduct|TestConductHandback|TestBuildReviewCommandBudget' exit 0 (TestConduct, TestConductHandback, TestBuildReviewCommandBudget PASS); go test ./internal/guide/... ok; rhiza ship generate exit 0, 0 changed; rhiza render exit 0. Diff: conduct.md Land phase now names rhiza land --commit (lands, renders, commits .rhiza with Change:/Actor: trailers) and says every other conductor commit carries Change: and Actor: trailers so none is journalled as a hand commit; conduct-handback.md closing land uses rhiza land --commit. TestConduct asserts both; oldLandWording asserted absent from both topics. Failure case checked by temporarily restoring the old 'commit what they change' wording in conduct-handback.md: TestConductHandback FAILED with 'still says', then reverted. Only the leaf's four files plus the builder's own actor record changed; no other guide topics touched, no phase added, no TODOs. Minor: rhiza render at the commit adds the actor's line to .rhiza/rendered/index.md, which the commit left out; the conductor's land --commit re-renders it."
+        },
+        "handle": "conduct-guide-land-commit-verified",
+        "id": "01M7RKG68GYVJJXHEX2XAYJ20C",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RKG68GYVJJXHEX2STJKX6J",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RKG68GYVJJXHEX2STJKX6J",
+        "id": "01M7RKG6A456CCPNHZJK70HYG9",
+        "link": "01M7RKG6A456CCPNHZJF8X5HC2",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNZVJ7N3FJ1M9N4G3PN3",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RJM81GCCYXK77G7HMKA0FR",
+  "for": "01M7RK94F0PHKEP3GYJ4KMZJ3P",
+  "id": "01M7RKG6BTY7RXW2NRVEF0XWNT",
+  "type": "ops",
+  "v": 1
+}
