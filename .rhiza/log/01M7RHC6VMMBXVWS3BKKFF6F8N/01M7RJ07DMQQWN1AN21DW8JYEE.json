@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RHXS32CFVRJ1C2HXQRDCH3",
+  "after": [
+    "01M7RHJVWSTFAPX8ZJYX35S82A"
+  ],
+  "at": "2026-11-19T00:06:16Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Verified at 4c66d4717 in a detached worktree; every go test in systemd-run --user --scope -p MemoryMax=6G -p TasksMax=300, -p 2, RHIZA_*/SHIP_*/REX_* unset, one at a time. git show: the only code change is the poll line (run-status.txtar:35), no Go files, bound 400 and interval 0.025 unchanged, no assertion touched. (1) go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/^run-status$': exit 0. (2) scratch step first run = \"sleep 0.5\" with the script at abf1d4cc3: exit 1, FAIL at run-status.txtar:38 with '- Current step: first' in stdout; with the fix under the same delay, -count=3: exit 0. (3) same delay, poll grepping only '^- Current step: hold$': exit 1, FAIL at run-status.txtar:37 (status read the earlier stopped run). Scratch edits reverted, worktree removed. (4) go test -trimpath -p 2 -v ./cmd/rhiza -run 'TestScripts/run-status': exit 0, PASS for run-status, -interventions, -messages, -stalled, -tokens."
+        },
+        "handle": "run-status-live-poll-waits-for-hold-verified",
+        "id": "01M7RJ07BGF2EC11K6PZP4WHJQ",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RJ07BGF2EC11K6PYMW28WA",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RJ07BGF2EC11K6PYMW28WA",
+        "id": "01M7RJ07CK5M0GS38E3X8QWAS0",
+        "link": "01M7RJ07CK5M0GS38E3WPZW59Q",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RHG4P5E62HN684GFW7NYHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RHC6VMMBXVWS3BKKFF6F8N",
+  "for": "01M7RHRVVVPMZT35P5NJ3AY87T",
+  "id": "01M7RJ07DMQQWN1AN21DW8JYEE",
+  "type": "ops",
+  "v": 1
+}

@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RJ6AD5XA0ERD6PJFDSNBDK",
+  "after": [
+    "01M7RJ07DMQQWN1AN21DW8JYEE"
+  ],
+  "at": "2026-11-19T00:11:49Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "QA at 4c66d4717, go tests in systemd-run scope with -p 2: run-status -count=3 ok; with step first sleep 0.5 the old poll fails at txtar:38 (Current step: first), a hold-only poll fails at :37 (not running), the fixed poll passes 3 runs and with sleep 2; sibling run-status-* scripts pass; diff is only the poll line; a hand-run with the built binary showed the poll exiting at running+hold and the live run succeeding"
+        },
+        "handle": "run-status-live-poll-waits-for-hold-qa-1",
+        "id": "01M7RJACJXQDNWZWV7SQVDKB9W",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RJACJXQDNWZWV7SQ3HHJ5M",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RJACJXQDNWZWV7SQ3HHJ5M",
+        "id": "01M7RJACKV0VXYKXFW2PTDQSFB",
+        "link": "01M7RJACKV0VXYKXFW2NS34M9V",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RHG4P5E62HN684GFW7NYHQ",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RHC6VMMBXVWS3BKKFF6F8N",
+  "for": "01M7RHRVVVPMZT35P5NJ3AY87T",
+  "id": "01M7RJACMSXWQHJTV4NV1Y8NJK",
+  "type": "ops",
+  "v": 1
+}
