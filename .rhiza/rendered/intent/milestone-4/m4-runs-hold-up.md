@@ -46,6 +46,7 @@ A build, review or ship-change run finishes without hand repair: no hand-made re
 - serves change set `01M7MGF8J9MA30XXQ8GTR4KXRW` (Fix Resuming a classic ship-change run whose check sessions died in a crash marks the whole review cycle failed and opens a new cycle of all four checks, even when every check's round was later recorded and rhiza run review-check passes)
 - serves change set `01M7PSG0YN06CTQCB1Z4KZ77WQ` (Fix flaky test TestScripts/headless-run-agent-tabs: failed then passed on a rerun in PR #513 at head 7a96ac202aae8f55b2f0adfcd46d0e0c70574172, PR #593 at head 4c727d1d1f52c4b94be6856422d2b1376284dd54; reproduce it locally, repeatedly, then fix it or quarantine it)
 - serves change set `01M7RFDAZ53YZ3775D7SV70Z4G` (Fix flaky test TestScripts/plan-workflow-autonomous: failed then passed on a rerun in PR #655 at head 1be14770b82366ab1535a1b38a36a890e8b75939; reproduce it locally, repeatedly, then fix it or quarantine it)
+- serves change set `01M7RHC6VMMBXVWS3BKKFF6F8N` (Fix flaky test TestScripts/run-status: failed then passed on a rerun in PR #657 at head f5b2f2b99b740b4a9a18311f074ec9e4e2df94f2; reproduce it locally, repeatedly, then fix it or quarantine it)
 
 ## History
 
