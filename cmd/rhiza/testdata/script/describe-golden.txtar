@@ -44,6 +44,10 @@ cmp stdout describe.golden.json
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
           },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"
@@ -7475,7 +7479,12 @@ cmp stdout describe.golden.json
       "name": "land",
       "request": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "commit": {
+            "description": "Then render, stage .rhiza and commit only .rhiza, with the trailers Change: <the change set> and Actor: <the actor that landed it>; anything else staged stays staged and out of the commit",
+            "type": "boolean"
+          }
+        },
         "required": [],
         "type": "object"
       },
@@ -7490,6 +7499,10 @@ cmp stdout describe.golden.json
           "cleared_current": {
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
+          },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
           },
           "dry_run": {
             "description": "True if nothing was written",
@@ -8595,6 +8608,10 @@ cmp stdout describe.golden.json
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
           },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"
@@ -8820,6 +8837,10 @@ cmp stdout describe.golden.json
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
           },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
+          },
           "dry_run": {
             "description": "True if nothing was written",
             "type": "boolean"
@@ -8920,6 +8941,10 @@ cmp stdout describe.golden.json
           "cleared_current": {
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
+          },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
           },
           "dry_run": {
             "description": "True if nothing was written",
@@ -29535,6 +29560,10 @@ cmp stdout describe.golden.json
           "cleared_current": {
             "description": "True if the move ended the current change set and cleared it",
             "type": "boolean"
+          },
+          "commit": {
+            "description": "The commit of .rhiza that land --commit made; absent otherwise",
+            "type": "string"
           },
           "dry_run": {
             "description": "True if nothing was written",

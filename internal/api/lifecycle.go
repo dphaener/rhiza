@@ -57,6 +57,8 @@ func init() {
 			req = reflect.TypeFor[DecisionRequest]()
 		case v.name == "reopen":
 			req = reflect.TypeFor[ReopenRequest]()
+		case v.name == "land":
+			req = reflect.TypeFor[LandRequest]()
 		}
 		register(Operation{
 			Name:     v.name,
@@ -117,6 +119,7 @@ type LifecycleResponse struct {
 	Reason         string          `json:"reason,omitempty" desc:"The reason of an accept or reject"`
 	ClearedCurrent bool            `json:"cleared_current,omitempty" desc:"True if the move ended the current change set and cleared it"`
 	DryRun         bool            `json:"dry_run,omitempty" desc:"True if nothing was written"`
+	Commit         string          `json:"commit,omitempty" desc:"The commit of .rhiza that land --commit made; absent otherwise"`
 }
 
 // lifecycleVerb is one lifecycle operation.
@@ -183,6 +186,9 @@ func legalNext(c changeset.ChangeSet) string {
 
 // run checks the move and writes its entry.
 func (v lifecycleVerb) run(ctx *Ctx, req any) (any, error) {
+	if r, ok := req.(LandRequest); ok && r.Commit {
+		return landCommit(ctx, v)
+	}
 	if v.name == "land" {
 		if out, ok, err := runViaHead(ctx, "land"); err != nil {
 			return nil, err
@@ -522,6 +528,9 @@ func (r LifecycleResponse) Human(w io.Writer) {
 	}
 	if r.ClearedCurrent {
 		fmt.Fprintln(w, "No current change set now.")
+	}
+	if r.Commit != "" {
+		fmt.Fprintf(w, "Rendered and committed .rhiza as %s.\n", shortSHA(r.Commit))
 	}
 	switch r.To {
 	case changeset.StateProposed:

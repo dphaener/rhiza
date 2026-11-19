@@ -169,6 +169,7 @@ Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move
@@ -924,15 +925,20 @@ Output (`--json` fields):
 Land the change set: an accepted intention, or a record.
 
 ```
-rhiza land
+rhiza land [--commit]
 ```
 
 Appends to the log.
+
+Arguments and flags:
+
+- `--commit`: Then render, stage .rhiza and commit only .rhiza, with the trailers Change: <the change set> and Actor: <the actor that landed it>; anything else staged stays staged and out of the commit
 
 Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move
@@ -1189,6 +1195,7 @@ Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move
@@ -1260,6 +1267,7 @@ Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move
@@ -1299,6 +1307,7 @@ Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move
@@ -2869,6 +2878,7 @@ Output (`--json` fields):
 
 - `change_set` (string): The change set moved
 - `cleared_current` (boolean): True if the move ended the current change set and cleared it
+- `commit` (string): The commit of .rhiza that land --commit made; absent otherwise
 - `dry_run` (boolean): True if nothing was written
 - `entry` (string): The entry written; absent in a dry run
 - `from` (string): The state before the move

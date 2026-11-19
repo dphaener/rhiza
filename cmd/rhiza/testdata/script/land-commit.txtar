@@ -1,0 +1,61 @@
+# rhiza land --commit lands, renders and commits only .rhiza, with the
+# trailers Change: <the change set> and Actor: <the actor that landed it>.
+# A file staged outside .rhiza stays staged and out of the commit. On a
+# draft change set it lands and commits nothing; with --dry-run it is a
+# usage error.
+
+rhiza init
+rhiza add actor conductor --record
+exec git init -q
+exec git add -A
+exec git commit -qm init
+
+# A draft change set: nothing landed, nothing committed.
+rhiza change new 'Land and commit'
+rhiza add capability landing --field 'statement=Lands'
+exec git add -A
+exec git commit -qm planned
+exec git rev-parse HEAD
+cp stdout head-before
+! rhiza land --commit --json
+stdout '"code": "conflict"'
+exec git rev-parse HEAD
+cmp stdout head-before
+
+# A dry run is a usage error: nothing landed or committed.
+rhiza propose
+rhiza accept
+exec git add -A
+exec git commit -qm accepted
+exec git rev-parse HEAD
+cp stdout head-before
+! rhiza land --commit --dry-run --json
+stdout '"code": "usage"'
+exec git rev-parse HEAD
+cmp stdout head-before
+rhiza change show
+stdout '^- State: accepted \(current\)$'
+
+# Landed and committed as RHIZA_ACTOR, the staged code file left out.
+cp code.go.txt code.go
+exec git add code.go
+env RHIZA_ACTOR=conductor
+cp .rhiza/local/change change-id
+rhiza land --commit --json
+stdout '"to": "landed"'
+stdout '"commit": "[0-9a-f]{40}"'
+exec git log -1 --format=%s
+stdout '^Land and render the change set$'
+exec git log -1 --format=%(trailers)
+stdout '^Change: [0-9A-Z]{26}\nActor: conductor$'
+exec sh -c 'test "$(git log -1 --format="%(trailers:key=Change,valueonly)" | head -1)" = "$(head -1 change-id)"'
+exec git show --name-only --format= HEAD
+stdout '^\.rhiza/rendered/'
+! stdout '^code\.go$'
+exec git status --porcelain .rhiza
+! stdout .
+exec git diff --cached --name-only
+stdout '^code\.go$'
+
+-- code.go.txt --
+package x
