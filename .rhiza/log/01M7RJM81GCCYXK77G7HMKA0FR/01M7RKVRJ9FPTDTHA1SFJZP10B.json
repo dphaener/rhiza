@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RKS80KR7BZHDCZPR7YMWG9",
+  "after": [
+    "01M7RKREB512KNPVSW93FW69ZS"
+  ],
+  "at": "2026-11-19T00:38:47Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "Detached checkout at e4a8b7d75: go test -trimpath -p 2 ./internal/api -run TestHandCommits (systemd-run scope MemoryMax=6G TasksMax=300) exit 0; -run TestHandCommitsConductorLandCommit -count=1 -v passes both subtests (a session of the run: land {commit:true} makes a commit with Actor: claude-code-s1, scanHand finds none; a session of another run: one hand-commit naming claude-code-s2); go vet ./internal/api, rhiza ship generate, rhiza render exit 0. Diff touches only run_handcommit_test.go (new test appended) plus the builder's actor record; run_handcommit.go and existing tests unchanged; no stubs or TODOs."
+        },
+        "handle": "conductor-land-commit-not-hand-commit-verified",
+        "id": "01M7RKVRFG4XVG1E2H5BNRVSC6",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RKVRFG4XVG1E2H5AG9EFAK",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RKVRFG4XVG1E2H5AG9EFAK",
+        "id": "01M7RKVRH0SVJXNJ9ADPXP4C5H",
+        "link": "01M7RKVRH0SVJXNJ9ADMJ8RPYR",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNWYVVR0Z2YYZ1WXY2Q4",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RJM81GCCYXK77G7HMKA0FR",
+  "for": "01M7RK94F0PHKEP3GYJ4KMZJ3P",
+  "id": "01M7RKVRJ9FPTDTHA1SFJZP10B",
+  "type": "ops",
+  "v": 1
+}

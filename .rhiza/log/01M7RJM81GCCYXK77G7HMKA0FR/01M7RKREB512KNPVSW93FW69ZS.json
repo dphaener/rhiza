@@ -1,0 +1,40 @@
+{
+  "actor": "01M7RKKQ2RDQMVNSES8SS49D9Q",
+  "after": [
+    "01M7RKG6BTY7RXW2NRVEF0XWNT"
+  ],
+  "at": "2026-11-19T00:36:58Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "result": "PASS",
+          "statement": "In a detached checkout at 06d9a1997 (under systemd-run MemoryMax=6G TasksMax=300, -p 2): go test -trimpath ./cmd/rhiza -run 'TestScripts/(land-commit|describe-golden)$' exit 0 (land-commit.txtar covers Change:/Actor: trailers, clean .rhiza, staged code.go kept out, draft land --commit conflict with HEAD unchanged, --dry-run usage error with state still accepted); go test -trimpath ./internal/api -run TestLandCommitViaHead exit 0 (both subtests: head argv land then render without --commit, one new .rhiza-only commit with trailers; failed head land leaves HEAD unchanged). Re-ran every Checks: line: internal/api 'Lifecycle|Land|Ship|Reference|Docs|Schema|Describe' exit 0, cmd/rhiza land-commit|describe-golden|lifecycle|docs.*|help.* exit 0, rhiza ship generate exit 0 leaving docs/reference/cli.md unchanged (so it is generated output), rhiza render exit 0. Diff read: only land gains LandRequest; runViaHead args, ship_build.go, ship_close.go and handCommits untouched; commit uses pathspec -- .rhiza; no stubs or TODOs."
+        },
+        "handle": "land-commit-verified",
+        "id": "01M7RKRE82F8JPPN9YDYAHTADS",
+        "key": null,
+        "kind": "evidence",
+        "node": "01M7RKRE82F8JPPN9YDW8REA82",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RKRE82F8JPPN9YDW8REA82",
+        "id": "01M7RKRE9K9KFSN5JVRBAHNHFQ",
+        "link": "01M7RKRE9K9KFSN5JVRAZ8D0J8",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNV0969V311Y3SBK5BMP",
+        "type": "verifies"
+      }
+    ]
+  },
+  "change_set": "01M7RJM81GCCYXK77G7HMKA0FR",
+  "for": "01M7RK94F0PHKEP3GYJ4KMZJ3P",
+  "id": "01M7RKREB512KNPVSW93FW69ZS",
+  "type": "ops",
+  "v": 1
+}
