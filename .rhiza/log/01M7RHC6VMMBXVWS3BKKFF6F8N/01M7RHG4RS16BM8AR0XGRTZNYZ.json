@@ -1,0 +1,66 @@
+{
+  "actor": "01M7RHCRRSGBV3DFKT4M7GG591",
+  "after": [
+    "01M7RHFQ9AVA8S2YWJ0A7SEGFK"
+  ],
+  "at": "2026-11-18T23:57:29Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "reasoning": "CI (PR #657, run 44423965760 attempt 1) showed 'Current step: first' under 'running' at run-status.txtar:38. Changing step first's run to 'sleep 0.5' reproduced it every time. Polling for hold alone failed at line 37 because latestRun in internal/api/run.go returns the latest run when the effective change set has none yet, which is the stopped run at hold. Requiring both lines in one read passed twice under the delay.",
+          "statement": "Fix the run-status flake in its script, not by quarantine and not in Go: the live-run poll waits until one bare `rhiza run status` read shows both the run running and its current step hold, because the run is legitimately running while step first is current, and before the live run's journal exists bare status falls back to the earlier stopped run, which is also at hold",
+          "wording": "Fix the script's poll; do not quarantine; no product change. Planner's ruling in an autonomous plan run, from the reproduction"
+        },
+        "handle": "run-status-poll-waits-for-hold",
+        "id": "01M7RHG4HB1E1GFVFDYEEP9Z2B",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RHG4HB1E1GFVFDYCS6A394",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RHG4HB1E1GFVFDYCS6A394",
+        "id": "01M7RHG4K28GEGFPRBBJJHB94V",
+        "link": "01M7RHG4K28GEGFPRBBHDEYEA4",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RHFPDRW6QBFY77DPNW4E1N",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "Every go test below runs inside systemd-run --user --scope --quiet -p MemoryMax=6G -p TasksMax=300 with -p 2 and RHIZA_*/SHIP_*/REX_* unset, one at a time. (1) go test -trimpath -p 2 -count=3 ./cmd/rhiza -run 'TestScripts/^run-status$' passes. (2) (failure case) With a temporary scratch edit, never committed: step first's run = \"true\" in the script's gate.toml changed to run = \"sleep 0.5\", the script at main abf1d4cc3 fails at run-status.txtar:38 with 'Current step: first' in stdout (as in PR #657's CI), and with the fix it passes on 3 runs; the edit reverted and the commit's Checks: block records both outcomes. (3) (failure case) Under the same scratch delay, a poll that greps only '^- Current step: hold$' fails at the 'running' assertion (bare status reads the earlier stopped run), showing both conditions are needed; reverted. (4) Every other line of the script is unchanged (git diff touches only the poll line), and go test -trimpath -p 2 ./cmd/rhiza -run 'TestScripts/run-status' (the -interventions, -messages, -stalled and -tokens scripts too) passes.",
+          "files": "cmd/rhiza/testdata/script/run-status.txtar",
+          "must_not": "Change any Go code (internal/ or cmd/rhiza/*.go), including latestRun's fallback or run state reporting; quarantine, skip or add the script to any skip list; loosen or remove any assertion; raise the poll's 400-try bound or 0.025s interval; edit other scripts; use busy loops, CPU stress or parallel stress runs to reproduce",
+          "statement": "In cmd/rhiza/testdata/script/run-status.txtar the live-run poll (the exec sh -c loop at line 35) captures each bare `rhiza run status` output once and exits 0 only when that same output matches both '^Run .* running$' and '^- Current step: hold$', so the assertions at lines 36-39 run only after the live run reached its wait step"
+        },
+        "handle": "run-status-live-poll-waits-for-hold",
+        "id": "01M7RHG4P5E62HN684GJQN1WS9",
+        "key": "zzzzzzy",
+        "kind": "capability",
+        "node": "01M7RHG4P5E62HN684GFW7NYHQ",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RHG4P5E62HN684GFW7NYHQ",
+        "id": "01M7RHG4QSW38RWEPPAQ2WA2E1",
+        "link": "01M7RHG4QSW38RWEPPAPM1XQJB",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RHG4HB1E1GFVFDYCS6A394",
+        "type": "decided-by"
+      }
+    ]
+  },
+  "change_set": "01M7RHC6VMMBXVWS3BKKFF6F8N",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RHG4RS16BM8AR0XGRTZNYZ",
+  "type": "ops",
+  "v": 1
+}
