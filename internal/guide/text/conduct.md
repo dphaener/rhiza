@@ -48,7 +48,10 @@ arbiter and wakes no one.
   blocker or major finding; a clean or minor-only round needs none.
 - Fix: spawn `--role fixer` for the confirmed findings, then run the checks again.
 - Gate: `rhiza run review-check` must pass before you land; it is the run's gate, never yours to waive.
-- Land: on the branch, `rhiza land`, then `rhiza render`, and commit what they change.
+- Land: on the branch, `rhiza land --commit`: it lands, runs `rhiza render` and commits
+  `.rhiza` with `Change:` and `Actor:` trailers. Every other commit you make carries
+  `Change: <change set>` and `Actor: <your actor>` trailers, so none is journalled as a
+  hand commit.
 - Finish with `rhiza session done`.
 
 <!-- shared: command-budget nested -->

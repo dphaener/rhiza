@@ -46,8 +46,8 @@ One per step that hands back (`handback:conduct`):
 The merge step never hands back: a merge that fails goes to the rebase step.
 Never run `rhiza ship rebase` yourself; the run's own steps bring main in.
 
-Every route then lands and renders again on the branch (`rhiza land`, `rhiza render`,
-commit what they change) and ends with `rhiza session done`.
+Every route then lands, renders and commits again on the branch with `rhiza land --commit`
+and ends with `rhiza session done`.
 
 ## Limits
 

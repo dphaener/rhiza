@@ -137,9 +137,14 @@ func TestConductHandback(t *testing.T) {
 			"a gh, fetch or git error", "The merge step never hands back",
 		},
 		"limits": {"`handback_cap` (3 unless", "parks the run stopped with an inbox item", "never hand back"},
-		"finish": {"`rhiza land`", "`rhiza render`", "`rhiza session done`"},
+		"finish": {"lands, renders and commits again on the branch with `rhiza land --commit`", "`rhiza session done`"},
 		"spawn":  {"never fix anything yourself", "you spawn no role"},
 	})
+	for _, old := range oldLandWording {
+		if strings.Contains(c.Body, old) {
+			t.Errorf("conduct-handback: still says %q; land with rhiza land --commit", old)
+		}
+	}
 	if strings.Contains(c.Body, "--no-push") {
 		t.Errorf("conduct-handback still names rhiza ship rebase --no-push")
 	}
