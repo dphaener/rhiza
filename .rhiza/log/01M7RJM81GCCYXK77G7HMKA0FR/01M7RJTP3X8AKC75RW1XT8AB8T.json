@@ -1,0 +1,134 @@
+{
+  "actor": "01M7RJMZ7MP7KDSP2624JERX4Q",
+  "after": [
+    "01M7RJSVFBR7Q3ERDNG5J5CYR4"
+  ],
+  "at": "2026-11-19T00:20:43Z",
+  "body": {
+    "drop": [],
+    "ops": [
+      {
+        "fields": {
+          "statement": "The conductor's land commit is recognised by trailers rhiza writes, not by a new attribution rule: rhiza land --commit lands, renders and commits .rhiza with Change: and Actor: trailers (the actor every write resolves, the conductor session's own), and the conduct guide makes it the conductor's land step; handCommits' rule (Decision hand-commit-by-trailer) is unchanged, so a person's commit with only a Change: trailer still counts as a hand commit"
+        },
+        "handle": "conductor-land-commit-trailers",
+        "id": "01M7RJTNS07WBZE13YKS3FVRJG",
+        "key": null,
+        "kind": "decision",
+        "node": "01M7RJTNS07WBZE13YKPYFF264",
+        "op": "node.create",
+        "parent": null
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNS07WBZE13YKPYFF264",
+        "id": "01M7RJTNT3PB64TY4SH0T592J6",
+        "link": "01M7RJTNT3PB64TY4SGY9WDNKQ",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJSVDV1TJADY14ZGGWJ0SR",
+        "type": "derived-from"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./cmd/rhiza -run 'TestScripts/(land-commit|describe-golden)$' passes: land-commit.txtar lands an accepted change set with RHIZA_ACTOR set and rhiza land --commit --json, then git log -1 --format=%(trailers) shows Change: <the change set> and Actor: <that actor's handle>, git status --porcelain .rhiza is empty, and a file staged outside .rhiza before the land is still staged and not in the commit; (failure case) rhiza land --commit on a draft change set exits non-zero with HEAD unchanged and nothing committed; (failure case) rhiza land --commit --dry-run is a usage error with nothing landed or committed; describe-golden.txtar is regenerated with the new land request type",
+          "files": "internal/api/lifecycle.go, internal/api/land_commit.go, cmd/rhiza/testdata/script/land-commit.txtar, cmd/rhiza/testdata/script/describe-golden.txtar",
+          "must_not": "Change rhiza land without --commit, or the other lifecycle verbs' requests; commit anything outside .rhiza; push; change ship land's own commit (internal/api/ship_close.go); change handCommits' attribution rule",
+          "statement": "rhiza land --commit lands the change set, renders, stages .rhiza and commits only .rhiza with the message 'Land and render the change set' and the trailers 'Change: <change set ID>' and 'Actor: <actor handle>' (the actor the land entry was written as, resolved as every write resolves it: RHIZA_ACTOR, else git's user.email; its ID when it has no handle), all in one trailer block; without --commit land behaves as today"
+        },
+        "handle": "land-commit",
+        "id": "01M7RJTNV0969V311Y3TX9RYEY",
+        "key": "i",
+        "kind": "capability",
+        "node": "01M7RJTNV0969V311Y3SBK5BMP",
+        "op": "node.create",
+        "parent": "01M5SWRWD98YVDEC1WY73TFN2R"
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNV0969V311Y3SBK5BMP",
+        "id": "01M7RJTNW0SBMK9DK899DSS6BD",
+        "link": "01M7RJTNW0SBMK9DK895T3AWZE",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNS07WBZE13YKPYFF264",
+        "type": "decided-by"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/api -run TestHandCommitsConductorLandCommit passes: on a run branch (handCommitBranch), the land operation with commit set, run as the actor of a session recorded with the run (Run R1), makes a commit and scanHand finds no hand commit; (failure case) the same land commit made as an actor whose only session belongs to another run (R2) is journalled as one hand-commit intervention naming that actor",
+          "files": "internal/api/run_handcommit_test.go",
+          "must_not": "Change internal/api/run_handcommit.go or the existing hand-commit tests' expectations",
+          "statement": "A test shows that the commit rhiza land --commit makes as a conductor session's actor, on its run's branch, is the run's: handCommits journals no hand-commit intervention for it"
+        },
+        "handle": "conductor-land-commit-not-hand-commit",
+        "id": "01M7RJTNWYVVR0Z2YYZ4XQ2HWS",
+        "key": "zzzzzzzzw",
+        "kind": "capability",
+        "node": "01M7RJTNWYVVR0Z2YYZ1WXY2Q4",
+        "op": "node.create",
+        "parent": "01M5SWT9C9AN7E2283H93ZNSKW"
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNWYVVR0Z2YYZ1WXY2Q4",
+        "id": "01M7RJTNXVDQSAP2GT4904K5CZ",
+        "link": "01M7RJTNXVDQSAP2GT48FGP1QT",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNS07WBZE13YKPYFF264",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNWYVVR0Z2YYZ1WXY2Q4",
+        "id": "01M7RJTNYZHJY8PMVREBYD07A6",
+        "link": "01M7RJTNYZHJY8PMVREBFFX785",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNV0969V311Y3SBK5BMP",
+        "type": "depends-on"
+      },
+      {
+        "fields": {
+          "acceptance": "go test -trimpath ./internal/guide -run 'TestConduct|TestConductHandback|TestBuildReviewCommandBudget' passes: TestConduct asserts conduct.md's Land phase names rhiza land --commit and the Change: and Actor: trailer rule; TestConductHandback asserts conduct-handback.md's closing land names rhiza land --commit; (failure case) the old 'rhiza land, then rhiza render, and commit what they change' wording is asserted absent from both topics",
+          "files": "internal/guide/text/conduct.md, internal/guide/text/conduct-handback.md, internal/guide/conduct_test.go, internal/guide/conduct_handback_test.go",
+          "must_not": "Change other roles' guide topics (builder, rhiza, change-sets, planner); add a phase to the conduct guide",
+          "statement": "The conduct guide's Land phase and conduct-handback's closing land tell the conductor to land, render and commit with rhiza land --commit, and say every other commit the conductor makes carries Change: and Actor: trailers, so none is journalled as a hand commit"
+        },
+        "handle": "conduct-guide-land-commit",
+        "id": "01M7RJTNZVJ7N3FJ1M9RTTX3RB",
+        "key": "zy",
+        "kind": "capability",
+        "node": "01M7RJTNZVJ7N3FJ1M9N4G3PN3",
+        "op": "node.create",
+        "parent": "01M5SWSQ8YXAQ763XWK5M7J24K"
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNZVJ7N3FJ1M9N4G3PN3",
+        "id": "01M7RJTP10F2M7GQA9FN90Y9PC",
+        "link": "01M7RJTP10F2M7GQA9FJ912E5Y",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNS07WBZE13YKPYFF264",
+        "type": "decided-by"
+      },
+      {
+        "decision": null,
+        "from": "01M7RJTNZVJ7N3FJ1M9N4G3PN3",
+        "id": "01M7RJTP2H7NAJ76T5S1MNQGTJ",
+        "link": "01M7RJTP2H7NAJ76T5RXV2DJHM",
+        "note": "",
+        "op": "link.create",
+        "to": "01M7RJTNV0969V311Y3SBK5BMP",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "change_set": "01M7RJM81GCCYXK77G7HMKA0FR",
+  "for": "01M6FSQCPYE5Q9AVACX08FM2YJ",
+  "id": "01M7RJTP3X8AKC75RW1XT8AB8T",
+  "type": "ops",
+  "v": 1
+}
